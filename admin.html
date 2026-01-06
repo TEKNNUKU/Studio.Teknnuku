@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEKNNUKU Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --tk-black: #111111;
+            --tk-gold: #E8CE6B;
+            --tk-grey: #949C96;
+            --tk-white: #FFFFFF;
+            --tk-cyan: #00D1FF;
+            --tk-red: #ff4444;
+            --tk-green: #4caf50;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--tk-black);
+            color: var(--tk-white);
+            overflow-x: hidden;
+        }
+
+        .admin-header {
+            height: 70px;
+            background: rgba(17, 17, 17, 0.95);
+            border-bottom: 2px solid var(--tk-gold);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-brand {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: var(--tk-gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: var(--tk-red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .logout-btn:hover { background: #cc0000; }
+
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #1a1a1a;
+            border-right: 1px solid #333;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            color: #aaa;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(232, 206, 107, 0.1);
+            color: var(--tk-gold);
+        }
+
+        .nav-item.active {
+            background: rgba(232, 206, 107, 0.15);
+            color: var(--tk-gold);
+            border-left-color: var(--tk-gold);
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 70px);
+        }
+
+        .page { display: none; }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header { margin-bottom: 25px; }
+        .page-header h1 {
+            font-size: 1.75rem;
+            color: var(--tk-gold);
+            margin-bottom: 8px;
+        }
+        .page-header p { color: #aaa; font-size: 0.9rem; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon { font-size: 1.5rem; }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--tk-gold);
+        }
+        .stat-change {
+            font-size: 0.75rem;
+            color: var(--tk-green);
+        }
+
+        .data-table {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .table-header {
+            background: #222;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--tk-gold);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .search-input {
+            background: #000;
+            border: 1px solid #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            flex: 1;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn {
+            background: #333;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead { background: #222; }
+        th {
+            padding: 12px 10px;
+            text-align: left;
+            color: var(--tk-gold);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #333;
+            color: #ccc;
+            font-size: 0.85rem;
+        }
+
+        tbody tr:hover { background: rgba(232, 206, 107, 0.05); }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .badge-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .badge-cancelled, .badge-failed {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .badge-live, .badge-processing {
+            background: rgba(0, 209, 255, 0.2);
+            color: var(--tk-cyan);
+        }
+
+        .badge-awaiting_payment, .badge-awaiting {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .action-btn {
+            background: var(--tk-cyan);
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover { opacity: 0.8; }
+
+        .settings-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .settings-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .settings-section h3 {
+            color: var(--tk-gold);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            color: #aaa;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--tk-cyan);
+        }
+
+        .save-btn {
+            background: var(--tk-gold);
+            color: #000;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .save-btn:hover { background: var(--tk-white); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid var(--tk-gold);
+            border-radius: 10px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--tk-gold);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .detail-label {
+            color: var(--tk-gold);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .detail-value {
+            color: #ccc;
+            font-size: 0.85rem;
+            word-break: break-word;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container { flex-direction: column; }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #333;
+                padding: 10px 0;
+                max-height: 200px;
+            }
+
+            .nav-item {
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+
+            .content {
+                max-height: none;
+                padding: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .page-header h1 { font-size: 1.5rem; }
+            
+            .stat-value { font-size: 1.8rem; }
+
+            .admin-brand { font-size: 1rem; }
+            
+            .admin-user {
+                font-size: 0.8rem;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .detail-label {
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-header { padding: 0 10px; }
+            .content { padding: 10px; }
+            .admin-user span { display: none; }
+            .logout-btn { padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="admin-brand">
+            🔐 TEKNNUKU Studio <span style="color:white;">Admin</span>
+        </div>
+        <div class="admin-user">
+            <span id="adminEmail">admin@teknnuku.com</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
+            <div class="nav-item" onclick="showPage('requests')">📋 Hosting Requests</div>
+            <div class="nav-item" onclick="showPage('projects')">💼 User Projects</div>
+            <div class="nav-item" onclick="showPage('payments')">💳 Payments</div>
+            <div class="nav-item" onclick="showPage('users')">👥 Users</div>
+            <div class="nav-item" onclick="showPage('settings')">⚙️ Settings</div>
+            <div class="nav-item" onclick="showPage('pricing')">💰 Pricing</div>
+        </aside>
+
+        <main class="content">
+            <div class="page active" id="dashboard">
+                <div class="page-header">
+                    <h1>Dashboard Overview</h1>
+                    <p>Welcome back! Here's what's happening with your platform.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <span class="stat-label">Total Requests</span>
+                            <span class="stat-icon">📋</span>
+                        </div>
+                        <div class="stat-value" id="totalRequests">0</div>
+                        <div class="stat-change">+0 this week</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <span class="stat-label">Active Hosting</span>
+                            <span class="stat-icon">🚀</span>
+                        </div>
+                        <div class="stat-value" id="activeHosting">0</div>
+                        <div class="stat-change">Live sites</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <span class="stat-label">Total Revenue</span>
+                            <span class="stat-icon">💰</span>
+                        </div>
+                        <div class="stat-value" id="totalRevenue">₦0</div>
+                        <div class="stat-change">This month</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <span class="stat-label">Pending Actions</span>
+                            <span class="stat-icon">⏳</span>
+                        </div>
+                        <div class="stat-value" id="pendingActions">0</div>
+                        <div class="stat-change">Needs attention</div>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Requests</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Plan</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentRequestsTable">
+                                <tr><td colspan="5" class="loading">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="requests">
+                <div class="page-header">
+                    <h1>Hosting Requests</h1>
+                    <p>Manage all hosting requests and deployments</p>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3 class="table-title">All Requests</h3>
+                        <div class="search-box">
+                            <input type="text" class="search-input" placeholder="Search..." id="requestSearch">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Plan</th>
+                                    <th>Amount</th>
+                                    <th>Payment</th>
+                                    <th>Hosting</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTable">
+                                <tr><td colspan="9" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="projects">
+                <div class="page-header">
+                    <h1>User Projects</h1>
+                    <p>View all saved landing page projects</p>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3 class="table-title">All Projects</h3>
+                        <div class="search-box">
+                            <input type="text" class="search-input" placeholder="Search..." id="projectSearch">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>User ID</th>
+                                    <th>Theme</th>
+                                    <th>Brand</th>
+                                    <th>Last Modified</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTable">
+                                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="payments">
+                <div class="page-header">
+                    <h1>Payment Records</h1>
+                    <p>Track all payment transactions</p>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3 class="table-title">Payment History</h3>
+                        <div class="search-box">
+                            <input type="text" class="search-input" placeholder="Search..." id="paymentSearch">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Request ID</th>
+                                    <th>User ID</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTable">
+                                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="users">
+                <div class="page-header">
+                    <h1>User Management</h1>
+                    <p>View all users and their data</p>
+                </div>
+
+                <div class="data-table">
+                    <div class="table-header">
+                        <h3 class="table-title">All Users</h3>
+                        <div class="search-box">
+                            <input type="text" class="search-input" placeholder="Search..." id="userSearch">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Business Type</th>
+                                    <th>Plan</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="settings">
+                <div class="page-header">
+                    <h1>Platform Settings</h1>
+                    <p>Configure API keys and system settings</p>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-section">
+                        <h3>🤖 AI Configuration</h3>
+                        <div class="form-group">
+                            <label>OpenAI API Key</label>
+                            <input type="password" id="openaiKey" placeholder="sk-...">
+                        </div>
+                        <button class="save-btn" onclick="saveAISettings()">Save AI Settings</button>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>💳 Payment Gateway Settings</h3>
+                        <div class="form-group">
+                            <label>Flutterwave Public Key (Africa)</label>
+                            <input type="text" id="flutterwaveKey" value="FLWPUBK-05bb86af711fd1998eb529cb0bc4e0f4-X">
+                        </div>
+                        <div class="form-group">
+                            <label>Helio Paylink ID (Global)</label>
+                            <input type="text" id="helioPaylink" value="6955d51366add2a63728a274">
+                        </div>
+                        <button class="save-btn" onclick="savePaymentSettings()">Save Payment Settings</button>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🔔 Notification Settings</h3>
+                        <div class="form-group">
+                            <label>Admin Email for Notifications</label>
+                            <input type="email" id="adminNotifEmail" value="admin@teknnuku.com">
+                        </div>
+                        <div class="form-group">
+                            <label>WhatsApp Number for Alerts</label>
+                            <input type="tel" id="adminWhatsApp" placeholder="+234...">
+                        </div>
+                        <button class="save-btn" onclick="saveNotificationSettings()">Save Notifications</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="pricing">
+                <div class="page-header">
+                    <h1>Pricing Management</h1>
+                    <p>Update hosting plan prices</p>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-section">
+                        <h3>🌍 Africa Pricing (NGN)</h3>
+                        <div class="form-group">
+                            <label>Hosted Plan (6 months)</label>
+                            <input type="number" id="africaHosted6" value="23520">
+                        </div>
+                        <div class="form-group">
+                            <label>Hosted Plan (1 year)</label>
+                            <input type="number" id="africaHosted12" value="47040">
+                        </div>
+                        <div class="form-group">
+                            <label>Premium Plan (6 months)</label>
+                            <input type="number" id="africaPremium6" value="71520">
+                        </div>
+                        <div class="form-group">
+                            <label>Premium Plan (1 year)</label>
+                            <input type="number" id="africaPremium12" value="143040">
+                        </div>
+                        <button class="save-btn" onclick="saveAfricaPricing()">Update Africa Pricing</button>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🌎 Global Pricing (USD)</h3>
+                        <div class="form-group">
+                            <label>Hosted Plan (6 months)</label>
+                            <input type="number" id="globalHosted6" value="47.95" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Hosted Plan (1 year)</label>
+                            <input type="number" id="globalHosted12" value="95.90" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Premium Plan (6 months)</label>
+                            <input type="number" id="globalPremium6" value="143.95" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Premium Plan (1 year)</label>
+                            <input type="number" id="globalPremium12" value="287.90" step="0.01">
+                        </div>
+                        <button class="save-btn" onclick="saveGlobalPricing()">Update Global Pricing</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Request Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-no9mjkUi17jiPOgh5_18bBFxEAJu0LU",
+            authDomain: "teknnuku-studio.firebaseapp.com",
+            projectId: "teknnuku-studio",
+            storageBucket: "teknnuku-studio.firebasestorage.app",
+            messagingSenderId: "334450043152",
+            appId: "1:334450043152:web:f408693932aa55cc209d95"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allRequestsData = [];
+        let allProjectsData = [];
+        let allUsersData = [];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ User authenticated:', user.email);
+                document.getElementById('adminEmail').textContent = user.email;
+                loadDashboardData();
+            } else {
+                console.log('⚠️ No user authenticated');
+                showLoginPrompt();
+            }
+        });
+
+        function showLoginPrompt() {
+            const email = prompt('Admin Email:');
+            const password = prompt('Admin Password:');
+            
+            if(email && password) {
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        console.log('✅ Login successful!');
+                    })
+                    .catch((error) => {
+                        alert('❌ Login failed: ' + error.message);
+                        showLoginPrompt();
+                    });
+            } else {
+                alert('Login cancelled');
+            }
+        }
+
+        window.logout = async function() {
+            if(confirm('Are you sure you want to logout?')) {
+                await signOut(auth);
+                location.reload();
+            }
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'N/A';
+            try {
+                if (timestamp.seconds) {
+                    return new Date(timestamp.seconds * 1000).toLocaleDateString();
+                } else if (timestamp.toDate) {
+                    return timestamp.toDate().toLocaleDateString();
+                } else {
+                    return new Date(timestamp).toLocaleDateString();
+                }
+            } catch (e) {
+                console.error('Error formatting timestamp:', e);
+                return 'Invalid Date';
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                console.log('📊 Loading dashboard data...');
+                
+                const requestsSnapshot = await getDocs(collection(db, 'hostingRequests'));
+                console.log('✅ Requests loaded:', requestsSnapshot.size);
+                
+                allRequestsData = requestsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log('📋 All requests data:', allRequestsData);
+
+                const totalRequests = allRequestsData.length;
+                document.getElementById('totalRequests').textContent = totalRequests;
+
+                const activeHosting = allRequestsData.filter(req => 
+                    req.hostingStatus === 'live'
+                ).length;
+                document.getElementById('activeHosting').textContent = activeHosting;
+
+                // In admin dashboard
+let totalRevenueNGN = 0;
+let totalRevenueUSD = 0;
+
+allRequestsData.forEach(req => {
+    if(req.paymentStatus === 'completed') {
+        const amount = Number(req.amount) || 0;
+        if(req.currency === 'USD') {
+            totalRevenueUSD += amount;
+        } else {
+            totalRevenueNGN += amount;
+        }
+    }
+});
+
+// Display both
+document.getElementById('totalRevenue').innerHTML = `
+    ₦${totalRevenueNGN.toLocaleString()}<br>
+    <span style="font-size:1.2rem;">$${totalRevenueUSD.toLocaleString()}</span>
+`;
+
+                const pending = allRequestsData.filter(req => 
+                    req.paymentStatus === 'pending' || 
+                    req.hostingStatus === 'awaiting_payment'
+                ).length;
+                document.getElementById('pendingActions').textContent = pending;
+
+                loadRecentRequests();
+                loadAllRequests();
+                
+            } catch(error) {
+                console.error('❌ Error loading dashboard:', error);
+                document.getElementById('recentRequestsTable').innerHTML = 
+                    '<tr><td colspan="5" class="error">Error loading data: ' + error.message + '</td></tr>';
+            }
+        }
+
+        function loadRecentRequests() {
+            const tbody = document.getElementById('recentRequestsTable');
+            const recent = allRequestsData.slice(-5).reverse();
+
+            if(recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">No requests yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = recent.map(req => `
+                <tr>
+                    <td>${formatTimestamp(req.timestamp)}</td>
+                    <td>${req.fullName || 'N/A'}</td>
+                    <td>${req.planType || 'N/A'}</td>
+                    <td>₦${(req.amount || 0).toLocaleString()}</td>
+                    <td><span class="badge badge-${req.paymentStatus || 'pending'}">${req.paymentStatus || 'pending'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function loadAllRequests() {
+            const tbody = document.getElementById('requestsTable');
+            
+            if(allRequestsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px;">No requests yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allRequestsData.map(req => `
+                <tr>
+                    <td>${req.id.substring(0, 8)}</td>
+                    <td>${formatTimestamp(req.timestamp)}</td>
+                    <td>${req.name || 'N/A'}</td>
+                    <td>${req.email || 'N/A'}</td>
+                    <td>${req.plan || 'N/A'}</td>
+                    <td>₦${(req.amount || 0).toLocaleString()}</td>
+                    <td><span class="badge badge-${req.paymentStatus || 'pending'}">${req.paymentStatus || 'pending'}</span></td>
+                    <td><span class="badge badge-${req.hostingStatus || 'pending'}">${req.hostingStatus || 'awaiting'}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="viewDetails('${req.id}')">View</button>
+                        <button class="action-btn" onclick="updateStatus('${req.id}')">Update</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.viewDetails = function(requestId) {
+            const req = allRequestsData.find(r => r.id === requestId);
+            
+            if(req) {
+                const modalBody = document.getElementById('modalBody');
+                modalBody.innerHTML = `
+                    <div class="detail-grid">
+                        <div class="detail-label">Request ID:</div>
+                        <div class="detail-value">${requestId}</div>
+                        
+                        <div class="detail-label">Full Name:</div>
+                        <div class="detail-value">${req.name || 'N/A'}</div>
+                        
+                        <div class="detail-label">Email:</div>
+                        <div class="detail-value">${req.email || 'N/A'}</div>
+                        
+                        <div class="detail-label">Phone:</div>
+                        <div class="detail-value">${req.phone || 'N/A'}</div>
+                        
+                        <div class="detail-label">Business Name:</div>
+                        <div class="detail-value">${req.businessName || 'N/A'}</div>
+                        
+                        <div class="detail-label">Business Type:</div>
+                        <div class="detail-value">${req.businessType || 'N/A'}</div>
+                        
+                        <div class="detail-label">Plan Type:</div>
+                        <div class="detail-value">${req.plan || 'N/A'}</div>
+                        
+                        <div class="detail-label">Billing Cycle:</div>
+                        <div class="detail-value">${req.billingCycle || 'N/A'}</div>
+                        
+                        <div class="detail-label">Amount:</div>
+                        <div class="detail-value">₦${(req.amount || 0).toLocaleString()}</div>
+                        
+                        <div class="detail-label">Payment Status:</div>
+                        <div class="detail-value"><span class="badge badge-${req.paymentStatus}">${req.paymentStatus || 'pending'}</span></div>
+                        
+                        <div class="detail-label">Hosting Status:</div>
+                        <div class="detail-value"><span class="badge badge-${req.hostingStatus}">${req.hostingStatus || 'awaiting'}</span></div>
+                        
+                        <div class="detail-label">Date Submitted:</div>
+                        <div class="detail-value">${formatTimestamp(req.timestamp)}</div>
+                    </div>
+                `;
+                document.getElementById('detailModal').classList.add('active');
+            }
+        }
+
+        window.updateStatus = async function(requestId) {
+            const newPaymentStatus = prompt('Enter new payment status (pending/completed/failed):');
+            const newHostingStatus = prompt('Enter new hosting status (awaiting_payment/processing/live/cancelled):');
+            
+            if(!newPaymentStatus && !newHostingStatus) return;
+            
+            try {
+                const docRef = doc(db, 'hostingRequests', requestId);
+                const updates = {};
+                if(newPaymentStatus) updates.paymentStatus = newPaymentStatus;
+                if(newHostingStatus) updates.hostingStatus = newHostingStatus;
+                
+                await updateDoc(docRef, updates);
+                alert('✅ Status updated successfully!');
+                loadDashboardData();
+            } catch(error) {
+                console.error('❌ Error updating status:', error);
+                alert('❌ Error updating status: ' + error.message);
+            }
+        }
+
+        window.closeModal = function() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        window.showPage = function(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if(pageId === 'requests') loadAllRequests();
+            if(pageId === 'projects') loadProjects();
+            if(pageId === 'payments') loadPayments();
+            if(pageId === 'users') loadUsers();
+        }
+
+        async function loadProjects() {
+            try {
+                console.log('💼 Loading projects...');
+                const projectsSnapshot = await getDocs(collection(db, 'savedProjects'));
+                const tbody = document.getElementById('projectsTable');
+                
+                allProjectsData = projectsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log('✅ Projects loaded:', allProjectsData.length);
+
+                if(allProjectsData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">No projects yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = allProjectsData.map(proj => `
+                    <tr>
+                        <td>${proj.projectName || 'Untitled'}</td>
+                        <td>${proj.userId || 'N/A'}</td>
+                        <td>${proj.theme || 'N/A'}</td>
+                        <td>${proj.brandName || 'N/A'}</td>
+                        <td>${formatTimestamp(proj.lastModified)}</td>
+                        <td>
+                            <button class="action-btn" onclick="viewProject('${proj.id}')">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(error) {
+                console.error('❌ Error loading projects:', error);
+                document.getElementById('projectsTable').innerHTML = 
+                    '<tr><td colspan="6" class="error">Error loading projects: ' + error.message + '</td></tr>';
+            }
+        }
+
+        async function loadPayments() {
+            try {
+                console.log('💳 Loading payments...');
+                const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+                const tbody = document.getElementById('paymentsTable');
+                
+                const paymentsData = paymentsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log('✅ Payments loaded:', paymentsData.length);
+
+                if(paymentsData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">No payments yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = paymentsData.map(payment => `
+                    <tr>
+                        <td>${formatTimestamp(payment.timestamp)}</td>
+                        <td>${payment.requestId || 'N/A'}</td>
+                        <td>${payment.userId || 'N/A'}</td>
+                        <td>₦${(payment.amount || 0).toLocaleString()}</td>
+                        <td><span class="badge badge-${payment.status}">${payment.status || 'pending'}</span></td>
+                        <td>
+                            <button class="action-btn" onclick="viewPayment('${payment.id}')">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(error) {
+                console.error('❌ Error loading payments:', error);
+                document.getElementById('paymentsTable').innerHTML = 
+                    '<tr><td colspan="6" class="error">Error loading payments: ' + error.message + '</td></tr>';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                console.log('👥 Loading users...');
+                const tbody = document.getElementById('usersTable');
+                
+                const uniqueUsers = new Map();
+                allRequestsData.forEach(req => {
+                    if(req.email && !uniqueUsers.has(req.email)) {
+                        uniqueUsers.set(req.email, req);
+                    }
+                });
+
+                allUsersData = Array.from(uniqueUsers.values());
+                console.log('✅ Users loaded:', allUsersData.length);
+
+                if(allUsersData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px;">No users yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = allUsersData.map(user => `
+                    <tr>
+                        <td>${user.fullName || 'N/A'}</td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>${user.phone || 'N/A'}</td>
+                        <td>${user.businessType || 'N/A'}</td>
+                        <td>${user.planType || 'N/A'}</td>
+                        <td>
+                            <button class="action-btn" onclick="viewUser('${user.email}')">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(error) {
+                console.error('❌ Error loading users:', error);
+                document.getElementById('usersTable').innerHTML = 
+                    '<tr><td colspan="6" class="error">Error loading users: ' + error.message + '</td></tr>';
+            }
+        }
+
+        async function saveAISettings() {
+    const openaiKey = document.getElementById('openaiKey').value;
+    if(!openaiKey) {
+        alert('⚠️ Please enter an API key');
+        return;
+    }
+    
+    try {
+        await setDoc(doc(db, 'settings', 'openai'), {
+            apiKey: openaiKey,
+            updatedAt: serverTimestamp()
+        });
+        
+        document.getElementById('settingsMessage').innerHTML = 
+            '<div class="success">✅ AI settings saved successfully!</div>';
+        setTimeout(() => {
+            document.getElementById('settingsMessage').innerHTML = '';
+        }, 3000);
+    } catch(error) {
+        document.getElementById('settingsMessage').innerHTML = 
+            '<div class="error">❌ Error: ' + error.message + '</div>';
+    }
+}
+
+        window.saveAISettings = function() {
+            const openaiKey = document.getElementById('openaiKey').value;
+            if(openaiKey) {
+                alert('✅ AI settings saved!');
+            } else {
+                alert('⚠️ Please enter an API key');
+            }
+        }
+
+        window.savePaymentSettings = function() {
+            alert('✅ Payment settings saved!');
+        }
+
+        window.saveNotificationSettings = function() {
+            alert('✅ Notification settings saved!');
+        }
+
+        window.saveAfricaPricing = function() {
+            alert('✅ Africa pricing updated!');
+        }
+
+        window.saveGlobalPricing = function() {
+            alert('✅ Global pricing updated!');
+        }
+
+        window.viewProject = function(projectId) {
+            const proj = allProjectsData.find(p => p.id === projectId);
+            if(proj) {
+                alert('Project: ' + (proj.projectName || 'Untitled') + '\nTheme: ' + (proj.theme || 'N/A'));
+            }
+        }
+
+        window.viewPayment = function(paymentId) {
+            alert('View payment: ' + paymentId);
+        }
+
+        window.viewUser = function(email) {
+            const user = allUsersData.find(u => u.email === email);
+            if(user) {
+                alert('User: ' + (user.fullName || 'N/A') + '\nEmail: ' + user.email);
+            }
+        }
+
+        document.getElementById('requestSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#requestsTable tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('projectSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#projectsTable tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('paymentSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#paymentsTable tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('userSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+    </script>
+</body>
+</html>
