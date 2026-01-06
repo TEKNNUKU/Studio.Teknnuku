@@ -989,8 +989,8 @@ document.getElementById('totalRevenue').innerHTML = `
             tbody.innerHTML = recent.map(req => `
                 <tr>
                     <td>${formatTimestamp(req.timestamp)}</td>
-                    <td>${req.fullName || 'N/A'}</td>
-                    <td>${req.planType || 'N/A'}</td>
+                    <td>${req.name || 'N/A'}</td>
+                    <td>${req.plan || 'N/A'}</td>
                     <td>₦${(req.amount || 0).toLocaleString()}</td>
                     <td><span class="badge badge-${req.paymentStatus || 'pending'}">${req.paymentStatus || 'pending'}</span></td>
                 </tr>
