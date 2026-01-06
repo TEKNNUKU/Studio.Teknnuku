@@ -845,7 +845,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         const firebaseConfig = {
@@ -863,6 +863,7 @@
 
         let allRequestsData = [];
         let allProjectsData = [];
+        let allPaymentsData = [];
         let allUsersData = [];
 
         onAuthStateChanged(auth, (user) => {
@@ -1051,7 +1052,7 @@ document.getElementById('totalRevenue').innerHTML = `
                         <div class="detail-value">${req.plan || 'N/A'}</div>
                         
                         <div class="detail-label">Billing Cycle:</div>
-                        <div class="detail-value">${req.billingCycle || 'N/A'}</div>
+                        <div class="detail-value">${req.billingPeriod || 'N/A'}</div>
                         
                         <div class="detail-label">Amount:</div>
                         <div class="detail-value">₦${(req.amount || 0).toLocaleString()}</div>
@@ -1204,11 +1205,11 @@ document.getElementById('totalRevenue').innerHTML = `
 
                 tbody.innerHTML = allUsersData.map(user => `
                     <tr>
-                        <td>${user.fullName || 'N/A'}</td>
+                        <td>${user.name || 'N/A'}</td>
                         <td>${user.email || 'N/A'}</td>
                         <td>${user.phone || 'N/A'}</td>
                         <td>${user.businessType || 'N/A'}</td>
-                        <td>${user.planType || 'N/A'}</td>
+                        <td>${user.plan || 'N/A'}</td>
                         <td>
                             <button class="action-btn" onclick="viewUser('${user.email}')">View</button>
                         </td>
