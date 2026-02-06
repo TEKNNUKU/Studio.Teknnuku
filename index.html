@@ -2382,5 +2382,223 @@ function capitalize(str) {
             generateHTML();
         }, 100);
     </script>
+    <script>
+        // Global state
+        let currentPlan = null;
+        let currentPrice = 0;
+        let currentRegion = 'africa';
+        let currentBilling = '6months';
+        let previewContent = '';
+        let firebaseApp = null; // Init if needed
+
+        // Device toggle
+        function setDevice(device) {
+            document.querySelectorAll('.device-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            const frame = document.getElementById('frameContainer');
+            frame.className = `device-frame ${device}`;
+            update();
+        }
+
+        // Sidebar toggle (mobile)
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Update preview iframe
+        function update() {
+            const params = {
+                theme: document.getElementById('themeSelect').value,
+                brandName: document.getElementById('brandName').value,
+                headline: document.getElementById('headline').value,
+                bio: document.getElementById('bio').value,
+                bgCol: document.getElementById('bgCol').value,
+                textCol: document.getElementById('textCol').value,
+                primCol: document.getElementById('primCol').value,
+                highlightCol: document.getElementById('highlightCol').value,
+                enableDeals: document.getElementById('enableDeals').checked,
+                dealsTitle: document.getElementById('dealsTitle').value,
+                dealsContent: document.getElementById('dealsContent').value,
+                enableEmail: document.getElementById('enableEmail').checked,
+                emailHeading: document.getElementById('emailHeading').value,
+                collectWhatsApp: document.getElementById('collectWhatsApp').value,
+                whatsappNumber: document.getElementById('whatsappNumber').value,
+                enableCommunity: document.getElementById('enableCommunity').checked,
+                communityHeading: document.getElementById('communityHeading').value,
+                // Add socials, buttons, products dynamically below
+            };
+            previewContent = generatePreviewHTML(params); // Implement generator logic or use template
+            const iframe = document.getElementById('previewFrame');
+            iframe.srcdoc = previewContent;
+        }
+
+        // Dynamic lists (socials, buttons, products, communities) - stub implementations
+        function addSocial() { /* Add dynamic item logic */ }
+        function addButton() { /* ... */ }
+        function addProduct() { /* ... */ }
+        function addCommunity() { /* ... */ }
+        // Load lists on init...
+
+        // AI write stub
+        function aiWrite(field) {
+            const inputs = { headline: 'Technological Mastery Enhanced', bio: 'Leading decentralized innovation globally.' };
+            document.getElementById(field).value = inputs[field] || '';
+            update();
+        }
+
+        // Save/Download/Hosting stubs
+        function saveProject() { console.log('Saved'); /* Firebase save */ }
+        function downloadHTML() { 
+            const blob = new Blob([previewContent], {type: 'text/html'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'teknnuku-landing.html'; a.click();
+        }
+        function openHostingModal() {
+            document.getElementById('hostingModal').classList.add('active');
+            updatePricingDisplay();
+        }
+
+        // Modal functions - NOW WORKING
+        function switchRegion(region) {
+            currentRegion = region;
+            document.querySelectorAll('.region-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('africaPricing').style.display = region === 'africa' ? 'grid' : 'none';
+            document.getElementById('globalPricing').style.display = region === 'global' ? 'grid' : 'none';
+            updatePricingDisplay();
+        }
+
+        function switchBilling(period) {
+            currentBilling = period;
+            document.querySelectorAll('.billing-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updatePricingDisplay();
+        }
+
+        function updatePricingDisplay() {
+            const prices = {
+                africa: { starter: [2000, 11000, 18000], pro: [3000, 18000, 30000], premium: [8000, 48000, 72000] },
+                global: { starter: [2.99, 17.94, 29], pro: [4.99, 29.94, 49], premium: [12.99, 64.50, 99] }
+            };
+            const idx = currentBilling === '1year' ? 2 : currentBilling === '6months' ? 1 : 0;
+            // Update all price displays dynamically
+            ['starter', 'pro', 'premium'].forEach(plan => {
+                const price = prices[currentRegion][plan][idx];
+                document.getElementById(`${plan}Price${currentRegion.charAt(0).toUpperCase() + currentRegion.slice(1)}`).textContent = 
+                    currentRegion === 'africa' ? `₦${price.toLocaleString()}` : `$${price.toLocaleString()}`;
+                // Update period text...
+            });
+        }
+
+        function selectPlan(plan, monthly6, total6, total12) {
+            currentPlan = plan;
+            document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+            event.target.classList.add('selected');
+            currentPrice = currentBilling === '6months' ? total6 : total12;
+            document.querySelector('.btn-modal-submit').textContent = `Pay ${currentRegion === 'africa' ? '₦' : '$'}${currentPrice.toLocaleString()}`;
+        }
+
+        // Close modals
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+
+        // PAYMENT PROCESS - FIXED WITH PAYSTACK
+        document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.querySelector('.btn-modal-submit');
+            const formData = new FormData(e.target);
+            const customerData = {
+                email: formData.get('email'),
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                plan: currentPlan,
+                region: currentRegion,
+                billing: currentBilling,
+                amount: currentPrice * (currentRegion === 'africa' ? 100 : 100) // Kobo/cents
+            };
+
+            if (!currentPlan || !customerData.email) {
+                alert('Please select a plan and fill required fields.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+
+            // Optional: Save request to Firebase first (sanitized)
+            try {
+                // if (firebaseApp) await saveHostingRequest(customerData);
+                initializePaystack(customerData);
+            } catch (err) {
+                console.error('Payment init error:', err);
+                alert('Payment setup failed. Check console.');
+            }
+        });
+
+        function initializePaystack(data) {
+            const handler = PaystackPop.setup({
+                key: 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY', // REPLACE WITH YOURS from Paystack dashboard
+                email: data.email,
+                amount: data.amount,
+                currency: data.region === 'africa' ? 'NGN' : 'USD',
+                ref: 'txn_' + Math.random().toString(36).substr(2, 9) + Date.now(),
+                label: `TEKNNUKU Studio ${data.plan.toUpperCase()} Hosting`,
+                metadata: { plan: data.plan, region: data.region, billing: data.billing },
+                callback: function(response) {
+                    handlePaymentSuccess(response, data);
+                },
+                onClose: function() {
+                    document.querySelector('.btn-modal-submit').disabled = false;
+                    document.querySelector('.btn-modal-submit').textContent = `Pay ${currentRegion === 'africa' ? '₦' : '$'}${currentPrice.toLocaleString()}`;
+                    alert('Payment cancelled. Try again?');
+                }
+            });
+            handler.openIframe();
+        }
+
+        async function handlePaymentSuccess(paystackResponse, customerData) {
+            // Sanitize data - NO undefined fields
+            const paymentData = {
+                requestId: paystackResponse.reference,
+                userId: 'guest_' + Date.now(), // Or Firebase UID
+                status: paystackResponse.status === 'success' ? 'paid' : 'pending',
+                amount: paystackResponse.amount,
+                customerEmail: customerData.email,
+                plan: customerData.plan,
+                timestamp: new Date().toISOString(),
+                txRef: paystackResponse.reference
+            };
+
+            // Verify with Paystack backend (recommended for prod)
+            // fetch('/verify-payment', {method: 'POST', body: JSON.stringify({ref: paystackResponse.reference})})
+
+            // Save to Firebase (if init'd) - sanitized
+            // try { await firebase.firestore().collection('hostingPayments').add(paymentData); } catch(e) { console.error(e); }
+
+            document.getElementById('hostingModal').classList.remove('active');
+            alert(`✅ Payment successful! Ref: ${paystackResponse.reference}
+Your hosting will be live in 24h. Check email.`);
+            console.log('Success data:', paymentData); // For testing
+        }
+
+        // Init on load
+        document.addEventListener('DOMContentLoaded', () => {
+            update();
+            // Load Firebase if needed: firebase.initializeApp(config); etc.
+            // Load saved projects...
+        });
+
+        // Load Paystack script dynamically (for better perf)
+        function loadPaystack() {
+            const script = document.createElement('script');
+            script.src = 'https://js.paystack.co/v1/inline.js';
+            document.head.appendChild(script);
+        }
+        loadPaystack();
+    </script>
 </body>
 </html>
