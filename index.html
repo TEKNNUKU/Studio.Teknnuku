@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEKNNUKU Studio — Digital Infrastructure That Generates Revenue</title>
+    <meta name="description" content="We build digital platforms that generate revenue. High-conversion websites, funnels, and digital infrastructure for serious businesses.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === CORE RESET & VARIABLES === */
+        :root {
+            --tk-black: #0a0a0a;
+            --tk-dark: #1a1a1a;
+            --tk-gold: #E8CE6B;
+            --tk-cyan: #00D1FF;
+            --tk-white: #FFFFFF;
+            --tk-grey: #8a8a8a;
+            --tk-light-grey: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--tk-black);
+            color: var(--tk-white);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* === TYPOGRAPHY === */
+        h1, h2, h3, h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+        }
+
+        p {
+            font-size: clamp(1rem, 2vw, 1.125rem);
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* === LAYOUT === */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .container-narrow {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: clamp(60px, 10vw, 120px) 0;
+        }
+
+        /* === HEADER === */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(232, 206, 107, 0.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 1.25rem;
+            letter-spacing: -0.5px;
+            color: var(--tk-white);
+        }
+
+        .logo span {
+            color: var(--tk-gold);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--tk-white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--tk-gold);
+        }
+
+        .nav-cta {
+            background: var(--tk-gold);
+            color: var(--tk-black);
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-cta:hover {
+            background: var(--tk-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 209, 255, 0.3);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--tk-white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* === HERO SECTION === */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding-top: 80px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(232, 206, 107, 0.08), transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0, 209, 255, 0.08), transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+        }
+
+        .hero h1 {
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #fff 0%, #E8CE6B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subheadline {
+            font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 40px;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        .hero-ctas {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* === BUTTONS === */
+        .btn {
+            padding: 16px 40px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+            display: inline-block;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--tk-gold);
+            color: var(--tk-black);
+        }
+
+        .btn-primary:hover {
+            background: var(--tk-cyan);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 209, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--tk-white);
+            border: 2px solid var(--tk-white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--tk-white);
+            color: var(--tk-black);
+        }
+
+        /* === WHAT WE DO SECTION === */
+        .what-we-do {
+            background: var(--tk-dark);
+            position: relative;
+        }
+
+        .what-we-do::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--tk-gold), transparent);
+        }
+
+        .section-title {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+            color: var(--tk-gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .what-we-do-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .what-we-do-content h2 {
+            margin-bottom: 30px;
+            color: var(--tk-white);
+        }
+
+        .what-we-do-content p {
+            font-size: 1.25rem;
+            line-height: 1.9;
+            margin-bottom: 20px;
+        }
+
+        .what-we-do-content .highlight {
+            color: var(--tk-cyan);
+            font-weight: 600;
+        }
+
+        .key-question {
+            background: rgba(232, 206, 107, 0.1);
+            border-left: 4px solid var(--tk-gold);
+            padding: 30px;
+            margin-top: 40px;
+            border-radius: 4px;
+        }
+
+        .key-question p {
+            font-size: 1.5rem;
+            font-weight: 600;
+            font-style: italic;
+            color: var(--tk-gold);
+            margin: 0;
+        }
+
+        /* === SERVICES SECTION === */
+        .services {
+            background: var(--tk-black);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .service-card {
+            background: var(--tk-dark);
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .service-card:hover {
+            border-color: var(--tk-gold);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .service-card h3 {
+            color: var(--tk-gold);
+            margin-bottom: 20px;
+            font-size: 1.75rem;
+        }
+
+        .service-card p {
+            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .service-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .service-features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        .service-features li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--tk-cyan);
+            font-weight: 700;
+        }
+
+        .service-outcome {
+            font-weight: 700;
+            color: var(--tk-cyan);
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+
+        /* === PROCESS SECTION === */
+        .process {
+            background: var(--tk-dark);
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .process-step {
+            position: relative;
+        }
+
+        .step-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: rgba(232, 206, 107, 0.2);
+            margin-bottom: 15px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .process-step h3 {
+            color: var(--tk-gold);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .process-step p {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1rem;
+        }
+
+        .process-note {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            background: rgba(0, 209, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+        }
+
+        .process-note p {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--tk-cyan);
+            margin: 0;
+        }
+
+        /* === WHO WE WORK WITH === */
+        .clients {
+            background: var(--tk-black);
+        }
+
+        .client-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .client-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 6px;
+            border-left: 3px solid var(--tk-gold);
+            transition: all 0.3s;
+        }
+
+        .client-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .client-item p {
+            font-size: 1.1rem;
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .clients-note {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 1.3rem;
+            color: var(--tk-white);
+            font-weight: 600;
+        }
+
+        /* === WHY SECTION === */
+        .why-us {
+            background: var(--tk-dark);
+        }
+
+        .why-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .why-points {
+            list-style: none;
+            margin: 40px 0;
+        }
+
+        .why-points li {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.85);
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .why-points li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--tk-cyan);
+            font-weight: 900;
+            font-size: 1.3rem;
+        }
+
+        .why-statement {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 1.4rem;
+            line-height: 1.8;
+            color: var(--tk-white);
+        }
+
+        .why-statement strong {
+            color: var(--tk-gold);
+        }
+
+        /* === PORTFOLIO SECTION === */
+        .portfolio {
+            background: var(--tk-black);
+        }
+
+        .portfolio-placeholder {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(232, 206, 107, 0.3);
+            padding: 80px 40px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+
+        .portfolio-placeholder p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 30px;
+        }
+
+        /* === CTA SECTION === */
+        .cta-section {
+            background: linear-gradient(135deg, var(--tk-dark) 0%, #1a1a2e 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 50%, rgba(232, 206, 107, 0.1), transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(0, 209, 255, 0.1), transparent 50%);
+            pointer-events: none;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-content h2 {
+            margin-bottom: 30px;
+            color: var(--tk-white);
+        }
+
+        .cta-content p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* === FOOTER === */
+        footer {
+            background: var(--tk-black);
+            border-top: 1px solid rgba(232, 206, 107, 0.2);
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-brand h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--tk-white);
+        }
+
+        .footer-brand span {
+            color: var(--tk-gold);
+        }
+
+        .footer-tagline {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .footer-links h4 {
+            color: var(--tk-gold);
+            margin-bottom: 20px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            display: block;
+            padding: 8px 0;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--tk-gold);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-bottom p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero {
+                min-height: 80vh;
+                padding-top: 100px;
+            }
+
+            .hero-ctas {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .services-grid,
+            .process-steps,
+            .client-list {
+                grid-template-columns: 1fr;
+            }
+
+            section {
+                padding: 60px 0;
+            }
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <nav class="container">
+            <div class="logo">TEKNNUKU <span>STUDIO</span></div>
+            <ul class="nav-links">
+                <li><a href="#services">Services</a></li>
+                <li><a href="#work">Work</a></li>
+                <li><a href="#process">Process</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <a href="/pagebuilder.html" class="nav-cta">Start a Project</a>
+            <button class="mobile-menu-btn">☰</button>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content fade-in-up">
+                <h1>We build digital platforms that generate revenue</h1>
+                <p class="hero-subheadline">
+                    TEKNNUKU Studio designs high-conversion websites, funnels, and digital infrastructure 
+                    that turn traffic into customers and ideas into scalable businesses.
+                </p>
+                <div class="hero-ctas">
+                    <a href="pagebuilder.html" class="btn btn-primary">Start a Project</a>
+                    <a href="#work" class="btn btn-secondary">View Our Work</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHAT WE DO -->
+    <section class="what-we-do">
+        <div class="container-narrow">
+            <div class="what-we-do-content">
+                <div class="section-title">What We Do</div>
+                <h2>Digital infrastructure for serious businesses</h2>
+                
+                <p>We don't just design websites.</p>
+                <p class="highlight">We build revenue systems.</p>
+                
+                <p>TEKNNUKU Studio helps founders and businesses launch digital platforms that are engineered 
+                for performance — not decoration.</p>
+                
+                <p>Our work combines strategy, design, and technical execution to create infrastructure 
+                that supports real growth.</p>
+                
+                <div class="key-question">
+                    <p>How does this platform make money?</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="services">
+        <div class="container">
+            <div class="section-title">Our Services</div>
+            <h2>What we build</h2>
+            
+            <div class="services-grid">
+                <!-- Service 1 -->
+                <div class="service-card">
+                    <h3>Revenue Landing Pages</h3>
+                    <p>High-performance landing pages designed to convert traffic into leads and customers.</p>
+                    <ul class="service-features">
+                        <li>conversion-focused design</li>
+                        <li>sales messaging architecture</li>
+                        <li>analytics integration</li>
+                        <li>performance optimization</li>
+                    </ul>
+                    <div class="service-outcome">Outcome: measurable revenue impact.</div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="service-card">
+                    <h3>Digital Business Platforms</h3>
+                    <p>Custom-built platforms that support real operations.</p>
+                    <ul class="service-features">
+                        <li>SaaS-style web platforms</li>
+                        <li>marketplaces</li>
+                        <li>booking systems</li>
+                        <li>service infrastructure</li>
+                        <li>internal business tools</li>
+                    </ul>
+                    <div class="service-outcome">Outcome: scalable digital operations.</div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="service-card">
+                    <h3>Marketing Funnels</h3>
+                    <p>End-to-end funnels engineered to guide users from discovery to purchase.</p>
+                    <ul class="service-features">
+                        <li>funnel architecture</li>
+                        <li>user journey mapping</li>
+                        <li>automation setup</li>
+                        <li>CRM integration</li>
+                        <li>lead systems</li>
+                    </ul>
+                    <div class="service-outcome">Outcome: predictable customer acquisition.</div>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="service-card">
+                    <h3>Infrastructure Consulting</h3>
+                    <p>Strategic guidance for founders building digital businesses.</p>
+                    <ul class="service-features">
+                        <li>platform strategy</li>
+                        <li>system architecture</li>
+                        <li>monetization design</li>
+                        <li>scaling infrastructure</li>
+                    </ul>
+                    <div class="service-outcome">Outcome: clarity + execution roadmap.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section id="process" class="process">
+        <div class="container">
+            <div class="section-title">How We Work</div>
+            <h2>Our process</h2>
+            
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="step-number">01</div>
+                    <h3>Strategy</h3>
+                    <p>We define the revenue model, audience, and platform structure before design begins.</p>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">02</div>
+                    <h3>Architecture</h3>
+                    <p>We design the system around user behavior and business goals.</p>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">03</div>
+                    <h3>Build</h3>
+                    <p>We execute with performance, speed, and scalability in mind.</p>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">04</div>
+                    <h3>Optimize</h3>
+                    <p>We measure results and refine for growth.</p>
+                </div>
+            </div>
+
+            <div class="process-note">
+                <p>Every project is built as infrastructure, not a one-time asset.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHO WE WORK WITH -->
+    <section class="clients">
+        <div class="container-narrow">
+            <div class="section-title">Who We Work With</div>
+            <h2>Built for founders and operators</h2>
+            
+            <div class="client-list">
+                <div class="client-item">
+                    <p>Startups launching digital products</p>
+                </div>
+                <div class="client-item">
+                    <p>Service businesses scaling online</p>
+                </div>
+                <div class="client-item">
+                    <p>Founders building platforms</p>
+                </div>
+                <div class="client-item">
+                    <p>Companies modernizing infrastructure</p>
+                </div>
+                <div class="client-item">
+                    <p>Operators who care about performance</p>
+                </div>
+            </div>
+
+            <p class="clients-note">
+                If your platform needs to generate revenue — not just exist — we're aligned.
+            </p>
+        </div>
+    </section>
+
+    <!-- WHY US -->
+    <section class="why-us">
+        <div class="container-narrow">
+            <div class="section-title">Why Choose Us</div>
+            <h2>Why clients choose us</h2>
+            
+            <div class="why-content">
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">
+                    We approach digital work as business engineering.
+                </p>
+
+                <ul class="why-points">
+                    <li>Conversion psychology</li>
+                    <li>Platform architecture</li>
+                    <li>Monetization systems</li>
+                    <li>User behavior</li>
+                    <li>Scalability</li>
+                    <li>Performance design</li>
+                </ul>
+
+                <div class="why-statement">
+                    <p>We don't chase trends.</p>
+                    <p><strong>We build durable systems that support long-term growth.</strong></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="work" class="portfolio">
+        <div class="container">
+            <div class="section-title">Selected Work</div>
+            <h2>Case Studies</h2>
+            
+            <div class="portfolio-placeholder">
+                <p>Portfolio grid showcasing:</p>
+                <p><strong>Problem → Solution → Result</strong></p>
+                <p style="margin-top: 20px; color: var(--tk-gold);">
+                    Focus on measurable outcomes.
+                </p>
+                <a href="#contact" class="btn btn-primary" style="margin-top: 30px;">View Case Studies →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section id="contact" class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Build infrastructure that earns</h2>
+                <p>
+                    If you're serious about turning your digital presence into a revenue engine, 
+                    let's build it properly.
+                </p>
+                <div class="cta-buttons">
+                    <a href="/pagebuilder.html" class="btn btn-primary">Start Your Project →</a>
+                    <a href="https://calendly.com/teknnuku" class="btn btn-secondary">Book a Consultation →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>TEKNNUKU <span>STUDIO</span></h3>
+                    <p class="footer-tagline">Digital Platform & Revenue Infrastructure</p>
+                    <p style="color: var(--tk-gold); font-weight: 600; font-size: 0.95rem;">
+                        We build systems that convert.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#services">Landing Pages</a></li>
+                        <li><a href="#services">Business Platforms</a></li>
+                        <li><a href="#services">Marketing Funnels</a></li>
+                        <li><a href="#services">Consulting</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#work">Work</a></li>
+                        <li><a href="#process">Process</a></li>
+                        <li><a href="#contact">Consultation</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Ecosystem</h4>
+                    <ul>
+                        <li><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a></li>
+                        <li><a href="https://studio.teknnuku.xyz/pagebuilder.html">Builder Platform</a></li>
+                        <li><a href="#">Resources</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 TEKNNUKU Studio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
