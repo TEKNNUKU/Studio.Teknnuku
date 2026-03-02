@@ -1,0 +1,2775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEKNNUKU Studio — We Design, Build & Validate Digital Businesses</title>
+<meta name="description" content="TEKNNUKU Studio is a venture factory that designs, builds, and validates revenue-ready digital businesses. Not just websites. For serious founders and operators only.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK (for intake form) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyAjovgyVtPJOWwyte8gwdesEHesF9AzJlM",
+    authDomain:        "teknnuku-intake-form.firebaseapp.com",
+    projectId:         "teknnuku-intake-form",
+    storageBucket:     "teknnuku-intake-form.firebasestorage.app",
+    messagingSenderId: "661289555481",
+    appId:             "1:661289555481:web:f15b1f8983d5d460df3c88"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.__saveToFirebase = async function(payload) {
+    try {
+      const docRef = await addDoc(collection(db, "intake_leads"), {
+        ...payload,
+        createdAt: serverTimestamp()
+      });
+      console.log("✅ Lead saved:", docRef.id);
+      return docRef.id;
+    } catch (err) {
+      console.warn("⚠️ Firebase write failed:", err.message);
+      return null;
+    }
+  };
+</script>
+
+<style>
+/* ============================================
+   RESET & ROOT
+============================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --black:   #080808;
+  --dark:    #0f0f0f;
+  --panel:   #141414;
+  --card:    #181818;
+  --surface: #0e0e0e;
+  --gold:    #C9A84C;
+  --gold2:   #E2C16A;
+  --cyan:    #00BCD4;
+  --green:   #22c55e;
+  --amber:   #f59e0b;
+  --blue:    #3b82f6;
+  --red:     #ef4444;
+  --white:   #F2EDE4;
+  --muted:   rgba(242,237,228,0.55);
+  --dimmer:  rgba(242,237,228,0.35);
+  --dim:     rgba(242,237,228,0.30);
+  --border:  rgba(201,168,76,0.18);
+  --borderS: rgba(242,237,228,0.07);
+  --r:       4px;
+  --r2:      10px;
+  --nav-h:   64px;
+  --shadow:  0 20px 60px rgba(0,0,0,.6);
+}
+
+html { scroll-behavior:smooth; font-size:16px; }
+
+body {
+  font-family:'DM Sans', sans-serif;
+  background:var(--black);
+  color:var(--white);
+  line-height:1.65;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+img { max-width:100%; display:block; }
+a { color:inherit; text-decoration:none; }
+button { cursor:pointer; font-family:inherit; }
+ul { list-style:none; }
+
+/* ============================================
+   SCROLL PROGRESS BAR
+============================================ */
+#scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  z-index: 9999;
+  transition: width .1s linear;
+  pointer-events: none;
+}
+
+/* ============================================
+   TYPOGRAPHY
+============================================ */
+.t-eyebrow {
+  font-family:'DM Mono', monospace;
+  font-size:0.68rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--gold);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.t-eyebrow::before {
+  content:'';
+  width:18px; height:1px;
+  background:var(--gold);
+  display:inline-block;
+  flex-shrink:0;
+}
+
+h1 { font-family:'Syne',sans-serif; font-weight:800; line-height:1.06; letter-spacing:-0.025em; }
+h2 { font-family:'Syne',sans-serif; font-weight:800; line-height:1.1;  letter-spacing:-0.02em; }
+h3 { font-family:'Syne',sans-serif; font-weight:700; line-height:1.2;  letter-spacing:-0.015em; }
+h4 { font-family:'Syne',sans-serif; font-weight:700; line-height:1.3; }
+
+p { font-size:1rem; color:var(--muted); line-height:1.75; }
+
+/* ============================================
+   LAYOUT
+============================================ */
+.wrap   { max-width:1160px; margin:0 auto; padding:0 clamp(20px,4vw,48px); width:100%; }
+.wrap-s { max-width:860px;  margin:0 auto; padding:0 clamp(20px,4vw,48px); width:100%; }
+
+section { padding:clamp(72px,10vw,120px) 0; }
+
+.gold-rule { height:1px; background:linear-gradient(90deg,transparent,var(--gold) 40%,transparent); }
+
+/* ============================================
+   BUTTONS
+============================================ */
+.btn {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:14px 28px;
+  border-radius:var(--r);
+  font-weight:600;
+  font-size:0.88rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  transition:all .22s ease;
+  border:none;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.btn-gold    { background:var(--gold); color:#080808; }
+.btn-gold:hover  { background:var(--gold2); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.3); }
+.btn-outline { background:transparent; color:var(--white); border:1px solid rgba(242,237,228,.25); }
+.btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+.btn-ghost  { background: transparent; color: var(--dim); border: 1px solid var(--borderS); }
+.btn-ghost:hover { border-color: var(--dim); color: var(--muted); }
+
+/* ============================================
+   HEADER / NAV
+============================================ */
+#site-header {
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:998;
+  height:var(--nav-h);
+  background:rgba(8,8,8,.97);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+}
+
+.nav-inner {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  width:100%;
+  max-width:1160px;
+  margin:0 auto;
+  padding:0 clamp(20px,4vw,48px);
+}
+
+.logo-block { display:flex; flex-direction:column; line-height:1; flex-shrink:0; }
+.logo-main {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:0.95rem;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--white);
+}
+.logo-main em { color:var(--gold); font-style:normal; }
+.logo-sub {
+  font-family:'DM Mono',monospace;
+  font-size:0.48rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  margin-top:3px;
+}
+
+.nav-links {
+  display:flex;
+  align-items:center;
+  gap:24px;
+}
+.nav-links a {
+  font-size:0.83rem;
+  font-weight:500;
+  color:var(--dimmer);
+  transition:color .2s;
+  white-space:nowrap;
+}
+.nav-links a:hover { color:var(--gold); }
+
+.nav-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.nav-btn-sm { padding:9px 16px; font-size:0.78rem; }
+
+/* Hamburger */
+.hamburger {
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  width:38px; height:38px;
+  background:none;
+  border:1px solid var(--borderS);
+  border-radius:var(--r);
+  padding:8px;
+  transition:border-color .2s;
+  flex-shrink:0;
+}
+.hamburger:hover { border-color:var(--gold); }
+.hamburger span {
+  display:block;
+  height:1.5px;
+  background:var(--white);
+  border-radius:2px;
+  transition:all .25s ease;
+  transform-origin:center;
+}
+.hamburger.open span:nth-child(1) { transform:translateY(6.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity:0; transform:scaleX(0); }
+.hamburger.open span:nth-child(3) { transform:translateY(-6.5px) rotate(-45deg); }
+
+/* Mobile drawer */
+#mobile-nav {
+  display:none;
+  position:fixed;
+  top:var(--nav-h);
+  left:0; right:0;
+  background:rgba(10,10,10,.99);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  z-index:997;
+  padding:20px clamp(20px,4vw,48px) 28px;
+  flex-direction:column;
+  gap:0;
+}
+#mobile-nav.open { display:flex; }
+#mobile-nav .mob-link {
+  display:block;
+  padding:14px 0;
+  font-size:1rem;
+  font-weight:500;
+  color:var(--muted);
+  border-bottom:1px solid var(--borderS);
+  transition:color .2s, padding-left .2s;
+}
+#mobile-nav .mob-link:hover { color:var(--gold); padding-left:6px; }
+#mobile-nav .mob-cta {
+  margin-top:20px;
+  display:block;
+  text-align:center;
+  padding:14px;
+  border-radius:var(--r);
+  background:var(--gold);
+  color:#080808;
+  font-weight:700;
+  font-size:0.9rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+}
+
+/* ============================================
+   HERO
+============================================ */
+.hero {
+  min-height:100svh;
+  display:flex;
+  align-items:center;
+  padding-top:var(--nav-h);
+  position:relative;
+  overflow:hidden;
+}
+
+.hero-bg {
+  position:absolute; inset:0; pointer-events:none; z-index:0;
+}
+.hero-bg::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 55% 55% at 8% 55%, rgba(201,168,76,.08) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 92% 25%, rgba(0,188,212,.07) 0%, transparent 65%);
+}
+.hero-bg::after {
+  content:''; position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
+  background-size:52px 52px;
+}
+
+.hero-inner {
+  position:relative; z-index:1;
+  padding:clamp(48px,8vw,100px) 0;
+}
+
+.hero-tag { margin-bottom:28px; animation:fadeUp .6s ease both; }
+
+.hero h1 {
+  font-size:clamp(2.2rem, 6.5vw, 5.2rem);
+  margin-bottom:28px;
+  max-width:860px;
+  animation:fadeUp .6s .1s ease both;
+}
+.hero h1 .g { color:var(--gold); }
+.hero h1 .c { color:var(--cyan); }
+
+.hero-lead {
+  font-size:clamp(1rem,2.2vw,1.18rem);
+  max-width:580px;
+  margin-bottom:12px;
+  color:var(--muted);
+  line-height:1.8;
+  animation:fadeUp .6s .2s ease both;
+}
+
+.hero-filter-line {
+  font-size:0.88rem;
+  color:var(--dimmer);
+  margin-bottom:36px;
+  animation:fadeUp .6s .25s ease both;
+  font-style:italic;
+  max-width:520px;
+}
+.hero-filter-line strong { color:var(--gold); font-style:normal; font-weight:600; }
+
+.hero-ctas {
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:14px;
+  animation:fadeUp .6s .3s ease both;
+}
+
+.hero-micro {
+  font-family:'DM Mono',monospace;
+  font-size:0.62rem;
+  letter-spacing:0.1em;
+  color:var(--dimmer);
+  text-transform:uppercase;
+  margin-bottom:clamp(32px,6vw,56px);
+  animation:fadeUp .6s .35s ease both;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.hero-micro::before { content:'→'; color:var(--cyan); }
+
+.sp-strip {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  animation:fadeUp .6s .4s ease both;
+}
+.sp-text {
+  font-family:'DM Mono',monospace;
+  font-size:0.65rem;
+  letter-spacing:0.1em;
+  color:var(--dimmer);
+  text-transform:uppercase;
+}
+.sp-badges { display:flex; gap:8px; flex-wrap:wrap; }
+.sp-badge {
+  background:var(--panel);
+  border:1px solid var(--borderS);
+  padding:5px 12px;
+  border-radius:2px;
+  font-size:0.75rem;
+  color:var(--muted);
+}
+
+.hero-stats {
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:1px;
+  background:var(--borderS);
+  border-top:1px solid var(--border);
+  margin-top:clamp(36px,6vw,64px);
+  animation:fadeUp .6s .5s ease both;
+}
+.stat-box {
+  background:var(--black);
+  padding:clamp(16px,2.5vw,26px) clamp(14px,2vw,24px);
+  transition:background .25s;
+}
+.stat-box:hover { background:var(--panel); }
+.stat-box .n {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.4rem,3vw,2.2rem);
+  font-weight:800;
+  color:var(--gold);
+  display:block;
+  line-height:1;
+  margin-bottom:6px;
+}
+.stat-box .l {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+}
+
+/* ============================================
+   TRACTION STRIP
+============================================ */
+.traction-section {
+  background:var(--panel);
+  border-top:1px solid var(--borderS);
+  border-bottom:1px solid var(--borderS);
+  padding:clamp(28px,4vw,44px) 0;
+}
+.traction-inner {
+  display:flex;
+  align-items:center;
+  gap:clamp(20px,4vw,52px);
+  flex-wrap:wrap;
+  justify-content:space-between;
+}
+.traction-label {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.16em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  flex-shrink:0;
+}
+.traction-metrics {
+  display:flex;
+  flex:1;
+  gap:1px;
+  background:var(--borderS);
+  flex-wrap:wrap;
+}
+.tm {
+  flex:1;
+  min-width:120px;
+  background:var(--panel);
+  padding:16px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.tm .tv {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:clamp(1.1rem,2vw,1.5rem);
+  color:var(--gold);
+  line-height:1;
+}
+.tm .tk {
+  font-family:'DM Mono',monospace;
+  font-size:0.58rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+}
+.traction-cta-sm {
+  flex-shrink:0;
+}
+
+/* ============================================
+   PROBLEM SECTION
+============================================ */
+.problem-section { background:var(--dark); }
+
+.problem-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2px;
+  margin-top:clamp(32px,5vw,56px);
+}
+
+.prob-card {
+  background:var(--panel);
+  padding:clamp(24px,3.5vw,40px);
+  transition:background .25s;
+}
+.prob-card:hover { background:var(--card); }
+.prob-card .prob-icon { font-size:1.6rem; margin-bottom:14px; }
+.prob-card h4 { font-size:1rem; color:var(--white); margin-bottom:10px; }
+.prob-card p  { font-size:0.88rem; line-height:1.75; }
+
+.prob-resolution {
+  margin-top:2px;
+  background:rgba(201,168,76,.07);
+  border:1px solid var(--border);
+  padding:clamp(26px,4vw,44px);
+  display:flex;
+  align-items:center;
+  gap:clamp(20px,4vw,56px);
+  flex-wrap:wrap;
+}
+.prob-resolution h3 { font-size:clamp(1.2rem,2.5vw,1.8rem); flex:1; min-width:200px; }
+.prob-resolution .res-p { flex:1; min-width:200px; font-size:1rem; font-style:italic; color:var(--gold); font-weight:600; line-height:1.6; }
+.prob-resolution .res-p small { display:block; color:var(--muted); font-weight:400; font-style:normal; font-size:0.88rem; margin-top:6px; }
+
+/* Hard-edged manifesto line */
+.manifesto-line {
+  margin-top:2px;
+  background:var(--black);
+  border-left:3px solid var(--cyan);
+  padding:clamp(16px,3vw,24px) clamp(22px,4vw,40px);
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.manifesto-line p {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(0.9rem,1.8vw,1.05rem);
+  font-weight:700;
+  color:var(--white);
+}
+.manifesto-line p em { color:var(--cyan); font-style:normal; }
+
+/* ============================================
+   IDENTITY
+============================================ */
+.identity-section { background:var(--black); }
+
+.identity-split {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(32px,6vw,80px);
+  align-items:start;
+  margin-top:clamp(32px,5vw,56px);
+}
+
+.id-left h2 { font-size:clamp(1.6rem,3.5vw,2.8rem); margin-bottom:20px; }
+.id-left p  { font-size:0.95rem; margin-bottom:14px; }
+.id-left .hl { color:var(--cyan); font-weight:600; }
+
+.id-quote {
+  background:rgba(201,168,76,.08);
+  border-left:3px solid var(--gold);
+  padding:20px 24px;
+  margin-top:26px;
+  border-radius:0 var(--r) var(--r) 0;
+}
+.id-quote p {
+  font-size:1rem;
+  font-style:italic;
+  color:var(--gold);
+  font-weight:600;
+  line-height:1.6;
+}
+
+.ecosystem-hint {
+  background:rgba(0,188,212,.06);
+  border:1px solid rgba(0,188,212,.18);
+  border-radius:var(--r);
+  padding:14px 18px;
+  margin-top:16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.ecosystem-hint span { font-size:1rem; flex-shrink:0; }
+.ecosystem-hint p {
+  font-size:0.82rem;
+  color:var(--muted);
+  line-height:1.6;
+  margin:0;
+}
+.ecosystem-hint p strong { color:var(--cyan); font-weight:600; }
+
+.id-right { display:flex; flex-direction:column; }
+
+.id-card {
+  padding:20px 0;
+  border-bottom:1px solid var(--borderS);
+}
+.id-card:first-child { padding-top:0; }
+.id-card:last-child  { border-bottom:none; }
+.id-card .num {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  color:var(--gold);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.id-card h4 { font-size:0.97rem; color:var(--white); margin-bottom:6px; }
+.id-card p  { font-size:0.85rem; }
+
+/* ============================================
+   THREE ENGINES
+============================================ */
+.engines-section { background:var(--dark); }
+
+.engines-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;
+  margin-top:clamp(32px,5vw,56px);
+}
+
+.eng-card {
+  background:var(--panel);
+  padding:clamp(24px,3.5vw,40px);
+  position:relative;
+  overflow:hidden;
+  transition:background .25s, transform .25s;
+}
+.eng-card:hover { background:var(--card); transform:translateY(-4px); }
+.eng-card::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:2px;
+}
+.eng-gold::before  { background:var(--gold); }
+.eng-cyan::before  { background:var(--cyan); }
+.eng-white::before { background:rgba(242,237,228,.3); }
+
+.eng-icon { font-size:1.8rem; margin-bottom:18px; display:block; }
+.eng-card h3 { font-size:clamp(1.1rem,2vw,1.5rem); margin-bottom:12px; }
+.eng-gold h3  { color:var(--gold); }
+.eng-cyan h3  { color:var(--cyan); }
+.eng-white h3 { color:var(--white); }
+.eng-card p { font-size:0.88rem; line-height:1.75; margin-bottom:20px; }
+.eng-goal {
+  font-family:'DM Mono',monospace;
+  font-size:0.62rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  padding-top:14px;
+  border-top:1px solid var(--borderS);
+}
+.eng-gold .eng-goal  { color:var(--gold); }
+.eng-cyan .eng-goal  { color:var(--cyan); }
+.eng-white .eng-goal { color:var(--dimmer); }
+
+/* ============================================
+   INTAKE ENTRY POINT STRIP
+============================================ */
+.intake-strip {
+  background:rgba(201,168,76,.06);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:clamp(24px,4vw,36px) 0;
+}
+.intake-strip-inner {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  flex-wrap:wrap;
+}
+.intake-strip-left h4 {
+  font-size:clamp(1rem,2vw,1.2rem);
+  color:var(--white);
+  margin-bottom:6px;
+}
+.intake-strip-left p {
+  font-size:0.85rem;
+  color:var(--muted);
+  margin:0;
+}
+.intake-strip-meta {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  margin-top:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.intake-strip-meta::before { content:'→'; color:var(--cyan); }
+
+/* ============================================
+   SERVICES
+============================================ */
+.services-section { background:var(--black); }
+
+.tier-nav {
+  display:flex;
+  gap:0;
+  border-bottom:1px solid var(--borderS);
+  margin:clamp(28px,5vw,52px) 0 0;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.tier-nav::-webkit-scrollbar { display:none; }
+
+.tier-btn {
+  background:none;
+  border:none;
+  border-bottom:2px solid transparent;
+  padding:12px clamp(12px,2.5vw,24px);
+  font-size:0.77rem;
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  font-family:'DM Mono',monospace;
+  white-space:nowrap;
+  margin-bottom:-1px;
+  transition:all .2s;
+}
+.tier-btn:hover { color:var(--muted); }
+.tier-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+.tier-body { display:none; padding-top:clamp(28px,5vw,48px); }
+.tier-body.active { display:block; }
+
+.tier-head {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(20px,4vw,56px);
+  margin-bottom:clamp(28px,5vw,48px);
+  align-items:start;
+}
+.tier-meta .badge {
+  display:inline-block;
+  padding:4px 12px;
+  border-radius:2px;
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.t1 .badge { background:rgba(242,237,228,.06); color:var(--dimmer); }
+.t2 .badge { background:rgba(201,168,76,.1); color:var(--gold); }
+.t3 .badge { background:rgba(0,188,212,.1); color:var(--cyan); }
+.ta .badge { background:rgba(242,237,228,.04); color:var(--dimmer); }
+
+.tier-meta h3 { font-size:clamp(1.3rem,2.5vw,2rem); margin-bottom:12px; }
+.tier-meta p { font-size:0.9rem; }
+
+.tier-targets h5 {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  color:var(--dimmer);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  font-weight:400;
+}
+.tags { display:flex; flex-wrap:wrap; gap:8px; }
+.tag {
+  background:var(--borderS);
+  padding:5px 12px;
+  border-radius:2px;
+  font-size:0.77rem;
+  color:var(--muted);
+}
+
+.pkg-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:2px;
+}
+
+.pkg { background:var(--panel); padding:clamp(22px,3vw,36px); transition:background .25s, transform .25s; }
+.pkg:hover { background:var(--card); transform:translateY(-4px); }
+.pkg .pkg-name {
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:1.05rem;
+  color:var(--white);
+  margin-bottom:8px;
+}
+.pkg .pkg-price {
+  font-family:'DM Mono',monospace;
+  font-size:0.8rem;
+  color:var(--gold);
+  display:block;
+  margin-bottom:14px;
+}
+.pkg .pkg-pitch { font-size:0.86rem; margin-bottom:16px; }
+.pkg-feat {
+  list-style:none;
+  border-top:1px solid var(--borderS);
+  padding-top:12px;
+}
+.pkg-feat li {
+  font-size:0.8rem;
+  color:var(--muted);
+  padding:5px 0 5px 16px;
+  position:relative;
+  border-bottom:1px solid rgba(242,237,228,.03);
+}
+.pkg-feat li:last-child { border-bottom:none; }
+.pkg-feat li::before { content:'→'; position:absolute; left:0; color:var(--cyan); font-size:0.73rem; }
+
+.addon-wrap {
+  background:var(--panel);
+  padding:clamp(24px,4vw,40px);
+  margin-top:2px;
+}
+.addon-wrap h4 { font-size:1.05rem; color:var(--white); margin-bottom:24px; }
+.addon-cols {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:clamp(18px,3vw,36px);
+}
+.addon-col h5 {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  color:var(--gold);
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  font-weight:400;
+  margin-bottom:10px;
+}
+.addon-col .ph { font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--gold); margin-bottom:10px; }
+.addon-col li { font-size:0.82rem; color:var(--muted); padding:4px 0; }
+
+/* ============================================
+   PROCESS
+============================================ */
+.process-section { background:var(--dark); }
+
+.verb-rail {
+  display:flex;
+  border:1px solid var(--borderS);
+  margin:clamp(24px,4vw,46px) 0;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.verb-rail::-webkit-scrollbar { display:none; }
+
+.verb {
+  flex:1;
+  min-width:90px;
+  padding:clamp(14px,2vw,24px) clamp(12px,1.8vw,20px);
+  text-align:center;
+  border-right:1px solid var(--borderS);
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.verb:last-child { border-right:none; }
+.verb .vw {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:clamp(0.9rem,1.8vw,1.2rem);
+  color:var(--gold);
+}
+.verb .vs {
+  font-family:'DM Mono',monospace;
+  font-size:0.55rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+}
+
+.step-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:2px;
+}
+
+.step { background:var(--panel); padding:clamp(22px,3vw,36px); transition:background .25s; }
+.step:hover { background:var(--card); }
+.step .snum {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  color:var(--gold);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+  display:block;
+}
+.step h3 { font-size:clamp(0.97rem,1.6vw,1.15rem); color:var(--white); margin-bottom:10px; }
+.step p  { font-size:0.86rem; }
+
+.process-rule {
+  margin-top:2px;
+  background:rgba(201,168,76,.07);
+  border:1px solid var(--border);
+  padding:clamp(20px,3vw,32px) clamp(22px,4vw,42px);
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.process-rule span { font-size:1.3rem; flex-shrink:0; }
+.process-rule p {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(0.92rem,1.8vw,1.05rem);
+  font-weight:600;
+  color:var(--gold);
+}
+
+/* ============================================
+   VENTURES
+============================================ */
+.ventures-section { background:var(--black); }
+
+.venture-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:2px;
+  margin-top:clamp(32px,5vw,56px);
+}
+
+.vc {
+  background:var(--panel);
+  padding:clamp(22px,3.5vw,36px);
+  border-top:2px solid transparent;
+  transition:border-color .25s, background .25s, transform .25s;
+}
+.vc:hover { border-top-color:var(--gold); background:var(--card); transform:translateY(-4px); }
+
+.vstatus {
+  display:inline-block;
+  font-family:'DM Mono',monospace;
+  font-size:0.58rem;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  padding:4px 10px;
+  border-radius:2px;
+  margin-bottom:14px;
+}
+.s-cash     { background:rgba(0,188,212,.1); color:var(--cyan); }
+.s-validate { background:rgba(201,168,76,.1); color:var(--gold); }
+.s-build    { background:rgba(242,237,228,.05); color:var(--dimmer); }
+.s-b2b      { background:rgba(180,120,255,.1); color:#b47aff; }
+
+.vc h3 { font-size:clamp(1.2rem,2vw,1.5rem); color:var(--white); margin-bottom:8px; }
+.vc .vrole { font-size:0.86rem; margin-bottom:18px; }
+
+.vdetails { border-top:1px solid var(--borderS); padding-top:14px; }
+.vdetails li {
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:12px;
+  font-size:0.79rem;
+  padding:5px 0;
+  border-bottom:1px solid rgba(242,237,228,.03);
+}
+.vdetails li:last-child { border-bottom:none; }
+.vdetails .dk {
+  font-family:'DM Mono',monospace;
+  font-size:0.58rem;
+  color:var(--dimmer);
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  flex-shrink:0;
+}
+.vdetails .dv { color:var(--muted); text-align:right; }
+.vnote {
+  margin-top:12px;
+  font-size:0.78rem;
+  font-weight:600;
+  color:var(--cyan);
+  padding-top:10px;
+  border-top:1px solid var(--borderS);
+}
+
+/* ============================================
+   POSITIONING
+============================================ */
+.pos-section { background:var(--dark); }
+
+.pos-quote {
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:clamp(32px,5vw,56px);
+  margin-top:clamp(28px,5vw,46px);
+  position:relative;
+}
+.pos-quote::before {
+  content:'"'; position:absolute;
+  top:14px; left:28px;
+  font-size:4.5rem;
+  font-family:'Syne',sans-serif;
+  color:var(--gold);
+  opacity:.12;
+  line-height:1;
+}
+.pos-quote p {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1rem,2.5vw,1.65rem);
+  font-weight:700;
+  color:var(--white);
+  line-height:1.5;
+  position:relative; z-index:1;
+}
+.pos-quote p em { color:var(--gold); font-style:normal; }
+
+.pos-rules {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2px;
+  margin-top:2px;
+}
+.pr { background:var(--panel); padding:clamp(22px,3.5vw,36px); }
+.pr .prl {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  color:var(--dimmer);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.pr .no  { font-size:0.86rem; color:var(--dimmer); text-decoration:line-through; margin-bottom:4px; }
+.pr .yes { font-family:'Syne',sans-serif; font-size:0.97rem; font-weight:700; color:var(--gold); margin-top:12px; }
+.pr .desc { font-size:0.87rem; line-height:1.75; }
+
+/* Founder gravity lines */
+.gravity-strip {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1px;
+  background:var(--borderS);
+  margin-top:2px;
+}
+.gravity-item {
+  background:var(--panel);
+  padding:16px 22px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.gravity-item span { color:var(--cyan); font-size:0.9rem; flex-shrink:0; }
+.gravity-item p {
+  font-family:'Syne',sans-serif;
+  font-size:0.82rem;
+  font-weight:700;
+  color:var(--white);
+  margin:0;
+  line-height:1.4;
+}
+
+/* ============================================
+   WHO WE SERVE
+============================================ */
+.who-section { background:var(--black); }
+
+.who-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:2px;
+  margin-top:clamp(28px,5vw,48px);
+}
+.who-card {
+  background:var(--panel);
+  padding:clamp(18px,3vw,28px);
+  border-left:2px solid var(--gold);
+  transition:background .25s, transform .25s;
+}
+.who-card:hover { background:var(--card); transform:translateY(-3px); }
+.who-card p { font-size:0.9rem; color:var(--muted); }
+
+.who-close {
+  margin-top:clamp(28px,5vw,48px);
+  background:rgba(201,168,76,.07);
+  border:1px solid var(--border);
+  padding:clamp(22px,4vw,36px);
+  text-align:center;
+}
+.who-close p {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(0.97rem,2vw,1.25rem);
+  font-weight:700;
+  color:var(--gold);
+}
+
+/* ============================================
+   CTA
+============================================ */
+.cta-section {
+  background:var(--dark);
+  position:relative; overflow:hidden;
+}
+.cta-section::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 50% 60% at 15% 50%, rgba(201,168,76,.08), transparent),
+    radial-gradient(ellipse 40% 50% at 85% 50%, rgba(0,188,212,.06), transparent);
+}
+.cta-inner {
+  position:relative; z-index:1;
+  text-align:center;
+  max-width:700px; margin:0 auto;
+}
+.cta-inner h2 { font-size:clamp(1.7rem,4.5vw,3.2rem); margin-bottom:18px; }
+.cta-inner .cta-lead { font-size:clamp(0.95rem,1.8vw,1.1rem); margin-bottom:16px; line-height:1.75; }
+.scarcity-note {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(242,237,228,.04);
+  border:1px solid var(--borderS);
+  padding:8px 16px;
+  border-radius:2px;
+  font-family:'DM Mono',monospace;
+  font-size:0.63rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  margin-bottom:32px;
+}
+.scarcity-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:#4caf50;
+  animation:pulse 2s infinite;
+  flex-shrink:0;
+}
+.cta-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+/* ============================================
+   FOOTER
+============================================ */
+footer {
+  background:var(--black);
+  border-top:1px solid var(--border);
+  padding:clamp(52px,8vw,86px) 0 clamp(24px,4vw,36px);
+}
+
+.footer-grid {
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:clamp(28px,5vw,52px);
+  margin-bottom:clamp(36px,6vw,56px);
+}
+
+.fb-name {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1rem;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.fb-name em { color:var(--gold); font-style:normal; }
+.fb-sub {
+  font-family:'DM Mono',monospace;
+  font-size:0.52rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  margin-bottom:16px;
+}
+.fb-desc { font-size:0.85rem; line-height:1.8; margin-bottom:14px; }
+.fb-tagline {
+  font-family:'DM Mono',monospace;
+  font-size:0.64rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+}
+
+.fc h5 {
+  font-family:'DM Mono',monospace;
+  font-size:0.58rem;
+  color:var(--gold);
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  font-weight:400;
+  margin-bottom:16px;
+}
+.fc a {
+  display:block;
+  font-size:0.83rem;
+  color:var(--dimmer);
+  padding:5px 0;
+  transition:color .2s, padding-left .2s;
+}
+.fc a:hover { color:var(--gold); padding-left:4px; }
+
+.footer-bottom {
+  border-top:1px solid var(--borderS);
+  padding-top:clamp(20px,3vw,28px);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.footer-bottom p {
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:0.07em;
+  color:rgba(242,237,228,.28);
+}
+
+/* ============================================
+   ANIMATIONS
+============================================ */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes pulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(76,175,80,.4); }
+  50%      { box-shadow:0 0 0 5px rgba(76,175,80,0); }
+}
+@keyframes pulseCyan {
+  0%,100% { box-shadow:0 0 0 0 rgba(0,188,212,.4); }
+  50%      { box-shadow:0 0 0 5px rgba(0,188,212,0); }
+}
+@keyframes shellIn {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes stepIn {
+  from { opacity:0; transform:translateX(12px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================
+   INTAKE MODAL
+============================================ */
+#intake-modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:rgba(7,7,7,.95);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  align-items:center;
+  justify-content:center;
+  overflow-y:auto;
+  padding:20px;
+}
+#intake-modal.open { display:flex; }
+
+.modal-inner {
+  position:relative;
+  width:100%;
+  max-width:740px;
+  margin:auto;
+  animation:shellIn .4s ease both;
+}
+
+.modal-close-btn {
+  position:absolute;
+  top:-44px;
+  right:0;
+  background:none;
+  border:1px solid var(--borderS);
+  color:var(--muted);
+  font-size:0.82rem;
+  font-family:'DM Mono',monospace;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  padding:8px 14px;
+  border-radius:var(--r);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition:all .2s;
+}
+.modal-close-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+/* Intake form shell styles */
+.form-shell-modal {
+  width:100%;
+}
+
+.form-header-modal {
+  text-align:center;
+  margin-bottom:24px;
+}
+.form-logo-modal {
+  font-family:'Syne', sans-serif;
+  font-weight:800;
+  font-size:.9rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--white);
+  margin-bottom:6px;
+}
+.form-logo-modal em { color:var(--gold); font-style:normal; }
+.form-eyebrow-modal {
+  font-family:'DM Mono', monospace;
+  font-size:.6rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--gold);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.form-eyebrow-modal::before, .form-eyebrow-modal::after {
+  content:''; width:24px; height:1px; background:var(--gold);
+}
+
+.form-card-modal {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+/* Progress bar */
+.progress-track-m { height:3px; background:var(--borderS); position:relative; }
+.progress-fill-m {
+  height:100%;
+  background:linear-gradient(90deg,var(--gold),var(--cyan));
+  border-radius:3px;
+  transition:width .4s cubic-bezier(.4,0,.2,1);
+  width:0%;
+}
+.progress-meta-m {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 28px 0;
+}
+.step-counter-m {
+  font-family:'DM Mono', monospace;
+  font-size:.62rem;
+  color:var(--dim);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.step-dots-m { display:flex; gap:5px; }
+.step-dot-m {
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--borderS);
+  transition:background .3s;
+}
+.step-dot-m.done { background:var(--gold); }
+.step-dot-m.active { background:var(--cyan); box-shadow:0 0 6px var(--cyan); }
+
+/* Form body */
+.form-body-m { padding:28px 32px 32px; }
+
+.section-label-m {
+  font-family:'DM Mono', monospace;
+  font-size:.6rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.section-label-m::before { content:''; width:14px; height:1px; background:var(--gold); }
+
+.q-title-m {
+  font-family:'Syne', sans-serif;
+  font-weight:700;
+  font-size:clamp(1.05rem, 3vw, 1.35rem);
+  line-height:1.3;
+  color:var(--white);
+  margin-bottom:6px;
+}
+.q-hint-m {
+  font-size:.82rem;
+  color:var(--dim);
+  margin-bottom:22px;
+  line-height:1.6;
+}
+
+/* Step panels */
+.step-panel-m { display:none; animation:stepIn .3s ease both; }
+.step-panel-m.active { display:block; }
+
+/* Options */
+.options-grid-m { display:grid; gap:10px; }
+.options-grid-m.cols-2 { grid-template-columns:1fr 1fr; }
+
+.option-btn-m {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
+  background:var(--card);
+  border:1px solid var(--borderS);
+  border-radius:var(--r);
+  cursor:pointer;
+  transition:all .2s;
+  text-align:left;
+  width:100%;
+  color:var(--white);
+  font-family:'DM Sans', sans-serif;
+  font-size:.92rem;
+  font-weight:500;
+  position:relative;
+  overflow:hidden;
+}
+.option-btn-m::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg, rgba(201,168,76,.04), transparent);
+  opacity:0; transition:opacity .2s;
+}
+.option-btn-m:hover { border-color:var(--gold); transform:translateX(3px); }
+.option-btn-m:hover::before { opacity:1; }
+.option-btn-m.selected {
+  border-color:var(--gold);
+  background:rgba(201,168,76,.1);
+  color:var(--gold);
+}
+.option-btn-m.selected .opt-check-m { border-color:var(--gold); background:var(--gold); }
+.option-btn-m.selected .opt-check-m::after { opacity:1; }
+
+.opt-check-m {
+  width:18px; height:18px; flex-shrink:0;
+  border:1.5px solid var(--dim);
+  border-radius:50%;
+  position:relative;
+  transition:all .2s;
+}
+.opt-check-m::after {
+  content:''; position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--bg);
+  opacity:0; transition:opacity .2s;
+}
+.opt-check-m.square { border-radius:3px; }
+.opt-check-m.square::after {
+  content:'✓'; font-size:.62rem; font-weight:700;
+  color:var(--bg); background:none;
+  width:auto; height:auto;
+}
+.option-btn-m.selected .opt-check-m.square { background:var(--gold); }
+
+.opt-icon-m { font-size:1.1rem; }
+.opt-label-m { flex:1; }
+
+/* Inputs */
+.input-group-m {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-bottom:16px;
+}
+.input-wrap-m { display:flex; flex-direction:column; gap:6px; }
+.input-wrap-m label {
+  font-family:'DM Mono', monospace;
+  font-size:.6rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.input-wrap-m input {
+  background:var(--card);
+  border:1px solid var(--borderS);
+  border-radius:var(--r);
+  padding:13px 16px;
+  color:var(--white);
+  font-family:'DM Sans', sans-serif;
+  font-size:.9rem;
+  outline:none;
+  transition:border-color .2s;
+  width:100%;
+}
+.input-wrap-m input:focus { border-color:var(--gold); }
+.input-wrap-m input::placeholder { color:var(--dim); }
+.input-full-m { grid-column:1/-1; }
+
+/* Nav */
+.form-nav-m {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 32px 24px;
+  border-top:1px solid var(--borderS);
+  gap:12px;
+}
+.btn-back-wrap-m { min-width:90px; }
+.btn-gold-m   { background:var(--gold); color:#080808; }
+.btn-gold-m:hover { background:var(--gold2); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.35); }
+.btn-ghost-m  { background:transparent; color:var(--dim); border:1px solid var(--borderS); }
+.btn-ghost-m:hover { border-color:var(--dim); color:var(--muted); }
+.form-btn-m {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:13px 28px; border-radius:var(--r);
+  font-weight:600; font-size:.86rem;
+  letter-spacing:.04em; text-transform:uppercase;
+  transition:all .22s; border:none; cursor:pointer;
+  font-family:'DM Sans', sans-serif;
+}
+
+/* Validation msg */
+.val-msg-m {
+  font-size:.78rem; color:var(--red);
+  margin-top:10px; display:none;
+  font-family:'DM Mono', monospace; letter-spacing:.04em;
+}
+.val-msg-m.show { display:block; }
+
+/* Loading overlay */
+.loading-overlay-m {
+  position:fixed; inset:0; z-index:10000;
+  background:rgba(7,7,7,.85);
+  backdrop-filter:blur(6px);
+  display:none;
+  align-items:center; justify-content:center;
+  flex-direction:column; gap:16px;
+}
+.loading-overlay-m.show { display:flex; }
+.spinner-m {
+  width:44px; height:44px;
+  border:3px solid var(--borderS);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+.loading-text-m {
+  font-family:'DM Mono', monospace;
+  font-size:.68rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--gold);
+}
+
+/* Results screen */
+.results-wrapper-m { display:none; }
+.results-wrapper-m.active { display:block; }
+
+.results-hero-m {
+  padding:36px 32px 28px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.results-hero-m::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,168,76,.1), transparent);
+}
+.tier-badge-large-m {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:8px 20px; border-radius:30px;
+  font-family:'DM Mono', monospace; font-size:.68rem;
+  letter-spacing:.14em; text-transform:uppercase;
+  margin-bottom:20px; position:relative; z-index:1;
+}
+.tier-a-m .tier-badge-large-m { background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3); color:var(--green); }
+.tier-b-m .tier-badge-large-m { background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.3); color:var(--amber); }
+.tier-c-m .tier-badge-large-m { background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.3); color:var(--blue); }
+
+.tier-dot-m { width:8px; height:8px; border-radius:50%; animation:pulse 2s infinite; }
+.tier-a-m .tier-dot-m { background:var(--green); }
+.tier-b-m .tier-dot-m { background:var(--amber); }
+.tier-c-m .tier-dot-m { background:var(--blue); }
+
+.results-name-m {
+  font-family:'Syne', sans-serif;
+  font-size:clamp(1.4rem,4vw,2rem);
+  font-weight:800; margin-bottom:8px; position:relative; z-index:1;
+}
+.results-tagline-m {
+  font-size:.9rem; color:var(--muted);
+  position:relative; z-index:1;
+  max-width:460px; margin:0 auto 20px;
+  line-height:1.65;
+}
+
+.score-display-m {
+  display:flex; align-items:center; justify-content:center;
+  gap:32px; margin:20px 0; position:relative; z-index:1; flex-wrap:wrap;
+}
+.score-ring-m { position:relative; width:100px; height:100px; }
+.score-ring-m svg { transform:rotate(-90deg); }
+.score-ring-m circle { fill:none; stroke-width:6; }
+.score-ring-m .track-m { stroke:var(--borderS); }
+.score-ring-m .fill-m  { stroke:var(--gold); stroke-linecap:round; transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+.score-ring-m .num-m {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:'Syne', sans-serif; font-weight:800;
+  font-size:1.4rem; color:var(--gold); line-height:1;
+}
+.score-ring-m .num-m small {
+  font-size:.52rem; font-family:'DM Mono', monospace;
+  color:var(--dim); letter-spacing:.1em;
+  text-transform:uppercase; margin-top:3px; font-weight:400;
+}
+
+.score-breakdown-m { display:flex; flex-direction:column; gap:8px; text-align:left; }
+.score-row-m { display:flex; align-items:center; gap:10px; font-size:.8rem; }
+.score-row-m .sr-label-m { color:var(--dim); min-width:110px; font-family:'DM Mono', monospace; font-size:.62rem; letter-spacing:.06em; text-transform:uppercase; }
+.score-bar-wrap-m { width:100px; height:4px; background:var(--borderS); border-radius:4px; overflow:hidden; }
+.score-bar-fill-m { height:100%; border-radius:4px; background:var(--gold); transition:width 1s ease .3s; width:0; }
+.score-row-m .sr-val-m { color:var(--gold); font-family:'DM Mono', monospace; font-size:.7rem; min-width:28px; text-align:right; }
+
+.tags-row-m { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:4px 0 0; position:relative; z-index:1; }
+.tag-chip-m {
+  padding:4px 12px; border-radius:20px;
+  font-family:'DM Mono', monospace; font-size:.6rem;
+  letter-spacing:.1em; text-transform:uppercase;
+  background:var(--borderS); color:var(--dim); border:1px solid var(--borderS);
+}
+.tag-chip-m.gold-m { background:rgba(201,168,76,.12); border-color:rgba(201,168,76,.25); color:var(--gold); }
+
+.routes-section-m { padding:28px 32px; border-top:1px solid var(--borderS); }
+.routes-label-m {
+  font-family:'DM Mono', monospace; font-size:.6rem;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--gold);
+  display:flex; align-items:center; gap:8px; margin-bottom:18px;
+}
+.routes-label-m::before { content:''; width:14px; height:1px; background:var(--gold); }
+
+.route-card-m {
+  display:flex; align-items:center; gap:16px;
+  padding:16px 18px;
+  background:var(--card); border:1px solid var(--borderS);
+  border-radius:var(--r); text-decoration:none; color:var(--white);
+  transition:all .22s; position:relative; overflow:hidden;
+  margin-bottom:10px;
+}
+.route-card-m::before {
+  content:''; position:absolute; left:0; top:0; bottom:0;
+  width:3px; transition:background .2s;
+}
+.route-card-m:hover { border-color:var(--gold); transform:translateX(4px); }
+.route-card-m:hover::before { background:var(--gold); }
+.route-card-m.primary-m { border-color:rgba(201,168,76,.3); background:rgba(201,168,76,.07); }
+.route-card-m.primary-m::before { background:var(--gold); }
+.rc-icon-m { font-size:1.4rem; flex-shrink:0; }
+.rc-body-m { flex:1; }
+.rc-name-m { font-family:'Syne', sans-serif; font-weight:700; font-size:.95rem; color:var(--white); margin-bottom:3px; }
+.rc-desc-m { font-size:.8rem; color:var(--muted); line-height:1.5; }
+.rc-arrow-m { color:var(--gold); font-size:1rem; flex-shrink:0; }
+.primary-badge-m {
+  position:absolute; top:8px; right:8px;
+  background:var(--gold); color:#080808;
+  font-family:'DM Mono', monospace; font-size:.52rem;
+  letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 8px; border-radius:10px; font-weight:600;
+}
+
+.results-footer-m {
+  padding:20px 32px 28px; border-top:1px solid var(--borderS);
+  display:flex; gap:12px; flex-wrap:wrap;
+}
+.results-footer-m .rfbtn {
+  flex:1; justify-content:center; min-width:140px;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:13px 20px; border-radius:var(--r);
+  font-weight:600; font-size:.86rem;
+  letter-spacing:.04em; text-transform:uppercase;
+  transition:all .22s; border:none; cursor:pointer;
+  font-family:'DM Sans', sans-serif; text-decoration:none;
+}
+.rfbtn-gold { background:var(--gold); color:#080808; }
+.rfbtn-gold:hover { background:var(--gold2); }
+.rfbtn-ghost { background:transparent; color:var(--dim); border:1px solid var(--borderS); }
+.rfbtn-ghost:hover { border-color:var(--dim); color:var(--muted); }
+
+/* ============================================
+   RESPONSIVE — TABLET ≤900px
+============================================ */
+@media (max-width:900px) {
+  .nav-links { display:none; }
+  .nav-right .btn-outline { display:none; }
+  .hamburger { display:flex; }
+  .identity-split { grid-template-columns:1fr; }
+  .engines-grid   { grid-template-columns:1fr 1fr; }
+  .step-grid      { grid-template-columns:1fr 1fr; }
+  .problem-grid   { grid-template-columns:1fr 1fr; }
+  .tier-head      { grid-template-columns:1fr; gap:24px; }
+  .pos-rules      { grid-template-columns:1fr; }
+  .footer-grid    { grid-template-columns:1fr 1fr; }
+  .addon-cols     { grid-template-columns:1fr 1fr; }
+  .hero-stats     { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ============================================
+   RESPONSIVE — MOBILE ≤600px
+============================================ */
+@media (max-width:600px) {
+  :root { --nav-h:58px; }
+  .hero h1 { font-size:clamp(1.9rem,8.5vw,2.8rem); }
+  .hero-ctas { flex-direction:column; }
+  .hero-ctas .btn { width:100%; justify-content:center; }
+  .hero-stats { grid-template-columns:1fr 1fr; }
+  .engines-grid { grid-template-columns:1fr; }
+  .step-grid    { grid-template-columns:1fr; }
+  .problem-grid { grid-template-columns:1fr; }
+  .who-grid     { grid-template-columns:1fr 1fr; }
+  .footer-grid  { grid-template-columns:1fr; gap:28px; }
+  .addon-cols   { grid-template-columns:1fr; }
+  .prob-resolution { flex-direction:column; }
+  .process-rule    { flex-direction:column; }
+  .cta-btns { flex-direction:column; }
+  .cta-btns .btn { width:100%; justify-content:center; }
+  .footer-bottom { flex-direction:column; gap:6px; text-align:center; }
+  .traction-inner { flex-direction:column; }
+  .intake-strip-inner { flex-direction:column; gap:16px; }
+  /* Modal responsive */
+  .modal-inner { padding:0; }
+  .form-body-m { padding:20px 18px 24px; }
+  .form-nav-m  { padding:16px 18px 20px; }
+  .options-grid-m.cols-2 { grid-template-columns:1fr; }
+  .input-group-m { grid-template-columns:1fr; }
+  .input-full-m { grid-column:1; }
+  .score-display-m { flex-direction:column; gap:18px; }
+  .routes-section-m { padding:20px 18px; }
+  .results-hero-m { padding:24px 18px 20px; }
+  .results-footer-m { padding:16px 18px 22px; flex-direction:column; }
+  .progress-meta-m { padding:12px 18px 0; }
+  .modal-close-btn { top:-38px; font-size:0.72rem; padding:6px 12px; }
+}
+@media (max-width:380px) {
+  .who-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress Bar -->
+<div id="scroll-progress"></div>
+
+<!-- Intake Loading Overlay -->
+<div class="loading-overlay-m" id="intakeLoading">
+  <div class="spinner-m"></div>
+  <div class="loading-text-m">Analysing your profile…</div>
+</div>
+
+<!-- ============================================
+     INTAKE MODAL
+============================================ -->
+<div id="intake-modal" role="dialog" aria-modal="true" aria-label="Business Intake Assessment">
+  <div class="modal-inner">
+
+    <button class="modal-close-btn" onclick="closeIntakeModal()" aria-label="Close intake form">✕ Close</button>
+
+    <!-- Form View -->
+    <div id="intake-form-view" class="form-shell-modal">
+      <div class="form-header-modal">
+        <div class="form-logo-modal">TEKNNUKU <em>STUDIO</em></div>
+        <div class="form-eyebrow-modal">Studio Qualification Engine v1</div>
+      </div>
+
+      <div class="form-card-modal">
+        <div class="progress-track-m">
+          <div class="progress-fill-m" id="mProgressFill"></div>
+        </div>
+        <div class="progress-meta-m">
+          <span class="step-counter-m" id="mStepCounter">Step 1 of 11</span>
+          <div class="step-dots-m" id="mStepDots"></div>
+        </div>
+
+        <div class="form-body-m">
+
+          <!-- STEP 0: Contact -->
+          <div class="step-panel-m active" data-mstep="0">
+            <div class="section-label-m">Getting Started</div>
+            <div class="q-title-m">Let's get to know you first.</div>
+            <div class="q-hint-m">We'll use this to send your personalised results and recommended next steps.</div>
+            <div class="input-group-m">
+              <div class="input-wrap-m"><label>First Name</label><input type="text" id="m_firstName" placeholder="Your first name"></div>
+              <div class="input-wrap-m"><label>Last Name</label><input type="text" id="m_lastName" placeholder="Your last name"></div>
+              <div class="input-wrap-m input-full-m"><label>Email Address</label><input type="email" id="m_email" placeholder="you@example.com"></div>
+              <div class="input-wrap-m input-full-m"><label>WhatsApp Number</label><input type="tel" id="m_phone" placeholder="+234 000 0000 000"></div>
+            </div>
+            <div class="val-msg-m" id="mval-0">Please fill in all fields to continue.</div>
+          </div>
+
+          <!-- STEP 1: Who -->
+          <div class="step-panel-m" data-mstep="1">
+            <div class="section-label-m">Section 1 — Identity Snapshot</div>
+            <div class="q-title-m">Which best describes you?</div>
+            <div class="q-hint-m">Choose the option that fits you most right now.</div>
+            <div class="options-grid-m" id="mq1">
+              <button class="option-btn-m" data-value="physical_seller" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">📦</span><span class="opt-label-m">I sell physical products</span></button>
+              <button class="option-btn-m" data-value="service_provider" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🤝</span><span class="opt-label-m">I offer services</span></button>
+              <button class="option-btn-m" data-value="company_team" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🏢</span><span class="opt-label-m">I run a company/team</span></button>
+              <button class="option-btn-m" data-value="just_starting" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌱</span><span class="opt-label-m">I am just starting</span></button>
+              <button class="option-btn-m" data-value="security_firm" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🛡️</span><span class="opt-label-m">I manage security guards</span></button>
+              <button class="option-btn-m" data-value="solar_vendor" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">☀️</span><span class="opt-label-m">I sell solar/inverter solutions</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-1">Please select an option to continue.</div>
+          </div>
+
+          <!-- STEP 2: Stage -->
+          <div class="step-panel-m" data-mstep="2">
+            <div class="section-label-m">Section 1 — Identity Snapshot</div>
+            <div class="q-title-m">What stage is your business currently in?</div>
+            <div class="q-hint-m">Be honest — there's no wrong answer here.</div>
+            <div class="options-grid-m" id="mq2">
+              <button class="option-btn-m" data-value="idea" onclick="mSelect(this,'mq2','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💡</span><span class="opt-label-m">Just idea stage</span></button>
+              <button class="option-btn-m" data-value="recently_started" onclick="mSelect(this,'mq2','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🚀</span><span class="opt-label-m">Recently started</span></button>
+              <button class="option-btn-m" data-value="some_sales" onclick="mSelect(this,'mq2','single')"><div class="opt-check-m"></div><span class="opt-icon-m">📈</span><span class="opt-label-m">Making some sales</span></button>
+              <button class="option-btn-m" data-value="consistent_revenue" onclick="mSelect(this,'mq2','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💰</span><span class="opt-label-m">Consistent monthly revenue</span></button>
+              <button class="option-btn-m" data-value="scaling" onclick="mSelect(this,'mq2','single')"><div class="opt-check-m"></div><span class="opt-icon-m">⚡</span><span class="opt-label-m">Scaling aggressively</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-2">Please select an option to continue.</div>
+          </div>
+
+          <!-- STEP 3: Revenue -->
+          <div class="step-panel-m" data-mstep="3">
+            <div class="section-label-m">Section 1 — Identity Snapshot</div>
+            <div class="q-title-m">What is your average monthly revenue?</div>
+            <div class="q-hint-m">This determines which solutions are actually right for you.</div>
+            <div class="options-grid-m" id="mq3">
+              <button class="option-btn-m" data-value="zero" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🕳️</span><span class="opt-label-m">₦0 — Not yet</span></button>
+              <button class="option-btn-m" data-value="low" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌿</span><span class="opt-label-m">₦1 – ₦100k</span></button>
+              <button class="option-btn-m" data-value="mid" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🔥</span><span class="opt-label-m">₦100k – ₦500k</span></button>
+              <button class="option-btn-m" data-value="high" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💎</span><span class="opt-label-m">₦500k – ₦2M</span></button>
+              <button class="option-btn-m" data-value="premium" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🏆</span><span class="opt-label-m">₦2M+</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-3">Please select an option to continue.</div>
+          </div>
+
+          <!-- STEP 4: Pain -->
+          <div class="step-panel-m" data-mstep="4">
+            <div class="section-label-m">Section 2 — Pain Diagnosis</div>
+            <div class="q-title-m">What is your biggest current challenge?</div>
+            <div class="q-hint-m">Pick the one that stings the most right now.</div>
+            <div class="options-grid-m" id="mq4">
+              <button class="option-btn-m" data-value="no_customers" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">😤</span><span class="opt-label-m">I don't have customers</span></button>
+              <button class="option-btn-m" data-value="unprofessional_brand" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🎨</span><span class="opt-label-m">My brand looks unprofessional</span></button>
+              <button class="option-btn-m" data-value="need_website" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌐</span><span class="opt-label-m">I need a website or system</span></button>
+              <button class="option-btn-m" data-value="need_automation" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">⚙️</span><span class="opt-label-m">I need automation</span></button>
+              <button class="option-btn-m" data-value="want_scale" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">📈</span><span class="opt-label-m">I want to scale faster</span></button>
+              <button class="option-btn-m" data-value="more_income" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💸</span><span class="opt-label-m">I need more income streams</span></button>
+              <button class="option-btn-m" data-value="staff_management" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">👥</span><span class="opt-label-m">I struggle managing staff/guards</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-4">Please select an option to continue.</div>
+          </div>
+
+          <!-- STEP 5: Needs (multi) -->
+          <div class="step-panel-m" data-mstep="5">
+            <div class="section-label-m">Section 2 — Pain Diagnosis</div>
+            <div class="q-title-m">What do you need most right now?</div>
+            <div class="q-hint-m">Select up to 2 options — be specific.</div>
+            <div class="options-grid-m cols-2" id="mq5">
+              <button class="option-btn-m" data-value="branding" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Branding / logo</span></button>
+              <button class="option-btn-m" data-value="website" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Website</span></button>
+              <button class="option-btn-m" data-value="sales_marketing" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Sales / marketing help</span></button>
+              <button class="option-btn-m" data-value="training" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Business training</span></button>
+              <button class="option-btn-m" data-value="marketplace" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Marketplace to sell</span></button>
+              <button class="option-btn-m" data-value="custom_software" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Custom software</span></button>
+              <button class="option-btn-m" data-value="guard_system" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Guard management system</span></button>
+              <button class="option-btn-m" data-value="solar_acquisition" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Solar customer acquisition</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-5">Please select at least 1 option.</div>
+          </div>
+
+          <!-- STEP 6: Budget -->
+          <div class="step-panel-m" data-mstep="6">
+            <div class="section-label-m">Section 3 — Buyer Readiness</div>
+            <div class="q-title-m">If the right solution exists, what is your budget readiness?</div>
+            <div class="q-hint-m">Honest answers unlock better-matched recommendations for you.</div>
+            <div class="options-grid-m" id="mq6">
+              <button class="option-btn-m" data-value="free_only" onclick="mSelect(this,'mq6','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🆓</span><span class="opt-label-m">I only want free resources</span></button>
+              <button class="option-btn-m" data-value="low_cost" onclick="mSelect(this,'mq6','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💡</span><span class="opt-label-m">I can afford low-cost solutions</span></button>
+              <button class="option-btn-m" data-value="can_invest" onclick="mSelect(this,'mq6','single')"><div class="opt-check-m"></div><span class="opt-icon-m">📊</span><span class="opt-label-m">I can invest in my business</span></button>
+              <button class="option-btn-m" data-value="premium_ready" onclick="mSelect(this,'mq6','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🏆</span><span class="opt-label-m">I am ready for premium solutions</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-6">Please select an option to continue.</div>
+          </div>
+
+          <!-- STEP 7: Urgency -->
+          <div class="step-panel-m" data-mstep="7">
+            <div class="section-label-m">Section 3 — Buyer Readiness</div>
+            <div class="q-title-m">How urgently do you need a solution?</div>
+            <div class="q-hint-m">This determines your priority in our pipeline.</div>
+            <div class="options-grid-m" id="mq7">
+              <button class="option-btn-m" data-value="exploring" onclick="mSelect(this,'mq7','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🔭</span><span class="opt-label-m">Just exploring</span></button>
+              <button class="option-btn-m" data-value="three_months" onclick="mSelect(this,'mq7','single')"><div class="opt-check-m"></div><span class="opt-icon-m">📅</span><span class="opt-label-m">Within the next 3 months</span></button>
+              <button class="option-btn-m" data-value="thirty_days" onclick="mSelect(this,'mq7','single')"><div class="opt-check-m"></div><span class="opt-icon-m">⏰</span><span class="opt-label-m">Within 30 days</span></button>
+              <button class="option-btn-m" data-value="immediately" onclick="mSelect(this,'mq7','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🔥</span><span class="opt-label-m">Immediately</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-7">Please select an option to continue.</div>
+          </div>
+
+          <!-- STEP 8: Channels (multi) -->
+          <div class="step-panel-m" data-mstep="8">
+            <div class="section-label-m">Section 4 — Qualification Enrichment</div>
+            <div class="q-title-m">Where do you currently get customers from?</div>
+            <div class="q-hint-m">Select all that apply.</div>
+            <div class="options-grid-m cols-2" id="mq8">
+              <button class="option-btn-m" data-value="instagram" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">Instagram</span></button>
+              <button class="option-btn-m" data-value="facebook" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">Facebook</span></button>
+              <button class="option-btn-m" data-value="tiktok" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">TikTok</span></button>
+              <button class="option-btn-m" data-value="whatsapp" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">WhatsApp</span></button>
+              <button class="option-btn-m" data-value="referrals" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">Referrals</span></button>
+              <button class="option-btn-m" data-value="no_customers_yet" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">I don't have customers yet</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-8">Please select at least 1 option.</div>
+          </div>
+
+          <!-- STEP 9: Infrastructure (multi) -->
+          <div class="step-panel-m" data-mstep="9">
+            <div class="section-label-m">Section 4 — Qualification Enrichment</div>
+            <div class="q-title-m">Do you currently have any of these?</div>
+            <div class="q-hint-m">Select everything you already have in place.</div>
+            <div class="options-grid-m cols-2" id="mq9">
+              <button class="option-btn-m" data-value="logo" onclick="mSelect(this,'mq9','multi',5)"><div class="opt-check-m square"></div><span class="opt-label-m">Logo / brand identity</span></button>
+              <button class="option-btn-m" data-value="website_existing" onclick="mSelect(this,'mq9','multi',5)"><div class="opt-check-m square"></div><span class="opt-label-m">Website</span></button>
+              <button class="option-btn-m" data-value="payment_setup" onclick="mSelect(this,'mq9','multi',5)"><div class="opt-check-m square"></div><span class="opt-label-m">Online payment setup</span></button>
+              <button class="option-btn-m" data-value="sales_funnel" onclick="mSelect(this,'mq9','multi',5)"><div class="opt-check-m square"></div><span class="opt-label-m">Sales funnel</span></button>
+              <button class="option-btn-m" data-value="none" onclick="mSelect(this,'mq9','multi',5)"><div class="opt-check-m square"></div><span class="opt-label-m">None of the above</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-9">Please select at least 1 option.</div>
+          </div>
+
+          <!-- STEP 10: Goal -->
+          <div class="step-panel-m" data-mstep="10">
+            <div class="section-label-m">Section 4 — Qualification Enrichment</div>
+            <div class="q-title-m">What best describes your goal for the next 6–12 months?</div>
+            <div class="q-hint-m">This determines your long-term routing.</div>
+            <div class="options-grid-m" id="mq10">
+              <button class="option-btn-m" data-value="start_making_money" onclick="mSelect(this,'mq10','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💸</span><span class="opt-label-m">Start making money online</span></button>
+              <button class="option-btn-m" data-value="grow_small_biz" onclick="mSelect(this,'mq10','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌱</span><span class="opt-label-m">Grow my small business</span></button>
+              <button class="option-btn-m" data-value="build_company" onclick="mSelect(this,'mq10','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🏗️</span><span class="opt-label-m">Build a serious company</span></button>
+              <button class="option-btn-m" data-value="automate" onclick="mSelect(this,'mq10','single')"><div class="opt-check-m"></div><span class="opt-icon-m">⚙️</span><span class="opt-label-m">Automate my operations</span></button>
+              <button class="option-btn-m" data-value="expand_markets" onclick="mSelect(this,'mq10','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌍</span><span class="opt-label-m">Expand to new markets</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-10">Please select an option to continue.</div>
+          </div>
+
+        </div><!-- /form-body-m -->
+
+        <div class="form-nav-m">
+          <div class="btn-back-wrap-m">
+            <button class="form-btn-m btn-ghost-m" id="mBtnBack" onclick="mGoBack()" style="display:none">← Back</button>
+          </div>
+          <button class="form-btn-m btn-gold-m" id="mBtnNext" onclick="mGoNext()">Continue →</button>
+        </div>
+      </div><!-- /form-card-modal -->
+    </div><!-- /intake-form-view -->
+
+    <!-- Results View -->
+    <div id="intake-results-view" class="results-wrapper-m">
+      <div class="form-header-modal">
+        <div class="form-logo-modal">TEKNNUKU <em>STUDIO</em></div>
+        <div class="form-eyebrow-modal">Your Personalised Results</div>
+      </div>
+      <div id="mResultsCard" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);">
+        <div class="results-hero-m" id="mResultsHero">
+          <div class="tier-badge-large-m" id="mTierBadge"><span class="tier-dot-m"></span><span id="mTierBadgeText">Loading…</span></div>
+          <div class="results-name-m" id="mResultsName">Welcome</div>
+          <div class="results-tagline-m" id="mResultsTagline"></div>
+          <div class="score-display-m">
+            <div class="score-ring-m">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle class="track-m" cx="50" cy="50" r="44"/>
+                <circle class="fill-m" id="mScoreCircle" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="276.5"/>
+              </svg>
+              <div class="num-m" id="mScoreNum">0<small>SQS</small></div>
+            </div>
+            <div class="score-breakdown-m" id="mScoreBreakdown"></div>
+          </div>
+          <div class="tags-row-m" id="mTagsRow"></div>
+        </div>
+        <div class="routes-section-m">
+          <div class="routes-label-m">Your Recommended Next Steps</div>
+          <div id="mRouteCards"></div>
+        </div>
+        <div class="results-footer-m">
+          <a href="https://calendly.com/teknnuku" class="rfbtn rfbtn-gold" target="_blank">📞 Book a Free Strategy Call</a>
+          <button class="rfbtn rfbtn-ghost" onclick="mRestart()">← Start Again</button>
+          <button class="rfbtn rfbtn-ghost" onclick="closeIntakeModal()">✕ Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /modal-inner -->
+</div><!-- /#intake-modal -->
+
+<!-- ============================================
+     HEADER
+============================================ -->
+<header id="site-header">
+  <div class="nav-inner">
+    <a href="#" class="logo-block">
+      <span class="logo-main">TEKNNUKU <em>STUDIO</em></span>
+      <span class="logo-sub">Venture Factory · Revenue Infrastructure</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#engines">What We Do</a>
+      <a href="#services">Services</a>
+      <a href="#ventures">Ventures</a>
+      <a href="#process">Process</a>
+      <a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-right">
+      <a href="https://calendly.com/teknnuku" class="btn btn-outline nav-btn-sm">Book a Call</a>
+      <button class="btn btn-gold nav-btn-sm" onclick="openIntakeModal()">Run Diagnostic →</button>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Drawer -->
+<nav id="mobile-nav" aria-label="Mobile navigation">
+  <a href="#engines"  class="mob-link">What We Do</a>
+  <a href="#services" class="mob-link">Services &amp; Pricing</a>
+  <a href="#ventures" class="mob-link">Active Ventures</a>
+  <a href="#process"  class="mob-link">Our Process</a>
+  <a href="#contact"  class="mob-link">Contact</a>
+  <a href="#" class="mob-cta" onclick="closeMenu(); openIntakeModal(); return false;">Run Your Business Diagnostic →</a>
+</nav>
+
+<!-- ============================================
+     HERO
+============================================ -->
+<section class="hero" id="home">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <div class="t-eyebrow hero-tag">TEKNNUKU Studio — Venture Factory</div>
+
+      <h1>
+        We Design, Build, and <span class="g">Validate</span><br>
+        <span class="c">Revenue-Ready</span> Digital Businesses.
+      </h1>
+
+      <p class="hero-lead">
+        While your competitors pay for pretty pages that don't convert,
+        TEKNNUKU Studio builds digital systems engineered to generate income
+        from day one.
+      </p>
+      <p class="hero-filter-line">
+        For <strong>founders, operators, and business owners</strong> who want real traction — not just pretty design.
+      </p>
+
+      <div class="hero-ctas">
+        <button class="btn btn-gold" onclick="openIntakeModal()">Run Your Business Diagnostic →</button>
+        <a href="#engines" class="btn btn-outline">See How We Build</a>
+      </div>
+
+      <div class="hero-micro">
+        Takes 2 minutes &nbsp;·&nbsp; Instant routing &nbsp;·&nbsp; No sales pressure
+      </div>
+
+      <div class="sp-strip">
+        <span class="sp-text">Trusted by</span>
+        <div class="sp-badges">
+          <span class="sp-badge">Founders</span>
+          <span class="sp-badge">Operators</span>
+          <span class="sp-badge">Startups</span>
+          <span class="sp-badge">Enterprise</span>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-box"><span class="n">5</span><span class="l">Live Ventures</span></div>
+        <div class="stat-box"><span class="n">3</span><span class="l">Service Tiers</span></div>
+        <div class="stat-box"><span class="n">₦50M+</span><span class="l">Build Capacity</span></div>
+        <div class="stat-box"><span class="n">1</span><span class="l">Ecosystem</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Traction Strip -->
+<div class="traction-section">
+  <div class="wrap">
+    <div class="traction-inner">
+      <div class="traction-label">Studio Traction</div>
+      <div class="traction-metrics">
+        <div class="tm"><span class="tv">5+</span><span class="tk">Businesses Built</span></div>
+        <div class="tm"><span class="tv">₦50M+</span><span class="tk">Systems Deployed</span></div>
+        <div class="tm"><span class="tv">48h</span><span class="tk">Average Quote Turnaround</span></div>
+        <div class="tm"><span class="tv">100%</span><span class="tk">Revenue-First Approach</span></div>
+      </div>
+      <div class="traction-cta-sm">
+        <button class="btn btn-outline nav-btn-sm" onclick="openIntakeModal()">Get Qualified →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     PROBLEM
+============================================ -->
+<section class="problem-section" id="problem">
+  <div class="wrap">
+    <div class="t-eyebrow">The Real Problem</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;max-width:680px;">
+      You don't have a traffic problem.<br>You have a <span style="color:var(--gold)">conversion problem.</span>
+    </h2>
+
+    <div class="problem-grid">
+      <div class="prob-card"><div class="prob-icon">😤</div><h4>You paid for a website. It sits there doing nothing.</h4><p>Thousands spent on design. Zero in return. The agency delivered what they promised — but nobody promised revenue.</p></div>
+      <div class="prob-card"><div class="prob-icon">🔁</div><h4>You're trapped in the "build, wait, hope" cycle.</h4><p>Launch. Crickets. Tweak. Crickets. Most founders repeat this for years before realising the platform itself was broken from the start.</p></div>
+      <div class="prob-card"><div class="prob-icon">⚙️</div><h4>Your infrastructure is built for looks — not growth.</h4><p>A beautiful website that doesn't convert is an expensive billboard in a desert. Impressive. Useless.</p></div>
+      <div class="prob-card"><div class="prob-icon">📉</div><h4>Every month without a system is money left behind.</h4><p>While you figure it out, your market is moving. Every week without a working funnel is compounding lost revenue.</p></div>
+    </div>
+
+    <div class="prob-resolution">
+      <h3>We answer one question before anything else:</h3>
+      <div>
+        <p class="res-p">"How does this platform make money?"
+          <small>If we can't answer that clearly — we don't build it. That one question saves founders years and millions.</small>
+        </p>
+      </div>
+    </div>
+
+    <div class="manifesto-line">
+      <p><em>Pretty without performance is failure.</em> If it won't monetise, we won't build it.</p>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     IDENTITY
+============================================ -->
+<section class="identity-section" id="engines">
+  <div class="wrap">
+    <div class="t-eyebrow">What We Are</div>
+    <div class="identity-split">
+      <div class="id-left">
+        <h2>The venture factory behind the TEKNNUKU ecosystem</h2>
+        <p>TEKNNUKU Studio is not a web agency. It is the <span class="hl">venture-building arm</span> of the TEKNNUKU ecosystem — the unit that systematically creates, tests, and launches revenue-generating businesses.</p>
+        <p>Inside every serious empire, there is a builder. The HoldCo allocates capital. The Studio turns it into companies. OpCos run what survives. We are the Studio — and we extend that same capability to our clients.</p>
+        <p>We don't just advise founders. We are the founder and the builder — and when we take your project on, we treat it exactly as we treat our own.</p>
+        <div class="id-quote">
+          <p>"A factory that builds companies — not just ideas. We don't take every client. We optimize for revenue, not applause."</p>
+        </div>
+        <div class="ecosystem-hint">
+          <span>🔗</span>
+          <p>When appropriate, we connect clients into the <strong>broader TEKNNUKU ecosystem</strong> — Poverty2Prosperity, GATA, TEK1SECURITY, PowerPlus — to accelerate growth beyond what any single platform can offer.</p>
+        </div>
+      </div>
+      <div class="id-right">
+        <div class="id-card"><div class="num">// 01 Design</div><h4>Revenue architecture before a single pixel is drawn</h4><p>We define the business model, the customer journey, and the monetisation structure before design begins. Strategy is never an afterthought here.</p></div>
+        <div class="id-card"><div class="num">// 02 Validate</div><h4>Real users. Real payments. Or we kill it.</h4><p>We don't rely on opinions or gut feeling. We look for one thing: will someone actually pay? No payment signal means no further investment — simple as that.</p></div>
+        <div class="id-card"><div class="num">// 03 Incubate</div><h4>Winners get fuel. Losers get cut — fast.</h4><p>This is how venture studios outperform agencies and solo founders. Ruthless resource allocation protects your capital and focuses energy where it actually compounds.</p></div>
+        <div class="id-card"><div class="num">// 04 Spin-Out</div><h4>The product becomes its own company</h4><p>When a product reaches product-market fit, it becomes a standalone operating company — its own team, its own capital, and aggressive scale from there.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     THREE ENGINES
+============================================ -->
+<section class="engines-section">
+  <div class="wrap">
+    <div class="t-eyebrow">Studio Architecture</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;max-width:620px;">Three machines running under one roof</h2>
+    <p style="margin-top:12px;max-width:560px;font-size:0.95rem;">Each engine funds the next. Cash from services builds client platforms. Client platforms seed internal ventures. Internal ventures become the empire.</p>
+    <div class="engines-grid">
+      <div class="eng-card eng-gold"><span class="eng-icon">🪙</span><h3>Engine 1 — Studio Services</h3><p>Volume-driven work for growing businesses — brand systems, landing pages, and business setups. Priced for accessibility, engineered for results. This is the front door that funds the factory.</p><div class="eng-goal">Purpose: Cash flow + client pipeline</div></div>
+      <div class="eng-card eng-cyan"><span class="eng-icon">🏗️</span><h3>Engine 2 — Custom Digital Systems</h3><p>High-ticket B2B platform engineering. Custom SaaS, enterprise marketplaces, automation infrastructure, and white-label systems for companies that operate at scale. This is where the Studio becomes genuinely dangerous.</p><div class="eng-goal">Purpose: Premium revenue + market authority</div></div>
+      <div class="eng-card eng-white"><span class="eng-icon">🚀</span><h3>Engine 3 — Internal Venture Factory</h3><p>Jobletters, TEK1SECURITY, PowerPlus, and beyond. We build these with the same systems we use for clients — validate fast, kill early, scale only what wins. Equity is the long game.</p><div class="eng-goal">Purpose: Long-term asymmetric upside</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Intake Entry Point Strip -->
+<div class="intake-strip" id="apply">
+  <div class="wrap">
+    <div class="intake-strip-inner">
+      <div class="intake-strip-left">
+        <h4>Not sure which tier fits you?</h4>
+        <p>Run the Smart Intake in 2 minutes and we'll route you to the right solution — instantly.</p>
+        <div class="intake-strip-meta">Takes 2 minutes &nbsp;·&nbsp; Instant routing &nbsp;·&nbsp; No sales pressure</div>
+      </div>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Run Your Business Diagnostic →</button>
+    </div>
+  </div>
+</div>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     SERVICES
+============================================ -->
+<section class="services-section" id="services">
+  <div class="wrap">
+    <div class="t-eyebrow">Service Menu</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Choose your entry point</h2>
+    <p style="margin-top:12px;max-width:560px;font-size:0.92rem;">Most clients start at Tier 1. The serious ones graduate to Tier 3. Every tier is held to the same standard — because every client deserves infrastructure that works.</p>
+
+    <div class="tier-nav" role="tablist">
+      <button class="tier-btn active" data-tier="t1" role="tab" aria-selected="true">🟢 Tier 1 — Starter</button>
+      <button class="tier-btn" data-tier="t2" role="tab">🟡 Tier 2 — Growth</button>
+      <button class="tier-btn" data-tier="t3" role="tab">🔴 Tier 3 — Platforms</button>
+      <button class="tier-btn" data-tier="ta" role="tab">➕ Add-Ons</button>
+    </div>
+
+    <!-- TIER 1 -->
+    <div class="tier-body t1 active" id="t1" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta"><span class="badge">Tier 1 · Starter Services</span><h3>Stop looking like a side hustle. Start winning trust instantly.</h3><p>The first thing your customers do is search for you. What they find in the next 8 seconds determines whether they buy or bounce. These packages ensure what they see builds credibility — not doubt.</p></div>
+        <div class="tier-targets"><h5>This Tier is For</h5><div class="tags"><span class="tag">Instagram Vendors</span><span class="tag">TikTok Sellers</span><span class="tag">Facebook Business</span><span class="tag">Freelancers</span><span class="tag">Side Hustlers</span><span class="tag">New Operators</span></div></div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg"><div class="pkg-name">Brand Starter Kit</div><span class="pkg-price">₦25,000 – ₦75,000</span><p class="pkg-pitch">People buy from businesses they trust. This kit gives you the visual credibility to earn that trust immediately — before you say a single word.</p><ul class="pkg-feat"><li>Logo design</li><li>Brand colours + font system</li><li>Simple brand guide</li><li>Social profile optimisation</li></ul></div>
+        <div class="pkg"><div class="pkg-name">Brand Authority Kit</div><span class="pkg-price">₦80,000 – ₦200,000</span><p class="pkg-pitch">When you look like the authority in your niche, people stop comparing prices. This kit positions you as the obvious choice — not just another option competing on cost.</p><ul class="pkg-feat"><li>Full brand blueprint</li><li>Brand voice guide</li><li>Instagram page setup</li><li>Highlight covers</li><li>Content templates</li></ul></div>
+        <div class="pkg"><div class="pkg-name">Business Launch Page</div><span class="pkg-price">₦120,000 – ₦350,000</span><p class="pkg-pitch">Your customers are searching for what you sell right now. Own a professional home on the internet that captures them and converts them — instead of sending them to a competitor.</p><ul class="pkg-feat"><li>One-page website or landing page</li><li>Mobile-first design</li><li>WhatsApp integration</li><li>Contact form + lead capture</li><li>Basic SEO setup</li></ul></div>
+      </div>
+    </div>
+
+    <!-- TIER 2 -->
+    <div class="tier-body t2" id="t2" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta"><span class="badge">Tier 2 · Growth Systems</span><h3>Turn your business into a machine that runs without you chasing every sale.</h3><p>When your digital infrastructure works correctly, customers find you, trust you, book you, and pay you — while you focus on delivery. These systems make that your default reality.</p></div>
+        <div class="tier-targets"><h5>This Tier is For</h5><div class="tags"><span class="tag">Established SMEs</span><span class="tag">Logistics Companies</span><span class="tag">Agencies</span><span class="tag">Service Firms</span><span class="tag">Growing Vendors</span></div></div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg"><div class="pkg-name">Business Growth System</div><span class="pkg-price">₦400,000 – ₦1,500,000</span><p class="pkg-pitch">Your website should be your best salesperson — working 24/7, never asking for a raise, never having a bad day. This system turns your digital presence into exactly that.</p><ul class="pkg-feat"><li>Multi-page professional website</li><li>Booking or order system</li><li>Customer dashboard (basic)</li><li>Payment integration</li><li>Analytics + conversion tracking</li></ul></div>
+        <div class="pkg"><div class="pkg-name">Business Automation Setup</div><span class="pkg-price">₦500,000 – ₦2,000,000</span><p class="pkg-pitch">The businesses that win don't work harder — they've built systems that do the hard work automatically. Lead capture, follow-up, nurture, convert. All running while you sleep.</p><ul class="pkg-feat"><li>CRM setup + configuration</li><li>Lead capture funnels</li><li>Email + SMS automation</li><li>Customer tracking pipeline</li><li>Workflow automation</li></ul></div>
+      </div>
+    </div>
+
+    <!-- TIER 3 -->
+    <div class="tier-body t3" id="t3" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta"><span class="badge">Tier 3 · Custom Digital Platforms</span><h3>This is where TEKNNUKU Studio becomes genuinely dangerous in the market.</h3><p>Templates are for businesses that want to look like everyone else. If your model requires a custom digital engine — a marketplace, SaaS, or enterprise platform — this is where we operate. No shortcuts. No compromises.</p></div>
+        <div class="tier-targets"><h5>This Tier is For</h5><div class="tags"><span class="tag">Funded Startups</span><span class="tag">Large SMEs</span><span class="tag">Institutions</span><span class="tag">Fintech Founders</span><span class="tag">Enterprise Clients</span><span class="tag">Logistics Operators</span></div></div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg"><div class="pkg-name">Custom Business Platform</div><span class="pkg-price">₦2,000,000 – ₦15,000,000+</span><p class="pkg-pitch">Your business model is unique. Your platform should be too. We build the engine that runs your company — designed for your operations, your users, and your growth targets.</p><ul class="pkg-feat"><li>Product architecture + UI/UX system</li><li>Full-stack custom development</li><li>Admin dashboards + analytics</li><li>Marketplace / SaaS / ops systems</li><li>Deployment + hosting</li></ul></div>
+        <div class="pkg"><div class="pkg-name">Enterprise Systems Build</div><span class="pkg-price">₦10,000,000 – ₦50,000,000+</span><p class="pkg-pitch">For organisations where the platform IS the business. Internal automation, white-label products, multi-stakeholder systems, and AI-integrated infrastructure built to enterprise standard.</p><ul class="pkg-feat"><li>Internal business automation</li><li>White-label platform builds</li><li>Multi-user enterprise systems</li><li>AI feature integration</li><li>Maintenance retainers + SLA</li></ul></div>
+        <div class="pkg"><div class="pkg-name">Venture Build Partnership</div><span class="pkg-price">Equity-based · By Application Only</span><p class="pkg-pitch">For founders with a validated idea and the ambition to build a category-defining company. We co-build — reduced upfront cost, TEKNNUKU takes equity. We only say yes when we genuinely believe in the bet.</p><ul class="pkg-feat"><li>Reduced engineering fee upfront</li><li>TEKNNUKU takes equity stake</li><li>Strategic co-founder input</li><li>Full venture-build process</li><li>By application — we say no often</li></ul></div>
+      </div>
+    </div>
+
+    <!-- ADD-ONS -->
+    <div class="tier-body ta" id="ta" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta"><span class="badge">Add-On Services</span><h3>The services that turn a good platform into a compounding asset.</h3><p>A platform without ongoing optimisation is a depreciating asset. These add-ons keep your system performing, growing, and generating return — month after month after month.</p></div>
+      </div>
+      <div class="addon-wrap">
+        <h4>Available on Every Tier</h4>
+        <div class="addon-cols">
+          <div class="addon-col"><h5>Monthly Support Plans</h5><div class="ph">₦25,000 – ₦150,000/month</div><ul><li>Hosting management</li><li>Maintenance + updates</li><li>Security monitoring</li><li>Minor changes + edits</li></ul></div>
+          <div class="addon-col"><h5>Growth Add-Ons</h5><ul><li>SEO setup + optimisation</li><li>Paid ads setup + management</li><li>Analytics dashboards</li><li>Performance optimisation</li><li>Conversion rate optimisation</li></ul></div>
+          <div class="addon-col"><h5>Premium Add-Ons</h5><ul><li>Mobile app version</li><li>AI feature integration</li><li>Blockchain integration</li><li>Advanced automation builds</li><li>Custom API development</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     PROCESS
+============================================ -->
+<section class="process-section" id="process">
+  <div class="wrap">
+    <div class="t-eyebrow">How We Work</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Five verbs. Zero wasted time.</h2>
+    <p style="margin-top:12px;max-width:540px;font-size:0.92rem;">Most agencies iterate endlessly and bill by the hour. We move by outcome. Every project follows the same proven sequence — because it works every time.</p>
+    <div class="verb-rail">
+      <div class="verb"><span class="vw">Design</span><span class="vs">Architecture first</span></div>
+      <div class="verb"><span class="vw">Build</span><span class="vs">Fast MVPs</span></div>
+      <div class="verb"><span class="vw">Validate</span><span class="vs">Real payments</span></div>
+      <div class="verb"><span class="vw">Incubate</span><span class="vs">Or kill</span></div>
+      <div class="verb"><span class="vw">De-risk</span><span class="vs">Scale winners</span></div>
+    </div>
+    <div class="step-grid">
+      <div class="step"><span class="snum">// Step 01</span><h3>Strategy &amp; Architecture</h3><p>Before we open a design file, we answer the question every platform must answer: how does this make money? Revenue model, audience, and structure come first. Always.</p></div>
+      <div class="step"><span class="snum">// Step 02</span><h3>Rapid MVP Creation</h3><p>We build the simplest version that can generate a real market signal. Not a prototype. Not a mockup. A working product in the hands of real potential customers — fast.</p></div>
+      <div class="step"><span class="snum">// Step 03</span><h3>Paid Market Validation</h3><p>We don't celebrate activity — we celebrate payment. Real users paying real money. No payment signal means we pivot or kill. This saves years and protects capital.</p></div>
+      <div class="step"><span class="snum">// Step 04</span><h3>Spin-Out or Scale</h3><p>Winners reach product-market fit, get their own company, their own team, and are scaled aggressively. Losers are shut down before they drain the system. Both outcomes are victories.</p></div>
+    </div>
+    <div class="process-rule">
+      <span>⚙️</span>
+      <p>Every project is built as permanent infrastructure — not a one-time deliverable. We build it once. We build it right. It compounds from there.</p>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     VENTURES
+============================================ -->
+<section class="ventures-section" id="ventures">
+  <div class="wrap">
+    <div class="t-eyebrow">Active Studio Portfolio</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">We eat our own cooking.</h2>
+    <p style="margin-top:12px;max-width:560px;font-size:0.92rem;">Every system we sell to clients, we run ourselves. These are live ventures inside the TEKNNUKU factory — tested against the same standards we hold your project to.</p>
+    <div class="venture-grid">
+      <div class="vc"><span class="vstatus s-cash">⭐ Primary Cash Engine</span><h3>Jobletters.xyz</h3><p class="vrole">Job automation platform. Currently primed for aggressive paid acquisition — our most promising near-term revenue driver.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Job automation platform</span></li><li><span class="dk">Stage</span><span class="dv">Cash engine candidate</span></li><li><span class="dk">Priority</span><span class="dv">Very High</span></li><li><span class="dk">Next Move</span><span class="dv">Aggressive paid acquisition</span></li></ul><div class="vnote">→ Primary near-term revenue driver</div></div>
+      <div class="vc"><span class="vstatus s-validate">Validation / Monetisation</span><h3>Poverty2Prosperity</h3><p class="vrole">Knowledge and income enablement system. A digital product engine targeting financial education — fast to test, fast to monetise.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Knowledge & income system</span></li><li><span class="dk">Stage</span><span class="dv">Validation / monetisation</span></li><li><span class="dk">Nature</span><span class="dv">Digital product engine</span></li><li><span class="dk">Risk</span><span class="dv">Moderate, fast to test</span></li></ul><div class="vnote">→ Fast to iterate and validate</div></div>
+      <div class="vc"><span class="vstatus s-validate">Early Validation</span><h3>Celestial Threads</h3><p class="vrole">Commerce and fashion experiment. Must prove repeat buyers quickly to survive the cut. We are watching this one closely.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Commerce / fashion</span></li><li><span class="dk">Stage</span><span class="dv">Early validation</span></li><li><span class="dk">Nature</span><span class="dv">Consumer brand experiment</span></li><li><span class="dk">Risk</span><span class="dv">Medium</span></li></ul><div class="vnote">→ Must prove repeat buyers fast</div></div>
+      <div class="vc"><span class="vstatus s-build">Build Phase</span><h3>PowerPlus 9ja</h3><p class="vrole">Solar energy marketplace for Nigeria. Infrastructure play — slower to build, but potentially one of the largest outcomes in the entire portfolio.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Solar marketplace</span></li><li><span class="dk">Stage</span><span class="dv">Build phase</span></li><li><span class="dk">Complexity</span><span class="dv">Higher</span></li><li><span class="dk">Horizon</span><span class="dv">Medium-long term</span></li></ul><div class="vnote">→ Infrastructure play. Slower but large</div></div>
+      <div class="vc"><span class="vstatus s-b2b">B2B Validation</span><h3>TEK1SECURITY</h3><p class="vrole">Guard management SaaS for enterprise security firms. High-value B2B with longer sales cycles — but when it closes, it stays closed for years.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Guard management SaaS</span></li><li><span class="dk">Stage</span><span class="dv">B2B validation</span></li><li><span class="dk">Market</span><span class="dv">Enterprise / Security firms</span></li><li><span class="dk">Sales cycle</span><span class="dv">Long</span></li></ul><div class="vnote">→ High-value, sticky B2B revenue</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     POSITIONING
+============================================ -->
+<section class="pos-section">
+  <div class="wrap">
+    <div class="t-eyebrow">How We Position</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">We don't chase trends. We build durable systems.</h2>
+    <div class="pos-quote">
+      <p>TEKNNUKU Studio builds and launches <em>serious digital business systems</em> for ambitious companies — and incubates <em>category-defining ventures</em> internally. We are the builder behind the empire.</p>
+    </div>
+    <div class="pos-rules">
+      <div class="pr">
+        <div class="prl">We never say</div>
+        <div class="no">logo designer</div>
+        <div class="no">web designer</div>
+        <div class="no">digital agency</div>
+        <div class="yes">→ We are Digital Business Systems Builders</div>
+      </div>
+      <div class="pr">
+        <div class="prl">Why this matters to you</div>
+        <p class="desc">When your builder thinks like a business engineer — not an artist — every decision is made with revenue in mind. Your layout, your copy, your flow. All of it optimised for one outcome: turning visitors into customers, and customers into advocates.</p>
+      </div>
+    </div>
+
+    <!-- Founder gravity strip -->
+    <div class="gravity-strip">
+      <div class="gravity-item"><span>→</span><p>We don't take every client.</p></div>
+      <div class="gravity-item"><span>→</span><p>We optimise for revenue, not applause.</p></div>
+      <div class="gravity-item"><span>→</span><p>Pretty without performance is failure.</p></div>
+      <div class="gravity-item"><span>→</span><p>If it won't monetise, we won't build it.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     WHO WE SERVE
+============================================ -->
+<section class="who-section">
+  <div class="wrap-s">
+    <div class="t-eyebrow">Who We Work With</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Built for founders who are serious about building.</h2>
+    <p style="margin-top:12px;font-size:0.92rem;">We are not for everyone — and that is by design. We work best with people who want systems, not cosmetics.</p>
+    <div class="who-grid">
+      <div class="who-card"><p>Startups launching digital products</p></div>
+      <div class="who-card"><p>Service businesses scaling online</p></div>
+      <div class="who-card"><p>Founders building platforms</p></div>
+      <div class="who-card"><p>Companies modernising infrastructure</p></div>
+      <div class="who-card"><p>Operators who measure by revenue</p></div>
+      <div class="who-card"><p>Institutions needing custom systems</p></div>
+    </div>
+    <div class="who-close">
+      <p>If your platform needs to generate revenue — not just exist — we're the right team for this.</p>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     FINAL CTA
+============================================ -->
+<section class="cta-section" id="contact">
+  <div class="wrap">
+    <div class="cta-inner">
+      <div class="t-eyebrow" style="justify-content:center;margin-bottom:16px;">Ready to Build</div>
+      <h2>Stop planning. Start building infrastructure that earns.</h2>
+      <p class="cta-lead" style="margin-top:18px;">Every week you delay, your competitors are capturing the customers that should be yours. The best time to build a revenue system was six months ago. The second best time is right now.</p>
+      <div class="scarcity-note" style="margin-top:16px;">
+        <span class="scarcity-dot"></span>
+        We take a limited number of new projects each month — spots fill fast
+      </div>
+      <div class="cta-btns" style="margin-top:0;">
+        <button class="btn btn-gold" onclick="openIntakeModal()">Run Your Business Diagnostic →</button>
+        <a href="https://calendly.com/teknnuku" class="btn btn-outline">Book a Free Consultation</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     FOOTER
+============================================ -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="fb-name">TEKNNUKU <em>STUDIO</em></div>
+        <div class="fb-sub">Venture Factory · Revenue Infrastructure</div>
+        <p class="fb-desc">The venture-building arm of the TEKNNUKU ecosystem. We systematically design, build, validate, and launch revenue-generating businesses — for our own portfolio and for our clients.</p>
+        <div class="fb-tagline">Design → Build → Validate → Incubate → De-risk</div>
+      </div>
+      <div class="fc"><h5>Services</h5><a href="#services">Starter Services</a><a href="#services">Growth Systems</a><a href="#services">Custom Platforms</a><a href="#services">Consulting</a><a href="#services">Add-Ons</a></div>
+      <div class="fc"><h5>Ventures</h5><a href="#ventures">Jobletters.xyz</a><a href="#ventures">Poverty2Prosperity</a><a href="#ventures">Celestial Threads</a><a href="#ventures">PowerPlus 9ja</a><a href="#ventures">TEK1SECURITY</a></div>
+      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/teknnuku">Book a Consultation</a><a href="#contact">Contact Studio</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 TEKNNUKU Studio Ltd. All rights reserved.</p>
+      <p>Venture Factory · Digital Platform Engineering · Revenue Infrastructure</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================
+     JAVASCRIPT
+============================================ -->
+<script>
+(function() {
+
+  // ── Scroll Progress ──
+  var progressBar = document.getElementById('scroll-progress');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }, { passive: true });
+
+  // ── Mobile Menu ──
+  var hamburger = document.getElementById('hamburger');
+  var mobileNav = document.getElementById('mobile-nav');
+
+  window.closeMenu = function() {
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    mobileNav.classList.remove('open');
+  };
+  function openMenu() {
+    hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    mobileNav.classList.add('open');
+  }
+  hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    mobileNav.classList.contains('open') ? closeMenu() : openMenu();
+  });
+  mobileNav.querySelectorAll('.mob-link, .mob-cta').forEach(function(link) {
+    link.addEventListener('click', closeMenu);
+  });
+  document.addEventListener('click', function(e) {
+    if (mobileNav.classList.contains('open') && !hamburger.contains(e.target) && !mobileNav.contains(e.target)) closeMenu();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeMenu(); closeIntakeModal(); }
+  });
+
+  // ── Tier Tabs ──
+  var tierBtns = document.querySelectorAll('.tier-btn');
+  var tierBodies = document.querySelectorAll('.tier-body');
+  tierBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = this.getAttribute('data-tier');
+      tierBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+      tierBodies.forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active'); this.setAttribute('aria-selected','true');
+      var panel = document.getElementById(target);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  // ── Smooth Scroll ──
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      var href = this.getAttribute('href');
+      if (href === '#') return;
+      var target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        var headerH = document.getElementById('site-header').offsetHeight;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - headerH - 8;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    });
+  });
+
+})();
+
+// ════════════════════════════════════════════
+//  INTAKE MODAL
+// ════════════════════════════════════════════
+window.openIntakeModal = function() {
+  document.getElementById('intake-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  mShowStep(mState.step);
+};
+
+window.closeIntakeModal = function() {
+  document.getElementById('intake-modal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+// Close modal on backdrop click
+document.getElementById('intake-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeIntakeModal();
+});
+
+// ── State ──
+var mState = {
+  step: 0,
+  totalSteps: 11,
+  answers: { firstName:'', lastName:'', email:'', phone:'', q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[] }
+};
+
+// ── Init Dots ──
+(function() {
+  var container = document.getElementById('mStepDots');
+  for (var i = 0; i < mState.totalSteps; i++) {
+    var d = document.createElement('div');
+    d.className = 'step-dot-m';
+    d.id = 'mdot-' + i;
+    container.appendChild(d);
+  }
+})();
+
+function mUpdateDots() {
+  for (var i = 0; i < mState.totalSteps; i++) {
+    var d = document.getElementById('mdot-' + i);
+    if (!d) continue;
+    d.className = 'step-dot-m' + (i < mState.step ? ' done' : i === mState.step ? ' active' : '');
+  }
+}
+
+function mUpdateProgress() {
+  var pct = (mState.step / (mState.totalSteps - 1)) * 100;
+  document.getElementById('mProgressFill').style.width = pct + '%';
+  document.getElementById('mStepCounter').textContent = 'Step ' + (mState.step + 1) + ' of ' + mState.totalSteps;
+  mUpdateDots();
+}
+
+// ── Selection ──
+window.mSelect = function(btn, groupId, mode, maxSel) {
+  if (mode === 'single') {
+    document.querySelectorAll('#' + groupId + ' .option-btn-m').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    var qNum = parseInt(groupId.replace('mq', ''));
+    mState.answers['q' + qNum] = [btn.dataset.value];
+  } else {
+    var max = maxSel || 99;
+    var selected = document.querySelectorAll('#' + groupId + ' .option-btn-m.selected');
+    if (btn.classList.contains('selected')) {
+      btn.classList.remove('selected');
+    } else {
+      if (selected.length < max) btn.classList.add('selected');
+    }
+    var qNum = parseInt(groupId.replace('mq', ''));
+    var vals = [];
+    document.querySelectorAll('#' + groupId + ' .option-btn-m.selected').forEach(function(b) { vals.push(b.dataset.value); });
+    mState.answers['q' + qNum] = vals;
+  }
+  var vm = document.getElementById('mval-' + mState.step);
+  if (vm) vm.classList.remove('show');
+};
+
+// ── Validation ──
+function mValidate(step) {
+  if (step === 0) {
+    var fn = document.getElementById('m_firstName').value.trim();
+    var ln = document.getElementById('m_lastName').value.trim();
+    var em = document.getElementById('m_email').value.trim();
+    var ph = document.getElementById('m_phone').value.trim();
+    if (!fn || !ln || !em || !ph) { document.getElementById('mval-0').textContent = 'Please fill in all fields to continue.'; document.getElementById('mval-0').classList.add('show'); return false; }
+    if (!/\S+@\S+\.\S+/.test(em)) { document.getElementById('mval-0').textContent = 'Please enter a valid email address.'; document.getElementById('mval-0').classList.add('show'); return false; }
+    mState.answers.firstName = fn; mState.answers.lastName = ln;
+    mState.answers.email = em; mState.answers.phone = ph;
+    return true;
+  }
+  var qKey = 'q' + step;
+  if (!mState.answers[qKey] || mState.answers[qKey].length === 0) {
+    var vm = document.getElementById('mval-' + step);
+    if (vm) vm.classList.add('show');
+    return false;
+  }
+  return true;
+}
+
+// ── Navigation ──
+function mShowStep(n) {
+  document.querySelectorAll('.step-panel-m').forEach(function(p) { p.classList.remove('active'); });
+  var panel = document.querySelector('[data-mstep="' + n + '"]');
+  if (panel) panel.classList.add('active');
+  document.getElementById('mBtnBack').style.display = n === 0 ? 'none' : 'inline-flex';
+  var isLast = n === mState.totalSteps - 1;
+  document.getElementById('mBtnNext').textContent = isLast ? 'Get My Results →' : 'Continue →';
+  mUpdateProgress();
+  // Scroll modal to top
+  var modal = document.getElementById('intake-modal');
+  if (modal) modal.scrollTop = 0;
+}
+
+window.mGoNext = function() {
+  if (!mValidate(mState.step)) return;
+  if (mState.step < mState.totalSteps - 1) {
+    mState.step++;
+    mShowStep(mState.step);
+  } else {
+    mSubmitForm();
+  }
+};
+
+window.mGoBack = function() {
+  if (mState.step > 0) { mState.step--; mShowStep(mState.step); }
+};
+
+// ── Scoring ──
+function mComputeScore() {
+  var score = 0;
+  var breakdown = { revenue:0, budget:0, stage:0, urgency:0, gap:0 };
+  var rev = { zero:0, low:5, mid:10, high:20, premium:30 };
+  breakdown.revenue = rev[mState.answers.q3[0]] || 0; score += breakdown.revenue;
+  var bud = { free_only:0, low_cost:8, can_invest:18, premium_ready:25 };
+  breakdown.budget = bud[mState.answers.q6[0]] || 0; score += breakdown.budget;
+  var stg = { idea:2, recently_started:6, some_sales:12, consistent_revenue:16, scaling:20 };
+  breakdown.stage = stg[mState.answers.q2[0]] || 0; score += breakdown.stage;
+  var urg = { exploring:2, three_months:6, thirty_days:10, immediately:15 };
+  breakdown.urgency = urg[mState.answers.q7[0]] || 0; score += breakdown.urgency;
+  if (mState.answers.q9.indexOf('none') > -1) { breakdown.gap = 10; }
+  else { var gaps = 4 - Math.min(mState.answers.q9.length, 4); breakdown.gap = Math.min(gaps * 2, 5); }
+  score += breakdown.gap;
+  return { total: Math.min(score, 100), breakdown: breakdown };
+}
+
+function mComputeTags(score) {
+  var tags = [];
+  var q1 = mState.answers.q1[0]; var q6 = mState.answers.q6[0]; var q3 = mState.answers.q3[0];
+  if (score >= 70) tags.push('high_value'); else if (score >= 40) tags.push('growth_business'); else tags.push('beginner');
+  if (q1 === 'physical_seller') tags.push('seller');
+  if (q1 === 'service_provider') tags.push('service_provider');
+  if (q1 === 'company_team') tags.push('operator');
+  if (q1 === 'security_firm') tags.push('security_firm');
+  if (q1 === 'solar_vendor') tags.push('solar_vendor');
+  if (q1 === 'just_starting') tags.push('beginner');
+  if (q3 === 'high' || q3 === 'premium') tags.push('revenue_positive');
+  if (q6 === 'premium_ready') tags.push('premium_buyer');
+  if (q6 === 'free_only' && q3 === 'zero') tags.push('nurture_only');
+  if (mState.answers.q5.indexOf('marketplace') > -1) tags.push('marketplace_interest');
+  if (mState.answers.q5.indexOf('guard_system') > -1) tags.push('guard_system_interest');
+  if (mState.answers.q5.indexOf('solar_acquisition') > -1) tags.push('solar_interest');
+  if (mState.answers.q7[0] === 'immediately') tags.push('hot_lead');
+  return tags.filter(function(v, i, a) { return a.indexOf(v) === i; });
+}
+
+function mComputeRoutes(score, tags) {
+  var q1 = mState.answers.q1[0]; var q3 = mState.answers.q3[0]; var q5 = mState.answers.q5; var q6 = mState.answers.q6[0];
+  var routes = [];
+  if (q1 === 'security_firm') routes.push({ icon:'🛡️', name:'TEK1SECURITY', primary:true, desc:'Guard management SaaS built for your exact industry. Schedule a product demo.', url:'https://teknnuku.xyz', cta:'Explore TEK1SECURITY' });
+  if (q1 === 'solar_vendor') routes.push({ icon:'☀️', name:'PowerPlus 9ja', primary:true, desc:'Solar customer acquisition marketplace designed for vendors like you.', url:'https://teknnuku.xyz', cta:'Join PowerPlus 9ja' });
+  if (q5.indexOf('marketplace') > -1) routes.push({ icon:'🛒', name:'GATA Marketplace Onboarding', primary:q1==='physical_seller', desc:'List your products on a marketplace built for Nigerian sellers.', url:'https://teknnuku.xyz', cta:'Onboard to GATA' });
+  if (score >= 70) {
+    routes.push({ icon:'🏗️', name:'TEKNNUKU Studio — Custom Systems', primary:routes.length===0, desc:'You qualify for our premium digital platform builds — custom SaaS, business systems, and revenue infrastructure.', url:'https://teknnuku.xyz', cta:'Start a Project' });
+    routes.push({ icon:'📞', name:'Book a Strategy Call', primary:false, desc:'Speak directly with the Studio team. We\'ll map out your system and quote within 48 hours.', url:'https://calendly.com/teknnuku', cta:'Book Now' });
+  } else if (score >= 40) {
+    if (['can_invest','premium_ready'].indexOf(q6) > -1 && ['mid','high','premium'].indexOf(q3) > -1) routes.push({ icon:'🏗️', name:'TEKNNUKU Studio — Starter Packages', primary:routes.length===0, desc:'Brand kits, landing pages, and growth systems starting at ₦25,000. Matched to your stage.', url:'https://teknnuku.xyz', cta:'See Packages' });
+    routes.push({ icon:'📚', name:'Poverty2Prosperity Workshop', primary:false, desc:'Build the income, business, and systems knowledge that will 10x your results in the next 6 months.', url:'https://teknnuku.xyz', cta:'Join Workshop' });
+    routes.push({ icon:'🌐', name:'GATA Ecosystem Onboarding', primary:false, desc:'Access the TEKNNUKU ecosystem — tools, community, and marketplaces for growing businesses.', url:'https://teknnuku.xyz', cta:'Get Access' });
+  } else {
+    routes.push({ icon:'🆓', name:'Free Training Resources', primary:routes.length===0, desc:'Start with our free business fundamentals — no cost, no pressure. Build your foundation first.', url:'https://teknnuku.xyz', cta:'Access Free Training' });
+    routes.push({ icon:'📚', name:'Poverty2Prosperity Entry Programme', primary:false, desc:'The guided pathway from zero income to your first consistent online revenue stream.', url:'https://teknnuku.xyz', cta:'Start for Free' });
+    routes.push({ icon:'💬', name:'Join the Community', primary:false, desc:'Connect with founders at your stage inside the TEKNNUKU community network.', url:'https://teknnuku.xyz', cta:'Join Community' });
+  }
+  var seen = {};
+  return routes.filter(function(r) { return seen[r.name] ? false : (seen[r.name] = true); });
+}
+
+// ── Render Results ──
+function mRenderResults(scoreObj, tags) {
+  var score = scoreObj.total; var bd = scoreObj.breakdown;
+  var tier, tierLabel, tagline;
+  var heroEl = document.getElementById('mResultsCard');
+  if (score >= 70) { tier='tier-a-m'; tierLabel='🟢 Tier A — High-Value Client'; tagline='You\'re exactly the kind of client TEKNNUKU Studio is built for. We\'re ready to build your revenue system now.'; }
+  else if (score >= 40) { tier='tier-b-m'; tierLabel='🟡 Tier B — Growth Business'; tagline='Your business has real momentum. The right system will unlock the next level — and we\'re going to help you build it.'; }
+  else { tier='tier-c-m'; tierLabel='🔵 Tier C — Early Builder'; tagline='Every empire started here. You\'re at the beginning — and there\'s a clear, guided path from exactly where you are.'; }
+  heroEl.className = tier;
+  heroEl.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);';
+  document.getElementById('mTierBadgeText').textContent = tierLabel;
+  document.getElementById('mResultsName').textContent = 'Hi, ' + mState.answers.firstName + ' 👋';
+  document.getElementById('mResultsTagline').textContent = tagline;
+  setTimeout(function() {
+    var circumference = 276.5;
+    var offset = circumference - (score / 100) * circumference;
+    document.getElementById('mScoreCircle').style.strokeDashoffset = offset;
+    document.getElementById('mScoreNum').innerHTML = score + '<small>SQS</small>';
+  }, 200);
+  var bdHtml = [
+    { label:'Revenue', val:bd.revenue, max:30 },
+    { label:'Budget', val:bd.budget, max:25 },
+    { label:'Stage', val:bd.stage, max:20 },
+    { label:'Urgency', val:bd.urgency, max:15 },
+    { label:'Infra Gap', val:bd.gap, max:10 },
+  ].map(function(row) {
+    return '<div class="score-row-m"><span class="sr-label-m">'+row.label+'</span><div class="score-bar-wrap-m"><div class="score-bar-fill-m" data-pct="'+(row.val/row.max*100)+'"></div></div><span class="sr-val-m">'+row.val+'/'+row.max+'</span></div>';
+  }).join('');
+  document.getElementById('mScoreBreakdown').innerHTML = bdHtml;
+  setTimeout(function() {
+    document.querySelectorAll('.score-bar-fill-m').forEach(function(b) { b.style.width = b.dataset.pct + '%'; });
+  }, 400);
+  document.getElementById('mTagsRow').innerHTML = tags.map(function(t) { return '<span class="tag-chip-m gold-m">'+t.replace(/_/g,' ')+'</span>'; }).join('');
+  var routes = mComputeRoutes(score, tags);
+  document.getElementById('mRouteCards').innerHTML = routes.map(function(r) {
+    return '<a href="'+r.url+'" class="route-card-m'+(r.primary?' primary-m':'')+'" target="_blank">'+(r.primary?'<span class="primary-badge-m">Best Match</span>':'')+
+      '<span class="rc-icon-m">'+r.icon+'</span><div class="rc-body-m"><div class="rc-name-m">'+r.name+'</div><div class="rc-desc-m">'+r.desc+'</div></div><span class="rc-arrow-m">→</span></a>';
+  }).join('');
+}
+
+// ── Submit ──
+async function mSubmitForm() {
+  document.getElementById('intakeLoading').classList.add('show');
+  var scoreObj = mComputeScore();
+  var tags = mComputeTags(scoreObj.total);
+  var routes = mComputeRoutes(scoreObj.total, tags);
+  var tier = scoreObj.total >= 70 ? 'A' : scoreObj.total >= 40 ? 'B' : 'C';
+  var payload = {
+    firstName: mState.answers.firstName, lastName: mState.answers.lastName,
+    email: mState.answers.email, phone: mState.answers.phone,
+    responses: { q1_identity:mState.answers.q1, q2_stage:mState.answers.q2, q3_revenue:mState.answers.q3, q4_pain:mState.answers.q4, q5_needs:mState.answers.q5, q6_budget:mState.answers.q6, q7_urgency:mState.answers.q7, q8_channels:mState.answers.q8, q9_infra:mState.answers.q9, q10_goal:mState.answers.q10 },
+    score: scoreObj.total, scoreBreakdown: scoreObj.breakdown,
+    tier: 'Tier ' + tier, tags: tags,
+    primaryRoute: routes[0] ? routes[0].name : 'none',
+    completedAt: new Date().toISOString()
+  };
+  if (window.__saveToFirebase) await window.__saveToFirebase(payload);
+  await new Promise(function(r) { setTimeout(r, 1200); });
+  document.getElementById('intakeLoading').classList.remove('show');
+  document.getElementById('intake-form-view').style.display = 'none';
+  document.getElementById('intake-results-view').classList.add('active');
+  mRenderResults(scoreObj, tags);
+  document.getElementById('intake-modal').scrollTop = 0;
+}
+
+// ── Restart ──
+window.mRestart = function() {
+  mState = { step:0, totalSteps:11, answers:{ firstName:'', lastName:'', email:'', phone:'', q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[] } };
+  document.querySelectorAll('.option-btn-m').forEach(function(b) { b.classList.remove('selected'); });
+  document.querySelectorAll('.val-msg-m').forEach(function(m) { m.classList.remove('show'); });
+  ['m_firstName','m_lastName','m_email','m_phone'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('intake-results-view').classList.remove('active');
+  document.getElementById('intake-form-view').style.display = '';
+  mShowStep(0);
+};
+</script>
+
+</body>
+</html>
