@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEKNNUKU Studio — Smart Intake Form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ── REPLACE WITH YOUR FIREBASE CONFIG ──────────────────────────────────────
+  const firebaseConfig = {
+    apiKey:            "AIzaSyAjovgyVtPJOWwyte8gwdesEHesF9AzJlM",
+    authDomain:        "teknnuku-intake-form.firebaseapp.com",
+    projectId:         "teknnuku-intake-form",
+    storageBucket:     "teknnuku-intake-form.firebasestorage.app",
+    messagingSenderId: "661289555481",
+    appId:             "1:661289555481:web:f15b1f8983d5d460df3c88"
+  };
+  // ───────────────────────────────────────────────────────────────────────────
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.__saveToFirebase = async function(payload) {
+    try {
+      const docRef = await addDoc(collection(db, "intake_leads"), {
+        ...payload,
+        createdAt: serverTimestamp()
+      });
+      console.log("✅ Lead saved:", docRef.id);
+      return docRef.id;
+    } catch (err) {
+      console.warn("⚠️ Firebase write failed (check config):", err.message);
+      return null;
+    }
+  };
+</script>
+
+<style>
+/* ═══════════════════════════════════════════
+   ROOT & RESET
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:        #070707;
+  --surface:   #0e0e0e;
+  --card:      #141414;
+  --panel:     #1a1a1a;
+  --gold:      #C9A84C;
+  --gold2:     #E5C96A;
+  --cyan:      #00BCD4;
+  --green:     #22c55e;
+  --amber:     #f59e0b;
+  --blue:      #3b82f6;
+  --red:       #ef4444;
+  --white:     #F2EDE4;
+  --muted:     rgba(242,237,228,.55);
+  --dim:       rgba(242,237,228,.30);
+  --border:    rgba(201,168,76,.18);
+  --borderS:   rgba(242,237,228,.07);
+  --r:         6px;
+  --r2:        10px;
+  --shadow:    0 20px 60px rgba(0,0,0,.6);
+}
+
+html { font-size:16px; scroll-behavior:smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* BG texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(201,168,76,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,.03) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 10% 20%, rgba(201,168,76,.07), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(0,188,212,.06), transparent 60%);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   FORM SHELL
+═══════════════════════════════════════════ */
+.form-shell {
+  position: relative; z-index: 1;
+  width: 100%;
+  max-width: 720px;
+  animation: shellIn .5s ease both;
+}
+
+@keyframes shellIn {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Header ── */
+.form-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.form-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: .9rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.form-logo em { color: var(--gold); font-style: normal; }
+.form-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.form-eyebrow::before, .form-eyebrow::after {
+  content: ''; width: 24px; height: 1px; background: var(--gold);
+}
+
+/* ── Card ── */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* ── Progress bar ── */
+.progress-track {
+  height: 3px;
+  background: var(--borderS);
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  border-radius: 3px;
+  transition: width .4s cubic-bezier(.4,0,.2,1);
+  width: 0%;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px 0;
+}
+.step-counter {
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  color: var(--dim);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.step-dots {
+  display: flex; gap: 5px;
+}
+.step-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--borderS);
+  transition: background .3s;
+}
+.step-dot.done { background: var(--gold); }
+.step-dot.active { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+
+/* ── Body ── */
+.form-body {
+  padding: 28px 32px 32px;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::before { content: ''; width: 14px; height: 1px; background: var(--gold); }
+
+/* ── Question ── */
+.q-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.1rem, 3vw, 1.45rem);
+  line-height: 1.3;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.q-hint {
+  font-size: .82rem;
+  color: var(--dim);
+  margin-bottom: 22px;
+  line-height: 1.6;
+}
+
+/* ── Step panels ── */
+.step-panel { display: none; animation: stepIn .3s ease both; }
+.step-panel.active { display: block; }
+
+@keyframes stepIn {
+  from { opacity:0; transform:translateX(12px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+/* ── Options ── */
+.options-grid {
+  display: grid;
+  gap: 10px;
+}
+.options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--card);
+  border: 1px solid var(--borderS);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: all .2s;
+  text-align: left;
+  width: 100%;
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .92rem;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+.option-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,.04), transparent);
+  opacity: 0; transition: opacity .2s;
+}
+.option-btn:hover { border-color: var(--gold); transform: translateX(3px); }
+.option-btn:hover::before { opacity: 1; }
+
+.option-btn.selected {
+  border-color: var(--gold);
+  background: rgba(201,168,76,.1);
+  color: var(--gold);
+}
+.option-btn.selected .opt-check { border-color: var(--gold); background: var(--gold); }
+.option-btn.selected .opt-check::after { opacity: 1; }
+
+.opt-check {
+  width: 18px; height: 18px; flex-shrink: 0;
+  border: 1.5px solid var(--dim);
+  border-radius: 50%;
+  position: relative;
+  transition: all .2s;
+}
+.opt-check::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--bg);
+  opacity: 0; transition: opacity .2s;
+}
+
+/* Multi-select variant */
+.opt-check.square {
+  border-radius: 3px;
+}
+.opt-check.square::after {
+  content: '✓';
+  font-size: .62rem;
+  font-weight: 700;
+  color: var(--bg);
+  background: none;
+  width: auto; height: auto;
+}
+.option-btn.selected .opt-check.square { background: var(--gold); }
+
+.opt-icon { font-size: 1.1rem; }
+.opt-label { flex: 1; }
+
+/* ── Name/Email inputs ── */
+.input-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.input-wrap { display: flex; flex-direction: column; gap: 6px; }
+.input-wrap label {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.input-wrap input, .input-wrap select {
+  background: var(--card);
+  border: 1px solid var(--borderS);
+  border-radius: var(--r);
+  padding: 13px 16px;
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .9rem;
+  outline: none;
+  transition: border-color .2s;
+  width: 100%;
+}
+.input-wrap input:focus, .input-wrap select:focus { border-color: var(--gold); }
+.input-wrap input::placeholder { color: var(--dim); }
+.input-wrap select option { background: var(--card); }
+.input-full { grid-column: 1 / -1; }
+
+/* ── Nav footer ── */
+.form-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px 24px;
+  border-top: 1px solid var(--borderS);
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--r);
+  font-weight: 600;
+  font-size: .86rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  transition: all .22s;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+}
+.btn-gold   { background: var(--gold); color: #080808; }
+.btn-gold:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,.35); }
+.btn-ghost  { background: transparent; color: var(--dim); border: 1px solid var(--borderS); }
+.btn-ghost:hover { border-color: var(--dim); color: var(--muted); }
+.btn-cyan   { background: var(--cyan); color: #080808; }
+.btn-cyan:hover { background: #26d4ec; }
+.btn-submit { background: var(--gold); color: #080808; width: 100%; justify-content: center; font-size: .95rem; padding: 16px; }
+.btn-submit:hover { background: var(--gold2); }
+
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+
+.btn-back-wrap { min-width: 90px; }
+
+/* ── Validation msg ── */
+.val-msg {
+  font-size: .78rem;
+  color: var(--red);
+  margin-top: 10px;
+  display: none;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .04em;
+}
+.val-msg.show { display: block; }
+
+/* ═══════════════════════════════════════════
+   RESULTS SCREEN
+═══════════════════════════════════════════ */
+#results-screen { display: none; }
+#results-screen.active { display: block; }
+
+.results-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: shellIn .5s ease both;
+}
+
+.results-hero {
+  padding: 36px 32px 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.results-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,168,76,.1), transparent);
+}
+
+.tier-badge-large {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  position: relative; z-index: 1;
+}
+.tier-a .tier-badge-large { background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.3); color: var(--green); }
+.tier-b .tier-badge-large { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.3); color: var(--amber); }
+.tier-c .tier-badge-large { background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.3); color: var(--blue); }
+
+.tier-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
+.tier-a .tier-dot { background: var(--green); }
+.tier-b .tier-dot { background: var(--amber); }
+.tier-c .tier-dot { background: var(--blue); }
+
+.results-name {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 800;
+  margin-bottom: 8px;
+  position: relative; z-index: 1;
+}
+.results-tagline {
+  font-size: .9rem;
+  color: var(--muted);
+  position: relative; z-index: 1;
+  max-width: 460px;
+  margin: 0 auto 20px;
+  line-height: 1.65;
+}
+
+/* Score ring */
+.score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin: 20px 0;
+  position: relative; z-index: 1;
+  flex-wrap: wrap;
+}
+.score-ring {
+  position: relative;
+  width: 100px; height: 100px;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring circle { fill: none; stroke-width: 6; }
+.score-ring .track { stroke: var(--borderS); }
+.score-ring .fill  { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+.score-ring .num {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.score-ring .num small {
+  font-size: .52rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--dim);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-top: 3px;
+  font-weight: 400;
+}
+
+.score-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .8rem;
+}
+.score-row .sr-label { color: var(--dim); min-width: 110px; font-family: 'DM Mono', monospace; font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; }
+.score-bar-wrap { width: 100px; height: 4px; background: var(--borderS); border-radius: 4px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 4px; background: var(--gold); transition: width 1s ease .3s; width: 0; }
+.score-row .sr-val { color: var(--gold); font-family: 'DM Mono', monospace; font-size: .7rem; min-width: 28px; text-align: right; }
+
+/* Tags */
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 4px 0 0;
+  position: relative; z-index: 1;
+}
+.tag-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: var(--borderS);
+  color: var(--dim);
+  border: 1px solid var(--borderS);
+}
+.tag-chip.gold { background: rgba(201,168,76,.12); border-color: rgba(201,168,76,.25); color: var(--gold); }
+
+/* Route cards */
+.routes-section {
+  padding: 28px 32px;
+  border-top: 1px solid var(--borderS);
+}
+.routes-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px;
+}
+.routes-label::before { content: ''; width: 14px; height: 1px; background: var(--gold); }
+
+.route-cards {
+  display: grid;
+  gap: 10px;
+}
+.route-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--borderS);
+  border-radius: var(--r);
+  text-decoration: none;
+  color: var(--white);
+  transition: all .22s;
+  position: relative;
+  overflow: hidden;
+}
+.route-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; transition: background .2s;
+}
+.route-card:hover { border-color: var(--gold); transform: translateX(4px); }
+.route-card:hover::before { background: var(--gold); }
+.route-card.primary { border-color: rgba(201,168,76,.3); background: rgba(201,168,76,.07); }
+.route-card.primary::before { background: var(--gold); }
+
+.rc-icon { font-size: 1.4rem; flex-shrink: 0; }
+.rc-body { flex: 1; }
+.rc-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--white);
+  margin-bottom: 3px;
+}
+.rc-desc { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+.rc-arrow { color: var(--gold); font-size: 1rem; flex-shrink: 0; }
+.primary-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: var(--gold);
+  color: #080808;
+  font-family: 'DM Mono', monospace;
+  font-size: .52rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Footer actions */
+.results-footer {
+  padding: 20px 32px 28px;
+  border-top: 1px solid var(--borderS);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.results-footer .btn { flex: 1; justify-content: center; min-width: 140px; }
+
+/* ═══════════════════════════════════════════
+   LOADING OVERLAY
+═══════════════════════════════════════════ */
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(7,7,7,.85);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  display: none;
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--borderS);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.loading-text {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+@keyframes spin   { to { transform: rotate(360deg); } }
+@keyframes pulse  { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}50%{box-shadow:0 0 0 6px rgba(201,168,76,0)} }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media (max-width:600px) {
+  body { padding: 14px; }
+  .form-body { padding: 20px 18px 24px; }
+  .form-nav  { padding: 16px 18px 20px; }
+  .options-grid.cols-2 { grid-template-columns: 1fr; }
+  .input-group { grid-template-columns: 1fr; }
+  .input-full { grid-column: 1; }
+  .score-display { flex-direction: column; gap: 18px; }
+  .score-breakdown { align-items: center; text-align: center; }
+  .score-row .sr-label { min-width: 90px; }
+  .score-bar-wrap { width: 80px; }
+  .routes-section { padding: 20px 18px; }
+  .results-hero { padding: 24px 18px 20px; }
+  .results-footer { padding: 16px 18px 22px; flex-direction: column; }
+  .progress-meta { padding: 12px 18px 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Analysing your profile…</div>
+</div>
+
+<!-- ═══════════════════ FORM SHELL ═══════════════════ -->
+<div class="form-shell" id="formShell">
+
+  <div class="form-header">
+    <div class="form-logo">TEKNNUKU <em>STUDIO</em></div>
+    <div class="form-eyebrow">Studio Qualification Engine v1</div>
+  </div>
+
+  <div class="form-card">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="progress-meta">
+      <span class="step-counter" id="stepCounter">Step 1 of 11</span>
+      <div class="step-dots" id="stepDots"></div>
+    </div>
+
+    <div class="form-body">
+
+      <!-- ── STEP 0: Contact Info ── -->
+      <div class="step-panel active" data-step="0">
+        <div class="section-label">Getting Started</div>
+        <div class="q-title">Let's get to know you first.</div>
+        <div class="q-hint">We'll use this to send your personalised results and recommended next steps.</div>
+
+        <div class="input-group">
+          <div class="input-wrap">
+            <label>First Name</label>
+            <input type="text" id="firstName" placeholder="Your first name">
+          </div>
+          <div class="input-wrap">
+            <label>Last Name</label>
+            <input type="text" id="lastName" placeholder="Your last name">
+          </div>
+          <div class="input-wrap input-full">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="you@example.com">
+          </div>
+          <div class="input-wrap input-full">
+            <label>WhatsApp Number</label>
+            <input type="tel" id="phone" placeholder="+234 000 0000 000">
+          </div>
+        </div>
+        <div class="val-msg" id="val-0">Please fill in all fields to continue.</div>
+      </div>
+
+      <!-- ── STEP 1: Who are you ── -->
+      <div class="step-panel" data-step="1">
+        <div class="section-label">Section 1 — Identity Snapshot</div>
+        <div class="q-title">Which best describes you?</div>
+        <div class="q-hint">Choose the option that fits you most right now.</div>
+        <div class="options-grid" id="q1">
+          <button class="option-btn" data-value="physical_seller" onclick="select(this,'q1','single')">
+            <div class="opt-check"></div><span class="opt-icon">📦</span><span class="opt-label">I sell physical products</span>
+          </button>
+          <button class="option-btn" data-value="service_provider" onclick="select(this,'q1','single')">
+            <div class="opt-check"></div><span class="opt-icon">🤝</span><span class="opt-label">I offer services</span>
+          </button>
+          <button class="option-btn" data-value="company_team" onclick="select(this,'q1','single')">
+            <div class="opt-check"></div><span class="opt-icon">🏢</span><span class="opt-label">I run a company/team</span>
+          </button>
+          <button class="option-btn" data-value="just_starting" onclick="select(this,'q1','single')">
+            <div class="opt-check"></div><span class="opt-icon">🌱</span><span class="opt-label">I am just starting</span>
+          </button>
+          <button class="option-btn" data-value="security_firm" onclick="select(this,'q1','single')">
+            <div class="opt-check"></div><span class="opt-icon">🛡️</span><span class="opt-label">I manage security guards</span>
+          </button>
+          <button class="option-btn" data-value="solar_vendor" onclick="select(this,'q1','single')">
+            <div class="opt-check"></div><span class="opt-icon">☀️</span><span class="opt-label">I sell solar/inverter solutions</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-1">Please select an option to continue.</div>
+      </div>
+
+      <!-- ── STEP 2: Stage ── -->
+      <div class="step-panel" data-step="2">
+        <div class="section-label">Section 1 — Identity Snapshot</div>
+        <div class="q-title">What stage is your business currently in?</div>
+        <div class="q-hint">Be honest — there's no wrong answer here.</div>
+        <div class="options-grid" id="q2">
+          <button class="option-btn" data-value="idea" onclick="select(this,'q2','single')">
+            <div class="opt-check"></div><span class="opt-icon">💡</span><span class="opt-label">Just idea stage</span>
+          </button>
+          <button class="option-btn" data-value="recently_started" onclick="select(this,'q2','single')">
+            <div class="opt-check"></div><span class="opt-icon">🚀</span><span class="opt-label">Recently started</span>
+          </button>
+          <button class="option-btn" data-value="some_sales" onclick="select(this,'q2','single')">
+            <div class="opt-check"></div><span class="opt-icon">📈</span><span class="opt-label">Making some sales</span>
+          </button>
+          <button class="option-btn" data-value="consistent_revenue" onclick="select(this,'q2','single')">
+            <div class="opt-check"></div><span class="opt-icon">💰</span><span class="opt-label">Consistent monthly revenue</span>
+          </button>
+          <button class="option-btn" data-value="scaling" onclick="select(this,'q2','single')">
+            <div class="opt-check"></div><span class="opt-icon">⚡</span><span class="opt-label">Scaling aggressively</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-2">Please select an option to continue.</div>
+      </div>
+
+      <!-- ── STEP 3: Revenue ── -->
+      <div class="step-panel" data-step="3">
+        <div class="section-label">Section 1 — Identity Snapshot</div>
+        <div class="q-title">What is your average monthly revenue?</div>
+        <div class="q-hint">This determines which solutions are actually right for you.</div>
+        <div class="options-grid" id="q3">
+          <button class="option-btn" data-value="zero" onclick="select(this,'q3','single')">
+            <div class="opt-check"></div><span class="opt-icon">🕳️</span><span class="opt-label">₦0 — Not yet</span>
+          </button>
+          <button class="option-btn" data-value="low" onclick="select(this,'q3','single')">
+            <div class="opt-check"></div><span class="opt-icon">🌿</span><span class="opt-label">₦1 – ₦100k</span>
+          </button>
+          <button class="option-btn" data-value="mid" onclick="select(this,'q3','single')">
+            <div class="opt-check"></div><span class="opt-icon">🔥</span><span class="opt-label">₦100k – ₦500k</span>
+          </button>
+          <button class="option-btn" data-value="high" onclick="select(this,'q3','single')">
+            <div class="opt-check"></div><span class="opt-icon">💎</span><span class="opt-label">₦500k – ₦2M</span>
+          </button>
+          <button class="option-btn" data-value="premium" onclick="select(this,'q3','single')">
+            <div class="opt-check"></div><span class="opt-icon">🏆</span><span class="opt-label">₦2M+</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-3">Please select an option to continue.</div>
+      </div>
+
+      <!-- ── STEP 4: Pain ── -->
+      <div class="step-panel" data-step="4">
+        <div class="section-label">Section 2 — Pain Diagnosis</div>
+        <div class="q-title">What is your biggest current challenge?</div>
+        <div class="q-hint">Pick the one that stings the most right now.</div>
+        <div class="options-grid" id="q4">
+          <button class="option-btn" data-value="no_customers" onclick="select(this,'q4','single')">
+            <div class="opt-check"></div><span class="opt-icon">😤</span><span class="opt-label">I don't have customers</span>
+          </button>
+          <button class="option-btn" data-value="unprofessional_brand" onclick="select(this,'q4','single')">
+            <div class="opt-check"></div><span class="opt-icon">🎨</span><span class="opt-label">My brand looks unprofessional</span>
+          </button>
+          <button class="option-btn" data-value="need_website" onclick="select(this,'q4','single')">
+            <div class="opt-check"></div><span class="opt-icon">🌐</span><span class="opt-label">I need a website or system</span>
+          </button>
+          <button class="option-btn" data-value="need_automation" onclick="select(this,'q4','single')">
+            <div class="opt-check"></div><span class="opt-icon">⚙️</span><span class="opt-label">I need automation</span>
+          </button>
+          <button class="option-btn" data-value="want_scale" onclick="select(this,'q4','single')">
+            <div class="opt-check"></div><span class="opt-icon">📈</span><span class="opt-label">I want to scale faster</span>
+          </button>
+          <button class="option-btn" data-value="more_income" onclick="select(this,'q4','single')">
+            <div class="opt-check"></div><span class="opt-icon">💸</span><span class="opt-label">I need more income streams</span>
+          </button>
+          <button class="option-btn" data-value="staff_management" onclick="select(this,'q4','single')">
+            <div class="opt-check"></div><span class="opt-icon">👥</span><span class="opt-label">I struggle managing staff/guards</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-4">Please select an option to continue.</div>
+      </div>
+
+      <!-- ── STEP 5: Needs ── -->
+      <div class="step-panel" data-step="5">
+        <div class="section-label">Section 2 — Pain Diagnosis</div>
+        <div class="q-title">What do you need most right now?</div>
+        <div class="q-hint">Select up to 2 options — be specific.</div>
+        <div class="options-grid cols-2" id="q5">
+          <button class="option-btn" data-value="branding" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Branding / logo</span>
+          </button>
+          <button class="option-btn" data-value="website" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Website</span>
+          </button>
+          <button class="option-btn" data-value="sales_marketing" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Sales / marketing help</span>
+          </button>
+          <button class="option-btn" data-value="training" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Business training</span>
+          </button>
+          <button class="option-btn" data-value="marketplace" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Marketplace to sell</span>
+          </button>
+          <button class="option-btn" data-value="custom_software" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Custom software</span>
+          </button>
+          <button class="option-btn" data-value="guard_system" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Guard management system</span>
+          </button>
+          <button class="option-btn" data-value="solar_acquisition" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Solar customer acquisition</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-5">Please select at least 1 option.</div>
+      </div>
+
+      <!-- ── STEP 6: Budget ── -->
+      <div class="step-panel" data-step="6">
+        <div class="section-label">Section 3 — Buyer Readiness</div>
+        <div class="q-title">If the right solution exists, what is your budget readiness?</div>
+        <div class="q-hint">Honest answers unlock better-matched recommendations for you.</div>
+        <div class="options-grid" id="q6">
+          <button class="option-btn" data-value="free_only" onclick="select(this,'q6','single')">
+            <div class="opt-check"></div><span class="opt-icon">🆓</span><span class="opt-label">I only want free resources</span>
+          </button>
+          <button class="option-btn" data-value="low_cost" onclick="select(this,'q6','single')">
+            <div class="opt-check"></div><span class="opt-icon">💡</span><span class="opt-label">I can afford low-cost solutions</span>
+          </button>
+          <button class="option-btn" data-value="can_invest" onclick="select(this,'q6','single')">
+            <div class="opt-check"></div><span class="opt-icon">📊</span><span class="opt-label">I can invest in my business</span>
+          </button>
+          <button class="option-btn" data-value="premium_ready" onclick="select(this,'q6','single')">
+            <div class="opt-check"></div><span class="opt-icon">🏆</span><span class="opt-label">I am ready for premium solutions</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-6">Please select an option to continue.</div>
+      </div>
+
+      <!-- ── STEP 7: Urgency ── -->
+      <div class="step-panel" data-step="7">
+        <div class="section-label">Section 3 — Buyer Readiness</div>
+        <div class="q-title">How urgently do you need a solution?</div>
+        <div class="q-hint">This determines your priority in our pipeline.</div>
+        <div class="options-grid" id="q7">
+          <button class="option-btn" data-value="exploring" onclick="select(this,'q7','single')">
+            <div class="opt-check"></div><span class="opt-icon">🔭</span><span class="opt-label">Just exploring</span>
+          </button>
+          <button class="option-btn" data-value="three_months" onclick="select(this,'q7','single')">
+            <div class="opt-check"></div><span class="opt-icon">📅</span><span class="opt-label">Within the next 3 months</span>
+          </button>
+          <button class="option-btn" data-value="thirty_days" onclick="select(this,'q7','single')">
+            <div class="opt-check"></div><span class="opt-icon">⏰</span><span class="opt-label">Within 30 days</span>
+          </button>
+          <button class="option-btn" data-value="immediately" onclick="select(this,'q7','single')">
+            <div class="opt-check"></div><span class="opt-icon">🔥</span><span class="opt-label">Immediately</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-7">Please select an option to continue.</div>
+      </div>
+
+      <!-- ── STEP 8: Channels ── -->
+      <div class="step-panel" data-step="8">
+        <div class="section-label">Section 4 — Qualification Enrichment</div>
+        <div class="q-title">Where do you currently get customers from?</div>
+        <div class="q-hint">Select all that apply.</div>
+        <div class="options-grid cols-2" id="q8">
+          <button class="option-btn" data-value="instagram" onclick="select(this,'q8','multi',6)">
+            <div class="opt-check square"></div><span class="opt-label">Instagram</span>
+          </button>
+          <button class="option-btn" data-value="facebook" onclick="select(this,'q8','multi',6)">
+            <div class="opt-check square"></div><span class="opt-label">Facebook</span>
+          </button>
+          <button class="option-btn" data-value="tiktok" onclick="select(this,'q8','multi',6)">
+            <div class="opt-check square"></div><span class="opt-label">TikTok</span>
+          </button>
+          <button class="option-btn" data-value="whatsapp" onclick="select(this,'q8','multi',6)">
+            <div class="opt-check square"></div><span class="opt-label">WhatsApp</span>
+          </button>
+          <button class="option-btn" data-value="referrals" onclick="select(this,'q8','multi',6)">
+            <div class="opt-check square"></div><span class="opt-label">Referrals</span>
+          </button>
+          <button class="option-btn" data-value="no_customers_yet" onclick="select(this,'q8','multi',6)">
+            <div class="opt-check square"></div><span class="opt-label">I don't have customers yet</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-8">Please select at least 1 option.</div>
+      </div>
+
+      <!-- ── STEP 9: Infrastructure ── -->
+      <div class="step-panel" data-step="9">
+        <div class="section-label">Section 4 — Qualification Enrichment</div>
+        <div class="q-title">Do you currently have any of these?</div>
+        <div class="q-hint">Select everything you already have in place.</div>
+        <div class="options-grid cols-2" id="q9">
+          <button class="option-btn" data-value="logo" onclick="select(this,'q9','multi',5)">
+            <div class="opt-check square"></div><span class="opt-label">Logo / brand identity</span>
+          </button>
+          <button class="option-btn" data-value="website_existing" onclick="select(this,'q9','multi',5)">
+            <div class="opt-check square"></div><span class="opt-label">Website</span>
+          </button>
+          <button class="option-btn" data-value="payment_setup" onclick="select(this,'q9','multi',5)">
+            <div class="opt-check square"></div><span class="opt-label">Online payment setup</span>
+          </button>
+          <button class="option-btn" data-value="sales_funnel" onclick="select(this,'q9','multi',5)">
+            <div class="opt-check square"></div><span class="opt-label">Sales funnel</span>
+          </button>
+          <button class="option-btn" data-value="none" onclick="select(this,'q9','multi',5)">
+            <div class="opt-check square"></div><span class="opt-label">None of the above</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-9">Please select at least 1 option.</div>
+      </div>
+
+      <!-- ── STEP 10: Goal ── -->
+      <div class="step-panel" data-step="10">
+        <div class="section-label">Section 4 — Qualification Enrichment</div>
+        <div class="q-title">What best describes your goal for the next 6–12 months?</div>
+        <div class="q-hint">This determines your long-term routing.</div>
+        <div class="options-grid" id="q10">
+          <button class="option-btn" data-value="start_making_money" onclick="select(this,'q10','single')">
+            <div class="opt-check"></div><span class="opt-icon">💸</span><span class="opt-label">Start making money online</span>
+          </button>
+          <button class="option-btn" data-value="grow_small_biz" onclick="select(this,'q10','single')">
+            <div class="opt-check"></div><span class="opt-icon">🌱</span><span class="opt-label">Grow my small business</span>
+          </button>
+          <button class="option-btn" data-value="build_company" onclick="select(this,'q10','single')">
+            <div class="opt-check"></div><span class="opt-icon">🏗️</span><span class="opt-label">Build a serious company</span>
+          </button>
+          <button class="option-btn" data-value="automate" onclick="select(this,'q10','single')">
+            <div class="opt-check"></div><span class="opt-icon">⚙️</span><span class="opt-label">Automate my operations</span>
+          </button>
+          <button class="option-btn" data-value="expand_markets" onclick="select(this,'q10','single')">
+            <div class="opt-check"></div><span class="opt-icon">🌍</span><span class="opt-label">Expand to new markets</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-10">Please select an option to continue.</div>
+      </div>
+
+    </div><!-- /form-body -->
+
+    <div class="form-nav">
+      <div class="btn-back-wrap">
+        <button class="btn btn-ghost" id="btnBack" onclick="goBack()" style="display:none">← Back</button>
+      </div>
+      <button class="btn btn-gold" id="btnNext" onclick="goNext()">Continue →</button>
+    </div>
+
+  </div><!-- /form-card -->
+</div><!-- /form-shell -->
+
+<!-- ═══════════════════ RESULTS SCREEN ═══════════════════ -->
+<div class="form-shell" id="results-screen">
+  <div class="form-header">
+    <div class="form-logo">TEKNNUKU <em>STUDIO</em></div>
+    <div class="form-eyebrow">Your Personalised Results</div>
+  </div>
+
+  <div class="results-card" id="resultsCard">
+
+    <div class="results-hero" id="resultsHero">
+      <div class="tier-badge-large" id="tierBadge">
+        <span class="tier-dot"></span>
+        <span id="tierBadgeText">Loading…</span>
+      </div>
+      <div class="results-name" id="resultsName">Welcome back</div>
+      <div class="results-tagline" id="resultsTagline"></div>
+
+      <div class="score-display">
+        <div class="score-ring">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle class="track" cx="50" cy="50" r="44"/>
+            <circle class="fill" id="scoreCircle" cx="50" cy="50" r="44"
+              stroke-dasharray="276.5"
+              stroke-dashoffset="276.5"/>
+          </svg>
+          <div class="num" id="scoreNum">0<small>SQS</small></div>
+        </div>
+
+        <div class="score-breakdown" id="scoreBreakdown"></div>
+      </div>
+
+      <div class="tags-row" id="tagsRow"></div>
+    </div>
+
+    <div class="routes-section">
+      <div class="routes-label">Your Recommended Next Steps</div>
+      <div class="route-cards" id="routeCards"></div>
+    </div>
+
+    <div class="results-footer">
+      <a href="https://calendly.com/teknnuku" class="btn btn-gold" target="_blank">📞 Book a Free Strategy Call</a>
+      <button class="btn btn-ghost" onclick="restart()">← Start Again</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ ENGINE ═══════════════════ -->
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+var state = {
+  step: 0,
+  totalSteps: 11,        // steps 0–10
+  answers: {
+    firstName:'', lastName:'', email:'', phone:'',
+    q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[]
+  }
+};
+
+var MULTI_QUESTIONS = [5,8,9]; // step indices that are multi-select
+
+/* ═══════════════════════════════════════════
+   DOTS
+═══════════════════════════════════════════ */
+(function initDots(){
+  var container = document.getElementById('stepDots');
+  for(var i=0;i<state.totalSteps;i++){
+    var d = document.createElement('div');
+    d.className = 'step-dot';
+    d.id = 'dot-'+i;
+    container.appendChild(d);
+  }
+})();
+
+function updateDots(){
+  for(var i=0;i<state.totalSteps;i++){
+    var d = document.getElementById('dot-'+i);
+    if(!d) continue;
+    d.className = 'step-dot' + (i < state.step ? ' done' : i===state.step ? ' active' : '');
+  }
+}
+
+function updateProgress(){
+  var pct = (state.step / (state.totalSteps-1)) * 100;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('stepCounter').textContent = 'Step '+(state.step+1)+' of '+state.totalSteps;
+  updateDots();
+}
+
+/* ═══════════════════════════════════════════
+   OPTION SELECTION
+═══════════════════════════════════════════ */
+function select(btn, groupId, mode, maxSel){
+  if(mode === 'single'){
+    document.querySelectorAll('#'+groupId+' .option-btn').forEach(function(b){ b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    var qNum = parseInt(groupId.replace('q',''));
+    state.answers['q'+qNum] = [btn.dataset.value];
+  } else {
+    // multi
+    var max = maxSel || 99;
+    var selected = document.querySelectorAll('#'+groupId+' .option-btn.selected');
+    if(btn.classList.contains('selected')){
+      btn.classList.remove('selected');
+    } else {
+      if(selected.length < max){
+        btn.classList.add('selected');
+      }
+    }
+    var qNum = parseInt(groupId.replace('q',''));
+    var vals = [];
+    document.querySelectorAll('#'+groupId+' .option-btn.selected').forEach(function(b){ vals.push(b.dataset.value); });
+    state.answers['q'+qNum] = vals;
+  }
+  // Hide validation msg on interaction
+  var vm = document.getElementById('val-'+state.step);
+  if(vm) vm.classList.remove('show');
+}
+
+/* ═══════════════════════════════════════════
+   VALIDATION
+═══════════════════════════════════════════ */
+function validate(step){
+  if(step === 0){
+    var fn = document.getElementById('firstName').value.trim();
+    var ln = document.getElementById('lastName').value.trim();
+    var em = document.getElementById('email').value.trim();
+    var ph = document.getElementById('phone').value.trim();
+    if(!fn||!ln||!em||!ph){
+      document.getElementById('val-0').classList.add('show');
+      return false;
+    }
+    if(!/\S+@\S+\.\S+/.test(em)){
+      document.getElementById('val-0').textContent = 'Please enter a valid email address.';
+      document.getElementById('val-0').classList.add('show');
+      return false;
+    }
+    state.answers.firstName = fn;
+    state.answers.lastName  = ln;
+    state.answers.email     = em;
+    state.answers.phone     = ph;
+    return true;
+  }
+  var qKey = 'q'+step;
+  if(!state.answers[qKey] || state.answers[qKey].length === 0){
+    var vm = document.getElementById('val-'+step);
+    if(vm) vm.classList.add('show');
+    return false;
+  }
+  return true;
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════ */
+function showStep(n){
+  document.querySelectorAll('.step-panel').forEach(function(p){ p.classList.remove('active'); });
+  var panel = document.querySelector('[data-step="'+n+'"]');
+  if(panel) panel.classList.add('active');
+  document.getElementById('btnBack').style.display = n===0 ? 'none' : 'inline-flex';
+  var isLast = n === state.totalSteps-1;
+  var nb = document.getElementById('btnNext');
+  nb.textContent = isLast ? 'Get My Results →' : 'Continue →';
+  updateProgress();
+}
+
+function goNext(){
+  if(!validate(state.step)) return;
+  if(state.step < state.totalSteps-1){
+    state.step++;
+    showStep(state.step);
+  } else {
+    submitForm();
+  }
+}
+
+function goBack(){
+  if(state.step>0){
+    state.step--;
+    showStep(state.step);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   SCORING ENGINE
+═══════════════════════════════════════════ */
+function computeScore(){
+  var score = 0;
+  var breakdown = { revenue:0, budget:0, stage:0, urgency:0, gap:0 };
+
+  // Revenue (max 30)
+  var rev = { zero:0, low:5, mid:10, high:20, premium:30 };
+  breakdown.revenue = rev[state.answers.q3[0]] || 0;
+  score += breakdown.revenue;
+
+  // Budget (max 25)
+  var bud = { free_only:0, low_cost:8, can_invest:18, premium_ready:25 };
+  breakdown.budget = bud[state.answers.q6[0]] || 0;
+  score += breakdown.budget;
+
+  // Stage (max 20)
+  var stg = { idea:2, recently_started:6, some_sales:12, consistent_revenue:16, scaling:20 };
+  breakdown.stage = stg[state.answers.q2[0]] || 0;
+  score += breakdown.stage;
+
+  // Urgency (max 15)
+  var urg = { exploring:2, three_months:6, thirty_days:10, immediately:15 };
+  breakdown.urgency = urg[state.answers.q7[0]] || 0;
+  score += breakdown.urgency;
+
+  // Infrastructure gap bonus (max 10)
+  if(state.answers.q9.indexOf('none')>-1){
+    breakdown.gap = 10;
+  } else {
+    var gaps = 4 - (state.answers.q9.length > 0 ? Math.min(state.answers.q9.length,4) : 0);
+    breakdown.gap = Math.min(gaps * 2, 5);
+  }
+  score += breakdown.gap;
+
+  return { total: Math.min(score, 100), breakdown: breakdown };
+}
+
+/* ═══════════════════════════════════════════
+   TAGGING ENGINE
+═══════════════════════════════════════════ */
+function computeTags(score){
+  var tags = [];
+  var q1 = state.answers.q1[0];
+  var q6 = state.answers.q6[0];
+  var q3 = state.answers.q3[0];
+
+  if(score >= 70)        tags.push('high_value');
+  else if(score >= 40)   tags.push('growth_business');
+  else                   tags.push('beginner');
+
+  if(q1==='physical_seller') tags.push('seller');
+  if(q1==='service_provider') tags.push('service_provider');
+  if(q1==='company_team')    tags.push('operator');
+  if(q1==='security_firm')   tags.push('security_firm');
+  if(q1==='solar_vendor')    tags.push('solar_vendor');
+  if(q1==='just_starting')   tags.push('beginner');
+
+  if(q3==='high'||q3==='premium') tags.push('revenue_positive');
+  if(q6==='premium_ready')         tags.push('premium_buyer');
+  if(q6==='free_only'&&q3==='zero') tags.push('nurture_only');
+
+  if(state.answers.q5.indexOf('marketplace')>-1) tags.push('marketplace_interest');
+  if(state.answers.q5.indexOf('guard_system')>-1)  tags.push('guard_system_interest');
+  if(state.answers.q5.indexOf('solar_acquisition')>-1) tags.push('solar_interest');
+  if(state.answers.q7[0]==='immediately') tags.push('hot_lead');
+
+  return [...new Set(tags)];
+}
+
+/* ═══════════════════════════════════════════
+   ROUTING DECISION TREE
+═══════════════════════════════════════════ */
+function computeRoutes(score, tags){
+  var q1  = state.answers.q1[0];
+  var q3  = state.answers.q3[0];
+  var q5  = state.answers.q5;
+  var q6  = state.answers.q6[0];
+  var routes = [];
+
+  // ── PRIORITY OVERRIDE ROUTES ──
+  if(q1 === 'security_firm'){
+    routes.push({
+      icon:'🛡️', name:'TEK1SECURITY', primary:true,
+      desc:'Guard management SaaS built for your exact industry. Schedule a product demo.',
+      url:'https://teknnuku.xyz', cta:'Explore TEK1SECURITY'
+    });
+  }
+
+  if(q1 === 'solar_vendor'){
+    routes.push({
+      icon:'☀️', name:'PowerPlus 9ja', primary:true,
+      desc:'Solar customer acquisition marketplace designed for vendors like you.',
+      url:'https://teknnuku.xyz', cta:'Join PowerPlus 9ja'
+    });
+  }
+
+  if(q5.indexOf('marketplace')>-1){
+    routes.push({
+      icon:'🛒', name:'GATA Marketplace Onboarding', primary:q1==='physical_seller',
+      desc:'List your products on a marketplace built for Nigerian sellers.',
+      url:'https://teknnuku.xyz', cta:'Onboard to GATA'
+    });
+  }
+
+  // ── TIER A (≥70): High-value clients ──
+  if(score >= 70){
+    routes.push({
+      icon:'🏗️', name:'TEKNNUKU Studio — Custom Systems', primary:routes.length===0,
+      desc:'You qualify for our premium digital platform builds — custom SaaS, business systems, and revenue infrastructure.',
+      url:'/pagebuilder.html', cta:'Start a Project'
+    });
+    routes.push({
+      icon:'📞', name:'Book a Strategy Call', primary:false,
+      desc:'Speak directly with the Studio team. We\'ll map out your system and quote within 48 hours.',
+      url:'https://calendly.com/teknnuku', cta:'Book Now'
+    });
+  }
+
+  // ── TIER B (40–69): Growth businesses ──
+  else if(score >= 40){
+    if(['can_invest','premium_ready'].indexOf(q6)>-1 && ['mid','high','premium'].indexOf(q3)>-1){
+      routes.push({
+        icon:'🏗️', name:'TEKNNUKU Studio — Starter Packages', primary:routes.length===0,
+        desc:'Brand kits, landing pages, and growth systems starting at ₦25,000. Matched to your stage.',
+        url:'/pagebuilder.html', cta:'See Packages'
+      });
+    }
+    routes.push({
+      icon:'📚', name:'Poverty2Prosperity Workshop', primary:false,
+      desc:'Build the income, business, and systems knowledge that will 10x your results in the next 6 months.',
+      url:'https://teknnuku.xyz', cta:'Join Workshop'
+    });
+    routes.push({
+      icon:'🌐', name:'GATA Ecosystem Onboarding', primary:false,
+      desc:'Access the TEKNNUKU ecosystem — tools, community, and marketplaces for growing businesses.',
+      url:'https://teknnuku.xyz', cta:'Get Access'
+    });
+  }
+
+  // ── TIER C (<40): Early beginners ──
+  else {
+    routes.push({
+      icon:'🆓', name:'Free Training Resources', primary:routes.length===0,
+      desc:'Start with our free business fundamentals — no cost, no pressure. Build your foundation first.',
+      url:'https://teknnuku.xyz', cta:'Access Free Training'
+    });
+    routes.push({
+      icon:'📚', name:'Poverty2Prosperity Entry Programme', primary:false,
+      desc:'The guided pathway from zero income to your first consistent online revenue stream.',
+      url:'https://teknnuku.xyz', cta:'Start for Free'
+    });
+    routes.push({
+      icon:'💬', name:'Join the Community', primary:false,
+      desc:'Connect with founders at your stage inside the TEKNNUKU community network.',
+      url:'https://teknnuku.xyz', cta:'Join Community'
+    });
+  }
+
+  // Deduplicate by name
+  var seen = {};
+  return routes.filter(function(r){ return seen[r.name] ? false : (seen[r.name]=true); });
+}
+
+/* ═══════════════════════════════════════════
+   RENDER RESULTS
+═══════════════════════════════════════════ */
+function renderResults(scoreObj, tags){
+  var score = scoreObj.total;
+  var bd    = scoreObj.breakdown;
+
+  // Tier
+  var tier, tierLabel, tagline;
+  var heroEl = document.getElementById('resultsCard');
+
+  if(score >= 70){
+    tier='tier-a'; tierLabel='🟢 Tier A — High-Value Client';
+    tagline = 'You\'re exactly the kind of client TEKNNUKU Studio is built for. We\'re ready to build your revenue system now.';
+  } else if(score >= 40){
+    tier='tier-b'; tierLabel='🟡 Tier B — Growth Business';
+    tagline = 'Your business has real momentum. The right system will unlock the next level — and we\'re going to help you build it.';
+  } else {
+    tier='tier-c'; tierLabel='🔵 Tier C — Early Builder';
+    tagline = 'Every empire started here. You\'re at the beginning — and there\'s a clear, guided path from exactly where you are.';
+  }
+
+  heroEl.className = 'results-card '+tier;
+  document.getElementById('tierBadgeText').textContent = tierLabel;
+  document.getElementById('resultsName').textContent = 'Hi, '+state.answers.firstName+' 👋';
+  document.getElementById('resultsTagline').textContent = tagline;
+
+  // Score ring animation
+  setTimeout(function(){
+    var circumference = 276.5;
+    var offset = circumference - (score/100)*circumference;
+    document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+    document.getElementById('scoreNum').innerHTML = score+'<small>SQS</small>';
+  }, 200);
+
+  // Breakdown bars
+  var bdHtml = [
+    { label:'Revenue',  val:bd.revenue,  max:30 },
+    { label:'Budget',   val:bd.budget,   max:25 },
+    { label:'Stage',    val:bd.stage,    max:20 },
+    { label:'Urgency',  val:bd.urgency,  max:15 },
+    { label:'Infra Gap',val:bd.gap,      max:10 },
+  ].map(function(row){
+    return '<div class="score-row">'+
+      '<span class="sr-label">'+row.label+'</span>'+
+      '<div class="score-bar-wrap"><div class="score-bar-fill" data-pct="'+(row.val/row.max*100)+'"></div></div>'+
+      '<span class="sr-val">'+row.val+'/'+row.max+'</span>'+
+    '</div>';
+  }).join('');
+  document.getElementById('scoreBreakdown').innerHTML = bdHtml;
+
+  setTimeout(function(){
+    document.querySelectorAll('.score-bar-fill').forEach(function(b){
+      b.style.width = b.dataset.pct+'%';
+    });
+  }, 400);
+
+  // Tags
+  document.getElementById('tagsRow').innerHTML = tags.map(function(t){
+    return '<span class="tag-chip gold">'+t.replace(/_/g,' ')+'</span>';
+  }).join('');
+
+  // Routes
+  var routes = computeRoutes(score, tags);
+  document.getElementById('routeCards').innerHTML = routes.map(function(r){
+    return '<a href="'+r.url+'" class="route-card'+(r.primary?' primary':'')+'" target="_blank">'+
+      (r.primary ? '<span class="primary-badge">Best Match</span>' : '')+
+      '<span class="rc-icon">'+r.icon+'</span>'+
+      '<div class="rc-body">'+
+        '<div class="rc-name">'+r.name+'</div>'+
+        '<div class="rc-desc">'+r.desc+'</div>'+
+      '</div>'+
+      '<span class="rc-arrow">→</span>'+
+    '</a>';
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   SUBMIT
+═══════════════════════════════════════════ */
+async function submitForm(){
+  // Show loading
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  // Compute
+  var scoreObj = computeScore();
+  var tags     = computeTags(scoreObj.total);
+  var routes   = computeRoutes(scoreObj.total, tags);
+
+  // Determine tier
+  var tier = scoreObj.total >= 70 ? 'A' : scoreObj.total >= 40 ? 'B' : 'C';
+
+  // Payload for Firebase
+  var payload = {
+    firstName:    state.answers.firstName,
+    lastName:     state.answers.lastName,
+    email:        state.answers.email,
+    phone:        state.answers.phone,
+    responses: {
+      q1_identity:    state.answers.q1,
+      q2_stage:       state.answers.q2,
+      q3_revenue:     state.answers.q3,
+      q4_pain:        state.answers.q4,
+      q5_needs:       state.answers.q5,
+      q6_budget:      state.answers.q6,
+      q7_urgency:     state.answers.q7,
+      q8_channels:    state.answers.q8,
+      q9_infra:       state.answers.q9,
+      q10_goal:       state.answers.q10,
+    },
+    score:        scoreObj.total,
+    scoreBreakdown: scoreObj.breakdown,
+    tier:         'Tier '+tier,
+    tags:         tags,
+    primaryRoute: routes[0] ? routes[0].name : 'none',
+    completedAt:  new Date().toISOString()
+  };
+
+  // Save to Firebase (non-blocking)
+  if(window.__saveToFirebase){
+    await window.__saveToFirebase(payload);
+  }
+
+  // Simulate min 1.2s loading for UX
+  await new Promise(function(r){ setTimeout(r, 1200); });
+
+  // Hide loading, hide form, show results
+  document.getElementById('loadingOverlay').classList.remove('show');
+  document.getElementById('formShell').style.display     = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+  document.getElementById('results-screen').classList.add('active');
+
+  renderResults(scoreObj, tags);
+
+  // Scroll to top
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+/* ═══════════════════════════════════════════
+   RESTART
+═══════════════════════════════════════════ */
+function restart(){
+  state = {
+    step: 0,
+    totalSteps: 11,
+    answers: {
+      firstName:'', lastName:'', email:'', phone:'',
+      q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[]
+    }
+  };
+  // Reset UI
+  document.querySelectorAll('.option-btn').forEach(function(b){ b.classList.remove('selected'); });
+  document.querySelectorAll('.val-msg').forEach(function(m){ m.classList.remove('show'); });
+  ['firstName','lastName','email','phone'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value='';
+  });
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('formShell').style.display = 'block';
+  showStep(0);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+showStep(0);
+</script>
+
+</body>
+</html>
