@@ -991,6 +991,279 @@ section { padding:clamp(72px,10vw,120px) 0; }
   border-top:1px solid var(--borderS);
 }
 
+/* Platform link inside venture card */
+.vc-link {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:14px;
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+  text-decoration:none;
+  border-bottom:1px solid rgba(201,168,76,.3);
+  padding-bottom:2px;
+  transition:color .2s, border-color .2s;
+}
+.vc-link:hover { color:var(--gold2); border-color:var(--gold2); }
+
+/* ============================================
+   CLIENT WORK SECTION
+============================================ */
+.client-section { background:var(--dark); }
+
+.client-filter-row {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:clamp(28px,4vw,44px);
+  margin-bottom:clamp(24px,4vw,40px);
+}
+.cf-pill {
+  background:var(--panel);
+  border:1px solid var(--borderS);
+  padding:6px 14px;
+  border-radius:20px;
+  font-family:'DM Mono',monospace;
+  font-size:.6rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+  cursor:pointer;
+  transition:all .2s;
+}
+.cf-pill:hover, .cf-pill.active { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.07); }
+
+/* Client cards grid */
+.client-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  gap:2px;
+}
+
+.client-card {
+  background:var(--panel);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transition:background .25s, transform .25s;
+  position:relative;
+}
+.client-card:hover { background:var(--card); transform:translateY(-4px); }
+.client-card::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  opacity:0; transition:opacity .25s;
+}
+.client-card:hover::before { opacity:1; }
+
+/* Visual / media area */
+.cc-media {
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  background:var(--black);
+  overflow:hidden;
+  flex-shrink:0;
+}
+.cc-media-bg {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:8px;
+}
+.cc-preview-url {
+  position:absolute; inset:0;
+  border:none; width:100%; height:100%;
+  pointer-events:none;
+  opacity:.85;
+}
+.cc-media-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to bottom, transparent 40%, var(--panel) 100%);
+  pointer-events:none;
+  z-index:2;
+}
+.cc-media-logo {
+  position:absolute; bottom:14px; left:18px;
+  z-index:3;
+  display:flex; align-items:center; gap:8px;
+}
+.cc-media-logo .bname {
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:.95rem;
+  color:var(--white);
+  text-shadow:0 1px 6px rgba(0,0,0,.6);
+}
+.cc-media-logo .bcat {
+  font-family:'DM Mono',monospace;
+  font-size:.55rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+  background:rgba(0,0,0,.5);
+  padding:2px 8px;
+  border-radius:10px;
+}
+.cc-visit-btn {
+  position:absolute; top:12px; right:12px;
+  z-index:3;
+  background:var(--gold);
+  color:#080808;
+  font-family:'DM Mono',monospace;
+  font-size:.55rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  font-weight:600;
+  padding:5px 12px;
+  border-radius:3px;
+  text-decoration:none;
+  transition:background .2s;
+}
+.cc-visit-btn:hover { background:var(--gold2); }
+
+/* Placeholder screens for clients without iframe-able sites */
+.cc-placeholder {
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:10px;
+  background: var(--black);
+  position:relative;
+  overflow:hidden;
+}
+.cc-placeholder::before {
+  content:''; position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.cc-placeholder .picon { font-size:2.4rem; position:relative; z-index:1; }
+.cc-placeholder .pname {
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:1.1rem; color:var(--gold); position:relative; z-index:1;
+}
+.cc-placeholder .ptag {
+  font-family:'DM Mono',monospace; font-size:.58rem;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dimmer); position:relative; z-index:1;
+}
+
+/* Content body */
+.cc-body { padding:clamp(18px,3vw,28px); flex:1; display:flex; flex-direction:column; gap:12px; }
+
+.cc-service-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:'DM Mono',monospace; font-size:.58rem;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:var(--gold); padding:4px 10px;
+  background:rgba(201,168,76,.08); border:1px solid rgba(201,168,76,.18);
+  border-radius:2px; width:fit-content;
+}
+
+.cc-what {
+  display:flex; flex-direction:column; gap:6px;
+}
+.cc-what-label {
+  font-family:'DM Mono',monospace; font-size:.56rem;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--dimmer);
+}
+.cc-what-items {
+  display:flex; flex-wrap:wrap; gap:6px;
+}
+.cc-what-item {
+  font-size:.78rem; color:var(--muted);
+  padding:3px 10px;
+  background:var(--borderS); border-radius:2px;
+}
+
+/* Testimonial quote */
+.cc-quote {
+  border-left:2px solid var(--gold);
+  padding:12px 16px;
+  background:rgba(201,168,76,.04);
+  border-radius:0 var(--r) var(--r) 0;
+  margin-top:4px;
+  flex:1;
+}
+.cc-quote blockquote {
+  font-size:.88rem;
+  color:var(--muted);
+  line-height:1.75;
+  font-style:italic;
+  margin-bottom:10px;
+}
+.cc-quote cite {
+  display:flex; align-items:center; gap:10px;
+  font-style:normal;
+}
+.cite-avatar {
+  width:32px; height:32px; border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:.75rem; color:#080808; flex-shrink:0;
+}
+.cite-info .cite-name {
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:.8rem; color:var(--white); display:block;
+}
+.cite-info .cite-role {
+  font-family:'DM Mono',monospace; font-size:.56rem;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--dimmer);
+}
+
+/* Star rating */
+.cc-stars { display:flex; gap:3px; margin-bottom:6px; }
+.cc-stars span { font-size:.8rem; }
+
+/* Result chip */
+.cc-result {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 14px;
+  background:rgba(34,197,94,.07);
+  border:1px solid rgba(34,197,94,.18);
+  border-radius:var(--r);
+  margin-top:4px;
+}
+.cc-result .ri { font-size:.9rem; }
+.cc-result .rt {
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:.8rem; color:var(--green);
+}
+
+/* Client logo strip */
+.logo-strip {
+  margin-top:clamp(36px,5vw,56px);
+  border-top:1px solid var(--borderS);
+  padding-top:clamp(24px,4vw,36px);
+  display:flex; align-items:center; gap:clamp(20px,4vw,48px);
+  flex-wrap:wrap;
+}
+.logo-strip-label {
+  font-family:'DM Mono',monospace; font-size:.58rem;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--dimmer); flex-shrink:0;
+}
+.logo-items { display:flex; gap:clamp(14px,3vw,32px); flex-wrap:wrap; align-items:center; }
+.logo-item {
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:clamp(.78rem,1.5vw,.95rem);
+  color:rgba(242,237,228,.2);
+  letter-spacing:.04em; text-transform:uppercase;
+  transition:color .2s; text-decoration:none;
+  white-space:nowrap;
+}
+.logo-item:hover { color:var(--gold); }
+
+@media(max-width:600px){
+  .client-grid { grid-template-columns:1fr; }
+  .client-filter-row { gap:6px; }
+}
+
 /* ============================================
    POSITIONING
 ============================================ */
@@ -2079,10 +2352,10 @@ footer {
       </div>
 
       <div class="hero-stats">
-        <div class="stat-box"><span class="n">5</span><span class="l">Live Ventures</span></div>
-        <div class="stat-box"><span class="n">3</span><span class="l">Service Tiers</span></div>
-        <div class="stat-box"><span class="n">₦50M+</span><span class="l">Build Capacity</span></div>
-        <div class="stat-box"><span class="n">1</span><span class="l">Ecosystem</span></div>
+        <div class="stat-box"><span class="n">20+</span><span class="l">Projects Delivered</span></div>
+        <div class="stat-box"><span class="n">$350k+</span><span class="l">Revenue Generated</span></div>
+        <div class="stat-box"><span class="n">89%</span><span class="l">Client Retention</span></div>
+        <div class="stat-box"><span class="n">~3wk</span><span class="l">Avg Launch Time</span></div>
       </div>
     </div>
   </div>
@@ -2094,10 +2367,10 @@ footer {
     <div class="traction-inner">
       <div class="traction-label">Studio Traction</div>
       <div class="traction-metrics">
-        <div class="tm"><span class="tv">5+</span><span class="tk">Businesses Built</span></div>
-        <div class="tm"><span class="tv">₦50M+</span><span class="tk">Systems Deployed</span></div>
-        <div class="tm"><span class="tv">48h</span><span class="tk">Average Quote Turnaround</span></div>
-        <div class="tm"><span class="tv">100%</span><span class="tk">Revenue-First Approach</span></div>
+        <div class="tm"><span class="tv">20+</span><span class="tk">Projects Delivered</span></div>
+        <div class="tm"><span class="tv">$350k+</span><span class="tk">Revenue Generated</span></div>
+        <div class="tm"><span class="tv">89%</span><span class="tk">Client Retention</span></div>
+        <div class="tm"><span class="tv">~3 wks</span><span class="tk">Avg Launch Time</span></div>
       </div>
       <div class="traction-cta-sm">
         <button class="btn btn-outline nav-btn-sm" onclick="openIntakeModal()">Get Qualified →</button>
@@ -2212,69 +2485,500 @@ footer {
 <section class="services-section" id="services">
   <div class="wrap">
     <div class="t-eyebrow">Service Menu</div>
-    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Choose your entry point</h2>
-    <p style="margin-top:12px;max-width:560px;font-size:0.92rem;">Most clients start at Tier 1. The serious ones graduate to Tier 3. Every tier is held to the same standard — because every client deserves infrastructure that works.</p>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Eight services. One studio. Zero confusion.</h2>
+    <p style="margin-top:12px;max-width:620px;font-size:0.92rem;">Most agencies make you request a custom proposal. We believe in clarity. Here's exactly what we build, who it's for, and what it costs. Choose your entry point below.</p>
 
-    <div class="tier-nav" role="tablist">
-      <button class="tier-btn active" data-tier="t1" role="tab" aria-selected="true">🟢 Tier 1 — Starter</button>
-      <button class="tier-btn" data-tier="t2" role="tab">🟡 Tier 2 — Growth</button>
-      <button class="tier-btn" data-tier="t3" role="tab">🔴 Tier 3 — Platforms</button>
-      <button class="tier-btn" data-tier="ta" role="tab">➕ Add-Ons</button>
+    <!-- Quick-pick packages strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--borderS);border:1px solid var(--borderS);margin-top:clamp(28px,4vw,44px);">
+      <div style="background:var(--panel);padding:18px 16px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Starter Brand</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--gold);">₦150k</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">New online sellers</div>
+      </div>
+      <div style="background:var(--panel);padding:18px 16px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Sales System</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--gold);">₦300k</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Businesses selling online</div>
+      </div>
+      <div style="background:var(--panel);padding:18px 16px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Business System</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--gold);">₦600k</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Full digital setup</div>
+      </div>
+      <div style="background:var(--panel);padding:18px 16px;text-align:center;border-top:2px solid var(--gold);">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Platform Build</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--gold);">₦1M+</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">SaaS / marketplace</div>
+      </div>
+      <div style="background:var(--panel);padding:18px 16px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Web3 Platform</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--cyan);">₦2M+</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Blockchain products</div>
+      </div>
     </div>
 
-    <!-- TIER 1 -->
+    <div class="tier-nav" role="tablist" style="margin-top:clamp(36px,6vw,56px);">
+      <button class="tier-btn active" data-tier="t1" role="tab" aria-selected="true">01 · Brand Launch</button>
+      <button class="tier-btn" data-tier="t2" role="tab">02 · Sales System</button>
+      <button class="tier-btn" data-tier="t3" role="tab">03 · Systemization</button>
+      <button class="tier-btn" data-tier="t4" role="tab">04 · Platform Dev</button>
+      <button class="tier-btn" data-tier="t5" role="tab">05 · Web3</button>
+      <button class="tier-btn" data-tier="t6" role="tab">06 · GATA Onboarding</button>
+      <button class="tier-btn" data-tier="t7" role="tab">07 · Startup Build</button>
+      <button class="tier-btn" data-tier="t8" role="tab">08 · Custom Software</button>
+    </div>
+
+    <!-- SERVICE 01: Digital Brand Launch -->
     <div class="tier-body t1 active" id="t1" role="tabpanel">
       <div class="tier-head">
-        <div class="tier-meta"><span class="badge">Tier 1 · Starter Services</span><h3>Stop looking like a side hustle. Start winning trust instantly.</h3><p>The first thing your customers do is search for you. What they find in the next 8 seconds determines whether they buy or bounce. These packages ensure what they see builds credibility — not doubt.</p></div>
-        <div class="tier-targets"><h5>This Tier is For</h5><div class="tags"><span class="tag">Instagram Vendors</span><span class="tag">TikTok Sellers</span><span class="tag">Facebook Business</span><span class="tag">Freelancers</span><span class="tag">Side Hustlers</span><span class="tag">New Operators</span></div></div>
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(242,237,228,.06);color:var(--dimmer);">Service 01 · Digital Brand Launch</span>
+          <h3>Stop looking like a side hustle. Win trust before you say a word.</h3>
+          <p>For new businesses and social-media sellers who are ready to become a real brand. The first thing customers do is search for you — what they find in 8 seconds decides everything. We make sure what they find builds credibility, not doubt.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Instagram / WhatsApp Sellers</span><span class="tag">TikTok Vendors</span><span class="tag">Facebook Businesses</span><span class="tag">Freelancers Going Pro</span><span class="tag">New Operators</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);">₦150,000 – ₦300,000</div>
+          </div>
+        </div>
       </div>
       <div class="pkg-grid">
-        <div class="pkg"><div class="pkg-name">Brand Starter Kit</div><span class="pkg-price">₦25,000 – ₦75,000</span><p class="pkg-pitch">People buy from businesses they trust. This kit gives you the visual credibility to earn that trust immediately — before you say a single word.</p><ul class="pkg-feat"><li>Logo design</li><li>Brand colours + font system</li><li>Simple brand guide</li><li>Social profile optimisation</li></ul></div>
-        <div class="pkg"><div class="pkg-name">Brand Authority Kit</div><span class="pkg-price">₦80,000 – ₦200,000</span><p class="pkg-pitch">When you look like the authority in your niche, people stop comparing prices. This kit positions you as the obvious choice — not just another option competing on cost.</p><ul class="pkg-feat"><li>Full brand blueprint</li><li>Brand voice guide</li><li>Instagram page setup</li><li>Highlight covers</li><li>Content templates</li></ul></div>
-        <div class="pkg"><div class="pkg-name">Business Launch Page</div><span class="pkg-price">₦120,000 – ₦350,000</span><p class="pkg-pitch">Your customers are searching for what you sell right now. Own a professional home on the internet that captures them and converts them — instead of sending them to a competitor.</p><ul class="pkg-feat"><li>One-page website or landing page</li><li>Mobile-first design</li><li>WhatsApp integration</li><li>Contact form + lead capture</li><li>Basic SEO setup</li></ul></div>
-      </div>
-    </div>
-
-    <!-- TIER 2 -->
-    <div class="tier-body t2" id="t2" role="tabpanel">
-      <div class="tier-head">
-        <div class="tier-meta"><span class="badge">Tier 2 · Growth Systems</span><h3>Turn your business into a machine that runs without you chasing every sale.</h3><p>When your digital infrastructure works correctly, customers find you, trust you, book you, and pay you — while you focus on delivery. These systems make that your default reality.</p></div>
-        <div class="tier-targets"><h5>This Tier is For</h5><div class="tags"><span class="tag">Established SMEs</span><span class="tag">Logistics Companies</span><span class="tag">Agencies</span><span class="tag">Service Firms</span><span class="tag">Growing Vendors</span></div></div>
-      </div>
-      <div class="pkg-grid">
-        <div class="pkg"><div class="pkg-name">Business Growth System</div><span class="pkg-price">₦400,000 – ₦1,500,000</span><p class="pkg-pitch">Your website should be your best salesperson — working 24/7, never asking for a raise, never having a bad day. This system turns your digital presence into exactly that.</p><ul class="pkg-feat"><li>Multi-page professional website</li><li>Booking or order system</li><li>Customer dashboard (basic)</li><li>Payment integration</li><li>Analytics + conversion tracking</li></ul></div>
-        <div class="pkg"><div class="pkg-name">Business Automation Setup</div><span class="pkg-price">₦500,000 – ₦2,000,000</span><p class="pkg-pitch">The businesses that win don't work harder — they've built systems that do the hard work automatically. Lead capture, follow-up, nurture, convert. All running while you sleep.</p><ul class="pkg-feat"><li>CRM setup + configuration</li><li>Lead capture funnels</li><li>Email + SMS automation</li><li>Customer tracking pipeline</li><li>Workflow automation</li></ul></div>
-      </div>
-    </div>
-
-    <!-- TIER 3 -->
-    <div class="tier-body t3" id="t3" role="tabpanel">
-      <div class="tier-head">
-        <div class="tier-meta"><span class="badge">Tier 3 · Custom Digital Platforms</span><h3>This is where TEKNNUKU Studio becomes genuinely dangerous in the market.</h3><p>Templates are for businesses that want to look like everyone else. If your model requires a custom digital engine — a marketplace, SaaS, or enterprise platform — this is where we operate. No shortcuts. No compromises.</p></div>
-        <div class="tier-targets"><h5>This Tier is For</h5><div class="tags"><span class="tag">Funded Startups</span><span class="tag">Large SMEs</span><span class="tag">Institutions</span><span class="tag">Fintech Founders</span><span class="tag">Enterprise Clients</span><span class="tag">Logistics Operators</span></div></div>
-      </div>
-      <div class="pkg-grid">
-        <div class="pkg"><div class="pkg-name">Custom Business Platform</div><span class="pkg-price">₦2,000,000 – ₦15,000,000+</span><p class="pkg-pitch">Your business model is unique. Your platform should be too. We build the engine that runs your company — designed for your operations, your users, and your growth targets.</p><ul class="pkg-feat"><li>Product architecture + UI/UX system</li><li>Full-stack custom development</li><li>Admin dashboards + analytics</li><li>Marketplace / SaaS / ops systems</li><li>Deployment + hosting</li></ul></div>
-        <div class="pkg"><div class="pkg-name">Enterprise Systems Build</div><span class="pkg-price">₦10,000,000 – ₦50,000,000+</span><p class="pkg-pitch">For organisations where the platform IS the business. Internal automation, white-label products, multi-stakeholder systems, and AI-integrated infrastructure built to enterprise standard.</p><ul class="pkg-feat"><li>Internal business automation</li><li>White-label platform builds</li><li>Multi-user enterprise systems</li><li>AI feature integration</li><li>Maintenance retainers + SLA</li></ul></div>
-        <div class="pkg"><div class="pkg-name">Venture Build Partnership</div><span class="pkg-price">Equity-based · By Application Only</span><p class="pkg-pitch">For founders with a validated idea and the ambition to build a category-defining company. We co-build — reduced upfront cost, TEKNNUKU takes equity. We only say yes when we genuinely believe in the bet.</p><ul class="pkg-feat"><li>Reduced engineering fee upfront</li><li>TEKNNUKU takes equity stake</li><li>Strategic co-founder input</li><li>Full venture-build process</li><li>By application — we say no often</li></ul></div>
-      </div>
-    </div>
-
-    <!-- ADD-ONS -->
-    <div class="tier-body ta" id="ta" role="tabpanel">
-      <div class="tier-head">
-        <div class="tier-meta"><span class="badge">Add-On Services</span><h3>The services that turn a good platform into a compounding asset.</h3><p>A platform without ongoing optimisation is a depreciating asset. These add-ons keep your system performing, growing, and generating return — month after month after month.</p></div>
-      </div>
-      <div class="addon-wrap">
-        <h4>Available on Every Tier</h4>
-        <div class="addon-cols">
-          <div class="addon-col"><h5>Monthly Support Plans</h5><div class="ph">₦25,000 – ₦150,000/month</div><ul><li>Hosting management</li><li>Maintenance + updates</li><li>Security monitoring</li><li>Minor changes + edits</li></ul></div>
-          <div class="addon-col"><h5>Growth Add-Ons</h5><ul><li>SEO setup + optimisation</li><li>Paid ads setup + management</li><li>Analytics dashboards</li><li>Performance optimisation</li><li>Conversion rate optimisation</li></ul></div>
-          <div class="addon-col"><h5>Premium Add-Ons</h5><ul><li>Mobile app version</li><li>AI feature integration</li><li>Blockchain integration</li><li>Advanced automation builds</li><li>Custom API development</li></ul></div>
+        <div class="pkg">
+          <div class="pkg-name">Brand Starter Kit</div>
+          <span class="pkg-price">₦150,000</span>
+          <p class="pkg-pitch">The minimum credible brand. Logo, colours, fonts, and social profiles optimised so your business looks like it belongs — not like it's trying.</p>
+          <ul class="pkg-feat">
+            <li>Brand name strategy</li>
+            <li>Logo design</li>
+            <li>Color &amp; visual identity system</li>
+            <li>Social media profile setup</li>
+            <li>Basic brand messaging</li>
+          </ul>
+        </div>
+        <div class="pkg">
+          <div class="pkg-name">Brand Authority Kit</div>
+          <span class="pkg-price">₦200,000 – ₦300,000</span>
+          <p class="pkg-pitch">Full brand system — the kind that stops customers comparing prices and positions you as the authority. When you look like the best option, you become the best option.</p>
+          <ul class="pkg-feat">
+            <li>Everything in Starter Kit</li>
+            <li>Full brand blueprint</li>
+            <li>Brand voice &amp; messaging guide</li>
+            <li>Instagram page complete setup</li>
+            <li>Highlight covers + content templates</li>
+            <li>Marketing structure framework</li>
+          </ul>
         </div>
       </div>
     </div>
 
+    <!-- SERVICE 02: Sales System Setup -->
+    <div class="tier-body t2" id="t2" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(201,168,76,.1);color:var(--gold);">Service 02 · Sales System Setup</span>
+          <h3>Turn your existing audience into paying customers — automatically.</h3>
+          <p>You already have attention. The problem is you have no system converting that attention into revenue. This service builds the infrastructure that captures, qualifies, and converts your audience while you focus on delivery.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Businesses Already Selling Online</span><span class="tag">Service Providers</span><span class="tag">Product Vendors</span><span class="tag">Course Creators</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);">₦200,000 – ₦500,000</div>
+          </div>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <div class="pkg-name">Sales System Setup</div>
+          <span class="pkg-price">₦200,000 – ₦500,000</span>
+          <p class="pkg-pitch">A structured system that turns audience into buyers — without you manually chasing every lead. Set it up once. Let it work every day.</p>
+          <ul class="pkg-feat">
+            <li>Product / service landing page</li>
+            <li>Payment integration (Paystack / Flutterwave)</li>
+            <li>Order collection system</li>
+            <li>Automated confirmation responses</li>
+            <li>Basic sales funnel structure</li>
+            <li>WhatsApp Business integration</li>
+          </ul>
+        </div>
+        <div class="pkg">
+          <div class="pkg-name">Sales Automation Kit</div>
+          <span class="pkg-price">₦350,000 – ₦500,000</span>
+          <p class="pkg-pitch">The full funnel — from first touch to paid. Lead capture, nurture sequences, conversion pages, and payment. The businesses that win have this running 24/7.</p>
+          <ul class="pkg-feat">
+            <li>Everything in Sales System</li>
+            <li>Lead capture funnel</li>
+            <li>Email / SMS automation sequences</li>
+            <li>CRM setup + pipeline tracking</li>
+            <li>Analytics + conversion tracking</li>
+            <li>Retargeting pixel setup</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE 03: Business Systemization -->
+    <div class="tier-body t3" id="t3" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(201,168,76,.1);color:var(--gold);">Service 03 · Digital Business Systemization</span>
+          <h3>Transform a social-media seller into a fully systemized digital business.</h3>
+          <p>The complete transformation. This takes a business running on DMs and phone calls and turns it into a structured, automated digital operation — with brand, sales system, payment infrastructure, and automation all working together.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Instagram / WhatsApp Businesses</span><span class="tag">SMEs Ready to Formalize</span><span class="tag">Physical Stores Going Digital</span><span class="tag">Service Businesses Scaling Up</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);">₦400,000 – ₦800,000</div>
+          </div>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <div class="pkg-name">Business Systemization Package</div>
+          <span class="pkg-price">₦400,000 – ₦800,000</span>
+          <p class="pkg-pitch">One complete transformation — from informal seller to legitimate digital business. Everything you need to operate professionally, sell automatically, and scale without hiring more people to manage chaos.</p>
+          <ul class="pkg-feat">
+            <li>Full brand setup (logo, identity, messaging)</li>
+            <li>Landing page / mini website</li>
+            <li>Payment processing integration</li>
+            <li>Product catalog system</li>
+            <li>Automation tools (orders, responses, follow-ups)</li>
+            <li>Sales funnel setup</li>
+            <li>Social media profile optimization (all platforms)</li>
+            <li>Basic analytics dashboard</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE 04: Platform Development -->
+    <div class="tier-body t4" id="t4" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(0,188,212,.1);color:var(--cyan);">Service 04 · Platform Development</span>
+          <h3>Build a complete digital platform engineered to run your business.</h3>
+          <p>Your business has outgrown templates and landing pages. You need a real platform — custom-built for your operations, your users, and your revenue model. This is where TEKNNUKU Studio becomes genuinely dangerous in the market.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Funded Startups</span><span class="tag">Marketplace Founders</span><span class="tag">SaaS Builders</span><span class="tag">Large SMEs</span><span class="tag">Fintech Operators</span><span class="tag">Logistics Companies</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.18);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--cyan);">₦1,000,000 – ₦5,000,000+</div>
+          </div>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <div class="pkg-name">SaaS Platform Build</div>
+          <span class="pkg-price">₦1M – ₦3M</span>
+          <p class="pkg-pitch">A subscription software product built from architecture to deployment. Designed to acquire users, process payments, and generate recurring revenue — from day one.</p>
+          <ul class="pkg-feat">
+            <li>Platform architecture design</li>
+            <li>UI/UX design system</li>
+            <li>Frontend + backend development</li>
+            <li>User auth + subscription billing</li>
+            <li>Admin dashboard</li>
+            <li>Cloud deployment</li>
+          </ul>
+        </div>
+        <div class="pkg">
+          <div class="pkg-name">Marketplace Platform Build</div>
+          <span class="pkg-price">₦2M – ₦5M+</span>
+          <p class="pkg-pitch">A two-sided marketplace connecting buyers and sellers — with vendor management, transaction processing, logistics integration, and commission systems built in.</p>
+          <ul class="pkg-feat">
+            <li>Multi-vendor architecture</li>
+            <li>Product listing + catalog system</li>
+            <li>Payment + commission engine</li>
+            <li>Buyer and seller dashboards</li>
+            <li>Logistics integration (optional)</li>
+            <li>Analytics + reporting</li>
+          </ul>
+        </div>
+        <div class="pkg">
+          <div class="pkg-name">Operations Platform</div>
+          <span class="pkg-price">₦1.5M – ₦5M+</span>
+          <p class="pkg-pitch">For businesses that need a custom operations engine — booking platforms, service platforms, scheduling systems, or industry-specific management tools.</p>
+          <ul class="pkg-feat">
+            <li>Custom workflow design</li>
+            <li>Booking / scheduling system</li>
+            <li>Operations dashboard</li>
+            <li>Staff / team management</li>
+            <li>Client portal</li>
+            <li>Reporting + analytics</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE 05: Web3 -->
+    <div class="tier-body t5" id="t5" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(180,120,255,.1);color:#b47aff;">Service 05 · Web3 Platform Development</span>
+          <h3>Build blockchain-powered platforms and token ecosystems.</h3>
+          <p>For founders building the next generation of decentralized infrastructure. We design and deploy smart contracts, token systems, dApps, and Web3 marketplaces — engineered for the decentralized economy, not just for show.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Web3 Founders</span><span class="tag">Token Issuers</span><span class="tag">DeFi Builders</span><span class="tag">NFT Platforms</span><span class="tag">DAO Operators</span><span class="tag">Crypto Startups</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(180,120,255,.07);border:1px solid rgba(180,120,255,.18);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#b47aff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#b47aff;">₦2,000,000 – ₦10,000,000+</div>
+          </div>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <div class="pkg-name">Token Ecosystem Setup</div>
+          <span class="pkg-price">₦2M – ₦5M</span>
+          <p class="pkg-pitch">Design and deploy a token economy — from tokenomics architecture to smart contract deployment and wallet integration. Built to create real utility, not just hype.</p>
+          <ul class="pkg-feat">
+            <li>Tokenomics design</li>
+            <li>Smart contract development + audit</li>
+            <li>Wallet integration (MetaMask etc.)</li>
+            <li>Token distribution system</li>
+            <li>Community governance setup</li>
+          </ul>
+        </div>
+        <div class="pkg">
+          <div class="pkg-name">Web3 dApp Platform</div>
+          <span class="pkg-price">₦5M – ₦10M+</span>
+          <p class="pkg-pitch">A fully functional decentralized application — marketplace, exchange, protocol, or platform — built on proven blockchain infrastructure and designed for real transaction volume.</p>
+          <ul class="pkg-feat">
+            <li>dApp architecture design</li>
+            <li>Smart contract development</li>
+            <li>Decentralized marketplace build</li>
+            <li>Crypto payment integration</li>
+            <li>On-chain governance systems</li>
+            <li>Full frontend + web3 backend</li>
+          </ul>
+        </div>
+        <div class="pkg" style="border-top:2px solid rgba(180,120,255,.3);">
+          <div class="pkg-name" style="color:#b47aff;">GATA Protocol — Live Example</div>
+          <span class="pkg-price" style="color:#b47aff;">Active Venture</span>
+          <p class="pkg-pitch">Our own Web3 ecosystem — GATAMarket (decentralized marketplace) and GATANow (logistics network). Everything we build for clients, we've built and operate ourselves.</p>
+          <ul class="pkg-feat">
+            <li>GATAMarket — decentralized commerce</li>
+            <li>GATANow — logistics &amp; delivery</li>
+            <li>GATA Token economy</li>
+            <li>Multi-vendor + multi-provider</li>
+            <li>Live and operational</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE 06: GATA Onboarding -->
+    <div class="tier-body t6" id="t6" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(34,197,94,.1);color:var(--green);">Service 06 · GATA Ecosystem Onboarding</span>
+          <h3>List your business on the GATA marketplace — the fastest path to digital commerce.</h3>
+          <p>GATAMarket and GATANow give you immediate access to a live marketplace and logistics network. Skip the platform build. Plug in directly and start selling — with payments, logistics, and commerce infrastructure already built.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Physical Product Sellers</span><span class="tag">Logistics Providers</span><span class="tag">Vendors Wanting Fast Launch</span><span class="tag">Businesses Joining the Ecosystem</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--green);">₦20,000 – ₦100,000</div>
+          </div>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <div class="pkg-name">GATAMarket Seller Setup</div>
+          <span class="pkg-price">₦20,000 – ₦50,000</span>
+          <p class="pkg-pitch">Full seller account setup on the GATA decentralized marketplace. Product listings, payment integration, and storefront ready to transact — in days, not months.</p>
+          <ul class="pkg-feat">
+            <li>Seller account creation</li>
+            <li>Product listing + catalog setup</li>
+            <li>Payment wallet setup</li>
+            <li>Store branding + profile</li>
+            <li>Transaction training</li>
+          </ul>
+        </div>
+        <div class="pkg">
+          <div class="pkg-name">Full GATA Ecosystem Onboarding</div>
+          <span class="pkg-price">₦50,000 – ₦100,000</span>
+          <p class="pkg-pitch">Complete integration across GATAMarket and GATANow — seller store, logistics registration, payment systems, and ecosystem training. The fastest path to a live digital operation.</p>
+          <ul class="pkg-feat">
+            <li>GATAMarket store setup</li>
+            <li>GATANow logistics integration</li>
+            <li>Payment + wallet configuration</li>
+            <li>Product catalog + pricing</li>
+            <li>Logistics provider registration (if applicable)</li>
+            <li>Ecosystem orientation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE 07: Startup Venture Build -->
+    <div class="tier-body t7" id="t7" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(245,158,11,.1);color:var(--amber);">Service 07 · Startup Venture Building</span>
+          <h3>For founders who want to launch a real digital startup — not just an idea.</h3>
+          <p>We partner with serious founders to take an idea from zero to a validated, revenue-generating digital business. Full venture-build process: strategy, platform, launch, and growth. Revenue-share or equity models available for the right founders.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Early-Stage Founders</span><span class="tag">Entrepreneurs with Validated Ideas</span><span class="tag">Technical Co-Founder Seekers</span><span class="tag">Funded Startups Needing a Build Partner</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Pricing</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--amber);">₦500k – ₦2M &nbsp;·&nbsp; Or Equity (10–30%)</div>
+          </div>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <div class="pkg-name">Startup Launch Package</div>
+          <span class="pkg-price">₦500,000 – ₦2,000,000</span>
+          <p class="pkg-pitch">The full venture-build process for founders who have capital and want speed. From idea validation to a live revenue-generating MVP — with strategy, platform, and launch infrastructure included.</p>
+          <ul class="pkg-feat">
+            <li>Idea validation + market analysis</li>
+            <li>Business model design</li>
+            <li>Platform architecture + development</li>
+            <li>MVP build + deployment</li>
+            <li>Product launch strategy</li>
+            <li>Initial growth infrastructure</li>
+          </ul>
+        </div>
+        <div class="pkg" style="border-top:2px solid rgba(245,158,11,.3);">
+          <div class="pkg-name" style="color:var(--amber);">Venture Build Partnership</div>
+          <span class="pkg-price" style="color:var(--amber);">Equity — 10–30% · By Application</span>
+          <p class="pkg-pitch">For founders with a validated idea and serious ambition. We co-build the platform — reduced upfront cost in exchange for equity. We only say yes when we genuinely believe in the bet. We say no often.</p>
+          <ul class="pkg-feat">
+            <li>Reduced upfront development fee</li>
+            <li>TEKNNUKU takes equity stake (10–30%)</li>
+            <li>Strategic co-founder input</li>
+            <li>Full venture-build + launch process</li>
+            <li>Ongoing growth partnership</li>
+            <li>By application only — not guaranteed</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE 08: Custom Software -->
+    <div class="tier-body t8" id="t8" role="tabpanel">
+      <div class="tier-head">
+        <div class="tier-meta">
+          <span class="badge" style="background:rgba(59,130,246,.1);color:var(--blue);">Service 08 · Custom Software Development</span>
+          <h3>Specialized internal systems for companies that can't afford to cut corners.</h3>
+          <p>For companies with specific internal infrastructure needs — logistics management, operations dashboards, enterprise automation, or industry-specific platforms. We build it to spec, to scale, and to survive. No templates. No compromises.</p>
+        </div>
+        <div class="tier-targets">
+          <h5>Best For</h5>
+          <div class="tags"><span class="tag">Enterprise Companies</span><span class="tag">Logistics Operators</span><span class="tag">Institutions</span><span class="tag">Security Firms</span><span class="tag">Financial Services</span><span class="tag">Healthcare Operators</span></div>
+          <div style="margin-top:18px;padding:14px 16px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:var(--r);">
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--blue);">₦1,000,000 – ₦10,000,000+</div>
+          </div>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div class="pkg">
+          <div class="pkg-name">Operations Management System</div>
+          <span class="pkg-price">₦1M – ₦5M</span>
+          <p class="pkg-pitch">Custom-built operations software for companies running complex workflows — logistics management, guard tracking, service delivery systems, or multi-location operations.</p>
+          <ul class="pkg-feat">
+            <li>Custom workflow architecture</li>
+            <li>Operations dashboard</li>
+            <li>Staff + resource management</li>
+            <li>Reporting + analytics</li>
+            <li>Mobile app (optional)</li>
+            <li>API integrations</li>
+          </ul>
+        </div>
+        <div class="pkg">
+          <div class="pkg-name">Enterprise Platform Build</div>
+          <span class="pkg-price">₦5M – ₦10M+</span>
+          <p class="pkg-pitch">Enterprise-grade systems for organizations where the platform is the business. Multi-user, multi-role, high-availability infrastructure with AI integration, white-label capabilities, and SLA-backed maintenance.</p>
+          <ul class="pkg-feat">
+            <li>Enterprise architecture design</li>
+            <li>Multi-user role systems</li>
+            <li>White-label capabilities</li>
+            <li>AI feature integration</li>
+            <li>Blockchain integration (optional)</li>
+            <li>Maintenance retainers + SLA</li>
+          </ul>
+        </div>
+        <div class="pkg" style="border-top:2px solid rgba(59,130,246,.3);">
+          <div class="pkg-name" style="color:var(--blue);">TEK1SECURITY — Live Reference</div>
+          <span class="pkg-price" style="color:var(--blue);">Active Venture</span>
+          <p class="pkg-pitch">Our own custom enterprise SaaS — guard management, shift tracking, incident reporting, and operations dashboards for security companies. We build what we say we build.</p>
+          <ul class="pkg-feat">
+            <li>Guard tracking + scheduling</li>
+            <li>Operations management dashboard</li>
+            <li>Incident reporting system</li>
+            <li>Client management portal</li>
+            <li>Mobile app for guards + supervisors</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================
+     ECOSYSTEM FLOW
+============================================ -->
+<section style="background:var(--dark);padding:clamp(56px,8vw,96px) 0;">
+  <div class="wrap">
+    <div class="t-eyebrow">The Ecosystem Strategy</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;max-width:640px;">Every service feeds into a connected digital economy.</h2>
+    <p style="margin-top:12px;max-width:560px;font-size:0.92rem;">TEKNNUKU Studio is not just a service business. Every client we onboard strengthens the ecosystem. Every platform we build adds network power. This is how we build lasting infrastructure — not just individual products.</p>
+
+    <!-- Flow diagram -->
+    <div style="margin-top:clamp(32px,5vw,52px);display:flex;align-items:stretch;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+      <div style="flex:1;min-width:130px;background:var(--panel);border:1px solid var(--borderS);padding:clamp(16px,2.5vw,24px) clamp(12px,2vw,20px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
+        <div style="font-size:1.6rem;">🏪</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--white);">Local Seller</div>
+        <div style="font-size:.75rem;color:var(--muted);">Instagram / WhatsApp</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 8px;color:var(--gold);font-size:1.1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:130px;background:rgba(201,168,76,.08);border:1px solid var(--border);padding:clamp(16px,2.5vw,24px) clamp(12px,2vw,20px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
+        <div style="font-size:1.6rem;">🎨</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--gold);">Brand Setup</div>
+        <div style="font-size:.75rem;color:var(--muted);">Identity + presence</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 8px;color:var(--gold);font-size:1.1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:130px;background:rgba(201,168,76,.08);border:1px solid var(--border);padding:clamp(16px,2.5vw,24px) clamp(12px,2vw,20px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
+        <div style="font-size:1.6rem;">⚙️</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--gold);">Sales System</div>
+        <div style="font-size:.75rem;color:var(--muted);">Funnels + payments</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 8px;color:var(--gold);font-size:1.1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:130px;background:rgba(0,188,212,.08);border:1px solid rgba(0,188,212,.18);padding:clamp(16px,2.5vw,24px) clamp(12px,2vw,20px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
+        <div style="font-size:1.6rem;">🛒</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--cyan);">GATAMarket</div>
+        <div style="font-size:.75rem;color:var(--muted);">Sell on marketplace</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 8px;color:var(--gold);font-size:1.1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:130px;background:rgba(0,188,212,.08);border:1px solid rgba(0,188,212,.18);padding:clamp(16px,2.5vw,24px) clamp(12px,2vw,20px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
+        <div style="font-size:1.6rem;">🚚</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--cyan);">GATANow</div>
+        <div style="font-size:.75rem;color:var(--muted);">Logistics network</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 8px;color:var(--gold);font-size:1.1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:130px;background:rgba(180,120,255,.08);border:1px solid rgba(180,120,255,.18);padding:clamp(16px,2.5vw,24px) clamp(12px,2vw,20px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;">
+        <div style="font-size:1.6rem;">💎</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:#b47aff;">GATA Payments</div>
+        <div style="font-size:.75rem;color:var(--muted);">Token economy</div>
+      </div>
+    </div>
+
+    <p style="margin-top:20px;font-size:.8rem;color:var(--dimmer);font-family:'DM Mono',monospace;letter-spacing:.06em;">TEKNNUKU Studio becomes both a revenue-generating service business and the growth engine of the entire ecosystem.</p>
   </div>
 </section>
 
@@ -2319,11 +3023,91 @@ footer {
     <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">We eat our own cooking.</h2>
     <p style="margin-top:12px;max-width:560px;font-size:0.92rem;">Every system we sell to clients, we run ourselves. These are live ventures inside the TEKNNUKU factory — tested against the same standards we hold your project to.</p>
     <div class="venture-grid">
-      <div class="vc"><span class="vstatus s-cash">⭐ Primary Cash Engine</span><h3>Jobletters.xyz</h3><p class="vrole">Job automation platform. Currently primed for aggressive paid acquisition — our most promising near-term revenue driver.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Job automation platform</span></li><li><span class="dk">Stage</span><span class="dv">Cash engine candidate</span></li><li><span class="dk">Priority</span><span class="dv">Very High</span></li><li><span class="dk">Next Move</span><span class="dv">Aggressive paid acquisition</span></li></ul><div class="vnote">→ Primary near-term revenue driver</div></div>
-      <div class="vc"><span class="vstatus s-validate">Validation / Monetisation</span><h3>Poverty2Prosperity</h3><p class="vrole">Knowledge and income enablement system. A digital product engine targeting financial education — fast to test, fast to monetise.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Knowledge & income system</span></li><li><span class="dk">Stage</span><span class="dv">Validation / monetisation</span></li><li><span class="dk">Nature</span><span class="dv">Digital product engine</span></li><li><span class="dk">Risk</span><span class="dv">Moderate, fast to test</span></li></ul><div class="vnote">→ Fast to iterate and validate</div></div>
-      <div class="vc"><span class="vstatus s-validate">Early Validation</span><h3>Celestial Threads</h3><p class="vrole">Commerce and fashion experiment. Must prove repeat buyers quickly to survive the cut. We are watching this one closely.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Commerce / fashion</span></li><li><span class="dk">Stage</span><span class="dv">Early validation</span></li><li><span class="dk">Nature</span><span class="dv">Consumer brand experiment</span></li><li><span class="dk">Risk</span><span class="dv">Medium</span></li></ul><div class="vnote">→ Must prove repeat buyers fast</div></div>
-      <div class="vc"><span class="vstatus s-build">Build Phase</span><h3>PowerPlus 9ja</h3><p class="vrole">Solar energy marketplace for Nigeria. Infrastructure play — slower to build, but potentially one of the largest outcomes in the entire portfolio.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Solar marketplace</span></li><li><span class="dk">Stage</span><span class="dv">Build phase</span></li><li><span class="dk">Complexity</span><span class="dv">Higher</span></li><li><span class="dk">Horizon</span><span class="dv">Medium-long term</span></li></ul><div class="vnote">→ Infrastructure play. Slower but large</div></div>
-      <div class="vc"><span class="vstatus s-b2b">B2B Validation</span><h3>TEK1SECURITY</h3><p class="vrole">Guard management SaaS for enterprise security firms. High-value B2B with longer sales cycles — but when it closes, it stays closed for years.</p><ul class="vdetails"><li><span class="dk">Role</span><span class="dv">Guard management SaaS</span></li><li><span class="dk">Stage</span><span class="dv">B2B validation</span></li><li><span class="dk">Market</span><span class="dv">Enterprise / Security firms</span></li><li><span class="dk">Sales cycle</span><span class="dv">Long</span></li></ul><div class="vnote">→ High-value, sticky B2B revenue</div></div>
+
+      <div class="vc">
+        <span class="vstatus s-cash">⭐ Primary Cash Engine</span>
+        <h3>Jobletters.xyz</h3>
+        <p class="vrole">AI productivity platform generating CVs, cover letters, and professional documents. Primed for aggressive paid acquisition — our most promising near-term revenue driver.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Role</span><span class="dv">AI productivity tool</span></li>
+          <li><span class="dk">Stage</span><span class="dv">Cash engine candidate</span></li>
+          <li><span class="dk">Priority</span><span class="dv">Very High</span></li>
+          <li><span class="dk">Next Move</span><span class="dv">Aggressive paid acquisition</span></li>
+        </ul>
+        <div class="vnote">→ Primary near-term revenue driver</div>
+        <a href="https://jobletters.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-validate">Validation / Monetisation</span>
+        <h3>Poverty2Prosperity</h3>
+        <p class="vrole">Knowledge and income enablement system. A digital product engine targeting financial education — fast to test, fast to monetise.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Role</span><span class="dv">Knowledge & income system</span></li>
+          <li><span class="dk">Stage</span><span class="dv">Validation / monetisation</span></li>
+          <li><span class="dk">Nature</span><span class="dv">Digital product engine</span></li>
+          <li><span class="dk">Risk</span><span class="dv">Moderate, fast to test</span></li>
+        </ul>
+        <div class="vnote">→ Fast to iterate and validate</div>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-build">Build Phase</span>
+        <h3>GATA Ecosystem</h3>
+        <p class="vrole">Decentralized commerce and logistics. GATAMarket connects buyers and sellers. GATANow handles logistics and delivery. GATA Token powers the economy.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Platforms</span><span class="dv">GATAMarket + GATANow</span></li>
+          <li><span class="dk">Stage</span><span class="dv">Build / expansion</span></li>
+          <li><span class="dk">Nature</span><span class="dv">Web3 commerce ecosystem</span></li>
+          <li><span class="dk">Horizon</span><span class="dv">Long-term</span></li>
+        </ul>
+        <div class="vnote">→ Ecosystem infrastructure play</div>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-validate">Early Validation</span>
+        <h3>Pawa+9ja</h3>
+        <p class="vrole">Online retail platform selling power and energy products — inverters, solar equipment, and power solutions for households and businesses across Nigeria.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Role</span><span class="dv">Power products retail</span></li>
+          <li><span class="dk">Stage</span><span class="dv">Early validation</span></li>
+          <li><span class="dk">Market</span><span class="dv">Nigerian households & businesses</span></li>
+          <li><span class="dk">Risk</span><span class="dv">Medium</span></li>
+        </ul>
+        <div class="vnote">→ High-demand consumer market</div>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-b2b">B2B Validation</span>
+        <h3>TEK1SECURITY</h3>
+        <p class="vrole">Guard management SaaS for enterprise security firms. Guard tracking, shift management, incident reporting, and operations dashboards.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Role</span><span class="dv">Guard management SaaS</span></li>
+          <li><span class="dk">Stage</span><span class="dv">B2B validation</span></li>
+          <li><span class="dk">Market</span><span class="dv">Enterprise / Security firms</span></li>
+          <li><span class="dk">Sales cycle</span><span class="dv">Long</span></li>
+        </ul>
+        <div class="vnote">→ High-value, sticky B2B revenue</div>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-build">Build Phase</span>
+        <h3>AutoDexTrader</h3>
+        <p class="vrole">Trading automation platform that helps users analyze and execute trading strategies automatically. FinTech infrastructure play targeting active traders and investors.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Role</span><span class="dv">Trading automation platform</span></li>
+          <li><span class="dk">Stage</span><span class="dv">Build phase</span></li>
+          <li><span class="dk">Nature</span><span class="dv">FinTech / automation</span></li>
+          <li><span class="dk">Horizon</span><span class="dv">Medium-term</span></li>
+        </ul>
+        <div class="vnote">→ FinTech automation opportunity</div>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
     </div>
   </div>
 </section>
@@ -2331,8 +3115,199 @@ footer {
 <div class="gold-rule"></div>
 
 <!-- ============================================
-     POSITIONING
+     CLIENT WORK & TESTIMONIALS
 ============================================ -->
+<section class="client-section" id="clients">
+  <div class="wrap">
+    <div class="t-eyebrow">Client Work</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Businesses we've built, worked with, and launched.</h2>
+    <p style="margin-top:12px;max-width:600px;font-size:0.92rem;">The proof is in the platforms. Below are real businesses we've designed, built, and systemized — each with their own platform, their own story, and their own results.</p>
+
+    <div class="client-filter-row">
+      <span class="cf-pill active">All Clients</span>
+      <span class="cf-pill">Brand &amp; Identity</span>
+      <span class="cf-pill">Sales Systems</span>
+      <span class="cf-pill">Platform Builds</span>
+      <span class="cf-pill">Web3</span>
+    </div>
+
+    <div class="client-grid">
+
+      <!-- ── ANJZKITCHEN ── -->
+      <div class="client-card">
+        <div class="cc-media">
+          <!-- Live site preview via iframe -->
+          <iframe
+            class="cc-preview-url"
+            src="https://anjzkitchen.vercel.app"
+            title="Anjzkitchen website preview"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin"
+          ></iframe>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo">
+            <span class="bname">AnjzKitchen</span>
+            <span class="bcat">Food Business</span>
+          </div>
+          <a href="https://anjzkitchen.vercel.app" target="_blank" rel="noopener" class="cc-visit-btn">Visit Site ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag">🎨 Brand + Digital Presence</div>
+          <div class="cc-what">
+            <div class="cc-what-label">What We Built</div>
+            <div class="cc-what-items">
+              <span class="cc-what-item">Brand identity</span>
+              <span class="cc-what-item">Business website</span>
+              <span class="cc-what-item">Menu system</span>
+              <span class="cc-what-item">Order flow</span>
+              <span class="cc-what-item">WhatsApp integration</span>
+            </div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars">
+              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+            </div>
+            <blockquote>
+              "Before TEKNNUKU, I was taking orders through Instagram DMs and manually confirming every transaction. Now I have a proper website, my customers can see my full menu, and orders come in automatically. It looks like a real business — because it is one now."
+            </blockquote>
+            <cite>
+              <div class="cite-avatar">AK</div>
+              <div class="cite-info">
+                <span class="cite-name">Anjz Kitchen</span>
+                <span class="cite-role">Founder · AnjzKitchen</span>
+              </div>
+            </cite>
+          </div>
+          <div class="cc-result">
+            <span class="ri">📈</span>
+            <span class="rt">Transformed from DM-based selling to a fully operational digital food business</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CELESTIAL THREADS ── -->
+      <div class="client-card">
+        <div class="cc-media">
+          <div class="cc-placeholder">
+            <span class="picon">🧵</span>
+            <span class="pname">Celestial Threads</span>
+            <span class="ptag">Fashion &amp; Commerce</span>
+          </div>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo">
+            <span class="bname">Celestial Threads</span>
+            <span class="bcat">Fashion Brand</span>
+          </div>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag">🛍️ Brand + Sales System + Commerce</div>
+          <div class="cc-what">
+            <div class="cc-what-label">What We Built</div>
+            <div class="cc-what-items">
+              <span class="cc-what-item">Full brand identity</span>
+              <span class="cc-what-item">E-commerce storefront</span>
+              <span class="cc-what-item">Product catalog</span>
+              <span class="cc-what-item">Payment integration</span>
+              <span class="cc-what-item">Automated order flow</span>
+            </div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars">
+              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+            </div>
+            <blockquote>
+              "TEKNNUKU Studio didn't just build us a website — they built us a brand. The identity, the store, the entire online presence. Customers actually trust us now. We look like the fashion brand we always knew we were, and now the sales reflect that."
+            </blockquote>
+            <cite>
+              <div class="cite-avatar">CT</div>
+              <div class="cite-info">
+                <span class="cite-name">Celestial Threads</span>
+                <span class="cite-role">Founder · Celestial Threads Fashion</span>
+              </div>
+            </cite>
+          </div>
+          <div class="cc-result">
+            <span class="ri">🛒</span>
+            <span class="rt">From informal social seller to structured fashion commerce platform</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LOTUS GLOBAL / 1BILLION2WEB3 ── -->
+      <div class="client-card">
+        <div class="cc-media">
+          <div class="cc-placeholder" style="background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(180,120,255,.12),transparent);">
+            <span class="picon">🌐</span>
+            <span class="pname">1Billion2Web3</span>
+            <span class="ptag">Web3 Education &amp; Alliance</span>
+          </div>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo">
+            <span class="bname">Lotus Global Alliances</span>
+            <span class="bcat">Web3 Platform</span>
+          </div>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag" style="color:#b47aff;background:rgba(180,120,255,.08);border-color:rgba(180,120,255,.2);">🔗 Web3 Platform + Community System</div>
+          <div class="cc-what">
+            <div class="cc-what-label">What We Built</div>
+            <div class="cc-what-items">
+              <span class="cc-what-item">Web3 platform architecture</span>
+              <span class="cc-what-item">Community onboarding system</span>
+              <span class="cc-what-item">Token integration</span>
+              <span class="cc-what-item">Education portal</span>
+              <span class="cc-what-item">Alliance network setup</span>
+            </div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars">
+              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+            </div>
+            <blockquote>
+              "The 1Billion2Web3 mission needed a platform that could handle community, education, and Web3 onboarding all in one place. TEKNNUKU Studio understood the vision immediately and built infrastructure that actually works at scale. They think like builders, not just developers."
+            </blockquote>
+            <cite>
+              <div class="cite-avatar" style="background:linear-gradient(135deg,#b47aff,var(--cyan));">LG</div>
+              <div class="cite-info">
+                <span class="cite-name">Lotus Global Alliances</span>
+                <span class="cite-role">Director · 1Billion2Web3 Initiative</span>
+              </div>
+            </cite>
+          </div>
+          <div class="cc-result">
+            <span class="ri">🌍</span>
+            <span class="rt">Web3 education and alliance platform serving a growing global community</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /client-grid -->
+
+    <!-- Logo strip of all clients -->
+    <div class="logo-strip">
+      <span class="logo-strip-label">Also Built For</span>
+      <div class="logo-items">
+        <a href="https://anjzkitchen.vercel.app" target="_blank" class="logo-item">AnjzKitchen</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Celestial Threads</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Lotus Global Alliances</a>
+        <a href="https://jobletters.xyz" target="_blank" class="logo-item">Jobletters.xyz</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">GATA Ecosystem</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
+      </div>
+    </div>
+
+    <!-- CTA under testimonials -->
+    <div style="margin-top:clamp(32px,5vw,52px);text-align:center;padding:clamp(24px,4vw,40px);background:rgba(201,168,76,.05);border:1px solid var(--border);border-radius:var(--r2);">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Your Business Could Be Next</div>
+      <h3 style="font-size:clamp(1.1rem,2.5vw,1.6rem);color:var(--white);margin-bottom:10px;">Ready to become a case study?</h3>
+      <p style="font-size:.9rem;max-width:440px;margin:0 auto 20px;">Run the 2-minute diagnostic and find out exactly which service fits your business right now.</p>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Get Your Growth Blueprint →</button>
+    </div>
+
+  </div>
+</section>
 <section class="pos-section">
   <div class="wrap">
     <div class="t-eyebrow">How We Position</div>
@@ -2424,7 +3399,7 @@ footer {
         <div class="fb-tagline">Design → Build → Validate → Incubate → De-risk</div>
       </div>
       <div class="fc"><h5>Services</h5><a href="#services">Starter Services</a><a href="#services">Growth Systems</a><a href="#services">Custom Platforms</a><a href="#services">Consulting</a><a href="#services">Add-Ons</a></div>
-      <div class="fc"><h5>Ventures</h5><a href="#ventures">Jobletters.xyz</a><a href="#ventures">Poverty2Prosperity</a><a href="#ventures">Celestial Threads</a><a href="#ventures">PowerPlus 9ja</a><a href="#ventures">TEK1SECURITY</a></div>
+      <div class="fc"><h5>Ventures</h5><a href="#ventures">Jobletters.xyz</a><a href="#ventures">Poverty2Prosperity</a><a href="#ventures">GATA Ecosystem</a><a href="#ventures">Pawa+9ja</a><a href="#ventures">TEK1SECURITY</a><a href="#ventures">AutoDexTrader</a></div>
       <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/teknnuku">Book a Consultation</a><a href="#contact">Contact Studio</a></div>
     </div>
     <div class="footer-bottom">
@@ -2477,13 +3452,16 @@ footer {
     if (e.key === 'Escape') { closeMenu(); closeIntakeModal(); }
   });
 
-  // ── Tier Tabs ──
+  // ── Service Tabs ──
   var tierBtns = document.querySelectorAll('.tier-btn');
   var tierBodies = document.querySelectorAll('.tier-body');
   tierBtns.forEach(function(btn) {
     btn.addEventListener('click', function() {
       var target = this.getAttribute('data-tier');
-      tierBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+      // Only affect buttons and panels in the same parent nav
+      var nav = this.closest('.tier-nav') || document;
+      var siblingBtns = nav.querySelectorAll ? nav.querySelectorAll('.tier-btn') : tierBtns;
+      siblingBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
       tierBodies.forEach(function(p) { p.classList.remove('active'); });
       this.classList.add('active'); this.setAttribute('aria-selected','true');
       var panel = document.getElementById(target);
