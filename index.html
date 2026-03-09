@@ -225,7 +225,22 @@ section { padding:clamp(72px,10vw,120px) 0; }
 }
 .nav-links a:hover { color:var(--gold); }
 
-.nav-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+
+/* Theme toggle button */
+.theme-toggle {
+  background:none;
+  border:1px solid var(--borderS);
+  color:var(--muted);
+  width:32px; height:32px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  font-size:.85rem;
+  transition:all .2s;
+  flex-shrink:0;
+}
+.theme-toggle:hover { border-color:var(--gold); color:var(--gold); }
 .nav-btn-sm { padding:9px 16px; font-size:0.78rem; }
 
 /* Hamburger */
@@ -1528,10 +1543,10 @@ footer {
   background:rgba(7,7,7,.95);
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
   overflow-y:auto;
-  padding:20px;
+  padding:56px 20px 24px;
 }
 #intake-modal.open { display:flex; }
 
@@ -1544,13 +1559,13 @@ footer {
 }
 
 .modal-close-btn {
-  position:absolute;
-  top:-44px;
-  right:0;
-  background:none;
+  position:fixed;
+  top:14px;
+  right:16px;
+  background:var(--panel);
   border:1px solid var(--borderS);
   color:var(--muted);
-  font-size:0.82rem;
+  font-size:0.75rem;
   font-family:'DM Mono',monospace;
   letter-spacing:0.1em;
   text-transform:uppercase;
@@ -1561,8 +1576,9 @@ footer {
   align-items:center;
   gap:6px;
   transition:all .2s;
+  z-index:10002;
 }
-.modal-close-btn:hover { border-color:var(--gold); color:var(--gold); }
+.modal-close-btn:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.1); }
 
 /* Intake form shell styles */
 .form-shell-modal {
@@ -1974,6 +1990,8 @@ footer {
   .footer-grid    { grid-template-columns:1fr 1fr; }
   .addon-cols     { grid-template-columns:1fr 1fr; }
   .hero-stats     { grid-template-columns:repeat(2,1fr); }
+  /* Ensure nav gold button stays short on tablet */
+  .nav-btn-sm { font-size:.68rem; padding:7px 12px; }
 }
 
 /* ============================================
@@ -1998,8 +2016,29 @@ footer {
   .footer-bottom { flex-direction:column; gap:6px; text-align:center; }
   .traction-inner { flex-direction:column; }
   .intake-strip-inner { flex-direction:column; gap:16px; }
+
+  /* Verb rail — wrap on mobile instead of cramping */
+  .verb-rail { flex-wrap:wrap; overflow-x:visible; }
+  .verb { flex:1 1 calc(50% - 1px); min-width:calc(50% - 1px); border-right:1px solid var(--borderS); }
+  .verb:nth-child(even) { border-right:none; }
+  .verb:nth-child(3),
+  .verb:nth-child(4),
+  .verb:nth-child(5) { border-top:1px solid var(--borderS); }
+
+  /* Nav: hide diagnostic text on tiny screens, keep icon+hamburger */
+  .nav-btn-diag-text { display:none; }
+  .nav-btn-sm { min-width:36px; padding:7px 10px; }
+
   /* Modal responsive */
   .modal-inner { padding:0; }
+  /* Modal close button: move inside the modal, not above it */
+  .modal-close-btn {
+    position:fixed;
+    top:12px;
+    right:12px;
+    top:max(12px, env(safe-area-inset-top));
+    z-index:10001;
+  }
   .form-body-m { padding:20px 18px 24px; }
   .form-nav-m  { padding:16px 18px 20px; }
   .options-grid-m.cols-2 { grid-template-columns:1fr; }
@@ -2010,11 +2049,59 @@ footer {
   .results-hero-m { padding:24px 18px 20px; }
   .results-footer-m { padding:16px 18px 22px; flex-direction:column; }
   .progress-meta-m { padding:12px 18px 0; }
-  .modal-close-btn { top:-38px; font-size:0.72rem; padding:6px 12px; }
 }
 @media (max-width:380px) {
   .who-grid { grid-template-columns:1fr; }
+  .verb { flex:1 1 100%; border-right:none; border-top:1px solid var(--borderS); }
+  .verb:first-child { border-top:none; }
 }
+
+/* ============================================
+   LIGHT MODE — toggled via data-theme="light"
+============================================ */
+[data-theme="light"] {
+  --black:    #f0ede8;
+  --dark:     #e8e4dd;
+  --panel:    #ddd9d2;
+  --card:     #d4cfc7;
+  --border:   rgba(40,32,20,.14);
+  --borderS:  rgba(40,32,20,.09);
+  --white:    #1a1510;
+  --muted:    #4a3f30;
+  --dim:      #6b5c48;
+  --dimmer:   #8a7a68;
+  --gold:     #a07820;
+  --gold2:    #c49830;
+  --cyan:     #0088a0;
+  --green:    #1a7a40;
+  --amber:    #b06010;
+  --blue:     #1a50a0;
+  --scroll-gold: #a07820;
+  --scroll-cyan: #0088a0;
+}
+[data-theme="light"] body {
+  background:#f0ede8;
+  color:#4a3f30;
+}
+[data-theme="light"] #scroll-progress {
+  background:linear-gradient(90deg,var(--gold),var(--cyan));
+}
+[data-theme="light"] nav {
+  background:rgba(240,237,232,.92);
+  border-bottom:1px solid rgba(40,32,20,.1);
+}
+[data-theme="light"] .hero { background:#e8e4dd; }
+[data-theme="light"] .hero h1 { color:#1a1510; }
+[data-theme="light"] .hero-sub { color:#4a3f30; }
+[data-theme="light"] .t-eyebrow { color:var(--gold); }
+[data-theme="light"] .pkg { background:#ddd9d2; border-color:rgba(40,32,20,.1); }
+[data-theme="light"] .vc  { background:#ddd9d2; border-color:rgba(40,32,20,.1); }
+[data-theme="light"] .gold-rule { background:linear-gradient(90deg,transparent,var(--gold) 40%,transparent); }
+[data-theme="light"] .mobile-nav { background:#e8e4dd; }
+[data-theme="light"] .traction-section { background:#ddd9d2; border-color:rgba(40,32,20,.12); }
+[data-theme="light"] .client-card { background:#ddd9d2; }
+[data-theme="light"] .cc-placeholder { background:#d0cbbf; }
+[data-theme="light"] #intake-modal { background:rgba(240,237,232,.97); }
 </style>
 </head>
 <body>
@@ -2290,8 +2377,11 @@ footer {
       <a href="#contact">Contact</a>
     </nav>
     <div class="nav-right">
-      <a href="https://calendly.com/teknnuku" class="btn btn-outline nav-btn-sm">Book a Call</a>
-      <button class="btn btn-gold nav-btn-sm" onclick="openIntakeModal()">Run Diagnostic →</button>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle light/dark mode">☀️</button>
+      <a href="https://calendly.com/teknnuku" class="btn btn-outline nav-btn-sm" style="white-space:nowrap;">Book a Call</a>
+      <button class="btn btn-gold nav-btn-sm" onclick="openIntakeModal()" style="white-space:nowrap;">
+        <span class="nav-btn-diag-text">Run Diagnostic</span><span> →</span>
+      </button>
       <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -2351,12 +2441,6 @@ footer {
         </div>
       </div>
 
-      <div class="hero-stats">
-        <div class="stat-box"><span class="n">20+</span><span class="l">Projects Delivered</span></div>
-        <div class="stat-box"><span class="n">$350k+</span><span class="l">Revenue Generated</span></div>
-        <div class="stat-box"><span class="n">89%</span><span class="l">Client Retention</span></div>
-        <div class="stat-box"><span class="n">~3wk</span><span class="l">Avg Launch Time</span></div>
-      </div>
     </div>
   </div>
 </section>
@@ -2432,7 +2516,7 @@ footer {
         </div>
         <div class="ecosystem-hint">
           <span>🔗</span>
-          <p>When appropriate, we connect clients into the <strong>broader TEKNNUKU ecosystem</strong> — Poverty2Prosperity, GATA, TEK1SECURITY, PowerPlus — to accelerate growth beyond what any single platform can offer.</p>
+          <p>When appropriate, we connect clients into the <strong><a href="https://teknnuku.xyz" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:underline;text-underline-offset:3px;">broader TEKNNUKU ecosystem</a></strong> — Poverty2Prosperity, GATA, TEK1SECURITY, PowerPlus — to accelerate growth beyond what any single platform can offer.</p>
         </div>
       </div>
       <div class="id-right">
@@ -2476,6 +2560,259 @@ footer {
     </div>
   </div>
 </div>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     CLIENT WORK & TESTIMONIALS
+============================================ -->
+<section class="client-section" id="clients">
+  <div class="wrap">
+    <div class="t-eyebrow">Client Work</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Businesses we've built, worked with, and launched.</h2>
+    <p style="margin-top:12px;max-width:600px;font-size:0.92rem;">The proof is in the platforms. Below are real businesses we've designed, built, and systemized — each with their own platform, their own story, and their own results.</p>
+
+    <div class="client-filter-row">
+      <span class="cf-pill active" data-filter="all">All Clients</span>
+      <span class="cf-pill" data-filter="brand">Brand &amp; Identity</span>
+      <span class="cf-pill" data-filter="sales">Sales Systems</span>
+      <span class="cf-pill" data-filter="platform">Platform Builds</span>
+      <span class="cf-pill" data-filter="web3">Web3</span>
+    </div>
+
+    <div class="client-grid">
+
+      <!-- ── ANJZKITCHEN ── -->
+      <div class="client-card" data-cat="brand sales">
+        <div class="cc-media">
+          <!-- Live site preview via iframe -->
+          <iframe
+            class="cc-preview-url"
+            src="https://anjzkitchen.vercel.app"
+            title="Anjzkitchen website preview"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin"
+          ></iframe>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo">
+            <span class="bname">AnjzKitchen</span>
+            <span class="bcat">Food Business</span>
+          </div>
+          <a href="https://anjzkitchen.vercel.app" target="_blank" rel="noopener" class="cc-visit-btn">Visit Site ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag">🎨 Brand + Digital Presence</div>
+          <div class="cc-what">
+            <div class="cc-what-label">What We Built</div>
+            <div class="cc-what-items">
+              <span class="cc-what-item">Brand identity</span>
+              <span class="cc-what-item">Business website</span>
+              <span class="cc-what-item">Menu system</span>
+              <span class="cc-what-item">Order flow</span>
+              <span class="cc-what-item">WhatsApp integration</span>
+            </div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars">
+              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+            </div>
+            <blockquote>
+              "Before TEKNNUKU, I was taking orders through Instagram DMs and manually confirming every transaction. Now I have a proper website, my customers can see my full menu, and orders come in automatically. It looks like a real business — because it is one now."
+            </blockquote>
+            <cite>
+              <div class="cite-avatar">AK</div>
+              <div class="cite-info">
+                <span class="cite-name">Anjz Kitchen</span>
+                <span class="cite-role">Founder · AnjzKitchen</span>
+              </div>
+            </cite>
+          </div>
+          <div class="cc-result">
+            <span class="ri">📈</span>
+            <span class="rt">Transformed from DM-based selling to a fully operational digital food business</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CELESTIAL THREADS ── -->
+      <div class="client-card" data-cat="brand sales platform">
+        <div class="cc-media">
+          <div class="cc-placeholder">
+            <span class="picon">🧵</span>
+            <span class="pname">Celestial Threads</span>
+            <span class="ptag">Fashion &amp; Commerce</span>
+          </div>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo">
+            <span class="bname">Celestial Threads</span>
+            <span class="bcat">Fashion Brand</span>
+          </div>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag">🛍️ Brand + Sales System + Commerce</div>
+          <div class="cc-what">
+            <div class="cc-what-label">What We Built</div>
+            <div class="cc-what-items">
+              <span class="cc-what-item">Full brand identity</span>
+              <span class="cc-what-item">E-commerce storefront</span>
+              <span class="cc-what-item">Product catalog</span>
+              <span class="cc-what-item">Payment integration</span>
+              <span class="cc-what-item">Automated order flow</span>
+            </div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars">
+              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+            </div>
+            <blockquote>
+              "TEKNNUKU Studio didn't just build us a website — they built us a brand. The identity, the store, the entire online presence. Customers actually trust us now. We look like the fashion brand we always knew we were, and now the sales reflect that."
+            </blockquote>
+            <cite>
+              <div class="cite-avatar">CT</div>
+              <div class="cite-info">
+                <span class="cite-name">Celestial Threads</span>
+                <span class="cite-role">Founder · Celestial Threads Fashion</span>
+              </div>
+            </cite>
+          </div>
+          <div class="cc-result">
+            <span class="ri">🛒</span>
+            <span class="rt">From informal social seller to structured fashion commerce platform</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LOTUS GLOBAL / 1BILLION2WEB3 ── -->
+      <div class="client-card" data-cat="web3 platform">
+        <div class="cc-media">
+          <div class="cc-placeholder" style="background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(180,120,255,.12),transparent);">
+            <span class="picon">🌐</span>
+            <span class="pname">1Billion2Web3</span>
+            <span class="ptag">Web3 Education &amp; Alliance</span>
+          </div>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo">
+            <span class="bname">Lotus Global Alliances</span>
+            <span class="bcat">Web3 Platform</span>
+          </div>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag" style="color:#b47aff;background:rgba(180,120,255,.08);border-color:rgba(180,120,255,.2);">🔗 Web3 Platform + Community System</div>
+          <div class="cc-what">
+            <div class="cc-what-label">What We Built</div>
+            <div class="cc-what-items">
+              <span class="cc-what-item">Web3 platform architecture</span>
+              <span class="cc-what-item">Community onboarding system</span>
+              <span class="cc-what-item">Token integration</span>
+              <span class="cc-what-item">Education portal</span>
+              <span class="cc-what-item">Alliance network setup</span>
+            </div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars">
+              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+            </div>
+            <blockquote>
+              "The 1Billion2Web3 mission needed a platform that could handle community, education, and Web3 onboarding all in one place. TEKNNUKU Studio understood the vision immediately and built infrastructure that actually works at scale. They think like builders, not just developers."
+            </blockquote>
+            <cite>
+              <div class="cite-avatar" style="background:linear-gradient(135deg,#b47aff,var(--cyan));">LG</div>
+              <div class="cite-info">
+                <span class="cite-name">Lotus Global Alliances</span>
+                <span class="cite-role">Director · 1Billion2Web3 Initiative</span>
+              </div>
+            </cite>
+          </div>
+          <div class="cc-result">
+            <span class="ri">🌍</span>
+            <span class="rt">Web3 education and alliance platform serving a growing global community</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /client-grid -->
+
+    <!-- Logo strip of all clients -->
+    <div class="logo-strip">
+      <span class="logo-strip-label">Also Built For</span>
+      <div class="logo-items">
+        <a href="https://anjzkitchen.vercel.app" target="_blank" class="logo-item">AnjzKitchen</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Celestial Threads</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Lotus Global Alliances</a>
+        <a href="https://jobletters.xyz" target="_blank" class="logo-item">Jobletters.xyz</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">GATA Ecosystem</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
+      </div>
+    </div>
+
+    <!-- CTA under testimonials -->
+    <div style="margin-top:clamp(32px,5vw,52px);text-align:center;padding:clamp(24px,4vw,40px);background:rgba(201,168,76,.05);border:1px solid var(--border);border-radius:var(--r2);">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Your Business Could Be Next</div>
+      <h3 style="font-size:clamp(1.1rem,2.5vw,1.6rem);color:var(--white);margin-bottom:10px;">Ready to become a case study?</h3>
+      <p style="font-size:.9rem;max-width:440px;margin:0 auto 20px;">Run the 2-minute diagnostic and find out exactly which service fits your business right now.</p>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Get Your Growth Blueprint →</button>
+    </div>
+
+  </div>
+</section>
+<section class="pos-section">
+  <div class="wrap">
+    <div class="t-eyebrow">How We Position</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">We don't chase trends. We build durable systems.</h2>
+    <div class="pos-quote">
+      <p>TEKNNUKU Studio builds and launches <em>serious digital business systems</em> for ambitious companies — and incubates <em>category-defining ventures</em> internally. We are the builder behind the empire.</p>
+    </div>
+    <div class="pos-rules">
+      <div class="pr">
+        <div class="prl">We never say</div>
+        <div class="no">logo designer</div>
+        <div class="no">web designer</div>
+        <div class="no">digital agency</div>
+        <div class="yes">→ We are Digital Business Systems Builders</div>
+      </div>
+      <div class="pr">
+        <div class="prl">Why this matters to you</div>
+        <p class="desc">When your builder thinks like a business engineer — not an artist — every decision is made with revenue in mind. Your layout, your copy, your flow. All of it optimised for one outcome: turning visitors into customers, and customers into advocates.</p>
+      </div>
+    </div>
+
+    <!-- Founder gravity strip -->
+    <div class="gravity-strip">
+      <div class="gravity-item"><span>→</span><p>We don't take every client.</p></div>
+      <div class="gravity-item"><span>→</span><p>We optimise for revenue, not applause.</p></div>
+      <div class="gravity-item"><span>→</span><p>Pretty without performance is failure.</p></div>
+      <div class="gravity-item"><span>→</span><p>If it won't monetise, we won't build it.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     WHO WE SERVE
+============================================ -->
+<section class="who-section">
+  <div class="wrap-s">
+    <div class="t-eyebrow">Who We Work With</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Built for founders who are serious about building.</h2>
+    <p style="margin-top:12px;font-size:0.92rem;">We are not for everyone — and that is by design. We work best with people who want systems, not cosmetics.</p>
+    <div class="who-grid">
+      <div class="who-card"><p>Startups launching digital products</p></div>
+      <div class="who-card"><p>Service businesses scaling online</p></div>
+      <div class="who-card"><p>Founders building platforms</p></div>
+      <div class="who-card"><p>Companies modernising infrastructure</p></div>
+      <div class="who-card"><p>Operators who measure by revenue</p></div>
+      <div class="who-card"><p>Institutions needing custom systems</p></div>
+    </div>
+    <div class="who-close">
+      <p>If your platform needs to generate revenue — not just exist — we're the right team for this.</p>
+    </div>
+  </div>
+</section>
+
+
 
 <div class="gold-rule"></div>
 
@@ -3038,18 +3375,43 @@ footer {
         <a href="https://jobletters.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
-      <div class="vc">
-        <span class="vstatus s-validate">Validation / Monetisation</span>
-        <h3>Poverty2Prosperity</h3>
-        <p class="vrole">Knowledge and income enablement system. A digital product engine targeting financial education — fast to test, fast to monetise.</p>
-        <ul class="vdetails">
-          <li><span class="dk">Role</span><span class="dv">Knowledge & income system</span></li>
-          <li><span class="dk">Stage</span><span class="dv">Validation / monetisation</span></li>
-          <li><span class="dk">Nature</span><span class="dv">Digital product engine</span></li>
-          <li><span class="dk">Risk</span><span class="dv">Moderate, fast to test</span></li>
-        </ul>
-        <div class="vnote">→ Fast to iterate and validate</div>
-        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      <div class="vc" style="border-top:3px solid var(--gold);grid-column:1/-1;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
+          <div>
+            <span class="vstatus s-validate" style="margin-bottom:10px;display:inline-block;">🌟 Featured Program · Live &amp; Active</span>
+            <h3 style="font-size:clamp(1.3rem,2.5vw,1.9rem);margin-bottom:8px;">Poverty2Prosperity System</h3>
+            <p style="font-size:.88rem;color:var(--dim);max-width:640px;line-height:1.75;">The knowledge &amp; systems transformation arm of TEKNNUKU Studio. Every week, TEKNNUKU hosts <strong style="color:var(--white);">free public workshops</strong> and a <strong style="color:var(--gold);">paid Inner Circle Masterclass</strong> that teaches entrepreneurs the system to move from poverty to prosperity — and helps them build their own digital business systems through the Studio.</p>
+          </div>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link" style="white-space:nowrap;font-size:.65rem;padding-bottom:4px;">Visit Platform →</a>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--borderS);border:1px solid var(--borderS);margin-bottom:18px;">
+          <div style="background:var(--panel);padding:16px 18px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Free Weekly</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--white);margin-bottom:4px;">Public Workshops</div>
+            <div style="font-size:.78rem;color:var(--muted);">Open to all entrepreneurs. Every week. Learn the system live.</div>
+          </div>
+          <div style="background:var(--panel);padding:16px 18px;border-top:2px solid var(--gold);">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Paid Access</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--gold);margin-bottom:4px;">Inner Circle Masterclass</div>
+            <div style="font-size:.78rem;color:var(--muted);">Deep-dive course for committed founders ready to build real systems.</div>
+          </div>
+          <div style="background:var(--panel);padding:16px 18px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px;">Outcome</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--white);margin-bottom:4px;">Real Business Systems</div>
+            <div style="font-size:.78rem;color:var(--muted);">Graduates build their digital business through TEKNNUKU Studio.</div>
+          </div>
+          <div style="background:var(--panel);padding:16px 18px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dimmer);margin-bottom:6px;">Stage</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--white);margin-bottom:4px;">Live &amp; Running</div>
+            <div style="font-size:.78rem;color:var(--muted);">Active program — new sessions every week.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:10px 20px;">Join the Inner Circle →</button>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:.8rem;padding:10px 20px;">Register for Free Workshop →</a>
+        </div>
       </div>
 
       <div class="vc">
@@ -3111,258 +3473,6 @@ footer {
     </div>
   </div>
 </section>
-
-<div class="gold-rule"></div>
-
-<!-- ============================================
-     CLIENT WORK & TESTIMONIALS
-============================================ -->
-<section class="client-section" id="clients">
-  <div class="wrap">
-    <div class="t-eyebrow">Client Work</div>
-    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Businesses we've built, worked with, and launched.</h2>
-    <p style="margin-top:12px;max-width:600px;font-size:0.92rem;">The proof is in the platforms. Below are real businesses we've designed, built, and systemized — each with their own platform, their own story, and their own results.</p>
-
-    <div class="client-filter-row">
-      <span class="cf-pill active">All Clients</span>
-      <span class="cf-pill">Brand &amp; Identity</span>
-      <span class="cf-pill">Sales Systems</span>
-      <span class="cf-pill">Platform Builds</span>
-      <span class="cf-pill">Web3</span>
-    </div>
-
-    <div class="client-grid">
-
-      <!-- ── ANJZKITCHEN ── -->
-      <div class="client-card">
-        <div class="cc-media">
-          <!-- Live site preview via iframe -->
-          <iframe
-            class="cc-preview-url"
-            src="https://anjzkitchen.vercel.app"
-            title="Anjzkitchen website preview"
-            loading="lazy"
-            sandbox="allow-scripts allow-same-origin"
-          ></iframe>
-          <div class="cc-media-overlay"></div>
-          <div class="cc-media-logo">
-            <span class="bname">AnjzKitchen</span>
-            <span class="bcat">Food Business</span>
-          </div>
-          <a href="https://anjzkitchen.vercel.app" target="_blank" rel="noopener" class="cc-visit-btn">Visit Site ↗</a>
-        </div>
-        <div class="cc-body">
-          <div class="cc-service-tag">🎨 Brand + Digital Presence</div>
-          <div class="cc-what">
-            <div class="cc-what-label">What We Built</div>
-            <div class="cc-what-items">
-              <span class="cc-what-item">Brand identity</span>
-              <span class="cc-what-item">Business website</span>
-              <span class="cc-what-item">Menu system</span>
-              <span class="cc-what-item">Order flow</span>
-              <span class="cc-what-item">WhatsApp integration</span>
-            </div>
-          </div>
-          <div class="cc-quote">
-            <div class="cc-stars">
-              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
-            </div>
-            <blockquote>
-              "Before TEKNNUKU, I was taking orders through Instagram DMs and manually confirming every transaction. Now I have a proper website, my customers can see my full menu, and orders come in automatically. It looks like a real business — because it is one now."
-            </blockquote>
-            <cite>
-              <div class="cite-avatar">AK</div>
-              <div class="cite-info">
-                <span class="cite-name">Anjz Kitchen</span>
-                <span class="cite-role">Founder · AnjzKitchen</span>
-              </div>
-            </cite>
-          </div>
-          <div class="cc-result">
-            <span class="ri">📈</span>
-            <span class="rt">Transformed from DM-based selling to a fully operational digital food business</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── CELESTIAL THREADS ── -->
-      <div class="client-card">
-        <div class="cc-media">
-          <div class="cc-placeholder">
-            <span class="picon">🧵</span>
-            <span class="pname">Celestial Threads</span>
-            <span class="ptag">Fashion &amp; Commerce</span>
-          </div>
-          <div class="cc-media-overlay"></div>
-          <div class="cc-media-logo">
-            <span class="bname">Celestial Threads</span>
-            <span class="bcat">Fashion Brand</span>
-          </div>
-          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
-        </div>
-        <div class="cc-body">
-          <div class="cc-service-tag">🛍️ Brand + Sales System + Commerce</div>
-          <div class="cc-what">
-            <div class="cc-what-label">What We Built</div>
-            <div class="cc-what-items">
-              <span class="cc-what-item">Full brand identity</span>
-              <span class="cc-what-item">E-commerce storefront</span>
-              <span class="cc-what-item">Product catalog</span>
-              <span class="cc-what-item">Payment integration</span>
-              <span class="cc-what-item">Automated order flow</span>
-            </div>
-          </div>
-          <div class="cc-quote">
-            <div class="cc-stars">
-              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
-            </div>
-            <blockquote>
-              "TEKNNUKU Studio didn't just build us a website — they built us a brand. The identity, the store, the entire online presence. Customers actually trust us now. We look like the fashion brand we always knew we were, and now the sales reflect that."
-            </blockquote>
-            <cite>
-              <div class="cite-avatar">CT</div>
-              <div class="cite-info">
-                <span class="cite-name">Celestial Threads</span>
-                <span class="cite-role">Founder · Celestial Threads Fashion</span>
-              </div>
-            </cite>
-          </div>
-          <div class="cc-result">
-            <span class="ri">🛒</span>
-            <span class="rt">From informal social seller to structured fashion commerce platform</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── LOTUS GLOBAL / 1BILLION2WEB3 ── -->
-      <div class="client-card">
-        <div class="cc-media">
-          <div class="cc-placeholder" style="background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(180,120,255,.12),transparent);">
-            <span class="picon">🌐</span>
-            <span class="pname">1Billion2Web3</span>
-            <span class="ptag">Web3 Education &amp; Alliance</span>
-          </div>
-          <div class="cc-media-overlay"></div>
-          <div class="cc-media-logo">
-            <span class="bname">Lotus Global Alliances</span>
-            <span class="bcat">Web3 Platform</span>
-          </div>
-          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
-        </div>
-        <div class="cc-body">
-          <div class="cc-service-tag" style="color:#b47aff;background:rgba(180,120,255,.08);border-color:rgba(180,120,255,.2);">🔗 Web3 Platform + Community System</div>
-          <div class="cc-what">
-            <div class="cc-what-label">What We Built</div>
-            <div class="cc-what-items">
-              <span class="cc-what-item">Web3 platform architecture</span>
-              <span class="cc-what-item">Community onboarding system</span>
-              <span class="cc-what-item">Token integration</span>
-              <span class="cc-what-item">Education portal</span>
-              <span class="cc-what-item">Alliance network setup</span>
-            </div>
-          </div>
-          <div class="cc-quote">
-            <div class="cc-stars">
-              <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
-            </div>
-            <blockquote>
-              "The 1Billion2Web3 mission needed a platform that could handle community, education, and Web3 onboarding all in one place. TEKNNUKU Studio understood the vision immediately and built infrastructure that actually works at scale. They think like builders, not just developers."
-            </blockquote>
-            <cite>
-              <div class="cite-avatar" style="background:linear-gradient(135deg,#b47aff,var(--cyan));">LG</div>
-              <div class="cite-info">
-                <span class="cite-name">Lotus Global Alliances</span>
-                <span class="cite-role">Director · 1Billion2Web3 Initiative</span>
-              </div>
-            </cite>
-          </div>
-          <div class="cc-result">
-            <span class="ri">🌍</span>
-            <span class="rt">Web3 education and alliance platform serving a growing global community</span>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /client-grid -->
-
-    <!-- Logo strip of all clients -->
-    <div class="logo-strip">
-      <span class="logo-strip-label">Also Built For</span>
-      <div class="logo-items">
-        <a href="https://anjzkitchen.vercel.app" target="_blank" class="logo-item">AnjzKitchen</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Celestial Threads</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Lotus Global Alliances</a>
-        <a href="https://jobletters.xyz" target="_blank" class="logo-item">Jobletters.xyz</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">GATA Ecosystem</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
-      </div>
-    </div>
-
-    <!-- CTA under testimonials -->
-    <div style="margin-top:clamp(32px,5vw,52px);text-align:center;padding:clamp(24px,4vw,40px);background:rgba(201,168,76,.05);border:1px solid var(--border);border-radius:var(--r2);">
-      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Your Business Could Be Next</div>
-      <h3 style="font-size:clamp(1.1rem,2.5vw,1.6rem);color:var(--white);margin-bottom:10px;">Ready to become a case study?</h3>
-      <p style="font-size:.9rem;max-width:440px;margin:0 auto 20px;">Run the 2-minute diagnostic and find out exactly which service fits your business right now.</p>
-      <button class="btn btn-gold" onclick="openIntakeModal()">Get Your Growth Blueprint →</button>
-    </div>
-
-  </div>
-</section>
-<section class="pos-section">
-  <div class="wrap">
-    <div class="t-eyebrow">How We Position</div>
-    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">We don't chase trends. We build durable systems.</h2>
-    <div class="pos-quote">
-      <p>TEKNNUKU Studio builds and launches <em>serious digital business systems</em> for ambitious companies — and incubates <em>category-defining ventures</em> internally. We are the builder behind the empire.</p>
-    </div>
-    <div class="pos-rules">
-      <div class="pr">
-        <div class="prl">We never say</div>
-        <div class="no">logo designer</div>
-        <div class="no">web designer</div>
-        <div class="no">digital agency</div>
-        <div class="yes">→ We are Digital Business Systems Builders</div>
-      </div>
-      <div class="pr">
-        <div class="prl">Why this matters to you</div>
-        <p class="desc">When your builder thinks like a business engineer — not an artist — every decision is made with revenue in mind. Your layout, your copy, your flow. All of it optimised for one outcome: turning visitors into customers, and customers into advocates.</p>
-      </div>
-    </div>
-
-    <!-- Founder gravity strip -->
-    <div class="gravity-strip">
-      <div class="gravity-item"><span>→</span><p>We don't take every client.</p></div>
-      <div class="gravity-item"><span>→</span><p>We optimise for revenue, not applause.</p></div>
-      <div class="gravity-item"><span>→</span><p>Pretty without performance is failure.</p></div>
-      <div class="gravity-item"><span>→</span><p>If it won't monetise, we won't build it.</p></div>
-    </div>
-  </div>
-</section>
-
-<div class="gold-rule"></div>
-
-<!-- ============================================
-     WHO WE SERVE
-============================================ -->
-<section class="who-section">
-  <div class="wrap-s">
-    <div class="t-eyebrow">Who We Work With</div>
-    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Built for founders who are serious about building.</h2>
-    <p style="margin-top:12px;font-size:0.92rem;">We are not for everyone — and that is by design. We work best with people who want systems, not cosmetics.</p>
-    <div class="who-grid">
-      <div class="who-card"><p>Startups launching digital products</p></div>
-      <div class="who-card"><p>Service businesses scaling online</p></div>
-      <div class="who-card"><p>Founders building platforms</p></div>
-      <div class="who-card"><p>Companies modernising infrastructure</p></div>
-      <div class="who-card"><p>Operators who measure by revenue</p></div>
-      <div class="who-card"><p>Institutions needing custom systems</p></div>
-    </div>
-    <div class="who-close">
-      <p>If your platform needs to generate revenue — not just exist — we're the right team for this.</p>
-    </div>
-  </div>
-</section>
-
 <div class="gold-rule"></div>
 
 <!-- ============================================
@@ -3458,15 +3568,55 @@ footer {
   tierBtns.forEach(function(btn) {
     btn.addEventListener('click', function() {
       var target = this.getAttribute('data-tier');
-      // Only affect buttons and panels in the same parent nav
-      var nav = this.closest('.tier-nav') || document;
-      var siblingBtns = nav.querySelectorAll ? nav.querySelectorAll('.tier-btn') : tierBtns;
+      var nav = this.closest('.tier-nav');
+      var siblingBtns = nav ? nav.querySelectorAll('.tier-btn') : tierBtns;
       siblingBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
       tierBodies.forEach(function(p) { p.classList.remove('active'); });
       this.classList.add('active'); this.setAttribute('aria-selected','true');
       var panel = document.getElementById(target);
       if (panel) panel.classList.add('active');
     });
+  });
+
+  // ── Client Work Filter Pills ──
+  var filterPills = document.querySelectorAll('.cf-pill');
+  var clientCards = document.querySelectorAll('.client-card');
+  filterPills.forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      filterPills.forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      var filter = this.getAttribute('data-filter');
+      clientCards.forEach(function(card) {
+        if (filter === 'all') {
+          card.style.display = '';
+          card.style.opacity = '1';
+        } else {
+          var cats = (card.getAttribute('data-cat') || '').split(' ');
+          if (cats.indexOf(filter) !== -1) {
+            card.style.display = '';
+            card.style.opacity = '1';
+          } else {
+            card.style.display = 'none';
+            card.style.opacity = '0';
+          }
+        }
+      });
+    });
+  });
+
+  // ── Theme Toggle ──
+  var themeBtn = document.getElementById('themeToggle');
+  var currentTheme = localStorage.getItem('tek-theme') || 'dark';
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeBtn.textContent = t === 'light' ? '🌙' : '☀️';
+    themeBtn.title = t === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
+    localStorage.setItem('tek-theme', t);
+  }
+  applyTheme(currentTheme);
+  themeBtn.addEventListener('click', function() {
+    var t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(t);
   });
 
   // ── Smooth Scroll ──
