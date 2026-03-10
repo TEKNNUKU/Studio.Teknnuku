@@ -2177,8 +2177,19 @@ footer {
 [data-theme="light"] .logo-sub { color:#8a7a68 !important; }
 [data-theme="light"] .nav-links a { color:#6b5c48; }
 [data-theme="light"] .nav-links a:hover { color:var(--gold); }
-[data-theme="light"] .hamburger span { background:#1a1510; }
-[data-theme="light"] .hamburger { border-color:rgba(40,32,20,.2); }
+[data-theme="light"] #site-header {
+  background:rgba(240,237,232,.97) !important;
+  border-bottom:1px solid rgba(40,32,20,.14) !important;
+}
+[data-theme="light"] .hamburger span { background:#1a1510 !important; }
+[data-theme="light"] .hamburger {
+  border:1.5px solid rgba(30,24,10,.35) !important;
+  background:rgba(200,155,20,.06) !important;
+}
+[data-theme="light"] .hamburger:hover {
+  border-color:#C89B14 !important;
+  background:rgba(200,155,20,.12) !important;
+}
 [data-theme="light"] .theme-toggle { border-color:rgba(40,32,20,.2); color:#6b5c48; }
 [data-theme="light"] .btn-outline { border-color:rgba(40,32,20,.3); color:#4a3f30; }
 
@@ -3054,7 +3065,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
               <button class="option-btn-m" data-value="zero" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🕳️</span><span class="opt-label-m"><span class="price-ngn" data-ngn="0">₦0 </span>— Not yet</span></button>
               <button class="option-btn-m" data-value="low" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌿</span><span class="opt-label-m"><span class="price-ngn" data-ngn="1-100000">₦1 – ₦100k</span></span></button>
               <button class="option-btn-m" data-value="mid" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🔥</span><span class="opt-label-m"><span class="price-ngn" data-ngn="100000-500000">₦100k – ₦500k</span></span></button>
-              <button class="option-btn-m" data-value="high" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💎</span><span class="opt-label-m"><span class="price-ngn" data-ngn="500000-2000000">₦500k – ₦2M</span></span></button>
+              <button class="option-btn-m" data-value="high" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💎</span><span class="opt-label-m"><span class="price-ngn" data-ngn="3000000-8000000">₦750k – ₦3M</span></span></button>
               <button class="option-btn-m" data-value="premium" onclick="mSelect(this,'mq3','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🏆</span><span class="opt-label-m"><span class="price-ngn" data-ngn="2000000+">₦2M+</span></span></button>
             </div>
             <div class="val-msg-m" id="mval-3">Please select an option to continue.</div>
@@ -3706,7 +3717,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--borderS);border:1px solid var(--borderS);margin-top:clamp(28px,4vw,44px);">
       <div style="background:var(--panel);padding:18px 16px;text-align:center;">
         <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Starter Brand</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--gold);"><span class="price-ngn" data-ngn="150000">₦150k</span></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--gold);"><span class="price-ngn" data-ngn="250000">₦150k</span></div>
         <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">New online sellers</div>
       </div>
       <div style="background:var(--panel);padding:18px 16px;text-align:center;">
@@ -3755,14 +3766,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Instagram / WhatsApp Sellers</span><span class="tag">TikTok Vendors</span><span class="tag">Facebook Businesses</span><span class="tag">Freelancers Going Pro</span><span class="tag">New Operators</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);"><span class="price-ngn" data-ngn="150000-300000">₦150,000 – ₦300,000</span></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);"><span class="price-ngn" data-ngn="250000-950000">₦250,000 – ₦950,000</span></div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">Brand Starter Kit</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="150000">₦150,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="150000">₦250,000</span></span>
           <p class="pkg-pitch">The minimum credible brand. Logo, colours, fonts, and social profiles optimised so your business looks like it belongs — not like it's trying.</p>
           <ul class="pkg-feat">
             <li>Brand name strategy</li>
@@ -3774,7 +3785,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
         <div class="pkg">
           <div class="pkg-name">Brand Authority Kit</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="200000-300000">₦200,000 – ₦300,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="500000-950000">₦200,000 – ₦300,000</span></span>
           <p class="pkg-pitch">Full brand system — the kind that stops customers comparing prices and positions you as the authority. When you look like the best option, you become the best option.</p>
           <ul class="pkg-feat">
             <li>Everything in Starter Kit</li>
@@ -3787,6 +3798,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
       </div>
 
+    <div style="margin:0 0 20px;padding:14px 18px;background:linear-gradient(135deg,rgba(200,155,20,.08),rgba(0,188,212,.06));border:1px solid rgba(200,155,20,.28);border-radius:var(--r);display:flex;align-items:flex-start;gap:12px;">
+      <span style="font-size:1.3rem;flex-shrink:0;margin-top:2px;">🎓</span>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:4px;">BONUS · INCLUDED FREE</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);margin-bottom:4px;">Poverty2Prosperity Inner Circle Course &amp; Masterclass</div>
+        <div style="font-size:.78rem;color:var(--dimmer);line-height:1.55;">Full lifetime access to the P2P programme (<span class="price-ngn" data-ngn="75000">₦75,000</span> value) — automatically included with this service package at no extra charge.</div>
+      </div>
+    </div>
     <div class="service-cta-strip">
       <div class="service-cta-strip-text">
         <strong>Ready to launch your brand?</strong>
@@ -3813,14 +3832,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Businesses Already Selling Online</span><span class="tag">Service Providers</span><span class="tag">Product Vendors</span><span class="tag">Course Creators</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);"><span class="price-ngn" data-ngn="200000-500000">₦200,000 – ₦500,000</span></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);"><span class="price-ngn" data-ngn="400000-1400000">₦350,000 – ₦1,800,000</span></div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">Sales System Setup</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="200000-500000">₦200,000 – ₦500,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="400000-800000">₦350,000 – ₦1,800,000</span></span>
           <p class="pkg-pitch">A structured system that turns audience into buyers — without you manually chasing every lead. Set it up once. Let it work every day.</p>
           <ul class="pkg-feat">
             <li>Product / service landing page</li>
@@ -3833,7 +3852,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
         <div class="pkg">
           <div class="pkg-name">Sales Automation Kit</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="350000-500000">₦350,000 – ₦500,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="800000-1400000">₦350,000 – ₦600,000</span></span>
           <p class="pkg-pitch">The full funnel — from first touch to paid. Lead capture, nurture sequences, conversion pages, and payment. The businesses that win have this running 24/7.</p>
           <ul class="pkg-feat">
             <li>Everything in Sales System</li>
@@ -3846,6 +3865,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
       </div>
 
+    <div style="margin:0 0 20px;padding:14px 18px;background:linear-gradient(135deg,rgba(200,155,20,.08),rgba(0,188,212,.06));border:1px solid rgba(200,155,20,.28);border-radius:var(--r);display:flex;align-items:flex-start;gap:12px;">
+      <span style="font-size:1.3rem;flex-shrink:0;margin-top:2px;">🎓</span>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:4px;">BONUS · INCLUDED FREE</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);margin-bottom:4px;">Poverty2Prosperity Inner Circle Course &amp; Masterclass</div>
+        <div style="font-size:.78rem;color:var(--dimmer);line-height:1.55;">Full lifetime access to the P2P programme (<span class="price-ngn" data-ngn="75000">₦75,000</span> value) — automatically included with this service package at no extra charge.</div>
+      </div>
+    </div>
     <div class="service-cta-strip">
       <div class="service-cta-strip-text">
         <strong>Ready to build your sales system?</strong>
@@ -3872,14 +3899,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Instagram / WhatsApp Businesses</span><span class="tag">SMEs Ready to Formalize</span><span class="tag">Physical Stores Going Digital</span><span class="tag">Service Businesses Scaling Up</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);"><span class="price-ngn" data-ngn="400000-800000">₦400,000 – ₦800,000</span></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--gold);"><span class="price-ngn" data-ngn="600000-2000000">₦600,000 – ₦3,500,000</span></div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">Business Systemization Package</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="400000-800000">₦400,000 – ₦800,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="400000-800000">₦600,000 – ₦3,500,000</span></span>
           <p class="pkg-pitch">One complete transformation — from informal seller to legitimate digital business. Everything you need to operate professionally, sell automatically, and scale without hiring more people to manage chaos.</p>
           <ul class="pkg-feat">
             <li>Full brand setup (logo, identity, messaging)</li>
@@ -3894,6 +3921,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
       </div>
 
+    <div style="margin:0 0 20px;padding:14px 18px;background:linear-gradient(135deg,rgba(200,155,20,.08),rgba(0,188,212,.06));border:1px solid rgba(200,155,20,.28);border-radius:var(--r);display:flex;align-items:flex-start;gap:12px;">
+      <span style="font-size:1.3rem;flex-shrink:0;margin-top:2px;">🎓</span>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:4px;">BONUS · INCLUDED FREE</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);margin-bottom:4px;">Poverty2Prosperity Inner Circle Course &amp; Masterclass</div>
+        <div style="font-size:.78rem;color:var(--dimmer);line-height:1.55;">Full lifetime access to the P2P programme (<span class="price-ngn" data-ngn="75000">₦75,000</span> value) — automatically included with this service package at no extra charge.</div>
+      </div>
+    </div>
     <div class="service-cta-strip">
       <div class="service-cta-strip-text">
         <strong>Ready to systemize your business?</strong>
@@ -3920,14 +3955,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Funded Startups</span><span class="tag">Marketplace Founders</span><span class="tag">SaaS Builders</span><span class="tag">Large SMEs</span><span class="tag">Fintech Operators</span><span class="tag">Logistics Companies</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.18);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--cyan);"><span class="price-ngn" data-ngn="1000000-5000000+">₦1,000,000 – ₦5,000,000+</span></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--cyan);"><span class="price-ngn" data-ngn="1500000-10000000+">₦2,000,000 – ₦15,000,000</span></div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">SaaS Platform Build</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="1000000-3000000">₦1M – ₦3M</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="1500000-4000000">₦1M – ₦3M</span></span>
           <p class="pkg-pitch">A subscription software product built from architecture to deployment. Designed to acquire users, process payments, and generate recurring revenue — from day one.</p>
           <ul class="pkg-feat">
             <li>Platform architecture design</li>
@@ -3940,7 +3975,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
         <div class="pkg">
           <div class="pkg-name">Marketplace Platform Build</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="2000000-5000000+">₦2M – ₦5M+</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="4000000-10000000+">₦2M – ₦5M+</span></span>
           <p class="pkg-pitch">A two-sided marketplace connecting buyers and sellers — with vendor management, transaction processing, logistics integration, and commission systems built in.</p>
           <ul class="pkg-feat">
             <li>Multi-vendor architecture</li>
@@ -3992,14 +4027,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Web3 Founders</span><span class="tag">Token Issuers</span><span class="tag">DeFi Builders</span><span class="tag">NFT Platforms</span><span class="tag">DAO Operators</span><span class="tag">Crypto Startups</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(180,120,255,.07);border:1px solid rgba(180,120,255,.18);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#b47aff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#b47aff;"><span class="price-ngn" data-ngn="2000000-10000000+">₦2,000,000 – ₦10,000,000+</span></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#b47aff;"><span class="price-ngn" data-ngn="5000000-20000000+">₦3,000,000 – ₦25,000,000</span></div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">Token Ecosystem Setup</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="2000000-5000000">₦2M – ₦5M</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="5000000-12000000">₦2M – ₦5M</span></span>
           <p class="pkg-pitch">Design and deploy a token economy — from tokenomics architecture to smart contract deployment and wallet integration. Built to create real utility, not just hype.</p>
           <ul class="pkg-feat">
             <li>Tokenomics design</li>
@@ -4011,7 +4046,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
         <div class="pkg">
           <div class="pkg-name">Web3 dApp Platform</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="5000000-10000000+">₦5M – ₦10M+</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="12000000-20000000+">₦5M – ₦10M+</span></span>
           <p class="pkg-pitch">A fully functional decentralized application — marketplace, exchange, protocol, or platform — built on proven blockchain infrastructure and designed for real transaction volume.</p>
           <ul class="pkg-feat">
             <li>dApp architecture design</li>
@@ -4062,14 +4097,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Physical Product Sellers</span><span class="tag">Logistics Providers</span><span class="tag">Vendors Wanting Fast Launch</span><span class="tag">Businesses Joining the Ecosystem</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--green);"><span class="price-ngn" data-ngn="20000-100000">₦20,000 – ₦100,000</span></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--green);"><span class="price-ngn" data-ngn="25000-150000">₦25,000 – ₦200,000</span></div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">GATAMarket Seller Setup</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="20000-50000">₦20,000 – ₦50,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="25000-60000">₦25,000 – ₦50,000</span></span>
           <p class="pkg-pitch">Full seller account setup on the GATA decentralized marketplace. Product listings, payment integration, and storefront ready to transact — in days, not months.</p>
           <ul class="pkg-feat">
             <li>Seller account creation</li>
@@ -4081,7 +4116,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
         <div class="pkg">
           <div class="pkg-name">Full GATA Ecosystem Onboarding</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="50000-100000">₦50,000 – ₦100,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="75000-150000">₦50,000 – ₦100,000</span></span>
           <p class="pkg-pitch">Complete integration across GATAMarket and GATANow — seller store, logistics registration, payment systems, and ecosystem training. The fastest path to a live digital operation.</p>
           <ul class="pkg-feat">
             <li>GATAMarket store setup</li>
@@ -4094,7 +4129,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
       </div>
 
-    <div class="service-cta-strip" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.05);">
+    <div style="margin:0 0 20px;padding:14px 18px;background:linear-gradient(135deg,rgba(200,155,20,.08),rgba(0,188,212,.06));border:1px solid rgba(200,155,20,.28);border-radius:var(--r);display:flex;align-items:flex-start;gap:12px;">
+      <span style="font-size:1.3rem;flex-shrink:0;margin-top:2px;">🎓</span>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:4px;">BONUS · INCLUDED FREE</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);margin-bottom:4px;">Poverty2Prosperity Inner Circle Course &amp; Masterclass</div>
+        <div style="font-size:.78rem;color:var(--dimmer);line-height:1.55;">Full lifetime access to the P2P programme (<span class="price-ngn" data-ngn="75000">₦75,000</span> value) — automatically included with this service package at no extra charge.</div>
+      </div>
+    </div>    <div class="service-cta-strip" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.05);">
       <div class="service-cta-strip-text">
         <strong>Ready to join the GATA ecosystem?</strong>
         <span>Setup takes as little as 48 hours. Run the diagnostic first and we'll onboard you directly.</span>
@@ -4120,14 +4162,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Early-Stage Founders</span><span class="tag">Entrepreneurs with Validated Ideas</span><span class="tag">Technical Co-Founder Seekers</span><span class="tag">Funded Startups Needing a Build Partner</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Pricing</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--amber);"><span class="price-ngn" data-ngn="500000-2000000">₦500k – ₦2M</span> &nbsp;·&nbsp; Or Equity (10–30%)</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--amber);"><span class="price-ngn" data-ngn="500000-2000000">₦750k – ₦3M</span> &nbsp;·&nbsp; Or Equity (10–30%)</div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">Startup Launch Package</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="500000-2000000">₦500,000 – ₦2,000,000</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="500000-2000000">₦750,000 – ₦3,000,000</span></span>
           <p class="pkg-pitch">The full venture-build process for founders who have capital and want speed. From idea validation to a live revenue-generating MVP — with strategy, platform, and launch infrastructure included.</p>
           <ul class="pkg-feat">
             <li>Idea validation + market analysis</li>
@@ -4153,7 +4195,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
       </div>
 
-    <div class="service-cta-strip" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);">
+    <div style="margin:0 0 20px;padding:14px 18px;background:linear-gradient(135deg,rgba(200,155,20,.08),rgba(0,188,212,.06));border:1px solid rgba(200,155,20,.28);border-radius:var(--r);display:flex;align-items:flex-start;gap:12px;">
+      <span style="font-size:1.3rem;flex-shrink:0;margin-top:2px;">🎓</span>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:4px;">BONUS · INCLUDED FREE</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);margin-bottom:4px;">Poverty2Prosperity Inner Circle Course &amp; Masterclass</div>
+        <div style="font-size:.78rem;color:var(--dimmer);line-height:1.55;">Full lifetime access to the P2P programme (<span class="price-ngn" data-ngn="75000">₦75,000</span> value) — automatically included with this service package at no extra charge.</div>
+      </div>
+    </div>    <div class="service-cta-strip" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);">
       <div class="service-cta-strip-text">
         <strong>Ready to build your startup?</strong>
         <span>We only take on ventures we believe in. Run the diagnostic to start the conversation.</span>
@@ -4179,14 +4228,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <div class="tags"><span class="tag">Enterprise Companies</span><span class="tag">Logistics Operators</span><span class="tag">Institutions</span><span class="tag">Security Firms</span><span class="tag">Financial Services</span><span class="tag">Healthcare Operators</span></div>
           <div style="margin-top:18px;padding:14px 16px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:var(--r);">
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Price Range</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--blue);"><span class="price-ngn" data-ngn="1000000-10000000+">₦1,000,000 – ₦10,000,000+</span></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--blue);"><span class="price-ngn" data-ngn="3000000-20000000+">₦2,000,000 – ₦20,000,000</span></div>
           </div>
         </div>
       </div>
       <div class="pkg-grid">
         <div class="pkg">
           <div class="pkg-name">Operations Management System</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="1000000-5000000">₦1M – ₦5M</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="1000000-5000000">₦2M – ₦15M</span></span>
           <p class="pkg-pitch">Custom-built operations software for companies running complex workflows — logistics management, guard tracking, service delivery systems, or multi-location operations.</p>
           <ul class="pkg-feat">
             <li>Custom workflow architecture</li>
@@ -4199,7 +4248,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
         </div>
         <div class="pkg">
           <div class="pkg-name">Enterprise Platform Build</div>
-          <span class="pkg-price"><span class="price-ngn" data-ngn="5000000-10000000+">₦5M – ₦10M+</span></span>
+          <span class="pkg-price"><span class="price-ngn" data-ngn="8000000-20000000+">₦5M – ₦10M+</span></span>
           <p class="pkg-pitch">Enterprise-grade systems for organizations where the platform is the business. Multi-user, multi-role, high-availability infrastructure with AI integration, white-label capabilities, and SLA-backed maintenance.</p>
           <ul class="pkg-feat">
             <li>Enterprise architecture design</li>
@@ -5102,6 +5151,20 @@ window.resetContactForm = function() {
 // ════════════════════════════════════════════
 //  SERVICE INQUIRY MODAL
 // ════════════════════════════════════════════
+var TEK_FMT = {
+  code: 'NGN', rate: 1, symbol: '₦',
+  fmt: function(ngn) {
+    var v = ngn * this.rate;
+    var s = this.symbol;
+    if (v >= 1000000) return s + (v/1000000).toFixed(v%1000000===0?0:1) + 'M';
+    if (v >= 1000)    return s + Math.round(v/1000) + 'k';
+    return s + Math.round(v).toLocaleString();
+  },
+  range: function(lo, hi, plus) {
+    return this.fmt(lo) + ' \u2013 ' + this.fmt(hi) + (plus ? '+' : '');
+  }
+};
+
 var SI_SERVICES = {
   brand_launch: {
     title: 'Digital Brand Launch',
@@ -5113,8 +5176,14 @@ var SI_SERVICES = {
       { id:'si_audience', label:'Who is your target audience?', type:'text', placeholder:'e.g. Young professionals in Lagos, 25–40' },
       { id:'si_timeline', label:'Desired launch timeline', type:'select',
         options:['Within 2 weeks','1 month','2–3 months','Just exploring'] },
-      { id:'si_budget_brand', label:'Estimated budget range', type:'select',
-        options:['₦150k – ₦200k (Starter)','₦200k – ₦300k (Standard)','₦300k+ (Premium)','Not sure yet'] },
+      { id:'si_budget_brand', label:'Estimated budget range', type:'priceSelect',
+        priceOptions:[
+          { label:'Starter', lo:250000, hi:300000 },
+          { label:'Standard', lo:400000, hi:600000 },
+          { label:'Premium', lo:700000, hi:950000 },
+          { label:'Not sure yet', lo:0, hi:0 }
+        ]
+      },
     ]
   },
   sales_system: {
@@ -5129,6 +5198,14 @@ var SI_SERVICES = {
         options:['0–10','10–50','50–200','200+'] },
       { id:'si_biggest_gap', label:'Biggest sales gap right now', type:'text',
         placeholder:'e.g. Leads don\'t convert, no follow-up system, pricing confusion' },
+      { id:'si_sales_budget', label:'Investment range', type:'priceSelect',
+        priceOptions:[
+          { label:'Starter', lo:400000, hi:600000 },
+          { label:'Growth', lo:700000, hi:1000000 },
+          { label:'Full System', lo:1100000, hi:1400000 },
+          { label:'Not sure yet', lo:0, hi:0 }
+        ]
+      },
     ]
   },
   systemization: {
@@ -5143,6 +5220,14 @@ var SI_SERVICES = {
         placeholder:'e.g. No SOPs, manual invoicing, inconsistent delivery' },
       { id:'si_current_tools', label:'Tools you currently use (if any)', type:'text',
         placeholder:'e.g. Google Sheets, WhatsApp, Trello' },
+      { id:'si_sys_budget', label:'Investment range', type:'priceSelect',
+        priceOptions:[
+          { label:'Audit + SOPs', lo:600000, hi:900000 },
+          { label:'Full System Design', lo:1000000, hi:1500000 },
+          { label:'Enterprise Transform', lo:1600000, hi:2000000 },
+          { label:'Not sure yet', lo:0, hi:0 }
+        ]
+      },
     ]
   },
   platform_dev: {
@@ -5158,8 +5243,14 @@ var SI_SERVICES = {
         placeholder:'e.g. User login, payments, dashboards, notifications' },
       { id:'si_platform_timeline', label:'Timeline expectation', type:'select',
         options:['1–2 months (MVP)','3–4 months','5–6 months','6+ months','Flexible'] },
-      { id:'si_platform_budget', label:'Budget range', type:'select',
-        options:['₦1M – ₦2M','₦2M – ₦5M','₦5M+','To be discussed'] },
+      { id:'si_platform_budget', label:'Budget range', type:'priceSelect',
+        priceOptions:[
+          { label:'MVP / Landing', lo:1500000, hi:2500000 },
+          { label:'Standard Web App', lo:2800000, hi:4500000 },
+          { label:'Full Platform', lo:5000000, hi:10000000, plus:true },
+          { label:'To be scoped', lo:0, hi:0 }
+        ]
+      },
     ]
   },
   web3_dev: {
@@ -5175,8 +5266,14 @@ var SI_SERVICES = {
         options:['Ethereum','Solana','BNB Chain','Polygon','Arbitrum','Not decided yet'] },
       { id:'si_token_model', label:'Does your project involve a token?', type:'select',
         options:['Yes — utility token','Yes — governance token','Yes — NFTs','No token model','Not sure yet'] },
-      { id:'si_web3_budget', label:'Budget range', type:'select',
-        options:['₦2M – ₦5M','₦5M – ₦10M','₦10M+','To be discussed'] },
+      { id:'si_web3_budget', label:'Budget range', type:'priceSelect',
+        priceOptions:[
+          { label:'Protocol MVP', lo:5000000, hi:8000000 },
+          { label:'Full Protocol', lo:9000000, hi:15000000 },
+          { label:'Enterprise Web3', lo:16000000, hi:20000000, plus:true },
+          { label:'To be scoped', lo:0, hi:0 }
+        ]
+      },
     ]
   },
   gata_onboard: {
@@ -5191,8 +5288,14 @@ var SI_SERVICES = {
       { id:'si_gata_goal', label:'Primary goal for joining GATA', type:'select',
         options:['Access the marketplace','Join the community','Use the payment tools',
                  'Distribute my products','All of the above'] },
-      { id:'si_monthly_revenue', label:'Current monthly revenue range', type:'select',
-        options:['₦0 (just starting)','₦1 – ₦100k','₦100k – ₦500k','₦500k+'] },
+      { id:'si_gata_tier', label:'Membership tier', type:'priceSelect',
+        priceOptions:[
+          { label:'Basic Access', lo:25000, hi:40000 },
+          { label:'Standard Member', lo:50000, hi:80000 },
+          { label:'Premium Partner', lo:90000, hi:150000 },
+          { label:'Not sure yet', lo:0, hi:0 }
+        ]
+      },
     ]
   },
   venture_build: {
@@ -5209,6 +5312,14 @@ var SI_SERVICES = {
         placeholder:'e.g. Domain expertise, existing audience, technical skills, capital' },
       { id:'si_equity_range', label:'Equity you\'re open to offering', type:'select',
         options:['10–15%','15–20%','20–30%','30%+','Open to discussion'] },
+      { id:'si_venture_invest', label:'Min. capital you can commit', type:'priceSelect',
+        priceOptions:[
+          { label:'Seed', lo:1000000, hi:2000000 },
+          { label:'Early', lo:2500000, hi:4000000 },
+          { label:'Growth', lo:4500000, hi:5000000, plus:true },
+          { label:'Equity-only deal', lo:0, hi:0 }
+        ]
+      },
     ]
   },
   enterprise_sw: {
@@ -5223,20 +5334,27 @@ var SI_SERVICES = {
         placeholder:'e.g. ERP system, HR platform, logistics tracking, API integration' },
       { id:'si_tech_stack', label:'Preferred tech stack (if any)', type:'text',
         placeholder:'e.g. React + Node.js, Python, .NET, mobile (iOS/Android)' },
-      { id:'si_ent_budget', label:'Budget range', type:'select',
-        options:['₦1M – ₦3M','₦3M – ₦5M','₦5M – ₦10M','₦10M+','To be scoped and quoted'] },
+      { id:'si_ent_budget', label:'Budget range', type:'priceSelect',
+        priceOptions:[
+          { label:'Standard', lo:3000000, hi:5000000 },
+          { label:'Mid-Scale', lo:6000000, hi:10000000 },
+          { label:'Enterprise', lo:12000000, hi:20000000, plus:true },
+          { label:'To be scoped and quoted', lo:0, hi:0 }
+        ]
+      },
     ]
   }
 };
 
-var currentServiceId = null;
+
+var currentServiceId = null; = null;
 
 window.openServiceInquiry = function(serviceId) {
   currentServiceId = serviceId;
   var svc = SI_SERVICES[serviceId];
   if (!svc) return;
 
-  // Reset state
+  // Reset form state
   document.getElementById('si-form-body').style.display = 'block';
   document.getElementById('si-success').style.display = 'none';
   document.getElementById('si_name').value = '';
@@ -5247,26 +5365,60 @@ window.openServiceInquiry = function(serviceId) {
   document.getElementById('si_valmsg').style.display = 'none';
   document.getElementById('si_btn_text').textContent = 'Submit Enquiry →';
 
-  // Set content
+  // Set header content
   document.getElementById('si-title').textContent = svc.title;
   document.getElementById('si-subtitle').textContent = svc.subtitle;
   document.getElementById('si-badge').textContent = svc.badge;
   document.getElementById('si-topbar-label').textContent = 'TEKNNUKU Studio · ' + svc.badge;
 
-  // Render dynamic fields
+  // P2P bonus banner
+  var p2pBanner = document.getElementById('si-p2p-banner');
+  if (!p2pBanner) {
+    p2pBanner = document.createElement('div');
+    p2pBanner.id = 'si-p2p-banner';
+    p2pBanner.style.cssText = 'margin:0 0 18px;padding:12px 16px;background:linear-gradient(135deg,rgba(200,155,20,.12),rgba(0,188,212,.06));border:1px solid rgba(200,155,20,.3);border-radius:8px;display:flex;align-items:flex-start;gap:10px;';
+    p2pBanner.innerHTML = '<span style="font-size:1.1rem;flex-shrink:0;">🎓</span><div><div style="font-family:\'DM Mono\',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:3px;">Included Bonus</div><div id="si-p2p-text" style="font-size:.82rem;color:rgba(242,237,228,.75);line-height:1.55;"></div></div>';
+    var dynFields = document.getElementById('si-dynamic-fields');
+    dynFields.parentNode.insertBefore(p2pBanner, dynFields);
+  }
+  if (svc.p2pBonus && svc.p2pNote) {
+    document.getElementById('si-p2p-text').textContent = svc.p2pNote;
+    p2pBanner.style.display = 'flex';
+  } else {
+    p2pBanner.style.display = 'none';
+  }
+
+  // Render dynamic fields (with currency-aware budget selects)
   var df = document.getElementById('si-dynamic-fields');
+  var sym = window.__currencySymbol || '₦';
+  var rate = window.__currencyRate || 1;
+  var curr = window.__currency || 'NGN';
   df.innerHTML = svc.fields.map(function(f) {
     var input = '';
-    if (f.type === 'select') {
+    if (f.type === 'priceSelect') {
+      var SEL_S = 'background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);border-radius:4px;padding:11px 13px;color:#F2EDE4;font-family:\'DM Sans\',sans-serif;font-size:.85rem;outline:none;width:100%;box-sizing:border-box;-webkit-appearance:none;cursor:pointer;transition:border-color .2s;';
+      var pOpts = f.priceOptions.map(function(o, i) {
+        var label = (o.lo && o.hi) ? (o.label + ' — ' + TEK_FMT.range(o.lo, o.hi, o.plus)) : o.label;
+        return '<option value="' + o.label + '" style="background:#141414;"' + (i===0?' selected':'') + '>' + label + '</option>';
+      }).join('');
+      input = '<select id="' + f.id + '" style="' + SEL_S + '" onfocus="this.style.borderColor=\'#C89B14\'" onblur="this.style.borderColor=\'rgba(242,237,228,.07)\'">' + pOpts + '</select>';
+    } else if (f.type === 'budget_select') {
+      var opts = f.tiers.map(function(t, i) {
+        var lo = formatCurrencyAmount(t.ngn_lo, rate, sym, curr);
+        var hi = t.ngn_hi ? formatCurrencyAmount(t.ngn_hi, rate, sym, curr) : '';
+        var range = hi ? (lo + ' – ' + hi) : (lo + '+');
+        if (t.plus) range = lo + '+';
+        var displayLabel = t.label + ' (' + range + ')';
+        return '<option value="' + t.label + '_' + t.ngn_lo + (t.ngn_hi?('-'+t.ngn_hi):'') + '" style="background:#141414;"' + (i===0?' selected':'') + '>' + displayLabel + '</option>';
+      }).join('');
+      input = '<select id="' + f.id + '" style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);border-radius:4px;padding:11px 13px;color:#F2EDE4;font-family:\'DM Sans\',sans-serif;font-size:.85rem;outline:none;width:100%;box-sizing:border-box;-webkit-appearance:none;cursor:pointer;transition:border-color .2s;" onfocus="this.style.borderColor=\'#C89B14\'" onblur="this.style.borderColor=\'rgba(242,237,228,.07)\'">' + opts + '</select>';
+    } else if (f.type === 'select') {
       input = '<select id="' + f.id + '" style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);border-radius:4px;padding:11px 13px;color:#F2EDE4;font-family:\'DM Sans\',sans-serif;font-size:.85rem;outline:none;width:100%;box-sizing:border-box;-webkit-appearance:none;cursor:pointer;transition:border-color .2s;" onfocus="this.style.borderColor=\'#C89B14\'" onblur="this.style.borderColor=\'rgba(242,237,228,.07)\'">' +
-        f.options.map(function(o, i) { return '<option value="' + o + '" style="background:#141414;"' + (i===0?' selected':'') + '>' + o + '</option>'; }).join('') +
-        '</select>';
+        f.options.map(function(o, i) { return '<option value="' + o + '" style="background:#141414;"' + (i===0?' selected':'') + '>' + o + '</option>'; }).join('') + '</select>';
     } else {
       input = '<input id="' + f.id + '" type="text" placeholder="' + (f.placeholder||'') + '" style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);border-radius:4px;padding:11px 13px;color:#F2EDE4;font-family:\'DM Sans\',sans-serif;font-size:.85rem;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s;" onfocus="this.style.borderColor=\'#C89B14\'" onblur="this.style.borderColor=\'rgba(242,237,228,.07)\'">';
     }
-    return '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">' +
-      '<label style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(242,237,228,.35);">' + f.label + '</label>' +
-      input + '</div>';
+    return '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;"><label style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(242,237,228,.35);">' + f.label + '</label>' + input + '</div>';
   }).join('');
 
   // Show modal
@@ -5354,16 +5506,25 @@ window.submitServiceInquiry = async function() {
     JPY:'¥', CNY:'¥', BRL:'R$', MXN:'MX$', DEFAULT:'₦'
   };
 
-  function formatAmount(ngn, rate, symbol, decimals) {
+  // Helper used by both applyRates and openServiceInquiry
+  window.formatCurrencyAmount = function(ngn, rate, symbol, currency) {
     var converted = ngn * rate;
-    if (converted >= 1000000) return symbol + (converted/1000000).toFixed(1) + 'M';
-    if (converted >= 1000) return symbol + Math.round(converted/1000) + 'k';
-    return symbol + converted.toFixed(decimals || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  }
+    if (converted >= 1000000) return symbol + (converted/1000000).toFixed(1).replace(/\.0$/,'') + 'M';
+    if (converted >= 1000)    return symbol + Math.round(converted/1000) + 'k';
+    return symbol + Math.round(converted).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
 
   function applyRates(currency, rate) {
+    // Sync TEK_FMT for service inquiry forms
+    TEK_FMT.code = currency;
+    TEK_FMT.rate = rate;
+    TEK_FMT.symbol = CURRENCY_SYMBOLS[currency] || CURRENCY_SYMBOLS.DEFAULT;
     var symbol = CURRENCY_SYMBOLS[currency] || CURRENCY_SYMBOLS.DEFAULT;
     var decimals = ['JPY','KES','NGN'].indexOf(currency) === -1 ? 2 : 0;
+    // Store globally so service inquiry forms can use them
+    window.__currency = currency;
+    window.__currencyRate = rate;
+    window.__currencySymbol = symbol;
     document.querySelectorAll('.price-ngn').forEach(function(el) {
       var raw = el.getAttribute('data-ngn');
       if (!raw) return;
@@ -5373,7 +5534,7 @@ window.submitServiceInquiry = async function() {
         var lo = parseFloat(parts[0]);
         var hi = parseFloat(parts[1]);
         var suffix = raw.indexOf('+') !== -1 ? '+' : '';
-        el.textContent = formatAmount(lo, rate, symbol, decimals) + ' – ' + formatAmount(hi, rate, symbol, decimals) + suffix;
+        el.textContent = formatCurrencyAmount(lo, rate, symbol, currency) + ' – ' + formatCurrencyAmount(hi, rate, symbol, currency) + suffix;
       } else {
         var plus = raw.indexOf('+') !== -1 ? '+' : '';
         var val = parseFloat(raw.replace('+',''));
@@ -5389,6 +5550,11 @@ window.submitServiceInquiry = async function() {
       note.style.display = 'block';
     }
   }
+
+  // Initialise defaults (Nigerian users see ₦ immediately)
+  window.__currency = 'NGN';
+  window.__currencyRate = 1;
+  window.__currencySymbol = '₦';
 
   async function detectAndConvert() {
     try {
