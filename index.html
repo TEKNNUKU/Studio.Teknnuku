@@ -53,7 +53,7 @@
   --panel:   #141414;
   --card:    #181818;
   --surface: #0e0e0e;
-  --gold:    #C9A84C;
+  --gold:    #C89B14;
   --gold2:   #E2C16A;
   --cyan:    #00BCD4;
   --green:   #22c55e;
@@ -168,6 +168,10 @@ section { padding:clamp(72px,10vw,120px) 0; }
 /* ============================================
    HEADER / NAV
 ============================================ */
+.logo-img-block { display:flex; align-items:center; flex-shrink:0; text-decoration:none; }
+.logo-img-full { display:block; height:44px; width:auto; object-fit:contain; }
+.logo-img-icon { display:none; height:38px; width:auto; object-fit:contain; }
+
 #site-header {
   position:fixed;
   top:0; left:0; right:0;
@@ -179,37 +183,26 @@ section { padding:clamp(72px,10vw,120px) 0; }
   border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
+  overflow:hidden;
 }
 
 .nav-inner {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:16px;
+  gap:12px;
   width:100%;
   max-width:1160px;
   margin:0 auto;
-  padding:0 clamp(20px,4vw,48px);
+  padding:0 clamp(14px,3.5vw,48px);
+  box-sizing:border-box;
 }
 
+/* Legacy text logo (hidden now) */
 .logo-block { display:flex; flex-direction:column; line-height:1; flex-shrink:0; }
-.logo-main {
-  font-family:'Syne',sans-serif;
-  font-weight:800;
-  font-size:0.95rem;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  color:var(--white);
-}
+.logo-main { font-family:'Syne',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--white); }
 .logo-main em { color:var(--gold); font-style:normal; }
-.logo-sub {
-  font-family:'DM Mono',monospace;
-  font-size:0.48rem;
-  letter-spacing:0.14em;
-  text-transform:uppercase;
-  color:var(--dimmer);
-  margin-top:3px;
-}
+.logo-sub { font-family:'DM Mono',monospace; font-size:0.48rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--dimmer); margin-top:3px; }
 
 .nav-links {
   display:flex;
@@ -2030,6 +2023,11 @@ footer {
   .nav-btn-sm { min-width:36px; padding:7px 10px; }
   .nav-right .btn-gold { display:none; }
   .nav-right .btn-outline { display:none; }
+  /* Switch to icon-only logo on mobile */
+  .logo-img-full { display:none; }
+  .logo-img-icon { display:block; }
+  .nav-inner { gap:8px; }
+  .nav-right { gap:6px; }
 
   /* Modal responsive */
   .modal-inner { padding:0; }
@@ -2069,8 +2067,8 @@ footer {
   --muted:    #4a3f30;
   --dim:      #6b5c48;
   --dimmer:   #8a7a68;
-  --gold:     #a07820;
-  --gold2:    #c49830;
+  --gold:     #9e8010;
+  --gold2:    #c49010;
   --cyan:     #0088a0;
   --green:    #1a7a40;
   --amber:    #b06010;
@@ -2129,6 +2127,7 @@ footer {
 [data-theme="light"] .modal-topbar-title { color:#1a1510; }
 
 /* Footer */
+[data-theme="light"] .logo-img-full { filter: brightness(.85) saturate(1.1); }
 [data-theme="light"] footer,
 [data-theme="light"] .footer-inner { background:#1a1510; }
 
@@ -2458,7 +2457,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
     <!-- Form View -->
     <div id="intake-form-view" class="form-shell-modal" style="padding:24px 20px 0;">
       <div class="form-header-modal">
-        <div class="form-logo-modal">TEKNNUKU <em>STUDIO</em></div>
+        <div class="form-logo-modal" style="color:var(--gold);">TEKNNUKU <em style="color:var(--white);font-style:normal;">STUDIO</em></div>
         <div class="form-eyebrow-modal">Studio Qualification Engine v1</div>
       </div>
 
@@ -2656,7 +2655,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
     <!-- Results View -->
     <div id="intake-results-view" class="results-wrapper-m">
       <div class="form-header-modal">
-        <div class="form-logo-modal">TEKNNUKU <em>STUDIO</em></div>
+        <div class="form-logo-modal" style="color:var(--gold);">TEKNNUKU <em style="color:var(--white);font-style:normal;">STUDIO</em></div>
         <div class="form-eyebrow-modal">Your Personalised Results</div>
       </div>
       <div id="mResultsCard" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);">
@@ -2696,9 +2695,11 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
 ============================================ -->
 <header id="site-header">
   <div class="nav-inner">
-    <a href="#" class="logo-block">
-      <span class="logo-main">TEKNNUKU <em>STUDIO</em></span>
-      <span class="logo-sub">Venture Factory · Revenue Infrastructure</span>
+    <a href="#" class="logo-block logo-img-block">
+      <!-- Full logo: desktop -->
+      <img class="logo-img-full" src="data:image/png;base64,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" alt="TEKNNUKU STUDIO — Venture Factory" width="96" height="44">
+      <!-- Icon only: mobile fallback label -->
+      <img class="logo-img-icon" src="data:image/png;base64,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" alt="TEKNNUKU STUDIO" width="40" height="40">
     </a>
     <nav class="nav-links" aria-label="Main navigation">
       <a href="#engines">What We Do</a>
@@ -2958,7 +2959,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
             <cite>
               <div class="cite-avatar">AK</div>
               <div class="cite-info">
-                <span class="cite-name">Damilola Elizabeth .T.N.</span>
+                <span class="cite-name">Anjz Kitchen</span>
                 <span class="cite-role">Founder · AnjzKitchen</span>
               </div>
             </cite>
@@ -3056,7 +3057,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
             <cite>
               <div class="cite-avatar" style="background:linear-gradient(135deg,#b47aff,var(--cyan));">LG</div>
               <div class="cite-info">
-                <span class="cite-name">Amy Marcella</span>
+                <span class="cite-name">Lotus Global Alliances</span>
                 <span class="cite-role">Director · 1Billion2Web3 Initiative</span>
               </div>
             </cite>
@@ -3075,11 +3076,11 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
       <span class="logo-strip-label">Also Built For</span>
       <div class="logo-items">
         <a href="https://anjzkitchen.vercel.app" target="_blank" class="logo-item">AnjzKitchen</a>
-        <a href="https://celestial-threads.vercel.app/" target="_blank" class="logo-item">Celestial Threads</a>
-        <a href="https://1billion2web3initiative.lotusglobalalliances.com/" target="_blank" class="logo-item">Lotus Global Alliances</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Celestial Threads</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Lotus Global Alliances</a>
         <a href="https://jobletters.xyz" target="_blank" class="logo-item">Jobletters.xyz</a>
-        <a href="https://gataprotocol.org" target="_blank" class="logo-item">GATA Ecosystem</a>
-        <a href="https://tek1security.teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">GATA Ecosystem</a>
+        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
       </div>
     </div>
 
@@ -3814,7 +3815,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
             <h3 style="font-size:clamp(1.3rem,2.5vw,1.9rem);margin-bottom:8px;">Poverty2Prosperity System</h3>
             <p style="font-size:.88rem;color:var(--dim);max-width:640px;line-height:1.75;">The knowledge &amp; systems transformation arm of TEKNNUKU Studio. Every week, TEKNNUKU hosts <strong style="color:var(--white);">free public workshops</strong> and a <strong style="color:var(--gold);">paid Inner Circle Masterclass</strong> that teaches entrepreneurs the system to move from poverty to prosperity — and helps them build their own digital business systems through the Studio.</p>
           </div>
-          <a href="https://p2p.teknnuku.xyz/" target="_blank" rel="noopener" class="vc-link" style="white-space:nowrap;font-size:.65rem;padding-bottom:4px;">Visit Platform →</a>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link" style="white-space:nowrap;font-size:.65rem;padding-bottom:4px;">Visit Platform →</a>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--borderS);border:1px solid var(--borderS);margin-bottom:18px;">
@@ -3842,7 +3843,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
 
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:10px 20px;">Join the Inner Circle →</button>
-          <a href="https://poverty2-wealth-v2.vercel.app/" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:.8rem;padding:10px 20px;">Register for Free Workshop →</a>
+          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:.8rem;padding:10px 20px;">Register for Free Workshop →</a>
         </div>
       </div>
 
@@ -3857,7 +3858,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <li><span class="dk">Horizon</span><span class="dv">Long-term</span></li>
         </ul>
         <div class="vnote">→ Ecosystem infrastructure play</div>
-        <a href="https://gataprotocol.org" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
       <div class="vc">
@@ -3871,7 +3872,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <li><span class="dk">Risk</span><span class="dv">Medium</span></li>
         </ul>
         <div class="vnote">→ High-demand consumer market</div>
-        <a href="https://pawaplus.vercel.app/" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
       <div class="vc">
@@ -3885,7 +3886,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <li><span class="dk">Sales cycle</span><span class="dv">Long</span></li>
         </ul>
         <div class="vnote">→ High-value, sticky B2B revenue</div>
-        <a href="https://tek1security.teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
       <div class="vc">
@@ -3899,7 +3900,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
           <li><span class="dk">Horizon</span><span class="dv">Medium-term</span></li>
         </ul>
         <div class="vnote">→ FinTech automation opportunity</div>
-        <a href="https://www.autodextrader.xyz/" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
     </div>
