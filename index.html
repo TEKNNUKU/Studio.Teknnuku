@@ -199,11 +199,11 @@ section { padding:clamp(72px,10vw,120px) 0; }
 .logo-mobile-combo {
   display:none;
   align-items:center;
-  gap:8px;
+  gap:9px;
 }
 .logo-img-icon {
   display:block;
-  height:34px;
+  height:36px;
   width:auto;
   object-fit:contain;
   flex-shrink:0;
@@ -211,24 +211,31 @@ section { padding:clamp(72px,10vw,120px) 0; }
 .logo-mobile-name {
   font-family:'Syne', sans-serif;
   font-weight:800;
-  font-size:0.7rem;
-  letter-spacing:0.04em;
+  font-size:0.88rem;
+  letter-spacing:0.03em;
   text-transform:uppercase;
   color:#C89B14;
   white-space:nowrap;
-  line-height:1.15;
+  line-height:1.18;
   display:flex;
   flex-direction:column;
-  gap:1px;
+  gap:0px;
 }
-.logo-mobile-name .ln-tek { color:#C89B14; font-size:0.7rem; letter-spacing:0.06em; }
+.logo-mobile-name .ln-tek {
+  color:#C89B14;
+  font-size:0.88rem;
+  font-weight:800;
+  letter-spacing:0.04em;
+  text-shadow:0 0 12px rgba(200,155,20,.4);
+}
 .logo-mobile-name em {
   color:#C89B14;
   font-style:normal;
-  font-size:0.58rem;
-  letter-spacing:0.18em;
-  -webkit-text-stroke:0.5px #C89B14;
-  text-shadow:0 0 8px rgba(200,155,20,.5);
+  font-size:0.72rem;
+  font-weight:800;
+  letter-spacing:0.22em;
+  -webkit-text-stroke:0.6px #daa820;
+  text-shadow:0 0 10px rgba(200,155,20,.6), 0 0 2px rgba(200,155,20,.8);
 }
 
 #site-header {
@@ -2186,8 +2193,9 @@ footer {
 [data-theme="light"] .modal-topbar-title { color:#1a1510; }
 
 /* Footer */
-[data-theme="light"] .logo-mobile-name { color:#9e8010; }
-[data-theme="light"] .logo-mobile-name em { color:#1a1510; }
+[data-theme="light"] .logo-mobile-name { color:#8a6e08; }
+[data-theme="light"] .logo-mobile-name .ln-tek { color:#8a6e08; text-shadow:none; }
+[data-theme="light"] .logo-mobile-name em { color:#8a6e08; -webkit-text-stroke:0.6px #8a6e08; text-shadow:none; }
 [data-theme="light"] footer,
 [data-theme="light"] .footer-inner { background:#1a1510; }
 
@@ -2622,17 +2630,14 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(242,237,228,.06);
       margin:0 20px 24px;border:1px solid rgba(200,155,20,.12);border-radius:8px;overflow:hidden;">
 
-      <a href="mailto:hello.studio@teknnuku.xyz"
-        style="background:rgba(14,14,14,.8);padding:18px 14px;text-align:center;
+      <a href="/cdn-cgi/l/email-protection#bed6dbd2d2d190cdcacbdad7d1fecadbd5d0d0cbd5cb90c6c7c4" style="background:rgba(14,14,14,.8);padding:18px 14px;text-align:center;
         text-decoration:none;transition:background .2s;display:flex;flex-direction:column;
-        align-items:center;gap:6px;"
-        onmouseover="this.style.background='rgba(200,155,20,.08)'"
-        onmouseout="this.style.background='rgba(14,14,14,.8)'">
+        align-items:center;gap:6px;" onmouseover="this.style.background='rgba(200,155,20,.08)'" onmouseout="this.style.background='rgba(14,14,14,.8)'">
         <span style="font-size:1.3rem;">✉️</span>
         <span style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.12em;
           text-transform:uppercase;color:#C89B14;display:block;">Email</span>
         <span style="font-size:.72rem;color:rgba(242,237,228,.5);word-break:break-all;">
-          hello.studio@teknnuku.xyz</span>
+          <span class="__cf_email__" data-cfemail="a4ccc1c8c8cb8ad7d0d1c0cdcbe4d0c1cfcacad1cfd18adcddde">[email&#160;protected]</span></span>
       </a>
 
       <a href="https://discord.gg/teknnuku" target="_blank" rel="noopener"
@@ -3062,7 +3067,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
       <span class="logo-mobile-combo">
         <img class="logo-img-icon"
              src="https://pink-quiet-wolf-922.mypinata.cloud/ipfs/bafkreicdqxx764xdwq3c3xhf2xvawlmihboia5oj5jas2yibrtsadeadxi"
-             alt="TEKNNUKU STUDIO" width="30" height="30">
+             alt="TEKNNUKU STUDIO" width="36" height="36">
         <span class="logo-mobile-name">
           <span class="ln-tek">TEKNNUKU</span>
           <em>STUDIO</em>
@@ -4323,7 +4328,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
 <!-- ============================================
      JAVASCRIPT
 ============================================ -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function() {
 
   // ── Scroll Progress ──
@@ -4920,15 +4925,4 @@ window.resetContactForm = function() {
   window.addEventListener('scroll', function() {
     var scrollTop = window.scrollY;
     var docH = document.documentElement.scrollHeight - window.innerHeight;
-    var pct = docH > 0 ? (scrollTop / docH) * 100 : 0;
-    if (railFill) railFill.style.height = pct + '%';
-
-    // Hide scroll hint once user starts scrolling
-    if (scrollTop > 60) scrollHint.classList.remove('visible');
-  }, { passive: true });
-})();
-
-</script>
-
-</body>
-</html>
+    var pct = docH > 0 ? (scrollTop / docH) * 100 :
