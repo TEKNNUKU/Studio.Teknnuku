@@ -38,6 +38,12 @@
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
+@media (max-width: 900px) {
+  html, body { overflow: auto; }
+  #app { height: auto; min-height: 100dvh; overflow: visible; }
+  .main-area { overflow: visible; }
+  .content-area { overflow: visible; height: auto; }
+}
 body {
   font-family: var(--sans);
   background: var(--bg);
@@ -572,11 +578,76 @@ tbody tr:last-child td { border-bottom: none; }
 /* ═══════════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   MOBILE OVERLAY SIDEBAR
+═══════════════════════════════════════════════════ */
+.mob-overlay {
+  display: none; position: fixed; inset: 0; z-index: 700;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+}
+.mob-overlay.open { display: block; }
+
+.mob-hamburger {
+  display: none;
+  background: var(--gold);
+  border: none;
+  border-radius: 7px; padding: 8px 13px;
+  color: #080808; font-size: 11px; font-weight: 800;
+  font-family: var(--mono); letter-spacing: .1em;
+  text-transform: uppercase; cursor: pointer;
+  flex-shrink: 0; gap: 5px; align-items: center;
+  white-space: nowrap;
+}
+.mob-hamburger:active { background: var(--goldL); }
+
+/* BOTTOM NAV BAR — mobile only */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 6px 0 env(safe-area-inset-bottom, 6px);
+  overflow-x: auto;
+}
+.bottom-nav-inner {
+  display: flex; align-items: center;
+  min-width: max-content; padding: 0 8px; gap: 2px;
+}
+.bnav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  color: var(--dimmer); font-size: .58rem; font-family: var(--mono);
+  letter-spacing: .06em; text-transform: uppercase; min-width: 58px;
+  transition: all .15s; border: 1px solid transparent;
+}
+.bnav-item:hover, .bnav-item.active {
+  color: var(--gold);
+  background: rgba(200,155,20,.1);
+  border-color: rgba(200,155,20,.18);
+}
+.bnav-icon { font-size: 16px; line-height: 1; }
+
 @media (max-width: 900px) {
-  .sidebar { display: none; }
+  .sidebar { 
+    position: fixed; top: 0; left: -260px; bottom: 0; z-index: 750;
+    width: 260px;
+    transition: left .28s cubic-bezier(.34,1.2,.64,1);
+    box-shadow: 4px 0 32px rgba(0,0,0,.5);
+  }
+  .sidebar.open { left: 0; }
+  .mob-hamburger { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .bottom-nav { display: flex; }
+  .content-area { padding-bottom: 80px; }
   .two-col, .three-col { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
   .detail-grid { grid-template-columns: 1fr; }
+  .topbar { gap: 8px; padding: 0 12px; }
+  .search-box { display: none; }
+  .last-refresh { display: none; }
+  .topbar-title { font-size: .85rem; }
+}
+@media (max-width: 480px) {
+  .drawer { width: 100%; max-width: 100%; }
 }
 </style>
 </head>
@@ -675,6 +746,7 @@ tbody tr:last-child td { border-bottom: none; }
   <!-- MAIN AREA -->
   <div class="main-area">
     <div class="topbar">
+      <button class="mob-hamburger" onclick="toggleSidebar()" aria-label="Menu">☰ MENU</button>
       <div class="topbar-title" id="panel-title">Overview <span>→ Dashboard</span></div>
       <div class="search-box">
         <span style="color:var(--dimmer);font-size:12px;">⌕</span>
@@ -972,8 +1044,43 @@ tbody tr:last-child td { border-bottom: none; }
 </div><!-- /app -->
 
 <!-- ════════════════════════════════════════════
+     BOTTOM NAV (MOBILE)
+════════════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <div class="bottom-nav-inner">
+    <div class="bnav-item active" data-panel="overview" onclick="showPanelMob('overview',this)">
+      <span class="bnav-icon">⬡</span>Overview
+    </div>
+    <div class="bnav-item" data-panel="leads" onclick="showPanelMob('leads',this)">
+      <span class="bnav-icon">📥</span>Leads
+    </div>
+    <div class="bnav-item" data-panel="inquiries" onclick="showPanelMob('inquiries',this)">
+      <span class="bnav-icon">📋</span>Inquiries
+    </div>
+    <div class="bnav-item" data-panel="messages" onclick="showPanelMob('messages',this)">
+      <span class="bnav-icon">💬</span>Messages
+    </div>
+    <div class="bnav-item" data-panel="people" onclick="showPanelMob('people',this)">
+      <span class="bnav-icon">👥</span>People
+    </div>
+    <div class="bnav-item" data-panel="proposals" onclick="showPanelMob('proposals',this)">
+      <span class="bnav-icon">📄</span>Proposals
+    </div>
+    <div class="bnav-item" data-panel="payments" onclick="showPanelMob('payments',this)">
+      <span class="bnav-icon">💰</span>Payments
+    </div>
+    <div class="bnav-item" data-panel="assignments" onclick="showPanelMob('assignments',this)">
+      <span class="bnav-icon">🗂</span>Assign
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════
      DRAWERS
 ════════════════════════════════════════════ -->
+<!-- Mobile sidebar overlay -->
+<div class="mob-overlay" id="mob-overlay" onclick="closeSidebar()"></div>
+
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="main-drawer">
   <div class="drawer-topbar">
@@ -1189,6 +1296,25 @@ function initials(name) {
 // ─────────────────────────────────────────────
 //  NAV & PANEL ROUTING
 // ─────────────────────────────────────────────
+// ─── Mobile sidebar controls ───
+function toggleSidebar() {
+  var sb = document.querySelector('.sidebar');
+  var ov = document.getElementById('mob-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('mob-overlay').classList.remove('open');
+}
+
+// ─── Bottom nav tab switch ───
+function showPanelMob(name, el) {
+  showPanel(name, document.querySelector('.nav-item[data-panel="' + name + '"]'));
+  document.querySelectorAll('.bnav-item').forEach(function(b) { b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+}
+
 var PANEL_TITLES = {
   overview: 'Overview → Dashboard',
   leads: 'Leads → Intake Diagnostic',
@@ -1205,9 +1331,15 @@ function showPanel(name, el) {
   document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
   document.getElementById('panel-' + name).classList.add('active');
   if (el) el.classList.add('active');
+  // Sync bottom nav
+  document.querySelectorAll('.bnav-item').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.panel === name);
+  });
   var title = PANEL_TITLES[name] || name;
   var parts = title.split(' → ');
   document.getElementById('panel-title').innerHTML = escHtml(parts[0]) + (parts[1] ? ' <span>→ ' + escHtml(parts[1]) + '</span>' : '');
+  // Close sidebar on mobile after nav
+  closeSidebar();
 }
 
 // ─────────────────────────────────────────────
@@ -1821,13 +1953,24 @@ function saveProposal() {
   };
   if (!data.personName || !data.title) { toast('Name and title required', 'error'); return; }
   if (_editingProposalId) {
+    if (!window._updateDoc) { toast('Firebase not ready yet — try again', 'error'); return; }
     window._updateDoc('proposals', _editingProposalId, data).then(function() {
       toast('Proposal updated ✓', 'success'); closeDrawer(); window._loadAll();
-    }).catch(function() { toast('Save failed', 'error'); });
+    }).catch(function(err) { console.error('Proposal update error:', err); toast('Update failed: ' + (err.message||err), 'error'); });
   } else {
+    if (!window._saveDoc) { toast('Firebase not ready yet — try again', 'error'); return; }
     window._saveDoc('proposals', data).then(function() {
       toast('Proposal saved ✓', 'success'); closeDrawer(); window._loadAll();
-    }).catch(function() { toast('Save failed', 'error'); });
+    }).catch(function(err) {
+      console.error('Proposal save error:', err);
+      var msg = err.message || String(err);
+      if (msg.includes('permission') || msg.includes('PERMISSION')) {
+        toast('❌ Firebase rules blocked write. See Rules banner below.', 'error');
+        showRulesBanner();
+      } else {
+        toast('Save failed: ' + msg, 'error');
+      }
+    });
   }
 }
 
@@ -1885,13 +2028,15 @@ function savePayment() {
   };
   if (!data.personName) { toast('Client name required', 'error'); return; }
   if (_editingPaymentId) {
+    if (!window._updateDoc) { toast('Firebase not ready yet — try again', 'error'); return; }
     window._updateDoc('payments', _editingPaymentId, data).then(function() {
       toast('Payment updated ✓', 'success'); closeDrawer(); window._loadAll();
-    }).catch(function() { toast('Save failed', 'error'); });
+    }).catch(function(err) { console.error('Payment update error:', err); var m=err.message||String(err); if(m.includes('permission')||m.includes('PERMISSION')){toast('❌ Firebase rules blocked write.',  'error');showRulesBanner();}else{toast('Update failed: '+m,'error');}});
   } else {
+    if (!window._saveDoc) { toast('Firebase not ready yet — try again', 'error'); return; }
     window._saveDoc('payments', data).then(function() {
       toast('Payment logged ✓', 'success'); closeDrawer(); window._loadAll();
-    }).catch(function() { toast('Save failed', 'error'); });
+    }).catch(function(err) { console.error('Payment save error:', err); var m=err.message||String(err); if(m.includes('permission')||m.includes('PERMISSION')){toast('❌ Firebase rules blocked write.',  'error');showRulesBanner();}else{toast('Save failed: '+m,'error');}});
   }
 }
 
@@ -1955,13 +2100,15 @@ function saveAssignment() {
   };
   if (!data.personName || !data.venture) { toast('Name and venture required', 'error'); return; }
   if (_editingAssignmentId) {
+    if (!window._updateDoc) { toast('Firebase not ready yet — try again', 'error'); return; }
     window._updateDoc('assignments', _editingAssignmentId, data).then(function() {
       toast('Assignment updated ✓', 'success'); closeDrawer(); window._loadAll();
-    }).catch(function() { toast('Save failed', 'error'); });
+    }).catch(function(err) { console.error('Assignment update error:', err); var m=err.message||String(err); if(m.includes('permission')||m.includes('PERMISSION')){toast('❌ Firebase rules blocked write.',  'error');showRulesBanner();}else{toast('Update failed: '+m,'error');}});
   } else {
+    if (!window._saveDoc) { toast('Firebase not ready yet — try again', 'error'); return; }
     window._saveDoc('assignments', data).then(function() {
       toast('Assignment saved ✓', 'success'); closeDrawer(); window._loadAll();
-    }).catch(function() { toast('Save failed', 'error'); });
+    }).catch(function(err) { console.error('Assignment save error:', err); var m=err.message||String(err); if(m.includes('permission')||m.includes('PERMISSION')){toast('❌ Firebase rules blocked write.',  'error');showRulesBanner();}else{toast('Save failed: '+m,'error');}});
   }
 }
 
@@ -2016,6 +2163,44 @@ function deleteRecord(col, id) {
     toast('Deleted ✓', 'success'); window._loadAll();
   }).catch(function() { toast('Delete failed', 'error'); });
 }
+
+// ─────────────────────────────────────────────
+//  FIREBASE RULES HELPER
+// ─────────────────────────────────────────────
+function showRulesBanner() {
+  var existing = document.getElementById('rules-banner');
+  if (existing) { existing.style.display = 'flex'; return; }
+  var ruleCode = [
+    "rules_version = '2';",
+    "service cloud.firestore {",
+    "  match /databases/{database}/documents {",
+    "    match /{document=**} {",
+    "      allow read, write: if request.auth != null;",
+    "    }",
+    "  }",
+    "}"
+  ].join('\n');
+  var banner = document.createElement('div');
+  banner.id = 'rules-banner';
+  banner.style.cssText = 'position:fixed;bottom:90px;left:12px;right:12px;z-index:950;background:#1a0a0a;border:1.5px solid #ef4444;border-radius:10px;padding:16px 18px;font-family:var(--mono);font-size:.72rem;line-height:1.7;color:#F2EDE4;box-shadow:0 8px 32px rgba(0,0,0,.7);';
+  var pre = document.createElement('pre');
+  pre.style.cssText = 'background:#0a0a0f;border-radius:6px;padding:10px;margin-top:6px;color:#00BCD4;font-size:.68rem;overflow-x:auto;';
+  pre.textContent = ruleCode;
+  var inner = document.createElement('div');
+  inner.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><div style="flex:1;">' +
+    '<div style="color:#ef4444;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;">⚠️ Firestore Rules Need Updating</div>' +
+    '<div style="color:rgba(242,237,228,.7);margin-bottom:6px;">Firebase is blocking writes to new collections. Go to:<br>' +
+    '<span style="color:#C89B14;">Firebase Console → Firestore Database → Rules tab</span><br>Paste the code below, click Publish, then retry.</div>' +
+    '</div>' +
+    '<button onclick="document.getElementById(\'rules-banner\').style.display=\'none\'" style="background:none;border:1px solid rgba(239,68,68,.4);color:#ef4444;border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:.6rem;cursor:pointer;flex-shrink:0;">✕</button>' +
+    '</div>';
+  inner.appendChild(pre);
+  banner.appendChild(inner);
+  document.body.appendChild(banner);
+}
+
+// Auto-show banner if saves fail on first load
+window._rulesBannerShown = false;
 
 // ─────────────────────────────────────────────
 //  KEYBOARD SHORTCUTS
