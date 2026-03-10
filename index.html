@@ -2025,9 +2025,11 @@ footer {
   .verb:nth-child(4),
   .verb:nth-child(5) { border-top:1px solid var(--borderS); }
 
-  /* Nav: hide diagnostic text on tiny screens, keep icon+hamburger */
+  /* Nav: on mobile hide BOTH buttons, show only theme-toggle + hamburger */
   .nav-btn-diag-text { display:none; }
   .nav-btn-sm { min-width:36px; padding:7px 10px; }
+  .nav-right .btn-gold { display:none; }
+  .nav-right .btn-outline { display:none; }
 
   /* Modal responsive */
   .modal-inner { padding:0; }
@@ -2056,9 +2058,6 @@ footer {
   .verb:first-child { border-top:none; }
 }
 
-/* ============================================
-   LIGHT MODE — toggled via data-theme="light"
-============================================ */
 [data-theme="light"] {
   --black:    #f0ede8;
   --dark:     #e8e4dd;
@@ -2076,32 +2075,358 @@ footer {
   --green:    #1a7a40;
   --amber:    #b06010;
   --blue:     #1a50a0;
-  --scroll-gold: #a07820;
-  --scroll-cyan: #0088a0;
 }
-[data-theme="light"] body {
-  background:#f0ede8;
-  color:#4a3f30;
-}
-[data-theme="light"] #scroll-progress {
-  background:linear-gradient(90deg,var(--gold),var(--cyan));
-}
-[data-theme="light"] nav {
-  background:rgba(240,237,232,.92);
-  border-bottom:1px solid rgba(40,32,20,.1);
-}
+[data-theme="light"] body { background:#f0ede8; color:#4a3f30; }
+[data-theme="light"] #scroll-progress { background:linear-gradient(90deg,var(--gold),var(--cyan)); }
+
+/* Nav light mode — explicit text colors */
+[data-theme="light"] nav,
+[data-theme="light"] header { background:rgba(240,237,232,.96); border-bottom:1px solid rgba(40,32,20,.12); }
+[data-theme="light"] .logo-main { color:#1a1510 !important; }
+[data-theme="light"] .logo-main em { color:var(--gold) !important; }
+[data-theme="light"] .logo-sub { color:#8a7a68 !important; }
+[data-theme="light"] .nav-links a { color:#6b5c48; }
+[data-theme="light"] .nav-links a:hover { color:var(--gold); }
+[data-theme="light"] .hamburger span { background:#1a1510; }
+[data-theme="light"] .hamburger { border-color:rgba(40,32,20,.2); }
+[data-theme="light"] .theme-toggle { border-color:rgba(40,32,20,.2); color:#6b5c48; }
+[data-theme="light"] .btn-outline { border-color:rgba(40,32,20,.3); color:#4a3f30; }
+
+/* Section backgrounds */
 [data-theme="light"] .hero { background:#e8e4dd; }
 [data-theme="light"] .hero h1 { color:#1a1510; }
 [data-theme="light"] .hero-sub { color:#4a3f30; }
+[data-theme="light"] .hero-bg { opacity:.04; }
+[data-theme="light"] .stat-box { background:rgba(40,32,20,.06); border-color:rgba(40,32,20,.1); }
 [data-theme="light"] .t-eyebrow { color:var(--gold); }
-[data-theme="light"] .pkg { background:#ddd9d2; border-color:rgba(40,32,20,.1); }
-[data-theme="light"] .vc  { background:#ddd9d2; border-color:rgba(40,32,20,.1); }
-[data-theme="light"] .gold-rule { background:linear-gradient(90deg,transparent,var(--gold) 40%,transparent); }
-[data-theme="light"] .mobile-nav { background:#e8e4dd; }
-[data-theme="light"] .traction-section { background:#ddd9d2; border-color:rgba(40,32,20,.12); }
+[data-theme="light"] .gold-rule { background:linear-gradient(90deg,transparent,var(--gold) 40%,transparent); opacity:.5; }
+[data-theme="light"] .mobile-nav { background:#e0dbd4; }
+[data-theme="light"] .mob-link { color:#4a3f30; border-color:rgba(40,32,20,.1); }
+
+/* Cards */
+[data-theme="light"] .pkg,
+[data-theme="light"] .vc,
+[data-theme="light"] .prob-card,
+[data-theme="light"] .step,
+[data-theme="light"] .who-card { background:#ddd9d2; border-color:rgba(40,32,20,.12); }
+[data-theme="light"] .pkg-name,
+[data-theme="light"] .pkg-price { color:#1a1510; }
+[data-theme="light"] .pkg-feat li { color:#4a3f30; }
+
+/* Traction */
+[data-theme="light"] .traction-section { background:#ddd9d2; border-color:rgba(40,32,20,.15); }
+[data-theme="light"] .tv { color:#1a1510; }
+[data-theme="light"] .tk { color:#8a7a68; }
+
+/* Client cards */
 [data-theme="light"] .client-card { background:#ddd9d2; }
-[data-theme="light"] .cc-placeholder { background:#d0cbbf; }
-[data-theme="light"] #intake-modal { background:rgba(240,237,232,.97); }
+[data-theme="light"] .cc-placeholder { background:#c8c3bc; }
+
+/* Modal */
+[data-theme="light"] #intake-modal { background:rgba(232,228,221,.97); }
+[data-theme="light"] .form-card-modal { background:#ddd9d2; border-color:rgba(40,32,20,.15); }
+[data-theme="light"] .modal-topbar { background:#d0cbbf; border-color:rgba(40,32,20,.15); }
+[data-theme="light"] .modal-topbar-title { color:#1a1510; }
+
+/* Footer */
+[data-theme="light"] footer,
+[data-theme="light"] .footer-inner { background:#1a1510; }
+
+/* ============================================
+   MODAL RESTRUCTURE — fixed top bar
+============================================ */
+#intake-modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:rgba(7,7,7,.96);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  align-items:flex-start;
+  justify-content:center;
+  overflow-y:auto;
+  padding:0 0 32px;
+}
+#intake-modal.open { display:flex; }
+
+/* Sticky top bar inside modal */
+.modal-topbar {
+  position:sticky;
+  top:0;
+  left:0;
+  right:0;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 20px;
+  background:rgba(14,14,14,.96);
+  border-bottom:1px solid var(--borderS);
+  backdrop-filter:blur(8px);
+  flex-shrink:0;
+  width:100%;
+}
+.modal-topbar-title {
+  font-family:'DM Mono',monospace;
+  font-size:.58rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--dimmer);
+}
+.modal-topbar-close {
+  background:none;
+  border:1px solid var(--borderS);
+  color:var(--muted);
+  font-size:.72rem;
+  font-family:'DM Mono',monospace;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:6px 14px;
+  border-radius:var(--r);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  transition:all .2s;
+  flex-shrink:0;
+}
+.modal-topbar-close:hover { border-color:var(--gold); color:var(--gold); }
+
+.modal-inner {
+  position:relative;
+  width:100%;
+  max-width:760px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  animation:shellIn .4s ease both;
+}
+
+/* Hide old floating close button */
+.modal-close-btn { display:none !important; }
+
+/* ============================================
+   ANIMATIONS SYSTEM
+============================================ */
+
+/* Keyframes */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(28px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+@keyframes slideRight {
+  from { opacity:0; transform:translateX(-24px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity:0; transform:scale(.92); }
+  to   { opacity:1; transform:scale(1); }
+}
+@keyframes countUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position:200% center; }
+  100% { background-position:-200% center; }
+}
+@keyframes float {
+  0%,100% { transform:translateY(0px) rotate(0deg); }
+  33%      { transform:translateY(-12px) rotate(1deg); }
+  66%      { transform:translateY(-6px) rotate(-1deg); }
+}
+@keyframes glow {
+  0%,100% { box-shadow:0 0 20px rgba(201,168,76,.15); }
+  50%      { box-shadow:0 0 40px rgba(201,168,76,.35); }
+}
+@keyframes lineGrow {
+  from { width:0; }
+  to   { width:100%; }
+}
+@keyframes particleFloat {
+  0%   { transform:translateY(0) translateX(0) scale(1); opacity:.6; }
+  50%  { transform:translateY(-40px) translateX(20px) scale(1.2); opacity:.3; }
+  100% { transform:translateY(-80px) translateX(-10px) scale(.8); opacity:0; }
+}
+@keyframes borderPulse {
+  0%,100% { border-color:var(--borderS); }
+  50%      { border-color:rgba(201,168,76,.4); }
+}
+@keyframes navShrink {
+  from { padding-top:14px; padding-bottom:14px; }
+  to   { padding-top:8px;  padding-bottom:8px; }
+}
+@keyframes textReveal {
+  from { clip-path:inset(0 100% 0 0); }
+  to   { clip-path:inset(0 0% 0 0); }
+}
+
+/* Hero entrance animation sequence */
+.hero-tag       { animation:slideRight .7s ease .1s both; }
+.hero h1        { animation:fadeUp .9s ease .25s both; }
+.hero-sub       { animation:fadeUp .7s ease .5s both; }
+.hero-filter    { animation:fadeUp .6s ease .65s both; }
+.hero-ctas      { animation:fadeUp .6s ease .75s both; }
+
+/* Shimmer gold text effect */
+.gold-shimmer {
+  background:linear-gradient(90deg, var(--gold), #f0d080, var(--gold), #c8a040, var(--gold));
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:shimmer 4s linear infinite;
+}
+
+/* Scroll reveal — base state */
+.reveal {
+  opacity:0;
+  transform:translateY(32px);
+  transition:opacity .65s ease, transform .65s ease;
+}
+.reveal.visible {
+  opacity:1;
+  transform:translateY(0);
+}
+.reveal-left {
+  opacity:0;
+  transform:translateX(-28px);
+  transition:opacity .65s ease, transform .65s ease;
+}
+.reveal-left.visible { opacity:1; transform:translateX(0); }
+
+.reveal-scale {
+  opacity:0;
+  transform:scale(.94);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.reveal-scale.visible { opacity:1; transform:scale(1); }
+
+/* Stagger children */
+.stagger-children > * {
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity .55s ease, transform .55s ease;
+}
+.stagger-children.visible > *:nth-child(1) { opacity:1; transform:translateY(0); transition-delay:.0s; }
+.stagger-children.visible > *:nth-child(2) { opacity:1; transform:translateY(0); transition-delay:.1s; }
+.stagger-children.visible > *:nth-child(3) { opacity:1; transform:translateY(0); transition-delay:.2s; }
+.stagger-children.visible > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay:.3s; }
+.stagger-children.visible > *:nth-child(5) { opacity:1; transform:translateY(0); transition-delay:.4s; }
+.stagger-children.visible > *:nth-child(6) { opacity:1; transform:translateY(0); transition-delay:.5s; }
+
+/* Card hover elevation (enhanced) */
+.pkg, .vc, .prob-card, .client-card, .step, .who-card, .eng-card {
+  transition:background .25s, transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+}
+.pkg:hover         { transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,0,0,.4); }
+.vc:hover          { transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,0,0,.4); }
+.prob-card:hover   { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,.35); }
+.client-card:hover { transform:translateY(-6px); box-shadow:0 20px 48px rgba(0,0,0,.4); }
+.eng-card:hover    { transform:translateY(-6px); box-shadow:0 16px 40px rgba(201,168,76,.12); }
+
+/* Floating hero background particles */
+.hero-particles {
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:0;
+}
+.particle {
+  position:absolute;
+  border-radius:50%;
+  opacity:0;
+  animation:particleFloat linear infinite;
+}
+
+/* Gold rule animated grow */
+.gold-rule {
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold) 40%,transparent);
+  position:relative;
+  overflow:hidden;
+}
+.gold-rule::after {
+  content:'';
+  position:absolute;
+  top:0; left:-100%;
+  width:60%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,220,100,.8),transparent);
+  animation:shimmer 3s linear infinite;
+}
+
+/* Traction number count-up effect */
+.tv { display:inline-block; }
+.tv.counting { animation:countUp .5s ease both; }
+
+/* Glow CTA button */
+.btn-gold {
+  animation:glow 3s ease-in-out infinite;
+  animation-delay:2s;
+}
+.btn-gold:hover { animation:none; box-shadow:0 0 32px rgba(201,168,76,.5); }
+
+/* Section heading underline animation */
+.animated-underline { position:relative; display:inline-block; }
+.animated-underline::after {
+  content:'';
+  position:absolute;
+  bottom:-4px; left:0;
+  height:2px;
+  width:0;
+  background:var(--gold);
+  transition:width .6s ease;
+}
+.animated-underline.visible::after { width:100%; }
+
+/* Nav scroll shrink */
+header.scrolled .nav-inner { padding-top:8px; padding-bottom:8px; }
+header { transition:box-shadow .3s ease; }
+header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
+
+/* Service CTA strip inside tabs */
+.service-cta-strip {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:clamp(24px,4vw,36px);
+  padding:clamp(18px,3vw,28px);
+  background:rgba(201,168,76,.06);
+  border:1px solid rgba(201,168,76,.2);
+  border-radius:var(--r2);
+}
+.service-cta-strip-text {
+  flex:1;
+  min-width:200px;
+}
+.service-cta-strip-text strong {
+  display:block;
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  font-size:.95rem;
+  color:var(--white);
+  margin-bottom:4px;
+}
+.service-cta-strip-text span {
+  font-size:.8rem;
+  color:var(--muted);
+}
+.service-cta-strip .btns { display:flex; gap:10px; flex-wrap:wrap; }
+
+@media(max-width:600px) {
+  .service-cta-strip { flex-direction:column; align-items:stretch; }
+  .service-cta-strip .btns { flex-direction:column; }
+  .service-cta-strip .btns .btn { justify-content:center; }
+  .modal-topbar { padding:8px 16px; }
+  .modal-topbar-title { display:none; }
+}
 </style>
 </head>
 <body>
@@ -2121,10 +2446,17 @@ footer {
 <div id="intake-modal" role="dialog" aria-modal="true" aria-label="Business Intake Assessment">
   <div class="modal-inner">
 
-    <button class="modal-close-btn" onclick="closeIntakeModal()" aria-label="Close intake form">✕ Close</button>
+    <!-- Sticky top bar — always visible, never overlaps content -->
+    <div class="modal-topbar">
+      <span class="modal-topbar-title">TEKNNUKU Studio · Qualification Engine</span>
+      <button class="modal-topbar-close" onclick="closeIntakeModal()" aria-label="Close intake form">✕ Close</button>
+    </div>
+
+    <!-- hidden old close btn -->
+    <button class="modal-close-btn" onclick="closeIntakeModal()" aria-label="Close intake form" style="display:none">✕ Close</button>
 
     <!-- Form View -->
-    <div id="intake-form-view" class="form-shell-modal">
+    <div id="intake-form-view" class="form-shell-modal" style="padding:24px 20px 0;">
       <div class="form-header-modal">
         <div class="form-logo-modal">TEKNNUKU <em>STUDIO</em></div>
         <div class="form-eyebrow-modal">Studio Qualification Engine v1</div>
@@ -2404,6 +2736,10 @@ footer {
 ============================================ -->
 <section class="hero" id="home">
   <div class="hero-bg" aria-hidden="true"></div>
+
+  <!-- Floating particles -->
+  <div class="hero-particles" aria-hidden="true" id="heroParticles"></div>
+
   <div class="wrap">
     <div class="hero-inner">
       <div class="t-eyebrow hero-tag">TEKNNUKU Studio — Venture Factory</div>
@@ -2622,7 +2958,7 @@ footer {
             <cite>
               <div class="cite-avatar">AK</div>
               <div class="cite-info">
-                <span class="cite-name">Anjz Kitchen</span>
+                <span class="cite-name">Damilola Elizabeth .T.N.</span>
                 <span class="cite-role">Founder · AnjzKitchen</span>
               </div>
             </cite>
@@ -2720,7 +3056,7 @@ footer {
             <cite>
               <div class="cite-avatar" style="background:linear-gradient(135deg,#b47aff,var(--cyan));">LG</div>
               <div class="cite-info">
-                <span class="cite-name">Lotus Global Alliances</span>
+                <span class="cite-name">Amy Marcella</span>
                 <span class="cite-role">Director · 1Billion2Web3 Initiative</span>
               </div>
             </cite>
@@ -2739,11 +3075,11 @@ footer {
       <span class="logo-strip-label">Also Built For</span>
       <div class="logo-items">
         <a href="https://anjzkitchen.vercel.app" target="_blank" class="logo-item">AnjzKitchen</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Celestial Threads</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">Lotus Global Alliances</a>
+        <a href="https://celestial-threads.vercel.app/" target="_blank" class="logo-item">Celestial Threads</a>
+        <a href="https://1billion2web3initiative.lotusglobalalliances.com/" target="_blank" class="logo-item">Lotus Global Alliances</a>
         <a href="https://jobletters.xyz" target="_blank" class="logo-item">Jobletters.xyz</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">GATA Ecosystem</a>
-        <a href="https://teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
+        <a href="https://gataprotocol.org" target="_blank" class="logo-item">GATA Ecosystem</a>
+        <a href="https://tek1security.teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
       </div>
     </div>
 
@@ -2909,6 +3245,18 @@ footer {
           </ul>
         </div>
       </div>
+
+    <div class="service-cta-strip">
+      <div class="service-cta-strip-text">
+        <strong>Ready to launch your brand?</strong>
+        <span>Run the 2-min diagnostic to get routed to the right package — instantly.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Get My Brand Blueprint →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;">Book a Free Call</a>
+      </div>
+    </div>
+
     </div>
 
     <!-- SERVICE 02: Sales System Setup -->
@@ -2956,6 +3304,18 @@ footer {
           </ul>
         </div>
       </div>
+
+    <div class="service-cta-strip">
+      <div class="service-cta-strip-text">
+        <strong>Ready to build your sales system?</strong>
+        <span>Answer 11 questions and get your custom sales infrastructure recommendation.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Build My Sales System →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;">Book a Strategy Call</a>
+      </div>
+    </div>
+
     </div>
 
     <!-- SERVICE 03: Business Systemization -->
@@ -2992,6 +3352,18 @@ footer {
           </ul>
         </div>
       </div>
+
+    <div class="service-cta-strip">
+      <div class="service-cta-strip-text">
+        <strong>Ready to systemize your business?</strong>
+        <span>Get a full digital transformation quote — tailored to where your business is right now.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Start My Transformation →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;">Book a Call</a>
+      </div>
+    </div>
+
     </div>
 
     <!-- SERVICE 04: Platform Development -->
@@ -3052,6 +3424,18 @@ footer {
           </ul>
         </div>
       </div>
+
+    <div class="service-cta-strip" style="border-color:rgba(0,188,212,.3);background:rgba(0,188,212,.05);">
+      <div class="service-cta-strip-text">
+        <strong>Ready to build your platform?</strong>
+        <span>Every great platform starts with a diagnostic. Tell us what you're building — we'll tell you how we'd build it.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Get Platform Scoped →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;border-color:rgba(0,188,212,.4);color:var(--cyan);">Schedule Architecture Call</a>
+      </div>
+    </div>
+
     </div>
 
     <!-- SERVICE 05: Web3 -->
@@ -3110,6 +3494,18 @@ footer {
           </ul>
         </div>
       </div>
+
+    <div class="service-cta-strip" style="border-color:rgba(180,120,255,.3);background:rgba(180,120,255,.05);">
+      <div class="service-cta-strip-text">
+        <strong>Ready to build in Web3?</strong>
+        <span>Web3 builds require deep scoping. Start with the diagnostic and we'll reach out within 24h to map your ecosystem.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Start Web3 Scoping →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;border-color:rgba(180,120,255,.4);color:#b47aff;">Book a Web3 Strategy Call</a>
+      </div>
+    </div>
+
     </div>
 
     <!-- SERVICE 06: GATA Onboarding -->
@@ -3156,6 +3552,18 @@ footer {
           </ul>
         </div>
       </div>
+
+    <div class="service-cta-strip" style="border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.05);">
+      <div class="service-cta-strip-text">
+        <strong>Ready to join the GATA ecosystem?</strong>
+        <span>Setup takes as little as 48 hours. Run the diagnostic first and we'll onboard you directly.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Join GATA Ecosystem →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;border-color:rgba(34,197,94,.4);color:var(--green);">Book Onboarding Call</a>
+      </div>
+    </div>
+
     </div>
 
     <!-- SERVICE 07: Startup Venture Build -->
@@ -3203,6 +3611,18 @@ footer {
           </ul>
         </div>
       </div>
+
+    <div class="service-cta-strip" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);">
+      <div class="service-cta-strip-text">
+        <strong>Ready to build your startup?</strong>
+        <span>We only take on ventures we believe in. Run the diagnostic to start the conversation.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Apply for Venture Build →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;border-color:rgba(245,158,11,.4);color:var(--amber);">Schedule Founder Call</a>
+      </div>
+    </div>
+
     </div>
 
     <!-- SERVICE 08: Custom Software -->
@@ -3262,7 +3682,19 @@ footer {
           </ul>
         </div>
       </div>
+    </
+
+    <div class="service-cta-strip" style="border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.05);">
+      <div class="service-cta-strip-text">
+        <strong>Need a custom enterprise build?</strong>
+        <span>Enterprise projects need proper scoping. Book a technical discovery call and we'll map the architecture together.</span>
+      </div>
+      <div class="btns">
+        <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;">Get Enterprise Quote →</button>
+        <a href="https://calendly.com/teknnuku" target="_blank" class="btn btn-outline" style="font-size:.8rem;padding:11px 22px;border-color:rgba(59,130,246,.4);color:var(--blue);">Book Discovery Call</a>
+      </div>
     </div>
+  div>
 
   </div>
 </section>
@@ -3382,7 +3814,7 @@ footer {
             <h3 style="font-size:clamp(1.3rem,2.5vw,1.9rem);margin-bottom:8px;">Poverty2Prosperity System</h3>
             <p style="font-size:.88rem;color:var(--dim);max-width:640px;line-height:1.75;">The knowledge &amp; systems transformation arm of TEKNNUKU Studio. Every week, TEKNNUKU hosts <strong style="color:var(--white);">free public workshops</strong> and a <strong style="color:var(--gold);">paid Inner Circle Masterclass</strong> that teaches entrepreneurs the system to move from poverty to prosperity — and helps them build their own digital business systems through the Studio.</p>
           </div>
-          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link" style="white-space:nowrap;font-size:.65rem;padding-bottom:4px;">Visit Platform →</a>
+          <a href="https://p2p.teknnuku.xyz/" target="_blank" rel="noopener" class="vc-link" style="white-space:nowrap;font-size:.65rem;padding-bottom:4px;">Visit Platform →</a>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--borderS);border:1px solid var(--borderS);margin-bottom:18px;">
@@ -3410,7 +3842,7 @@ footer {
 
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:10px 20px;">Join the Inner Circle →</button>
-          <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:.8rem;padding:10px 20px;">Register for Free Workshop →</a>
+          <a href="https://poverty2-wealth-v2.vercel.app/" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:.8rem;padding:10px 20px;">Register for Free Workshop →</a>
         </div>
       </div>
 
@@ -3425,7 +3857,7 @@ footer {
           <li><span class="dk">Horizon</span><span class="dv">Long-term</span></li>
         </ul>
         <div class="vnote">→ Ecosystem infrastructure play</div>
-        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://gataprotocol.org" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
       <div class="vc">
@@ -3439,7 +3871,7 @@ footer {
           <li><span class="dk">Risk</span><span class="dv">Medium</span></li>
         </ul>
         <div class="vnote">→ High-demand consumer market</div>
-        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://pawaplus.vercel.app/" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
       <div class="vc">
@@ -3453,7 +3885,7 @@ footer {
           <li><span class="dk">Sales cycle</span><span class="dv">Long</span></li>
         </ul>
         <div class="vnote">→ High-value, sticky B2B revenue</div>
-        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://tek1security.teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
       <div class="vc">
@@ -3467,7 +3899,7 @@ footer {
           <li><span class="dk">Horizon</span><span class="dv">Medium-term</span></li>
         </ul>
         <div class="vnote">→ FinTech automation opportunity</div>
-        <a href="https://teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+        <a href="https://www.autodextrader.xyz/" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
       </div>
 
     </div>
@@ -3527,12 +3959,129 @@ footer {
 
   // ── Scroll Progress ──
   var progressBar = document.getElementById('scroll-progress');
+
+  // ── Nav shrink on scroll ──
+  var header = document.getElementById('site-header');
   window.addEventListener('scroll', function() {
     var scrollTop = window.scrollY;
     var docHeight = document.documentElement.scrollHeight - window.innerHeight;
     var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-    progressBar.style.width = pct + '%';
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (header) {
+      if (scrollTop > 60) header.classList.add('scrolled');
+      else header.classList.remove('scrolled');
+    }
   }, { passive: true });
+
+  // ── Hero Particles ──
+  (function() {
+    var container = document.getElementById('heroParticles');
+    if (!container) return;
+    var colors = ['rgba(201,168,76,.6)','rgba(0,188,212,.4)','rgba(201,168,76,.3)','rgba(255,255,255,.15)'];
+    for (var i = 0; i < 18; i++) {
+      (function(i) {
+        var p = document.createElement('div');
+        p.className = 'particle';
+        var size = Math.random() * 5 + 2;
+        var x = Math.random() * 100;
+        var delay = Math.random() * 8;
+        var dur = Math.random() * 8 + 6;
+        var color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.cssText = [
+          'width:' + size + 'px',
+          'height:' + size + 'px',
+          'left:' + x + '%',
+          'bottom:' + (Math.random() * 40) + '%',
+          'background:' + color,
+          'animation-duration:' + dur + 's',
+          'animation-delay:' + delay + 's',
+          'animation-iteration-count:infinite',
+          'animation-name:particleFloat',
+          'animation-timing-function:ease-in-out'
+        ].join(';');
+        container.appendChild(p);
+      })(i);
+    }
+  })();
+
+  // ── Scroll Reveal IntersectionObserver ──
+  (function() {
+    // Add reveal classes to key sections automatically
+    var revealSelectors = [
+      '.prob-card', '.eng-card', '.step', '.who-card',
+      '.vc', '.pkg', '.client-card', '.venture-grid .vc',
+      '.t-eyebrow', '.traction-section', '.id-card',
+      '.intake-strip-inner', '.pos-quote', '.pr',
+      '.cc-body', '.service-cta-strip'
+    ];
+    revealSelectors.forEach(function(sel) {
+      document.querySelectorAll(sel).forEach(function(el, i) {
+        el.classList.add('reveal');
+        el.style.transitionDelay = (i % 4) * 0.08 + 's';
+      });
+    });
+
+    // Section-level stagger
+    var staggerSels = ['.problem-grid', '.pkg-grid', '.engines-grid', '.client-grid'];
+    staggerSels.forEach(function(sel) {
+      var el = document.querySelector(sel);
+      if (el) el.classList.add('stagger-children');
+    });
+
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          // Don't unobserve — let re-trigger on scroll-back? No, fire once:
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-scale, .stagger-children').forEach(function(el) {
+      io.observe(el);
+    });
+  })();
+
+  // ── Counter Animation (traction strip) ──
+  (function() {
+    function animateCounter(el, target, suffix, prefix, duration) {
+      var start = 0;
+      var startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var ease = 1 - Math.pow(1 - progress, 3);
+        var current = Math.floor(ease * target);
+        el.textContent = prefix + current + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = prefix + target + suffix;
+      }
+      requestAnimationFrame(step);
+    }
+
+    var tractionObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (!entry.isIntersecting) return;
+        var nums = entry.target.querySelectorAll('.tv');
+        nums.forEach(function(el) {
+          var raw = el.textContent.trim();
+          var prefix = raw.match(/^\D+/) ? raw.match(/^\D+/)[0] : '';
+          var suffix = raw.match(/\D+$/) ? raw.match(/\D+$/)[0] : '';
+          // Don't animate non-numeric like "~3 wks"
+          var numStr = raw.replace(/[^0-9]/g, '');
+          if (!numStr) return;
+          var num = parseInt(numStr, 10);
+          el.textContent = prefix + '0' + suffix;
+          animateCounter(el, num, suffix, prefix, 1800);
+        });
+        tractionObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.5 });
+
+    var tractionSection = document.querySelector('.traction-section');
+    if (tractionSection) tractionObserver.observe(tractionSection);
+  })();
 
   // ── Mobile Menu ──
   var hamburger = document.getElementById('hamburger');
