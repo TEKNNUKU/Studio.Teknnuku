@@ -995,7 +995,7 @@ import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc,
-  doc, query, orderBy, limit, where, serverTimestamp, getDoc
+  doc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1011,59 +1011,92 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// ── Auth ──
-window._auth = auth;
-window._signIn = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
-window._signOut = () => signOut(auth);
-
-onAuthStateChanged(auth, user => {
-  if (user) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').classList.add('visible');
-    document.getElementById('user-name').textContent = user.email.split('@')[0];
-    document.getElementById('user-avatar').textContent = user.email[0].toUpperCase();
-    window._loadAll();
-  } else {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').classList.remove('visible');
-  }
-});
-
-// ── Data loaders ──
-async function getCol(name, order) {
-  const q = order ? query(collection(db, name), orderBy(order, 'desc')) : collection(db, name);
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+// ── Helpers ──
+function tsVal(doc) {
+  // Return numeric ms for sorting — checks multiple possible timestamp fields
+  var d = doc.completedAt || doc.submittedAt || doc.sentAt || doc.paidAt || doc.assignedAt || doc.createdAt || doc.updatedAt;
+  if (!d) return 0;
+  if (d.seconds) return d.seconds * 1000;
+  return new Date(d).getTime() || 0;
 }
 
+// Fetch entire collection WITHOUT orderBy (no index required), sort client-side
+async function getCol(name) {
+  try {
+    const snap = await getDocs(collection(db, name));
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    docs.sort((a, b) => tsVal(b) - tsVal(a)); // newest first
+    console.log('✅ Loaded', name, '→', docs.length, 'docs');
+    return docs;
+  } catch (err) {
+    console.error('❌ Failed to load', name, ':', err.message);
+    return []; // return empty so other collections still load
+  }
+}
+
+// ── Auth ──
+window._signIn  = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+window._signOut = () => signOut(auth);
+
+// ── Data loaders ──
 window._loadAll = async function() {
+  console.log('🔄 Loading all collections…');
+  // Load each collection independently so one failure doesn't kill the rest
   const [leads, inquiries, messages, proposals, payments, assignments] = await Promise.all([
-    getCol('intake_leads', 'completedAt'),
-    getCol('service_inquiries', 'submittedAt'),
-    getCol('contact_messages', 'sentAt'),
-    getCol('proposals', 'sentAt'),
-    getCol('payments', 'paidAt'),
-    getCol('assignments', 'assignedAt'),
+    getCol('intake_leads'),
+    getCol('service_inquiries'),
+    getCol('contact_messages'),
+    getCol('proposals'),
+    getCol('payments'),
+    getCol('assignments'),
   ]);
   window._data = { leads, inquiries, messages, proposals, payments, assignments };
   document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  console.log('✅ All data loaded. Leads:', leads.length, 'Inquiries:', inquiries.length);
   window._renderAll();
 };
 
 window._saveDoc = async function(colName, data) {
   data.createdAt = serverTimestamp();
   const ref = await addDoc(collection(db, colName), data);
+  console.log('✅ Saved to', colName, ref.id);
   return ref.id;
 };
 
 window._updateDoc = async function(colName, id, data) {
   data.updatedAt = serverTimestamp();
   await updateDoc(doc(db, colName, id), data);
+  console.log('✅ Updated', colName, id);
 };
 
 window._deleteDoc = async function(colName, id) {
   await deleteDoc(doc(db, colName, id));
+  console.log('✅ Deleted', colName, id);
 };
+
+// ── Auth state — wait for DOM ready before touching UI ──
+function applyAuthState(user) {
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    const nameEl = document.getElementById('user-name');
+    const avatarEl = document.getElementById('user-avatar');
+    if (nameEl) nameEl.textContent = user.email.split('@')[0];
+    if (avatarEl) avatarEl.textContent = user.email[0].toUpperCase();
+    window._loadAll();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').classList.remove('visible');
+  }
+}
+
+onAuthStateChanged(auth, user => {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => applyAuthState(user));
+  } else {
+    applyAuthState(user);
+  }
+});
 </script>
 
 <!-- ════════════════════════════════════════════
@@ -1231,8 +1264,14 @@ window._renderAll = function() {
 };
 
 function refreshAll() {
+  if (!window._loadAll) { toast('Still initialising — try again in a moment', 'error'); return; }
   toast('Refreshing data…');
-  window._loadAll().then(function() { toast('Data refreshed ✓', 'success'); });
+  window._loadAll().then(function() {
+    toast('Data refreshed ✓', 'success');
+  }).catch(function(err) {
+    console.error('Refresh error:', err);
+    toast('Refresh failed — check console', 'error');
+  });
 }
 
 // ─────────────────────────────────────────────
