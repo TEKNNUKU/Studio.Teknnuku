@@ -39,6 +39,20 @@
       return null;
     }
   };
+
+  window.__saveContactToFirebase = async function(payload) {
+    try {
+      const docRef = await addDoc(collection(db, "contact_messages"), {
+        ...payload,
+        createdAt: serverTimestamp()
+      });
+      console.log("✅ Contact message saved:", docRef.id);
+      return docRef.id;
+    } catch (err) {
+      console.warn("⚠️ Firebase contact write failed:", err.message);
+      return null;
+    }
+  };
 </script>
 
 <style>
@@ -197,16 +211,24 @@ section { padding:clamp(72px,10vw,120px) 0; }
 .logo-mobile-name {
   font-family:'Syne', sans-serif;
   font-weight:800;
-  font-size:0.88rem;
-  letter-spacing:0.05em;
+  font-size:0.7rem;
+  letter-spacing:0.04em;
   text-transform:uppercase;
   color:#C89B14;
   white-space:nowrap;
-  line-height:1;
+  line-height:1.15;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
 }
+.logo-mobile-name .ln-tek { color:#C89B14; font-size:0.7rem; letter-spacing:0.06em; }
 .logo-mobile-name em {
-  color:#ffffff;
+  color:#C89B14;
   font-style:normal;
+  font-size:0.58rem;
+  letter-spacing:0.18em;
+  -webkit-text-stroke:0.5px #C89B14;
+  text-shadow:0 0 8px rgba(200,155,20,.5);
 }
 
 #site-header {
@@ -2464,12 +2486,309 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
   .modal-topbar { padding:8px 16px; }
   .modal-topbar-title { display:none; }
 }
+
+/* ============================================
+   SCROLL JOURNEY RAIL (right side)
+============================================ */
+#scroll-rail {
+  position:fixed;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:500;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+  pointer-events:none;
+}
+.rail-track {
+  width:2px;
+  height:180px;
+  background:rgba(200,155,20,.12);
+  border-radius:2px;
+  position:relative;
+  overflow:hidden;
+}
+.rail-fill {
+  position:absolute;
+  top:0; left:0;
+  width:100%;
+  background:linear-gradient(180deg, #C89B14, #00BCD4);
+  border-radius:2px;
+  transition:height .15s linear;
+  height:0%;
+}
+.rail-dot {
+  width:6px; height:6px;
+  border-radius:50%;
+  background:#C89B14;
+  margin:0 -2px;
+  box-shadow:0 0 8px rgba(200,155,20,.7);
+  flex-shrink:0;
+  transition:transform .15s ease, background .15s;
+}
+.rail-dot-top { margin-bottom:0; }
+.rail-dot-btm { margin-top:0; }
+
+/* Hide on very small screens */
+@media(max-width:480px) { #scroll-rail { display:none; } }
+
+/* Floating scroll-hint arrow (only at top, fades out) */
+#scroll-hint {
+  position:fixed;
+  bottom:28px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:500;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .4s ease;
+}
+#scroll-hint.visible { opacity:1; }
+.sh-label {
+  font-family:'DM Mono', monospace;
+  font-size:.52rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:rgba(200,155,20,.6);
+}
+.sh-arrow {
+  width:18px; height:18px;
+  border-right:1.5px solid rgba(200,155,20,.6);
+  border-bottom:1.5px solid rgba(200,155,20,.6);
+  transform:rotate(45deg);
+  animation:arrowBounce 1.6s ease-in-out infinite;
+}
+@keyframes arrowBounce {
+  0%,100% { transform:rotate(45deg) translateY(0); }
+  50%      { transform:rotate(45deg) translateY(5px); }
+}
 </style>
 </head>
 <body>
 
+
+<!-- ============================================
+     CONTACT MODAL
+============================================ -->
+<div id="contact-modal" role="dialog" aria-modal="true" aria-label="Contact TEKNNUKU Studio"
+  style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,7,7,.96);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  align-items:flex-start;justify-content:center;overflow-y:auto;padding:0 0 40px;">
+
+  <div style="position:relative;width:100%;max-width:680px;margin:0 auto;
+    animation:shellIn .4s ease both;display:flex;flex-direction:column;">
+
+    <!-- Top bar -->
+    <div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;
+      justify-content:space-between;padding:10px 20px;
+      background:rgba(14,14,14,.97);border-bottom:1px solid rgba(200,155,20,.15);
+      backdrop-filter:blur(8px);">
+      <span style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.18em;
+        text-transform:uppercase;color:rgba(242,237,228,.35);">
+        TEKNNUKU Studio · Contact
+      </span>
+      <button onclick="closeContactModal()" style="background:none;border:1px solid rgba(242,237,228,.08);
+        color:rgba(242,237,228,.55);font-size:.72rem;font-family:'DM Mono',monospace;
+        letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:4px;
+        cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#C89B14';this.style.color='#C89B14'"
+        onmouseout="this.style.borderColor='rgba(242,237,228,.08)';this.style.color='rgba(242,237,228,.55)'">
+        ✕ Close
+      </button>
+    </div>
+
+    <!-- Header -->
+    <div style="padding:32px 28px 20px;text-align:center;">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;
+        color:#C89B14;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;">
+        <span style="width:18px;height:1px;background:#C89B14;display:inline-block;"></span>
+        Get In Touch
+        <span style="width:18px;height:1px;background:#C89B14;display:inline-block;"></span>
+      </div>
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.4rem,4vw,2rem);
+        color:#F2EDE4;margin-bottom:8px;">Let's talk about your business.</h2>
+      <p style="font-size:.88rem;color:rgba(242,237,228,.55);max-width:420px;margin:0 auto;line-height:1.7;">
+        Drop us a message, book a call, or reach us directly.
+        We respond within 24 hours on business days.
+      </p>
+    </div>
+
+    <!-- Quick contact channels -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(242,237,228,.06);
+      margin:0 20px 24px;border:1px solid rgba(200,155,20,.12);border-radius:8px;overflow:hidden;">
+
+      <a href="mailto:hello.studio@teknnuku.xyz"
+        style="background:rgba(14,14,14,.8);padding:18px 14px;text-align:center;
+        text-decoration:none;transition:background .2s;display:flex;flex-direction:column;
+        align-items:center;gap:6px;"
+        onmouseover="this.style.background='rgba(200,155,20,.08)'"
+        onmouseout="this.style.background='rgba(14,14,14,.8)'">
+        <span style="font-size:1.3rem;">✉️</span>
+        <span style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.12em;
+          text-transform:uppercase;color:#C89B14;display:block;">Email</span>
+        <span style="font-size:.72rem;color:rgba(242,237,228,.5);word-break:break-all;">
+          hello.studio@teknnuku.xyz</span>
+      </a>
+
+      <a href="https://discord.gg/teknnuku" target="_blank" rel="noopener"
+        style="background:rgba(14,14,14,.8);padding:18px 14px;text-align:center;
+        text-decoration:none;transition:background .2s;display:flex;flex-direction:column;
+        align-items:center;gap:6px;border-left:1px solid rgba(242,237,228,.06);
+        border-right:1px solid rgba(242,237,228,.06);"
+        onmouseover="this.style.background='rgba(88,101,242,.1)'"
+        onmouseout="this.style.background='rgba(14,14,14,.8)'">
+        <span style="font-size:1.3rem;">💬</span>
+        <span style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.12em;
+          text-transform:uppercase;color:#5865F2;display:block;">Discord</span>
+        <span style="font-size:.72rem;color:rgba(242,237,228,.5);">Join Our Server</span>
+      </a>
+
+      <a href="https://calendly.com/teknnuku" target="_blank" rel="noopener"
+        style="background:rgba(14,14,14,.8);padding:18px 14px;text-align:center;
+        text-decoration:none;transition:background .2s;display:flex;flex-direction:column;
+        align-items:center;gap:6px;"
+        onmouseover="this.style.background='rgba(200,155,20,.08)'"
+        onmouseout="this.style.background='rgba(14,14,14,.8)'">
+        <span style="font-size:1.3rem;">📅</span>
+        <span style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.12em;
+          text-transform:uppercase;color:#C89B14;display:block;">Book a Call</span>
+        <span style="font-size:.72rem;color:rgba(242,237,228,.5);">Free Consultation</span>
+      </a>
+    </div>
+
+    <!-- Message form -->
+    <div id="contact-form-wrap" style="margin:0 20px;background:rgba(14,14,14,.8);
+      border:1px solid rgba(200,155,20,.15);border-radius:10px;overflow:hidden;">
+
+      <!-- Form state -->
+      <div id="contact-form-body" style="padding:28px 26px;">
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.18em;
+          text-transform:uppercase;color:#C89B14;display:flex;align-items:center;gap:8px;margin-bottom:22px;">
+          <span style="width:14px;height:1px;background:#C89B14;display:inline-block;"></span>
+          Send a Message
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;
+              text-transform:uppercase;color:rgba(242,237,228,.35);">Your Name</label>
+            <input id="ct_name" type="text" placeholder="Full name"
+              style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);
+              border-radius:4px;padding:12px 14px;color:#F2EDE4;font-family:'DM Sans',sans-serif;
+              font-size:.88rem;outline:none;transition:border-color .2s;width:100%;"
+              onfocus="this.style.borderColor='#C89B14'" onblur="this.style.borderColor='rgba(242,237,228,.07)'">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;
+              text-transform:uppercase;color:rgba(242,237,228,.35);">Email Address</label>
+            <input id="ct_email" type="email" placeholder="you@example.com"
+              style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);
+              border-radius:4px;padding:12px 14px;color:#F2EDE4;font-family:'DM Sans',sans-serif;
+              font-size:.88rem;outline:none;transition:border-color .2s;width:100%;"
+              onfocus="this.style.borderColor='#C89B14'" onblur="this.style.borderColor='rgba(242,237,228,.07)'">
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+          <label style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;
+            text-transform:uppercase;color:rgba(242,237,228,.35);">What's this about?</label>
+          <select id="ct_subject"
+            style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);
+            border-radius:4px;padding:12px 14px;color:#F2EDE4;font-family:'DM Sans',sans-serif;
+            font-size:.88rem;outline:none;transition:border-color .2s;width:100%;
+            -webkit-appearance:none;appearance:none;cursor:pointer;"
+            onfocus="this.style.borderColor='#C89B14'" onblur="this.style.borderColor='rgba(242,237,228,.07)'">
+            <option value="" style="background:#141414;">Select a topic…</option>
+            <option value="service_enquiry" style="background:#141414;">Service Enquiry</option>
+            <option value="platform_build" style="background:#141414;">Platform / Product Build</option>
+            <option value="venture_partnership" style="background:#141414;">Venture Partnership</option>
+            <option value="collaboration" style="background:#141414;">Collaboration</option>
+            <option value="ecosystem_access" style="background:#141414;">Ecosystem Access</option>
+            <option value="press_media" style="background:#141414;">Press / Media</option>
+            <option value="other" style="background:#141414;">Other</option>
+          </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;">
+          <label style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;
+            text-transform:uppercase;color:rgba(242,237,228,.35);">Your Message</label>
+          <textarea id="ct_message" rows="5" placeholder="Tell us what you're working on, what you need, or just say hello…"
+            style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);
+            border-radius:4px;padding:14px;color:#F2EDE4;font-family:'DM Sans',sans-serif;
+            font-size:.88rem;outline:none;transition:border-color .2s;width:100%;resize:vertical;
+            line-height:1.65;"
+            onfocus="this.style.borderColor='#C89B14'" onblur="this.style.borderColor='rgba(242,237,228,.07)'"></textarea>
+        </div>
+
+        <div id="ct_valmsg" style="font-size:.75rem;color:#ef4444;font-family:'DM Mono',monospace;
+          display:none;margin-bottom:10px;"></div>
+
+        <button onclick="submitContactForm()"
+          style="width:100%;background:#C89B14;color:#080808;font-family:'DM Sans',sans-serif;
+          font-weight:700;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;
+          padding:14px 24px;border:none;border-radius:4px;cursor:pointer;
+          transition:all .22s;margin-top:4px;display:flex;align-items:center;
+          justify-content:center;gap:8px;"
+          onmouseover="this.style.background='#daa820';this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.background='#C89B14';this.style.transform='translateY(0)'">
+          <span id="ct_btn_text">Send Message →</span>
+        </button>
+      </div>
+
+      <!-- Success state -->
+      <div id="contact-success" style="display:none;padding:48px 28px;text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:16px;">✅</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.3rem;
+          color:#F2EDE4;margin-bottom:10px;">Message Received.</h3>
+        <p style="font-size:.88rem;color:rgba(242,237,228,.55);max-width:340px;
+          margin:0 auto 24px;line-height:1.7;">
+          We'll get back to you within 24 hours. In the meantime, feel free to
+          explore our work or book a call directly.
+        </p>
+        <a href="https://calendly.com/teknnuku" target="_blank"
+          style="display:inline-flex;align-items:center;gap:8px;background:#C89B14;
+          color:#080808;font-weight:700;font-size:.82rem;letter-spacing:.06em;
+          text-transform:uppercase;padding:12px 24px;border-radius:4px;text-decoration:none;
+          transition:background .2s;"
+          onmouseover="this.style.background='#daa820'"
+          onmouseout="this.style.background='#C89B14'">
+          📅 Book a Call While You Wait
+        </a>
+        <button onclick="resetContactForm()"
+          style="display:block;margin:14px auto 0;background:none;border:none;
+          color:rgba(242,237,228,.35);font-family:'DM Mono',monospace;font-size:.65rem;
+          letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:color .2s;"
+          onmouseover="this.style.color='#C89B14'"
+          onmouseout="this.style.color='rgba(242,237,228,.35)'">← Send Another Message</button>
+      </div>
+    </div>
+
+    <!-- Bottom spacer -->
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
 <!-- Scroll Progress Bar -->
 <div id="scroll-progress"></div>
+
+<!-- Scroll Journey Rail -->
+<div id="scroll-rail" aria-hidden="true">
+  <div class="rail-dot rail-dot-top"></div>
+  <div class="rail-track"><div class="rail-fill" id="railFill"></div></div>
+  <div class="rail-dot rail-dot-btm"></div>
+</div>
+
+<!-- Scroll hint arrow (fades at top) -->
+<div id="scroll-hint">
+  <span class="sh-label">Scroll</span>
+  <div class="sh-arrow"></div>
+</div>
+
 
 <!-- Intake Loading Overlay -->
 <div class="loading-overlay-m" id="intakeLoading">
@@ -2743,8 +3062,11 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
       <span class="logo-mobile-combo">
         <img class="logo-img-icon"
              src="https://pink-quiet-wolf-922.mypinata.cloud/ipfs/bafkreicdqxx764xdwq3c3xhf2xvawlmihboia5oj5jas2yibrtsadeadxi"
-             alt="TEKNNUKU STUDIO" width="34" height="34">
-        <span class="logo-mobile-name">TEKNNUKU <em>STUDIO</em></span>
+             alt="TEKNNUKU STUDIO" width="30" height="30">
+        <span class="logo-mobile-name">
+          <span class="ln-tek">TEKNNUKU</span>
+          <em>STUDIO</em>
+        </span>
       </span>
     </a>
     <nav class="nav-links" aria-label="Main navigation">
@@ -2753,7 +3075,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
       <a href="#ventures">Ventures</a>
       <a href="#process">Process</a>
       <a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
-      <a href="#contact">Contact</a>
+      <a href="#contact" onclick="openContactModal();return false;">Contact</a>
     </nav>
     <div class="nav-right">
       <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle light/dark mode">☀️</button>
@@ -2774,7 +3096,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
   <a href="#services" class="mob-link">Services &amp; Pricing</a>
   <a href="#ventures" class="mob-link">Active Ventures</a>
   <a href="#process"  class="mob-link">Our Process</a>
-  <a href="#contact"  class="mob-link">Contact</a>
+  <a href="#contact" class="mob-link" onclick="closeMenu();openContactModal();return false;">Contact</a>
   <a href="#" class="mob-cta" onclick="closeMenu(); openIntakeModal(); return false;">Run Your Business Diagnostic →</a>
 </nav>
 
@@ -3989,7 +4311,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
       </div>
       <div class="fc"><h5>Services</h5><a href="#services">Starter Services</a><a href="#services">Growth Systems</a><a href="#services">Custom Platforms</a><a href="#services">Consulting</a><a href="#services">Add-Ons</a></div>
       <div class="fc"><h5>Ventures</h5><a href="#ventures">Jobletters.xyz</a><a href="#ventures">Poverty2Prosperity</a><a href="#ventures">GATA Ecosystem</a><a href="#ventures">Pawa+9ja</a><a href="#ventures">TEK1SECURITY</a><a href="#ventures">AutoDexTrader</a></div>
-      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/teknnuku">Book a Consultation</a><a href="#contact">Contact Studio</a></div>
+      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/teknnuku">Book a Consultation</a><a href="#contact" onclick="openContactModal();return false;">Contact Studio</a></div>
     </div>
     <div class="footer-bottom">
       <p>© 2026 TEKNNUKU Studio Ltd. All rights reserved.</p>
@@ -4493,6 +4815,119 @@ window.mRestart = function() {
   document.getElementById('intake-form-view').style.display = '';
   mShowStep(0);
 };
+
+// ════════════════════════════════════════════
+//  CONTACT MODAL
+// ════════════════════════════════════════════
+window.openContactModal = function() {
+  var m = document.getElementById('contact-modal');
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  m.scrollTop = 0;
+};
+window.closeContactModal = function() {
+  document.getElementById('contact-modal').style.display = 'none';
+  document.body.style.overflow = '';
+};
+// Close on backdrop click
+document.getElementById('contact-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeContactModal();
+});
+// ESC key also closes contact modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeContactModal();
+    closeIntakeModal();
+  }
+});
+
+window.submitContactForm = async function() {
+  var name    = (document.getElementById('ct_name').value || '').trim();
+  var email   = (document.getElementById('ct_email').value || '').trim();
+  var subject = document.getElementById('ct_subject').value;
+  var message = (document.getElementById('ct_message').value || '').trim();
+  var valMsg  = document.getElementById('ct_valmsg');
+  var btn     = document.getElementById('ct_btn_text');
+
+  valMsg.style.display = 'none';
+  if (!name || !email || !message) {
+    valMsg.textContent = 'Please fill in your name, email, and message.';
+    valMsg.style.display = 'block';
+    return;
+  }
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    valMsg.textContent = 'Please enter a valid email address.';
+    valMsg.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Sending…';
+  var payload = {
+    name: name, email: email,
+    subject: subject || 'general',
+    message: message,
+    source: 'contact_modal',
+    sentAt: new Date().toISOString()
+  };
+
+  if (window.__saveToFirebase) {
+    // save to contact_messages collection
+    try {
+      var origCollection = window.__saveToFirebase;
+      // We'll use a dedicated function for contact
+      if (window.__saveContactToFirebase) {
+        await window.__saveContactToFirebase(payload);
+      } else {
+        await window.__saveToFirebase(payload);
+      }
+    } catch(e) { console.warn('Firebase contact write:', e); }
+  }
+
+  // Show success
+  document.getElementById('contact-form-body').style.display = 'none';
+  document.getElementById('contact-success').style.display = 'block';
+};
+
+window.resetContactForm = function() {
+  ['ct_name','ct_email','ct_message'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('ct_subject').selectedIndex = 0;
+  document.getElementById('ct_valmsg').style.display = 'none';
+  document.getElementById('ct_btn_text').textContent = 'Send Message →';
+  document.getElementById('contact-form-body').style.display = 'block';
+  document.getElementById('contact-success').style.display = 'none';
+};
+
+// ════════════════════════════════════════════
+//  SCROLL RAIL ANIMATION
+// ════════════════════════════════════════════
+(function() {
+  var railFill = document.getElementById('railFill');
+  var scrollHint = document.getElementById('scroll-hint');
+  var hintShown = false;
+
+  // Show scroll hint on first load after 1.5s
+  setTimeout(function() {
+    if (!hintShown && window.scrollY < 80) {
+      scrollHint.classList.add('visible');
+      hintShown = true;
+      setTimeout(function() { scrollHint.classList.remove('visible'); }, 3000);
+    }
+  }, 1500);
+
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY;
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docH > 0 ? (scrollTop / docH) * 100 : 0;
+    if (railFill) railFill.style.height = pct + '%';
+
+    // Hide scroll hint once user starts scrolling
+    if (scrollTop > 60) scrollHint.classList.remove('visible');
+  }, { passive: true });
+})();
+
 </script>
 
 </body>
