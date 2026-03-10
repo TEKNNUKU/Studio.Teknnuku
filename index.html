@@ -4923,4 +4923,13 @@ window.resetContactForm = function() {
   window.addEventListener('scroll', function() {
     var scrollTop = window.scrollY;
     var docH = document.documentElement.scrollHeight - window.innerHeight;
-    var pct = docH > 0 ? (scrollTop / docH) * 100 :
+    var pct = docH > 0 ? (scrollTop / docH) * 100 : 0;
+    if (railFill) railFill.style.height = pct + '%';
+    // Hide scroll hint once user starts scrolling
+    if (scrollTop > 60) scrollHint.classList.remove('visible');
+  }, { passive: true });
+})();
+</script>
+
+</body>
+</html>
