@@ -297,6 +297,7 @@ input, select, textarea { font-family: inherit; }
 .kpi-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
 .kpi-card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
 .kpi-card.red::before { background: linear-gradient(90deg, var(--red), transparent); }
+.kpi-card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
 .kpi-label { font-family: var(--mono); font-size: .56rem; letter-spacing: .14em; text-transform: uppercase; color: var(--dimmer); margin-bottom: 10px; }
 .kpi-value { font-family: var(--display); font-weight: 800; font-size: 2rem; color: var(--white); line-height: 1; margin-bottom: 4px; }
 .kpi-meta { font-size: .72rem; color: var(--dimmer); }
@@ -721,6 +722,10 @@ tbody tr:last-child td { border-bottom: none; }
         <span class="nav-icon">💬</span> Messages
         <span class="nav-badge" id="nb-messages">—</span>
       </div>
+      <div class="nav-item" data-panel="applicants" onclick="showPanel('applicants',this)">
+        <span class="nav-icon">🎯</span> Applicants
+        <span class="nav-badge" id="nb-applicants">—</span>
+      </div>
 
       <div class="nav-section-label">Management</div>
       <div class="nav-item" data-panel="people" onclick="showPanel('people',this)">
@@ -805,6 +810,18 @@ tbody tr:last-child td { border-bottom: none; }
             <div class="kpi-icon">🟢</div>
             <div class="kpi-label">Tier A Leads</div>
             <div class="kpi-value" id="kpi-tiera">—</div>
+            <div class="kpi-meta">score ≥ 70</div>
+          </div>
+          <div class="kpi-card orange">
+            <div class="kpi-icon">🎯</div>
+            <div class="kpi-label">Applicants</div>
+            <div class="kpi-value" id="kpi-applicants">—</div>
+            <div class="kpi-meta">careers portal</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-icon">⭐</div>
+            <div class="kpi-label">Top Candidates</div>
+            <div class="kpi-value" id="kpi-top-candidates">—</div>
             <div class="kpi-meta">score ≥ 70</div>
           </div>
         </div>
@@ -1044,6 +1061,83 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </div>
 
+
+      <!-- ══════ APPLICANTS ══════ -->
+      <div class="panel" id="panel-applicants">
+        <div class="eyebrow">Careers Portal</div>
+        <div class="panel-header">
+          <div class="panel-title">Applicants</div>
+        </div>
+        <div class="kpi-grid" style="margin-bottom:20px;">
+          <div class="kpi-card orange">
+            <div class="kpi-icon">📥</div>
+            <div class="kpi-label">Total Applied</div>
+            <div class="kpi-value" id="app-kpi-total">—</div>
+            <div class="kpi-meta">all roles</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-icon">⭐</div>
+            <div class="kpi-label">Tier A</div>
+            <div class="kpi-value" id="app-kpi-tiera">—</div>
+            <div class="kpi-meta">score ≥ 70</div>
+          </div>
+          <div class="kpi-card cyan">
+            <div class="kpi-icon">🗣️</div>
+            <div class="kpi-label">Interview Stage</div>
+            <div class="kpi-value" id="app-kpi-interview">—</div>
+            <div class="kpi-meta">shortlisted</div>
+          </div>
+          <div class="kpi-card gold">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-label">Hired</div>
+            <div class="kpi-value" id="app-kpi-hired">—</div>
+            <div class="kpi-meta">offers accepted</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <div class="table-toolbar-title">applicants</div>
+            <input class="tbl-search" placeholder="Search name / email…" oninput="filterTable('applicants-tbody',this.value)">
+            <select class="tbl-filter" onchange="filterApplicantsByRole(this.value)" id="app-role-filter">
+              <option value="">All Roles</option>
+              <option value="ops_lead">Operations Lead</option>
+              <option value="sales_manager">Sales Manager</option>
+              <option value="inbound_closer">Inbound Closer</option>
+              <option value="outbound_closer">Outbound Closer</option>
+              <option value="content_lead">Content Lead</option>
+              <option value="content_creator">Content Creator</option>
+              <option value="outreach_lead_gen">Outreach Lead Gen</option>
+              <option value="tech_product_lead">Tech / Product Lead</option>
+              <option value="developer">Developer</option>
+              <option value="onboarding_specialist">Onboarding Specialist</option>
+              <option value="customer_success_manager">Customer Success Manager</option>
+              <option value="admin_finance_officer">Admin / Finance Officer</option>
+            </select>
+            <select class="tbl-filter" onchange="filterApplicantsByStatus(this.value)">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="interview">Interview</option>
+              <option value="hired">Hired</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Applicant</th><th>Role</th><th>Score</th>
+                  <th>Tier</th><th>Experience</th><th>Status</th>
+                  <th>Applied</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="applicants-tbody">
+                <tr><td colspan="8" class="loading-row"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /content-area -->
   </div><!-- /main-area -->
 </div><!-- /app -->
@@ -1076,6 +1170,9 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="bnav-item" data-panel="assignments" onclick="showPanelMob('assignments',this)">
       <span class="bnav-icon">🗂</span>Assign
+    </div>
+    <div class="bnav-item" data-panel="applicants" onclick="showPanelMob('applicants',this)">
+      <span class="bnav-icon">🎯</span>Applicants
     </div>
   </div>
 </nav>
@@ -1154,15 +1251,16 @@ window._signOut = () => signOut(auth);
 window._loadAll = async function() {
   console.log('🔄 Loading all collections…');
   // Load each collection independently so one failure doesn't kill the rest
-  const [leads, inquiries, messages, proposals, payments, assignments] = await Promise.all([
+  const [leads, inquiries, messages, proposals, payments, assignments, applicants] = await Promise.all([
     getCol('intake_leads'),
     getCol('service_inquiries'),
     getCol('contact_messages'),
     getCol('proposals'),
     getCol('payments'),
     getCol('assignments'),
+    getCol('applicants'),
   ]);
-  window._data = { leads, inquiries, messages, proposals, payments, assignments };
+  window._data = { leads, inquiries, messages, proposals, payments, assignments, applicants };
   document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
   console.log('✅ All data loaded. Leads:', leads.length, 'Inquiries:', inquiries.length);
   window._renderAll();
@@ -1328,7 +1426,8 @@ var PANEL_TITLES = {
   people: 'People → Unified Profiles',
   proposals: 'Proposals → Quotes & Offers',
   payments: 'Payments → Revenue Tracking',
-  assignments: 'Assignments → Routing'
+  assignments: 'Assignments → Routing',
+  applicants: 'Applicants → Careers Portal'
 };
 
 function showPanel(name, el) {
@@ -1394,10 +1493,12 @@ window._renderAll = function() {
   renderProposals(d.proposals);
   renderPayments(d.payments);
   renderAssignments(d.assignments);
+  renderApplicants(d.applicants);
   // Update badges
   document.getElementById('nb-leads').textContent = d.leads.length;
   document.getElementById('nb-inquiries').textContent = d.inquiries.length;
   document.getElementById('nb-messages').textContent = d.messages.length;
+  document.getElementById('nb-applicants').textContent = (d.applicants||[]).length;
 };
 
 function refreshAll() {
@@ -2206,6 +2307,185 @@ function showRulesBanner() {
 
 // Auto-show banner if saves fail on first load
 window._rulesBannerShown = false;
+
+// ─────────────────────────────────────────────
+//  APPLICANTS
+// ─────────────────────────────────────────────
+var ROLE_LABELS = {
+  ops_lead:'Operations Lead', sales_manager:'Sales Manager',
+  inbound_closer:'Inbound Closer', outbound_closer:'Outbound Closer',
+  content_lead:'Content Lead', content_creator:'Content Creator',
+  outreach_lead_gen:'Outreach Lead Gen', tech_product_lead:'Tech / Product Lead',
+  developer:'Developer', onboarding_specialist:'Onboarding Specialist',
+  customer_success_manager:'Customer Success Manager', admin_finance_officer:'Admin / Finance Officer'
+};
+
+var TEAM_FOR_ROLE = {
+  ops_lead:'Operations', sales_manager:'Sales', inbound_closer:'Sales', outbound_closer:'Sales',
+  content_lead:'Lead Generation', content_creator:'Lead Generation', outreach_lead_gen:'Lead Generation',
+  tech_product_lead:'Delivery', developer:'Delivery', onboarding_specialist:'Delivery',
+  customer_success_manager:'Customer Success', admin_finance_officer:'Admin & Finance'
+};
+
+function appScoreBadge(score) {
+  var s = parseInt(score) || 0;
+  var cls = s >= 70 ? 'tier-a' : s >= 50 ? 'tier-b' : 'tier-c';
+  return '<div class="score-ring ' + cls + '">' + s + '</div>';
+}
+
+function appTierBadge(score) {
+  var s = parseInt(score) || 0;
+  if (s >= 70) return '<span class="badge badge-green">Tier A</span>';
+  if (s >= 50) return '<span class="badge badge-gold">Tier B</span>';
+  return '<span class="badge badge-blue">Tier C</span>';
+}
+
+function renderApplicants(applicants) {
+  var list = applicants || [];
+  // Panel KPIs
+  var tierA     = list.filter(function(a) { return (parseInt(a.score)||0) >= 70; }).length;
+  var interview = list.filter(function(a) { return a.status === 'interview'; }).length;
+  var hired     = list.filter(function(a) { return a.status === 'hired'; }).length;
+  var elTotal = document.getElementById('app-kpi-total');
+  var elA     = document.getElementById('app-kpi-tiera');
+  var elInt   = document.getElementById('app-kpi-interview');
+  var elHired = document.getElementById('app-kpi-hired');
+  if (elTotal) elTotal.textContent = list.length;
+  if (elA)     elA.textContent     = tierA;
+  if (elInt)   elInt.textContent   = interview;
+  if (elHired) elHired.textContent = hired;
+  // Overview KPIs
+  var ovApp = document.getElementById('kpi-applicants');
+  var ovTop = document.getElementById('kpi-top-candidates');
+  if (ovApp) ovApp.textContent = list.length;
+  if (ovTop) ovTop.textContent = tierA;
+
+  var tbody = document.getElementById('applicants-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎯</div>No applicants yet</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(function(a) {
+    var info = a.personalInfo || {};
+    var name  = escHtml(info.name || a.name || '—');
+    var email = escHtml(info.email || a.email || '');
+    var role  = ROLE_LABELS[a.positionApplied] || escHtml(a.positionTitle || a.positionApplied || '—');
+    var team  = TEAM_FOR_ROLE[a.positionApplied] || '';
+    var exp   = (a.experienceYears !== undefined ? a.experienceYears + ' yr' + (a.experienceYears !== 1 ? 's' : '') : '—');
+    var searchStr = ((info.name||'') + ' ' + (info.email||'') + ' ' + (a.positionApplied||'')).toLowerCase();
+    return '<tr data-search="' + escHtml(searchStr) + '" data-role="' + escHtml(a.positionApplied||'') + '" data-status="' + escHtml(a.status||'') + '">' +
+      '<td><div style="font-weight:600;">' + name + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + email + '</div></td>' +
+      '<td><div style="font-size:.78rem;font-weight:500;">' + escHtml(role) + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">' + escHtml(team) + '</div></td>' +
+      '<td>' + appScoreBadge(a.score) + '</td>' +
+      '<td>' + appTierBadge(a.score) + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.72rem;color:var(--dim);">' + escHtml(exp) + '</td>' +
+      '<td>' + statusBadge(a.status || 'pending') + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">' + fmtTime(a.submittedAt||a.createdAt) + '</td>' +
+      '<td><div class="row-actions">' +
+        '<td><div class="row-actions">' +
+        '<button class="action-btn" onclick="openApplicantDrawer(window._data.applicants.find(function(x){return x.id===&quot;' + a.id + '&quot;}))">View</button>' +
+        (a.status === 'pending'   ? '<button class="action-btn success" onclick="updateApplicantStatus(&quot;' + a.id + '&quot;,&quot;interview&quot;)">Shortlist</button>' : '') +
+        (a.status === 'interview' ? '<button class="action-btn success" onclick="updateApplicantStatus(&quot;' + a.id + '&quot;,&quot;hired&quot;)">Hire</button>' : '') +
+        (a.status !== 'rejected' && a.status !== 'hired' ? '<button class="action-btn danger" onclick="updateApplicantStatus(&quot;' + a.id + '&quot;,&quot;rejected&quot;)">Reject</button>' : '') +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function filterApplicantsByRole(role) {
+  document.querySelectorAll('#applicants-tbody tr[data-role]').forEach(function(row) {
+    row.style.display = !role || row.dataset.role === role ? '' : 'none';
+  });
+}
+
+function filterApplicantsByStatus(status) {
+  document.querySelectorAll('#applicants-tbody tr[data-status]').forEach(function(row) {
+    row.style.display = !status || row.dataset.status === status ? '' : 'none';
+  });
+}
+
+function updateApplicantStatus(id, status) {
+  var labels = { interview:'Shortlisted for interview', hired:'Marked as hired', rejected:'Rejected' };
+  window._updateDoc('applicants', id, { status: status }).then(function() {
+    toast(labels[status] || 'Status updated', 'success');
+    window._loadAll();
+  }).catch(function(err) { toast('Update failed: ' + (err.message||err), 'error'); });
+}
+
+function openApplicantDrawer(a) {
+  if (!a) return;
+  var info = a.personalInfo || {};
+  var name  = info.name || a.name || '—';
+  var email = info.email || a.email || '';
+  var phone = info.phone || a.phone || '—';
+  var portfolio = info.portfolioURL || a.portfolioURL || '';
+  var role  = ROLE_LABELS[a.positionApplied] || a.positionTitle || a.positionApplied || '—';
+  var team  = TEAM_FOR_ROLE[a.positionApplied] || '—';
+  var bd    = a.ratingBreakdown || {};
+  var skills = Array.isArray(a.skills) ? a.skills.join(', ') : (a.skills || '—');
+  var rawA  = a.rawAnswers || {};
+
+  var tierColor = (parseInt(a.score)||0) >= 70 ? 'var(--green)' : (parseInt(a.score)||0) >= 50 ? 'var(--gold)' : 'var(--blue)';
+
+  var html = '<div class="detail-section">' +
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">' +
+      '<div class="person-avatar" style="width:50px;height:50px;font-size:18px;">' +
+        (name.trim().split(' ').map(function(p){return p[0]||'';}).join('').toUpperCase().slice(0,2)) +
+      '</div>' +
+      '<div><div style="font-family:var(--display);font-weight:700;font-size:1rem;">' + escHtml(name) + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + escHtml(email) + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.6rem;color:var(--gold);margin-top:2px;">' + escHtml(role) + ' · ' + escHtml(team) + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="detail-grid">' +
+      '<div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">' + escHtml(phone) + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Experience</div><div class="detail-val">' + (a.experienceYears !== undefined ? a.experienceYears + ' years' : '—') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Applied</div><div class="detail-val">' + fmtTime(a.submittedAt||a.createdAt) + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Status</div><div class="detail-val">' + statusBadge(a.status||'pending') + '</div></div>' +
+    '</div></div>' +
+
+    '<div class="detail-section">' +
+    '<h4>📊 Qualification Score</h4>' +
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">' +
+      '<div style="width:60px;height:60px;border-radius:50%;border:2.5px solid ' + tierColor + ';display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:1.1rem;color:' + tierColor + ';">' + (parseInt(a.score)||0) + '</div>' +
+      '<div>' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:.9rem;">' + (a.scoreTier || appTierBadge(a.score)) + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-top:3px;">out of 100</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="detail-grid">' +
+      Object.entries(bd).map(function(e) {
+        return '<div class="detail-item"><div class="detail-label">' + escHtml(e[0].replace(/Score/,'').replace(/([A-Z])/g,' $1').trim()) + '</div><div class="detail-val gold">' + e[1] + ' pts</div></div>';
+      }).join('') +
+    '</div></div>' +
+
+    '<div class="detail-section"><h4>🛠 Skills</h4>' +
+    '<div style="font-size:.84rem;color:var(--dim);line-height:1.7;">' + escHtml(skills) + '</div>' +
+    (portfolio ? '<div style="margin-top:10px;"><a href="' + escHtml(portfolio) + '" target="_blank" style="font-family:var(--mono);font-size:.65rem;color:var(--cyan);">' + escHtml(portfolio) + '</a></div>' : '') +
+    '</div>' +
+
+    '<div class="detail-section"><h4>📋 Role-Specific Answers</h4>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;">' +
+      Object.entries(rawA).map(function(e) {
+        return '<div><div class="detail-label">Q' + escHtml(e[0].replace('q','')) + '</div><div class="detail-val" style="margin-top:3px;color:var(--dim);">' + escHtml(String(e[1]||'—')) + '</div></div>';
+      }).join('') +
+    '</div></div>' +
+
+    (a.coverLetter ? '<div class="detail-section"><h4>✍️ Cover Letter</h4>' +
+      '<div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;font-size:.82rem;color:var(--dim);line-height:1.7;white-space:pre-wrap;">' + escHtml(a.coverLetter) + '</div></div>' : '') +
+
+    '<div class="btn-row">' +
+        (a.status === 'pending'   ? '<button class="action-btn success" onclick="updateApplicantStatus(&quot;' + a.id + '&quot;,&quot;interview&quot;)">Shortlist</button>' : '') +
+      (a.status === 'interview' ? '<button class="btn-primary" onclick="updateApplicantStatus(&quot;' + a.id + '&quot;,&quot;hired&quot;);closeDrawer();">✅ Mark as Hired</button>' : '') +
+      (a.status !== 'rejected' && a.status !== 'hired' ? '<button class="btn-secondary" style="border-color:rgba(239,68,68,.3);color:var(--red);" onclick="updateApplicantStatus(&quot;' + a.id + '&quot;,&quot;rejected&quot;);closeDrawer();">✕ Reject</button>' : '') +
+      (email ? '<a href="mailto:' + escHtml(email) + '" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉️ Email Applicant</a>' : '') +
+      '<button class="action-btn danger" onclick="deleteRecord(&quot;applicants&quot;,&quot;' + a.id + '&quot;)">🗑 Delete</button>' +
+    '</div>';
+
+  openDrawer('Applicant Profile', escHtml(name), html);
+}
 
 // ─────────────────────────────────────────────
 //  KEYBOARD SHORTCUTS
