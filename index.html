@@ -6133,6 +6133,11 @@ function carShowView(id) {
   document.getElementById(id).style.display = 'block';
 }
 
+function showCareersRoleById(id) {
+  var role = CAR_ROLES.find(function(r) { return r.id === id; });
+  if (role) showCareersRoleDetail(role);
+}
+
 function showCareersRoleList() {
   carShowView('car-view-list');
   document.getElementById('car-modal-title').textContent = 'Open Roles';
@@ -6159,7 +6164,7 @@ function showCareersRoleList() {
 
     teams[team].forEach(function(role) {
       var st = CAR_STATUS_MAP[role.status] || CAR_STATUS_MAP.open;
-      html += '<div onclick="showCareersRoleDetail(' + JSON.stringify(role).replace(/'/g,"\\'") + ')" ' +
+      html += '<div onclick="showCareersRoleById(&quot;' + role.id + '&quot;)" ' +
         'style="display:flex;align-items:center;gap:14px;padding:14px 16px;' +
         'background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.1);border-radius:8px;' +
         'cursor:pointer;transition:all .2s;" ' +
