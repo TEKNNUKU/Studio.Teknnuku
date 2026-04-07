@@ -3259,6 +3259,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
       <a href="#process">Process</a>
       <a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
       <a href="#contact" onclick="openContactModal();return false;">Contact</a>
+      <a href="#careers" onclick="openCareersModal();return false;" style="color:var(--gold);">Careers</a>
     </nav>
     <div class="nav-right">
       <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle light/dark mode">☀️</button>
@@ -3280,6 +3281,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
   <a href="#ventures" class="mob-link">Active Ventures</a>
   <a href="#process"  class="mob-link">Our Process</a>
   <a href="#contact" class="mob-link" onclick="closeMenu();openContactModal();return false;">Contact</a>
+  <a href="#careers" class="mob-link" onclick="closeMenu();openCareersModal();return false;" style="color:var(--gold);">Careers 🟢</a>
   <a href="#" class="mob-cta" onclick="closeMenu(); openIntakeModal(); return false;">Run Your Business Diagnostic →</a>
 </nav>
 
@@ -4532,7 +4534,7 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
       </div>
       <div class="fc"><h5>Services</h5><a href="#services">Starter Services</a><a href="#services">Growth Systems</a><a href="#services">Custom Platforms</a><a href="#services">Consulting</a><a href="#services">Add-Ons</a></div>
       <div class="fc"><h5>Ventures</h5><a href="#ventures">Jobletters.xyz</a><a href="#ventures">Poverty2Prosperity</a><a href="#ventures">GATA Ecosystem</a><a href="#ventures">Pawa+9ja</a><a href="#ventures">TEK1SECURITY</a><a href="#ventures">AutoDexTrader</a></div>
-      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/teknnuku">Book a Consultation</a><a href="#contact" onclick="openContactModal();return false;">Contact Studio</a></div>
+      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="#" onclick="openCareersModal();return false;" style="color:var(--gold);">Careers — Join the Team</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/teknnuku">Book a Consultation</a><a href="#contact" onclick="openContactModal();return false;">Contact Studio</a></div>
     </div>
     <div class="footer-bottom">
       <p>© 2026 TEKNNUKU Studio Ltd. All rights reserved.</p>
@@ -5588,5 +5590,828 @@ window.submitServiceInquiry = async function() {
 
 </script>
 
+<!-- ============================================
+     CAREERS MODAL
+============================================ -->
+<div id="careers-modal" role="dialog" aria-modal="true" aria-label="Careers at TEKNNUKU Studio"
+  style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,7,7,.96);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  align-items:flex-start;justify-content:center;overflow-y:auto;padding:0 0 60px;">
+
+  <div style="position:relative;width:100%;max-width:740px;margin:0 auto;
+    animation:shellIn .4s ease both;display:flex;flex-direction:column;">
+
+    <!-- Top bar -->
+    <div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;
+      justify-content:space-between;padding:18px 24px 16px;
+      background:rgba(8,8,8,.95);border-bottom:1px solid rgba(200,155,20,.12);
+      backdrop-filter:blur(10px);">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.2em;
+          text-transform:uppercase;color:var(--gold);margin-bottom:3px;">TEKNNUKU STUDIO · CAREERS</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;" id="car-modal-title">Open Roles</div>
+      </div>
+      <button onclick="closeCareersModal()" aria-label="Close"
+        style="background:rgba(242,237,228,.06);border:1px solid rgba(242,237,228,.1);
+        color:rgba(242,237,228,.6);border-radius:6px;padding:8px 16px;
+        font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;
+        text-transform:uppercase;cursor:pointer;transition:all .2s;">✕ Close</button>
+    </div>
+
+    <!-- View: Roles List -->
+    <div id="car-view-list" style="padding:28px 24px;">
+      <div style="margin-bottom:28px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;
+          color:var(--white);margin-bottom:8px;">Build with TEKNNUKU Studio.</div>
+        <div style="font-size:.9rem;color:rgba(242,237,228,.55);line-height:1.7;max-width:560px;">
+          We're building the infrastructure for Africa's next wave of digital businesses.
+          If you're sharp, driven, and want to work at the edge — check the roles below.
+        </div>
+      </div>
+
+      <!-- Role Cards Grid -->
+      <div id="car-roles-grid" style="display:grid;gap:12px;"></div>
+    </div>
+
+    <!-- View: Role Detail -->
+    <div id="car-view-detail" style="display:none;padding:28px 24px;">
+      <button onclick="showCareersRoleList()"
+        style="background:none;border:none;color:var(--gold);font-family:'DM Mono',monospace;
+        font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+        margin-bottom:20px;display:flex;align-items:center;gap:6px;">← Back to Roles</button>
+      <div id="car-role-detail-content"></div>
+    </div>
+
+    <!-- View: Application Form -->
+    <div id="car-view-form" style="display:none;padding:28px 24px;">
+      <button onclick="showCareersRoleDetail(window._carCurrentRole)"
+        style="background:none;border:none;color:var(--gold);font-family:'DM Mono',monospace;
+        font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+        margin-bottom:20px;display:flex;align-items:center;gap:6px;">← Back to Role</button>
+      <div id="car-form-content"></div>
+    </div>
+
+    <!-- View: Confirmation -->
+    <div id="car-view-confirm" style="display:none;padding:60px 24px;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:16px;">✅</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;
+        color:var(--white);margin-bottom:10px;">Application Submitted!</div>
+      <div style="font-size:.88rem;color:rgba(242,237,228,.55);line-height:1.7;margin-bottom:28px;max-width:440px;margin-left:auto;margin-right:auto;">
+        We've received your application. Our team will review it and reach out within 5–7 business days.
+      </div>
+      <div id="car-score-display" style="background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.18);
+        border-radius:10px;padding:20px;margin:0 auto 28px;max-width:360px;display:none;">
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.16em;
+          text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Your Qualification Score</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;" id="car-score-val">—</div>
+        <div style="font-size:.75rem;color:rgba(242,237,228,.45);margin-top:4px;" id="car-score-tier">—</div>
+      </div>
+      <button onclick="closeCareersModal()"
+        style="background:var(--gold);color:#080808;border:none;border-radius:6px;
+        padding:12px 28px;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;
+        letter-spacing:.04em;text-transform:uppercase;cursor:pointer;">Done</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  TEKNNUKU STUDIO — CAREERS SYSTEM
+//  Roles, auto-scoring, Firebase write to 'applicants' collection
+// ═══════════════════════════════════════════════════════════════
+
+var CAR_ROLES = [
+  {
+    id: 'ops_lead',
+    title: 'Operations Lead',
+    team: 'Operations',
+    teamIcon: '🧠',
+    status: 'open',
+    type: 'Full-Time',
+    summary: 'The CEO\'s right hand — overseeing daily operations, cross-team alignment, and high-level strategy execution with precision.',
+    responsibilities: [
+      'Manage and coordinate all team operations to ensure deadlines and targets are met',
+      'Translate high-level strategy into actionable plans for each department',
+      'Monitor KPIs across Sales, Lead Gen, Delivery, and Customer Success',
+      'Optimize processes, workflows, and systems to maximize efficiency',
+      'Act as liaison between the CEO and all teams, representing executive priorities',
+      'Identify bottlenecks or risks and proactively solve them'
+    ],
+    requirements: {
+      education: "Bachelor's in Business, Management, or related (preferred, not mandatory if experienced)",
+      experience: '3–5 years managing cross-functional teams, operations, or projects. Startup experience a plus.',
+      skills: ['Leadership & team management', 'Strategic planning & execution', 'Strong problem-solving', 'Excellent communication & reporting'],
+      other: 'High accountability, process-oriented mindset, proactive in identifying risks.'
+    },
+    kpis: ['95%+ team task completion rate on time', 'Smooth cross-department workflow with minimal escalations', 'Operational improvements implemented within deadlines'],
+    scoreWeights: { experience: 0.40, skills: 0.30, education: 0.20, availability: 0.10 },
+    requiredSkills: ['leadership','project management','operations','strategy','communication'],
+    minExperience: 3,
+    questions: [
+      { id: 'q1', text: 'How many years of operations or project management experience do you have?', type: 'select', options: ['Less than 1 year','1–2 years','3–5 years','5+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'Have you managed cross-functional teams before?', type: 'select', options: ['No','Yes, small teams (2–5)','Yes, mid-size teams (5–15)','Yes, large teams (15+)'], scores: [0,5,12,18] },
+      { id: 'q3', text: 'Describe a time you identified and resolved a major operational bottleneck.', type: 'text' },
+      { id: 'q4', text: 'Are you available to start within 30 days?', type: 'select', options: ['Yes, immediately','Within 2 weeks','Within 30 days','More than 30 days'], scores: [10,8,5,2] }
+    ]
+  },
+  {
+    id: 'sales_manager',
+    title: 'Sales Manager',
+    team: 'Sales',
+    teamIcon: '💰',
+    status: 'open',
+    type: 'Full-Time',
+    summary: 'Lead the sales team, set targets, coach closers, and ensure consistent revenue growth across inbound and outbound channels.',
+    responsibilities: [
+      'Set monthly and quarterly sales targets for the team',
+      'Track team performance and coach sales reps to improve closing rates',
+      'Analyze sales metrics and identify areas for improvement',
+      'Develop scripts, processes, and training for inbound and outbound sales'
+    ],
+    requirements: {
+      education: "Bachelor's in Business, Marketing, or related",
+      experience: '3–5 years in sales leadership with a proven record of achieving quotas',
+      skills: ['Coaching & mentoring closers', 'Sales pipeline management', 'Data-driven performance optimization'],
+      other: 'Strong interpersonal skills, goal-oriented, confident handling high-value deals.'
+    },
+    kpis: ['Monthly revenue target achievement', 'Average deal size and closing rate per rep', 'Sales cycle time reduction'],
+    scoreWeights: { experience: 0.40, skills: 0.35, education: 0.15, availability: 0.10 },
+    requiredSkills: ['sales','closing','CRM','coaching','pipeline management'],
+    minExperience: 3,
+    questions: [
+      { id: 'q1', text: 'Years of sales leadership experience?', type: 'select', options: ['Less than 1','1–2 years','3–5 years','5+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'What is your average team closing rate?', type: 'select', options: ['Below 15%','15–25%','25–40%','Above 40%'], scores: [2,8,15,20] },
+      { id: 'q3', text: 'Which CRM tools have you used? (e.g. HubSpot, Pipedrive, Salesforce)', type: 'text' },
+      { id: 'q4', text: 'Are you available to start within 30 days?', type: 'select', options: ['Yes, immediately','Within 2 weeks','Within 30 days','More than 30 days'], scores: [10,8,5,2] }
+    ]
+  },
+  {
+    id: 'inbound_closer',
+    title: 'Inbound Closer',
+    team: 'Sales',
+    teamIcon: '💰',
+    status: 'open',
+    type: 'Full-Time · Commission + Base',
+    slots: 3,
+    summary: 'Convert incoming leads into paying clients by handling inquiries professionally and persuasively across calls, messages, and email.',
+    responsibilities: [
+      'Respond to inbound leads via calls, messages, or email',
+      'Understand customer needs and present solutions persuasively',
+      'Follow up on hot and warm leads',
+      'Maintain CRM records accurately'
+    ],
+    requirements: {
+      education: 'High school diploma or higher; business background a plus',
+      experience: '1–3 years in inbound sales, customer service, or call centres',
+      skills: ['Active listening & persuasion', 'CRM usage', 'Objection handling'],
+      other: 'Positive attitude, responsive, resilient to rejection, strong verbal communication.'
+    },
+    kpis: ['Lead-to-sale conversion rate', 'Average response time to inbound inquiries', 'Monthly revenue contribution'],
+    scoreWeights: { experience: 0.35, skills: 0.35, education: 0.15, availability: 0.15 },
+    requiredSkills: ['sales','communication','CRM','customer service','closing'],
+    minExperience: 1,
+    questions: [
+      { id: 'q1', text: 'Years of inbound sales or customer service experience?', type: 'select', options: ['No experience','Less than 1 year','1–3 years','3+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'What is your average inbound lead-to-sale conversion rate?', type: 'select', options: ['I\'m not sure','Below 10%','10–25%','Above 25%'], scores: [2,5,12,20] },
+      { id: 'q3', text: 'Describe how you handle a prospect who says "I need to think about it."', type: 'text' },
+      { id: 'q4', text: 'Are you comfortable with commission-based pay structure?', type: 'select', options: ['No','Prefer base only','Base + commission works','Commission-heavy is fine'], scores: [0,2,8,10] }
+    ]
+  },
+  {
+    id: 'outbound_closer',
+    title: 'Outbound Closer',
+    team: 'Sales',
+    teamIcon: '💰',
+    status: 'open',
+    type: 'Full-Time · Commission + Base',
+    slots: 2,
+    summary: 'Proactively reach out to high-potential prospects to generate new business through cold calls, emails, and social media outreach.',
+    responsibilities: [
+      'Identify and reach out to target clients via cold calls, emails, or social media',
+      'Nurture leads and handle objections effectively',
+      'Collaborate with Outreach Lead Gen to get qualified prospects',
+      'Track and report outreach results daily'
+    ],
+    requirements: {
+      education: 'High school diploma or higher; marketing/business background preferred',
+      experience: '1–3 years in outbound sales or cold calling',
+      skills: ['Prospecting & lead qualification', 'Objection management', 'Self-motivated & goal-driven'],
+      other: 'Persistent, results-oriented, comfortable with high-volume outreach.'
+    },
+    kpis: ['Qualified prospects contacted weekly', 'Conversion rate of outbound leads', 'Monthly revenue contribution'],
+    scoreWeights: { experience: 0.35, skills: 0.35, education: 0.15, availability: 0.15 },
+    requiredSkills: ['cold calling','outreach','sales','prospecting','LinkedIn'],
+    minExperience: 1,
+    questions: [
+      { id: 'q1', text: 'Years of outbound sales or cold outreach experience?', type: 'select', options: ['No experience','Less than 1 year','1–3 years','3+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'How many outreach touches do you typically make per day?', type: 'select', options: ['Fewer than 10','10–30','30–60','60+'], scores: [2,5,12,18] },
+      { id: 'q3', text: 'Which outreach channels are you strongest in?', type: 'text' },
+      { id: 'q4', text: 'Are you comfortable with high-volume cold outreach daily?', type: 'select', options: ['No','Somewhat','Yes','Absolutely, it\'s my strength'], scores: [0,3,8,10] }
+    ]
+  },
+  {
+    id: 'content_lead',
+    title: 'Content Lead',
+    team: 'Lead Generation',
+    teamIcon: '🎯',
+    status: 'open',
+    type: 'Full-Time',
+    summary: 'Drive content strategy to attract, educate, and convert prospects across all channels — social media, blogs, and email.',
+    responsibilities: [
+      'Plan and oversee content calendar',
+      'Create high-performing content strategies for social media, blogs, and emails',
+      'Collaborate with Content Creators and Outreach team',
+      'Analyze engagement metrics and optimize content accordingly'
+    ],
+    requirements: {
+      education: 'Marketing, Communications, or related field',
+      experience: '3+ years in content strategy, social media marketing, or digital marketing',
+      skills: ['Content planning & creation oversight', 'SEO, social media, email marketing', 'Analytical skills for engagement and conversions'],
+      other: 'Creative thinker, understands target audience, able to manage a small creative team.'
+    },
+    kpis: ['Engagement rate (likes, shares, comments)', 'Lead generation from content campaigns', 'Growth in social media followers or subscribers'],
+    scoreWeights: { experience: 0.35, skills: 0.35, education: 0.20, availability: 0.10 },
+    requiredSkills: ['content strategy','SEO','social media','copywriting','analytics'],
+    minExperience: 3,
+    questions: [
+      { id: 'q1', text: 'Years of content strategy or digital marketing experience?', type: 'select', options: ['Less than 1','1–2 years','3–5 years','5+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'Which platforms do you have the strongest track record on?', type: 'text' },
+      { id: 'q3', text: 'Have you led or managed a content team before?', type: 'select', options: ['No','Solo creator only','Led 1–2 creators','Led a full content team'], scores: [0,3,10,18] },
+      { id: 'q4', text: 'Share a link to your portfolio or best campaign (optional)', type: 'text' }
+    ]
+  },
+  {
+    id: 'content_creator',
+    title: 'Content Creator',
+    team: 'Lead Generation',
+    teamIcon: '🎯',
+    status: 'open',
+    type: 'Full-Time / Contract',
+    slots: 2,
+    summary: 'Produce engaging, on-brand content for social media, blogs, and newsletters aligned with the content strategy.',
+    responsibilities: [
+      'Write, design, or create videos for social media, blogs, and newsletters',
+      'Repurpose content for multiple platforms',
+      'Ensure all content is on-brand and resonates with the target audience'
+    ],
+    requirements: {
+      education: 'Any; creative or marketing background preferred',
+      experience: '1–3 years producing content for social media, blogs, or digital campaigns',
+      skills: ['Copywriting, graphic design, or video editing', 'Creativity & brand consistency', 'Basic analytics understanding'],
+      other: 'Highly creative, deadline-oriented, collaborative.'
+    },
+    kpis: ['Timely content delivery', 'Engagement metrics per post/campaign', 'Leads generated through content'],
+    scoreWeights: { experience: 0.30, skills: 0.40, education: 0.15, availability: 0.15 },
+    requiredSkills: ['copywriting','design','video editing','social media','creativity'],
+    minExperience: 1,
+    questions: [
+      { id: 'q1', text: 'What is your primary content skill?', type: 'select', options: ['Copywriting','Graphic Design','Video Editing','All of the above'], scores: [8,8,8,15] },
+      { id: 'q2', text: 'Years of content creation experience?', type: 'select', options: ['Less than 6 months','6 months – 1 year','1–3 years','3+ years'], scores: [2,6,14,20] },
+      { id: 'q3', text: 'Share a link to your portfolio or content samples', type: 'text' },
+      { id: 'q4', text: 'Can you create and publish at least 5 pieces of content per week?', type: 'select', options: ['No','Possibly 2–3','Yes, 5 pieces','Yes, more than 5'], scores: [0,4,10,12] }
+    ]
+  },
+  {
+    id: 'outreach_lead_gen',
+    title: 'Outreach Lead Gen Specialist',
+    team: 'Lead Generation',
+    teamIcon: '🎯',
+    status: 'open',
+    type: 'Full-Time',
+    slots: 2,
+    summary: 'Drive prospecting and lead generation through proactive cold emails, LinkedIn outreach, and social media messaging campaigns.',
+    responsibilities: [
+      'Identify target companies and decision-makers',
+      'Execute cold emails, social media messaging, and LinkedIn outreach campaigns',
+      'Qualify leads and pass them to the Sales team',
+      'Track and optimize outreach performance'
+    ],
+    requirements: {
+      education: 'Any; sales or marketing background preferred',
+      experience: '1–3 years in lead generation or sales outreach',
+      skills: ['Prospect research & list building', 'Cold emails, LinkedIn outreach, follow-ups', 'CRM and workflow tools'],
+      other: 'Persistent, goal-oriented, able to manage high outreach volume.'
+    },
+    kpis: ['Qualified leads generated weekly', 'Response rate to outreach messages', 'Lead-to-sale conversion from generated leads'],
+    scoreWeights: { experience: 0.35, skills: 0.35, education: 0.15, availability: 0.15 },
+    requiredSkills: ['lead generation','LinkedIn','cold email','prospecting','CRM'],
+    minExperience: 1,
+    questions: [
+      { id: 'q1', text: 'Years of lead generation or outreach experience?', type: 'select', options: ['No experience','Less than 1 year','1–3 years','3+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'How many qualified leads can you realistically generate per week?', type: 'select', options: ['Fewer than 5','5–15','15–30','30+'], scores: [2,5,12,20] },
+      { id: 'q3', text: 'Which outreach tools have you used? (e.g. Apollo, Hunter, LinkedIn Sales Nav)', type: 'text' },
+      { id: 'q4', text: 'Are you comfortable with daily outreach tracking and reporting?', type: 'select', options: ['No','Somewhat','Yes','Yes, I love data'], scores: [0,3,8,10] }
+    ]
+  },
+  {
+    id: 'tech_product_lead',
+    title: 'Tech / Product Lead',
+    team: 'Delivery',
+    teamIcon: '⚙️',
+    status: 'open',
+    type: 'Full-Time',
+    summary: 'Oversee product development, ensure technical functionality, and guide the development team from roadmap to release.',
+    responsibilities: [
+      'Define product roadmap and release schedule',
+      'Supervise developers to ensure timely and quality delivery',
+      'Test products for bugs and usability issues',
+      'Collaborate with Onboarding Specialist to ensure smooth user experience'
+    ],
+    requirements: {
+      education: 'Computer Science, Engineering, or Product Management background',
+      experience: '3–5 years in tech leadership, product development, or project management',
+      skills: ['Agile methodologies & sprint management', 'Product design & feature prioritization', 'Team leadership & technical oversight'],
+      other: 'Problem-solving mindset, user-focused, able to bridge tech and business goals.'
+    },
+    kpis: ['Product release deadlines met', 'Product uptime and reliability metrics', 'User satisfaction with product features'],
+    scoreWeights: { experience: 0.40, skills: 0.35, education: 0.15, availability: 0.10 },
+    requiredSkills: ['product management','agile','technical leadership','software development','UX'],
+    minExperience: 3,
+    questions: [
+      { id: 'q1', text: 'Years of tech/product leadership experience?', type: 'select', options: ['Less than 1','1–2 years','3–5 years','5+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'Have you shipped a product from 0 to launch?', type: 'select', options: ['No','Contributed to one','Led one launch','Led multiple launches'], scores: [0,5,14,20] },
+      { id: 'q3', text: 'What is your preferred tech stack?', type: 'text' },
+      { id: 'q4', text: 'Are you comfortable working in a fast-moving startup environment?', type: 'select', options: ['No','Somewhat','Yes','This is my preference'], scores: [0,3,8,10] }
+    ]
+  },
+  {
+    id: 'developer',
+    title: 'Developer',
+    team: 'Delivery',
+    teamIcon: '⚙️',
+    status: 'open',
+    type: 'Full-Time / Contract',
+    slots: 2,
+    summary: 'Build, maintain, and optimize the company\'s products and platforms with clean, reliable, and scalable code.',
+    responsibilities: [
+      'Develop front-end and back-end features',
+      'Integrate APIs and ensure seamless system functionality',
+      'Fix bugs, implement security updates, and maintain code quality',
+      'Collaborate with Tech/Product Lead on new feature development'
+    ],
+    requirements: {
+      education: 'Computer Science or equivalent experience',
+      experience: '1–3 years in software development (web or mobile)',
+      skills: ['Frontend &/or backend proficiency', 'API integration & debugging', 'Version control (Git)'],
+      other: 'Detail-oriented, collaborative, able to follow a product roadmap.'
+    },
+    kpis: ['Tasks completed within sprint timelines', 'Bug resolution time', 'System uptime and performance'],
+    scoreWeights: { experience: 0.35, skills: 0.40, education: 0.15, availability: 0.10 },
+    requiredSkills: ['JavaScript','HTML','CSS','Firebase','Git','APIs'],
+    minExperience: 1,
+    questions: [
+      { id: 'q1', text: 'Years of software development experience?', type: 'select', options: ['Less than 6 months','6 months – 1 year','1–3 years','3+ years'], scores: [2,6,14,20] },
+      { id: 'q2', text: 'What best describes your strength?', type: 'select', options: ['Frontend only','Backend only','Full-stack','Mobile development'], scores: [8,8,15,10] },
+      { id: 'q3', text: 'Share a link to your GitHub profile or portfolio project', type: 'text' },
+      { id: 'q4', text: 'Are you comfortable with a trial period (2–4 weeks, paid)?', type: 'select', options: ['No','Need to discuss','Yes','Yes, happy to prove myself'], scores: [0,3,8,10] }
+    ]
+  },
+  {
+    id: 'onboarding_specialist',
+    title: 'Onboarding Specialist',
+    team: 'Delivery',
+    teamIcon: '⚙️',
+    status: 'open',
+    type: 'Full-Time',
+    summary: 'Ensure new clients and users have a seamless, confident onboarding experience with clear guidance and training.',
+    responsibilities: [
+      'Guide new users through setup, registration, and product usage',
+      'Provide training materials and support during initial adoption',
+      'Collect user feedback to improve onboarding process'
+    ],
+    requirements: {
+      education: 'Any; customer support or business background preferred',
+      experience: '1–3 years in onboarding, customer support, or client success',
+      skills: ['Training & documentation', 'Problem-solving & guidance', 'Communication & empathy'],
+      other: 'Patient, organized, user-focused, proactive in solving onboarding issues.'
+    },
+    kpis: ['Time-to-activation for new users', 'User satisfaction scores during onboarding', 'Reduction in onboarding support tickets'],
+    scoreWeights: { experience: 0.30, skills: 0.35, education: 0.20, availability: 0.15 },
+    requiredSkills: ['customer support','onboarding','communication','training','documentation'],
+    minExperience: 1,
+    questions: [
+      { id: 'q1', text: 'Years of onboarding or customer support experience?', type: 'select', options: ['No experience','Less than 1 year','1–3 years','3+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'Have you created onboarding guides, SOPs, or training materials?', type: 'select', options: ['No','Once or twice','Yes, regularly','Yes, I\'ve led documentation efforts'], scores: [0,5,12,18] },
+      { id: 'q3', text: 'How do you handle a frustrated new user who can\'t figure out the product?', type: 'text' },
+      { id: 'q4', text: 'Are you available to start within 30 days?', type: 'select', options: ['Yes, immediately','Within 2 weeks','Within 30 days','More than 30 days'], scores: [10,8,5,2] }
+    ]
+  },
+  {
+    id: 'customer_success_manager',
+    title: 'Customer Success Manager',
+    team: 'Customer Success',
+    teamIcon: '🧾',
+    status: 'open',
+    type: 'Full-Time',
+    summary: 'Build long-term relationships with customers to drive retention, satisfaction, upsells, and expansion revenue.',
+    responsibilities: [
+      'Monitor customer usage and engagement',
+      'Identify upsell and cross-sell opportunities',
+      'Resolve client issues quickly and proactively',
+      'Collect and analyze feedback to improve product and service'
+    ],
+    requirements: {
+      education: 'Business, Marketing, or related field',
+      experience: '2–5 years in customer success, account management, or client relations',
+      skills: ['Customer relationship building', 'Issue resolution & upselling', 'Data analysis for retention strategies'],
+      other: 'Empathetic, proactive, excellent communicator, retention-driven mindset.'
+    },
+    kpis: ['Customer retention rate', 'Net Promoter Score (NPS)', 'Upsell and expansion revenue'],
+    scoreWeights: { experience: 0.35, skills: 0.35, education: 0.20, availability: 0.10 },
+    requiredSkills: ['customer success','retention','account management','upselling','CRM'],
+    minExperience: 2,
+    questions: [
+      { id: 'q1', text: 'Years of customer success or account management experience?', type: 'select', options: ['Less than 1','1–2 years','2–5 years','5+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'What customer retention rate have you achieved in a previous role?', type: 'select', options: ['Not measured','Below 70%','70–85%','Above 85%'], scores: [2,5,12,20] },
+      { id: 'q3', text: 'Describe a time you turned a dissatisfied client into a loyal one.', type: 'text' },
+      { id: 'q4', text: 'Are you comfortable with both support and upselling?', type: 'select', options: ['No','Support only','Upselling only','Both, comfortably'], scores: [0,4,6,10] }
+    ]
+  },
+  {
+    id: 'admin_finance_officer',
+    title: 'Admin / Finance Officer',
+    team: 'Admin & Finance',
+    teamIcon: '📊',
+    status: 'open',
+    type: 'Full-Time',
+    summary: 'Manage financial operations and ensure smooth administrative processes including bookkeeping, invoicing, and payroll.',
+    responsibilities: [
+      'Handle bookkeeping, invoicing, and payroll',
+      'Track budgets, expenses, and cash flow',
+      'Ensure compliance with legal and tax obligations',
+      'Manage office/admin tasks and assist in operational planning'
+    ],
+    requirements: {
+      education: 'Accounting, Finance, or Business Administration',
+      experience: '2–4 years in bookkeeping, finance, or admin operations',
+      skills: ['Bookkeeping, invoicing, payroll & budgeting', 'Compliance & tax knowledge', 'Organizational & process management'],
+      other: 'Accurate, detail-oriented, trustworthy, able to handle multiple tasks independently.'
+    },
+    kpis: ['Timely financial reporting', 'Accuracy in bookkeeping and payroll', 'Operational efficiency of administrative processes'],
+    scoreWeights: { experience: 0.35, skills: 0.35, education: 0.20, availability: 0.10 },
+    requiredSkills: ['accounting','bookkeeping','payroll','Excel','finance'],
+    minExperience: 2,
+    questions: [
+      { id: 'q1', text: 'Years of finance or admin operations experience?', type: 'select', options: ['Less than 1','1–2 years','2–4 years','4+ years'], scores: [0,5,15,20] },
+      { id: 'q2', text: 'Which accounting tools have you used?', type: 'select', options: ['None','Excel/Sheets only','QuickBooks / Wave','Sage / Xero / Advanced tools'], scores: [0,5,12,18] },
+      { id: 'q3', text: 'Do you have experience with Nigerian tax compliance (FIRS, VAT, etc.)?', type: 'select', options: ['No','Basic awareness','Moderate experience','Extensive experience'], scores: [0,4,10,15] },
+      { id: 'q4', text: 'Are you available to start within 30 days?', type: 'select', options: ['Yes, immediately','Within 2 weeks','Within 30 days','More than 30 days'], scores: [10,8,5,2] }
+    ]
+  }
+];
+
+// ── Status & Team colors ──
+var CAR_STATUS_MAP = {
+  open:   { label:'Open',   color:'#22c55e', bg:'rgba(34,197,94,.12)' },
+  trial:  { label:'Trial',  color:'#f59e0b', bg:'rgba(245,158,11,.12)' },
+  filled: { label:'Filled', color:'#ef4444', bg:'rgba(239,68,68,.12)' }
+};
+var CAR_TEAM_COLOR = {
+  'Operations':'#C89B14','Sales':'#22c55e','Lead Generation':'#00BCD4',
+  'Delivery':'#a855f7','Customer Success':'#f97316','Admin & Finance':'#3b82f6'
+};
+
+// ── Scoring engine ──
+function carCalcScore(role, answers, expYears, skillsText) {
+  var w = role.scoreWeights;
+  var expScore  = Math.min((expYears / Math.max(role.minExperience,1)), 1) * w.experience * 100;
+  var skillWords = (skillsText || '').toLowerCase();
+  var matched   = role.requiredSkills.filter(function(s) { return skillWords.includes(s.toLowerCase()); }).length;
+  var skillScore = (matched / Math.max(role.requiredSkills.length,1)) * w.skills * 100;
+  // education level
+  var eduScore  = w.education * 80; // base
+  // availability
+  var availScore = w.availability * 80;
+  // question scores
+  var qScore = 0;
+  role.questions.forEach(function(q) {
+    if (q.type === 'select' && answers[q.id] !== undefined) {
+      qScore += q.scores[parseInt(answers[q.id])] || 0;
+    }
+  });
+  var total = Math.min(Math.round(expScore + skillScore + eduScore + availScore + qScore * 0.3), 100);
+  return {
+    total: total,
+    breakdown: { expScore: Math.round(expScore), skillScore: Math.round(skillScore), eduScore: Math.round(eduScore), availScore: Math.round(availScore), qScore: Math.round(qScore * 0.3) }
+  };
+}
+
+function carScoreTier(score) {
+  if (score >= 75) return { tier:'Tier A · Strong Candidate', color:'#22c55e' };
+  if (score >= 50) return { tier:'Tier B · Promising',       color:'#C89B14' };
+  return { tier:'Tier C · Developing',  color:'#3b82f6' };
+}
+
+// ── State ──
+window._carCurrentRole = null;
+
+// ── Open / Close ──
+function openCareersModal() {
+  var m = document.getElementById('careers-modal');
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  showCareersRoleList();
+}
+
+function closeCareersModal() {
+  var m = document.getElementById('careers-modal');
+  m.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ── Escape key ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeCareersModal();
+});
+
+// ── Views ──
+function carShowView(id) {
+  ['car-view-list','car-view-detail','car-view-form','car-view-confirm'].forEach(function(v) {
+    document.getElementById(v).style.display = 'none';
+  });
+  document.getElementById(id).style.display = 'block';
+}
+
+function showCareersRoleList() {
+  carShowView('car-view-list');
+  document.getElementById('car-modal-title').textContent = 'Open Roles';
+  var grid = document.getElementById('car-roles-grid');
+
+  // Group by team
+  var teams = {};
+  CAR_ROLES.forEach(function(r) {
+    if (!teams[r.team]) teams[r.team] = [];
+    teams[r.team].push(r);
+  });
+
+  var html = '';
+  Object.keys(teams).forEach(function(team) {
+    var color = CAR_TEAM_COLOR[team] || '#C89B14';
+    html += '<div style="margin-bottom:24px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+        '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:' + color + ';">' +
+          teams[team][0].teamIcon + ' ' + team +
+        '</div>' +
+        '<div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div>' +
+      '</div>' +
+      '<div style="display:grid;gap:8px;">';
+
+    teams[team].forEach(function(role) {
+      var st = CAR_STATUS_MAP[role.status] || CAR_STATUS_MAP.open;
+      html += '<div onclick="showCareersRoleDetail(' + JSON.stringify(role).replace(/'/g,"\\'") + ')" ' +
+        'style="display:flex;align-items:center;gap:14px;padding:14px 16px;' +
+        'background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.1);border-radius:8px;' +
+        'cursor:pointer;transition:all .2s;" ' +
+        'onmouseover="this.style.borderColor=\'rgba(200,155,20,.3)\';this.style.background=\'rgba(200,155,20,.05)\'" ' +
+        'onmouseout="this.style.borderColor=\'rgba(200,155,20,.1)\';this.style.background=\'rgba(255,255,255,.03)\'">' +
+        '<div style="flex:1;">' +
+          '<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:.9rem;color:#F2EDE4;">' + role.title + '</div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:.6rem;color:rgba(242,237,228,.45);margin-top:2px;">' + role.type + (role.slots ? ' · ' + role.slots + ' slots' : '') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<span style="background:' + st.bg + ';color:' + st.color + ';font-family:\'DM Mono\',monospace;font-size:.55rem;letter-spacing:.08em;padding:3px 8px;border-radius:4px;">' + st.label + '</span>' +
+          '<span style="color:rgba(242,237,228,.3);font-size:.8rem;">→</span>' +
+        '</div>' +
+      '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  grid.innerHTML = html;
+}
+
+function showCareersRoleDetail(role) {
+  if (!role) return;
+  window._carCurrentRole = role;
+  carShowView('car-view-detail');
+  var st = CAR_STATUS_MAP[role.status] || CAR_STATUS_MAP.open;
+  var color = CAR_TEAM_COLOR[role.team] || '#C89B14';
+  document.getElementById('car-modal-title').textContent = role.title;
+
+  var html =
+    '<div style="margin-bottom:20px;">' +
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">' +
+        '<div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:' + color + ';margin-bottom:4px;">' + role.teamIcon + ' ' + role.team + '</div>' +
+          '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.5rem;color:#F2EDE4;">' + role.title + '</div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:.62rem;color:rgba(242,237,228,.45);margin-top:4px;">' + role.type + (role.slots ? ' · ' + role.slots + ' slots available' : '') + '</div>' +
+        '</div>' +
+        '<span style="background:' + st.bg + ';color:' + st.color + ';font-family:\'DM Mono\',monospace;font-size:.6rem;letter-spacing:.08em;padding:5px 12px;border-radius:5px;flex-shrink:0;">' + st.label + '</span>' +
+      '</div>' +
+      '<p style="font-size:.88rem;color:rgba(242,237,228,.65);line-height:1.7;">' + role.summary + '</p>' +
+    '</div>' +
+    '<div style="background:rgba(200,155,20,.04);border:1px solid rgba(200,155,20,.1);border-radius:8px;padding:18px;margin-bottom:16px;">' +
+      '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">Key Responsibilities</div>' +
+      '<ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">' +
+        role.responsibilities.map(function(r) {
+          return '<li style="display:flex;gap:8px;font-size:.84rem;color:rgba(242,237,228,.75);line-height:1.6;">' +
+            '<span style="color:var(--gold);flex-shrink:0;margin-top:2px;">→</span>' + r + '</li>';
+        }).join('') +
+      '</ul>' +
+    '</div>' +
+    '<div style="background:rgba(255,255,255,.02);border:1px solid rgba(242,237,228,.06);border-radius:8px;padding:18px;margin-bottom:16px;">' +
+      '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:12px;">Requirements</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;">' +
+        '<div style="font-size:.82rem;color:rgba(242,237,228,.65);"><span style="color:rgba(242,237,228,.35);font-family:\'DM Mono\',monospace;font-size:.58rem;">EDUCATION · </span>' + role.requirements.education + '</div>' +
+        '<div style="font-size:.82rem;color:rgba(242,237,228,.65);"><span style="color:rgba(242,237,228,.35);font-family:\'DM Mono\',monospace;font-size:.58rem;">EXPERIENCE · </span>' + role.requirements.experience + '</div>' +
+        '<div style="font-size:.82rem;color:rgba(242,237,228,.65);"><span style="color:rgba(242,237,228,.35);font-family:\'DM Mono\',monospace;font-size:.58rem;">SKILLS · </span>' + role.requirements.skills.join(', ') + '</div>' +
+        '<div style="font-size:.82rem;color:rgba(242,237,228,.65);"><span style="color:rgba(242,237,228,.35);font-family:\'DM Mono\',monospace;font-size:.58rem;">OTHER · </span>' + role.requirements.other + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.12);border-radius:8px;padding:18px;margin-bottom:24px;">' +
+      '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:#22c55e;margin-bottom:10px;">KPIs / Success Metrics</div>' +
+      '<ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">' +
+        role.kpis.map(function(k) { return '<li style="font-size:.82rem;color:rgba(242,237,228,.65);display:flex;gap:8px;"><span style="color:#22c55e;flex-shrink:0;">✓</span>' + k + '</li>'; }).join('') +
+      '</ul>' +
+    '</div>' +
+    (role.status === 'open' ?
+      '<button onclick="showCareersAppForm(window._carCurrentRole)" ' +
+        'style="width:100%;background:var(--gold);color:#080808;border:none;border-radius:8px;' +
+        'padding:15px;font-family:\'Syne\',sans-serif;font-weight:800;font-size:.95rem;' +
+        'letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .2s;" ' +
+        'onmouseover="this.style.background=\'#daa820\'" onmouseout="this.style.background=\'var(--gold)\'">' +
+        'Apply for This Role →' +
+      '</button>' :
+      '<div style="text-align:center;padding:14px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:8px;font-family:\'DM Mono\',monospace;font-size:.7rem;color:#ef4444;">This role is currently ' + role.status + '. Check back soon.</div>'
+    );
+
+  document.getElementById('car-role-detail-content').innerHTML = html;
+}
+
+function showCareersAppForm(role) {
+  if (!role) return;
+  carShowView('car-view-form');
+  document.getElementById('car-modal-title').textContent = 'Apply — ' + role.title;
+
+  var qHtml = role.questions.map(function(q, i) {
+    if (q.type === 'select') {
+      return '<div style="margin-bottom:16px;">' +
+        '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">' + q.text + '</div>' +
+        '<select id="car-q-' + q.id + '" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;-webkit-appearance:none;">' +
+          '<option value="">Select…</option>' +
+          q.options.map(function(o, oi) { return '<option value="' + oi + '">' + o + '</option>'; }).join('') +
+        '</select>' +
+      '</div>';
+    }
+    return '<div style="margin-bottom:16px;">' +
+      '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">' + q.text + '</div>' +
+      '<textarea id="car-q-' + q.id + '" rows="3" placeholder="Your answer…" ' +
+        'style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);' +
+        'border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;' +
+        'resize:vertical;font-family:\'DM Sans\',sans-serif;line-height:1.5;"></textarea>' +
+    '</div>';
+  }).join('');
+
+  var html = '<div style="margin-bottom:20px;">' +
+    '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">' + role.teamIcon + ' ' + role.team + '</div>' +
+    '<div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:1.1rem;color:#F2EDE4;margin-bottom:4px;">Applying for: ' + role.title + '</div>' +
+    '<div style="font-size:.78rem;color:rgba(242,237,228,.4);">Fill all fields accurately. Your answers are used to assess your fit for this role.</div>' +
+  '</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">' +
+    '<div><div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Full Name *</div>' +
+      '<input id="car-name" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;" placeholder="Your full name"></div>' +
+    '<div><div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Email Address *</div>' +
+      '<input id="car-email" type="email" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;" placeholder="you@email.com"></div>' +
+  '</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">' +
+    '<div><div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Phone *</div>' +
+      '<input id="car-phone" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;" placeholder="+234 xxx xxx xxxx"></div>' +
+    '<div><div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Years of Experience *</div>' +
+      '<input id="car-exp" type="number" min="0" max="30" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;" placeholder="e.g. 3"></div>' +
+  '</div>' +
+  '<div style="margin-bottom:16px;"><div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Key Skills / Tools (list them)</div>' +
+    '<textarea id="car-skills" rows="2" placeholder="e.g. JavaScript, Firebase, React, project management, cold calling…" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;resize:vertical;font-family:\'DM Sans\',sans-serif;"></textarea></div>' +
+  '<div style="margin-bottom:16px;"><div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">LinkedIn / Portfolio URL (optional)</div>' +
+    '<input id="car-portfolio" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;" placeholder="https://linkedin.com/in/yourprofile"></div>' +
+  '<div style="border-top:1px solid rgba(200,155,20,.1);padding-top:20px;margin-top:4px;margin-bottom:16px;">' +
+    '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;">Role-Specific Questions</div>' +
+    qHtml +
+  '</div>' +
+  '<div style="margin-bottom:16px;"><div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Cover Letter / Motivation (optional)</div>' +
+    '<textarea id="car-cover" rows="4" placeholder="Why do you want this role? What makes you the right fit?" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.84rem;outline:none;resize:vertical;font-family:\'DM Sans\',sans-serif;line-height:1.5;"></textarea></div>' +
+  '<div id="car-form-err" style="display:none;font-family:\'DM Mono\',monospace;font-size:.7rem;color:#ef4444;margin-bottom:12px;"></div>' +
+  '<button onclick="submitCareersApplication()" id="car-submit-btn" ' +
+    'style="width:100%;background:var(--gold);color:#080808;border:none;border-radius:8px;' +
+    'padding:15px;font-family:\'Syne\',sans-serif;font-weight:800;font-size:.95rem;' +
+    'letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .2s;">' +
+    'Submit Application →' +
+  '</button>';
+
+  document.getElementById('car-form-content').innerHTML = html;
+}
+
+// ── Submit application ──
+function submitCareersApplication() {
+  var role = window._carCurrentRole;
+  if (!role) return;
+  var name     = (document.getElementById('car-name').value || '').trim();
+  var email    = (document.getElementById('car-email').value || '').trim();
+  var phone    = (document.getElementById('car-phone').value || '').trim();
+  var expYears = parseFloat(document.getElementById('car-exp').value) || 0;
+  var skillsText = (document.getElementById('car-skills').value || '').trim();
+  var portfolio  = (document.getElementById('car-portfolio').value || '').trim();
+  var cover      = (document.getElementById('car-cover').value || '').trim();
+  var err        = document.getElementById('car-form-err');
+
+  if (!name || !email || !phone) {
+    err.textContent = 'Please fill in your name, email, and phone number.';
+    err.style.display = 'block';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err.textContent = 'Please enter a valid email address.';
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+
+  // Collect question answers
+  var answers = {};
+  role.questions.forEach(function(q) {
+    var el = document.getElementById('car-q-' + q.id);
+    if (el) answers[q.id] = el.value;
+  });
+
+  // Score the applicant
+  var result = carCalcScore(role, answers, expYears, skillsText);
+  var tier   = carScoreTier(result.total);
+
+  // Disable submit button
+  var btn = document.getElementById('car-submit-btn');
+  btn.textContent = 'Submitting…';
+  btn.disabled = true;
+
+  var data = {
+    personalInfo: { name: name, email: email, phone: phone, portfolioURL: portfolio },
+    positionApplied: role.id,
+    positionTitle: role.title,
+    positionTeam: role.team,
+    experienceYears: expYears,
+    skills: skillsText.split(/[\n,]+/).map(function(s) { return s.trim(); }).filter(Boolean),
+    coverLetter: cover,
+    rawAnswers: answers,
+    score: result.total,
+    scoreTier: tier.tier,
+    ratingBreakdown: result.breakdown,
+    status: 'pending',
+    submittedAt: new Date().toISOString()
+  };
+
+  // Write to Firestore
+  if (window._saveDoc) {
+    window._saveDoc('applicants', data).then(function() {
+      showCarConfirmation(result.total, tier);
+    }).catch(function(err2) {
+      btn.textContent = 'Submit Application →';
+      btn.disabled = false;
+      document.getElementById('car-form-err').textContent = 'Submission failed: ' + (err2.message || err2);
+      document.getElementById('car-form-err').style.display = 'block';
+    });
+  } else {
+    // Fallback: use fetch to Firestore REST API (for when _saveDoc isn't available from admin module)
+    fetch('https://firestore.googleapis.com/v1/projects/teknnuku-intake-form/databases/(default)/documents/applicants', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: carToFirestoreFields(data) })
+    }).then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      showCarConfirmation(result.total, tier);
+    }).catch(function(e2) {
+      btn.textContent = 'Submit Application →';
+      btn.disabled = false;
+      document.getElementById('car-form-err').textContent = 'Submission failed. Please try again.';
+      document.getElementById('car-form-err').style.display = 'block';
+    });
+  }
+}
+
+// Helper: convert plain object to Firestore REST fields
+function carToFirestoreFields(obj) {
+  var fields = {};
+  Object.keys(obj).forEach(function(k) {
+    var v = obj[k];
+    if (typeof v === 'string')       fields[k] = { stringValue: v };
+    else if (typeof v === 'number')  fields[k] = { integerValue: v };
+    else if (typeof v === 'boolean') fields[k] = { booleanValue: v };
+    else if (Array.isArray(v))       fields[k] = { arrayValue: { values: v.map(function(i) { return { stringValue: String(i) }; }) } };
+    else if (v && typeof v === 'object') fields[k] = { mapValue: { fields: carToFirestoreFields(v) } };
+    else fields[k] = { nullValue: null };
+  });
+  return fields;
+}
+
+function showCarConfirmation(score, tier) {
+  carShowView('car-view-confirm');
+  document.getElementById('car-modal-title').textContent = 'Application Received';
+  var sd = document.getElementById('car-score-display');
+  sd.style.display = 'block';
+  document.getElementById('car-score-val').textContent = score + ' / 100';
+  document.getElementById('car-score-val').style.color = tier.color;
+  document.getElementById('car-score-tier').textContent = tier.tier;
+}
+
+</script>
 </body>
 </html>
