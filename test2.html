@@ -5674,6 +5674,144 @@ window.submitServiceInquiry = async function() {
 
   </div>
 </div>
+  
+<!-- ============================================
+     CAREERS AGREEMENT MODAL
+============================================ -->
+<div id="car-agreement-modal"
+  style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.85);
+  backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:20px;">
+  <div style="position:relative;width:100%;max-width:620px;max-height:90vh;
+    background:#0f0f1a;border:1px solid rgba(200,155,20,.25);border-radius:12px;
+    display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7);">
+    <!-- Header -->
+    <div style="padding:20px 24px 16px;border-bottom:1px solid rgba(200,155,20,.12);flex-shrink:0;">
+      <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:#C89B14;margin-bottom:4px;">TEKNNUKU STUDIO · Contractor Agreement</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#F2EDE4;">Probationary Contractor Agreement</div>
+    </div>
+    <!-- Scrollable body -->
+    <div style="overflow-y:auto;padding:20px 24px;flex:1;-webkit-overflow-scrolling:touch;">
+      <div style="font-size:.8rem;color:rgba(242,237,228,.65);line-height:1.8;">
+
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#ef4444;margin-bottom:6px;">⚠️ Please Read Carefully</div>
+          <div style="font-size:.78rem;color:rgba(242,237,228,.7);line-height:1.6;">This agreement governs your engagement with TEKNNUKU Studio during and after the probationary period. By signing, you confirm you have read, understood, and accept all terms below.</div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">1. Core Philosophy</div>
+          <p style="margin:0;color:rgba(242,237,228,.65);">TEKNNUKU Studio operates on a <strong style="color:#F2EDE4;">Performance Before Pay Stability</strong> model. Entry requires proving value. Growth earns stability. Rewards are tied exclusively to results. TEKNNUKU does not "hire people" — TEKNNUKU activates producers.</p>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">2. Workforce Classification</div>
+          <div style="display:grid;gap:8px;">
+            <div style="background:rgba(245,158,11,.07);border-left:3px solid #f59e0b;padding:10px 12px;border-radius:0 6px 6px 0;">
+              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#f59e0b;margin-bottom:3px;">Stage 1 · Days 0–30 · Probationary Contractor</div>
+              <div style="font-size:.75rem;color:rgba(242,237,228,.65);">Independent contractor status. Performance-based engagement only. No guaranteed salary. Full access to tools. Daily reporting required.</div>
+            </div>
+            <div style="background:rgba(59,130,246,.07);border-left:3px solid #3b82f6;padding:10px 12px;border-radius:0 6px 6px 0;">
+              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#3b82f6;margin-bottom:3px;">Stage 2 · Days 30–60 · Provisional Employee</div>
+              <div style="font-size:.75rem;color:rgba(242,237,228,.65);">Semi-integrated team member. Base salary begins. Performance still monitored. KPI ≥ 80% required to proceed to confirmation.</div>
+            </div>
+            <div style="background:rgba(34,197,94,.07);border-left:3px solid #22c55e;padding:10px 12px;border-radius:0 6px 6px 0;">
+              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#22c55e;margin-bottom:3px;">Stage 3 · 60+ Days · Confirmed Employee</div>
+              <div style="font-size:.75rem;color:rgba(242,237,228,.65);">Full team member. Full compensation package unlocked. Performance bonuses active.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">3. Probation Phases & Requirements</div>
+          <div style="display:grid;gap:8px;">
+            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.07);border-radius:6px;padding:10px 12px;">
+              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#f59e0b;margin-bottom:4px;">Phase 1 · Activation (Days 1–14)</div>
+              <div style="font-size:.75rem;color:rgba(242,237,228,.65);line-height:1.6;">No base salary. Commission or task-based pay only. Minimum one measurable output required. No output = immediate exit without further notice.</div>
+            </div>
+            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.07);border-radius:6px;padding:10px 12px;">
+              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#3b82f6;margin-bottom:4px;">Phase 2 · Proof (Days 15–30)</div>
+              <div style="font-size:.75rem;color:rgba(242,237,228,.65);line-height:1.6;">Consistency required. Optional micro-stipend may begin at discretion of management. KPI ≥ 60–70% of target required. Underperformance results in termination or role downgrade.</div>
+            </div>
+            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.07);border-radius:6px;padding:10px 12px;">
+              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#22c55e;margin-bottom:4px;">Phase 3 · Transition (Days 30–60)</div>
+              <div style="font-size:.75rem;color:rgba(242,237,228,.65);line-height:1.6;">Base salary introduced. Full responsibilities. ≥ 80% performance confirms employment. 60–79% extends probation. Below 60% results in exit.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">4. Payment Terms</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin:0;padding:0;">
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>No guaranteed salary during Stage 1 (Days 0–30)</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>Commission is only paid on revenue actually received by TEKNNUKU</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>Task/milestone pay is only released upon verified completion</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>All pay structures are set out in your role-specific KPI & Compensation Sheet</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>Bonus pools are distributed based on verified individual contribution</li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">5. Performance Evaluation</div>
+          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;">Performance is evaluated on a weighted model: <strong style="color:#F2EDE4;">Output (50%)</strong> — revenue generated, tasks delivered, features shipped; <strong style="color:#F2EDE4;">Consistency (30%)</strong> — daily execution and reporting; <strong style="color:#F2EDE4;">Behaviour (20%)</strong> — ownership, communication, and professionalism.</div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#ef4444;margin-bottom:8px;">6. Termination Conditions</div>
+          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;margin-bottom:8px;">TEKNNUKU Studio reserves the right to terminate engagement immediately, without prior notice, for any of the following:</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:5px;margin:0;padding:0;">
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>No activity or output for 2+ consecutive days</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Failure to meet Phase 1 minimum output requirement</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Missed daily reporting without prior notice</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Poor conduct, dishonesty, or disrespectful behaviour</li>
+            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Performance below 60% threshold in any evaluation phase</li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">7. Required Documentation</div>
+          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;">Upon engagement, you will be required to sign: (1) Probationary Contractor Agreement; (2) KPI & Compensation Sheet; (3) Role SOP Playbook; (4) Payment Terms Agreement. This application submission constitutes your initial agreement to these terms. Full documentation will be provided upon shortlisting.</div>
+        </div>
+
+        <div style="background:rgba(200,155,20,.07);border:1px solid rgba(200,155,20,.2);border-radius:8px;padding:14px 16px;margin-bottom:18px;">
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:6px;">8. Company Performance Bonus</div>
+          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;">When company monthly revenue reaches ₦5M+, a team bonus pool is activated. When it reaches ₦10M+, a larger pool is distributed. Allocation is based on verified individual contribution across the evaluation period.</div>
+        </div>
+
+        <div style="font-size:.72rem;color:rgba(242,237,228,.35);line-height:1.6;border-top:1px solid rgba(242,237,228,.08);padding-top:14px;">
+          By digitally signing below, you confirm: (a) you have read and fully understood this agreement; (b) you accept the performance-before-pay model; (c) you understand the probation structure and termination conditions; (d) you agree to operate as an independent contractor during Stage 1 and transition as outlined above.
+        </div>
+
+      </div>
+    </div>
+    <!-- Signature section -->
+    <div style="padding:16px 24px;border-top:1px solid rgba(200,155,20,.12);flex-shrink:0;background:rgba(8,8,8,.8);">
+      <div style="margin-bottom:12px;">
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Type your full name as your digital signature *</div>
+        <input id="car-sig-name" type="text" placeholder="Your full legal name"
+          style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.1);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.88rem;outline:none;font-style:italic;letter-spacing:.02em;box-sizing:border-box;"
+          oninput="document.getElementById('car-agree-btn').disabled = this.value.trim().length < 3">
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;cursor:pointer;" onclick="var cb=document.getElementById('car-agree-cb');cb.checked=!cb.checked;">
+        <input type="checkbox" id="car-agree-cb"
+          style="width:16px;height:16px;accent-color:#C89B14;cursor:pointer;flex-shrink:0;">
+        <label style="font-size:.76rem;color:rgba(242,237,228,.65);cursor:pointer;line-height:1.5;">
+          I have read and understood the full Probationary Contractor Agreement and accept all terms, compensation structure, and termination conditions outlined above.
+        </label>
+      </div>
+      <div id="car-agree-err" style="display:none;font-family:'DM Mono',monospace;font-size:.68rem;color:#ef4444;margin-bottom:10px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button id="car-agree-btn" onclick="confirmCarAgreement()"
+          style="flex:1;background:var(--gold);color:#080808;border:none;border-radius:7px;padding:13px;font-family:'Syne',sans-serif;font-weight:800;font-size:.88rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .2s;">
+          ✍️ Sign &amp; Submit Application
+        </button>
+        <button onclick="document.getElementById('car-agreement-modal').style.display='none'"
+          style="background:rgba(242,237,228,.05);border:1px solid rgba(242,237,228,.1);color:rgba(242,237,228,.5);border-radius:7px;padding:13px 18px;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -6072,6 +6210,7 @@ var CAR_TEAM_COLOR = {
   'Delivery':'#a855f7','Customer Success':'#f97316','Admin & Finance':'#3b82f6'
 };
 
+
 // ── Compensation & Probation data per role ──
 var CAR_COMP = {
   ops_lead: {
@@ -6302,35 +6441,6 @@ function showCareersRoleDetail(role) {
         role.kpis.map(function(k) { return '<li style="font-size:.82rem;color:rgba(242,237,228,.65);display:flex;gap:8px;"><span style="color:#22c55e;flex-shrink:0;">✓</span>' + k + '</li>'; }).join('') +
       '</ul>' +
     '</div>' +
-
-        // ── Compensation & Probation block ──
-    (function() {
-      var comp = CAR_COMP[role.id] || {};
-      var pb = comp.probation || {};
-      var cf = comp.confirmed || {};
-      html +=
-        '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.18);border-radius:8px;padding:18px;margin-bottom:16px;">' +
-          '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;">💰 Compensation Structure</div>' +
-          '<div style="display:grid;gap:10px;margin-bottom:14px;">' +
-            PROBATION_PHASES.map(function(ph, i) {
-              var payLine = [pb.phase1, pb.phase2, pb.phase3][i] || '—';
-              return '<div style="background:rgba(0,0,0,.2);border-radius:6px;padding:12px 14px;">' +
-                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
-                  '<span style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:' + ['#f59e0b','#3b82f6','#22c55e'][i] + ';">' + ph.label + ' · ' + ph.title + '</span>' +
-                '</div>' +
-                '<div style="font-family:\'DM Mono\',monospace;font-size:.7rem;color:#F2EDE4;margin-bottom:3px;">Pay: ' + payLine + '</div>' +
-                '<div style="font-size:.75rem;color:rgba(242,237,228,.5);line-height:1.5;">' + ph.desc + '</div>' +
-              '</div>';
-            }).join('') +
-          '</div>' +
-          '<div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:6px;padding:12px 14px;">' +
-            '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:#22c55e;margin-bottom:6px;">🟢 Full Employment (60+ days confirmed)</div>' +
-            '<div style="font-family:\'DM Mono\',monospace;font-size:.78rem;color:#F2EDE4;margin-bottom:3px;">Base: ' + (cf.base||'—') + '</div>' +
-            '<div style="font-family:\'DM Mono\',monospace;font-size:.72rem;color:rgba(242,237,228,.6);">Variable: ' + (cf.variable||'—') + '</div>' +
-          '</div>' +
-        '</div>';
-    })();
-    
     (role.status === 'open' ?
       '<button onclick="showCareersAppForm(window._carCurrentRole)" ' +
         'style="width:100%;background:var(--gold);color:#080808;border:none;border-radius:8px;' +
@@ -6415,6 +6525,34 @@ function showCareersAppForm(role) {
   document.getElementById('car-form-content').innerHTML = html;
 }
 
+    // ── Compensation & Probation block ──
+    (function() {
+      var comp = CAR_COMP[role.id] || {};
+      var pb = comp.probation || {};
+      var cf = comp.confirmed || {};
+      html +=
+        '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.18);border-radius:8px;padding:18px;margin-bottom:16px;">' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;">💰 Compensation Structure</div>' +
+          '<div style="display:grid;gap:10px;margin-bottom:14px;">' +
+            PROBATION_PHASES.map(function(ph, i) {
+              var payLine = [pb.phase1, pb.phase2, pb.phase3][i] || '—';
+              return '<div style="background:rgba(0,0,0,.2);border-radius:6px;padding:12px 14px;">' +
+                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
+                  '<span style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:' + ['#f59e0b','#3b82f6','#22c55e'][i] + ';">' + ph.label + ' · ' + ph.title + '</span>' +
+                '</div>' +
+                '<div style="font-family:\'DM Mono\',monospace;font-size:.7rem;color:#F2EDE4;margin-bottom:3px;">Pay: ' + payLine + '</div>' +
+                '<div style="font-size:.75rem;color:rgba(242,237,228,.5);line-height:1.5;">' + ph.desc + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+          '<div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:6px;padding:12px 14px;">' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:#22c55e;margin-bottom:6px;">🟢 Full Employment (60+ days confirmed)</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:.78rem;color:#F2EDE4;margin-bottom:3px;">Base: ' + (cf.base||'—') + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:.72rem;color:rgba(242,237,228,.6);">Variable: ' + (cf.variable||'—') + '</div>' +
+          '</div>' +
+        '</div>';
+    })();
+
 // ── Submit application ──
 function submitCareersApplication() {
   var role = window._carCurrentRole;
@@ -6458,7 +6596,7 @@ function submitCareersApplication() {
   btn.disabled = true;
 
   var data = {
-    personalInfo: { name: name, email: email, phone: phone, portfolioURL: portfolio },
+    personalInfo: { name: name, email: email, phone: phone, portfolioURL: portfolio, cvLink: cvLink },
     positionApplied: role.id,
     positionTitle: role.title,
     positionTeam: role.team,
@@ -6592,146 +6730,6 @@ function showCarConfirmation(score, tier) {
   document.getElementById('car-score-val').style.color = tier.color;
   document.getElementById('car-score-tier').textContent = tier.tier;
 }
-
-</script>
-
-<!-- ============================================
-     CAREERS AGREEMENT MODAL
-============================================ -->
-<div id="car-agreement-modal"
-  style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.85);
-  backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:20px;">
-  <div style="position:relative;width:100%;max-width:620px;max-height:90vh;
-    background:#0f0f1a;border:1px solid rgba(200,155,20,.25);border-radius:12px;
-    display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7);">
-    <!-- Header -->
-    <div style="padding:20px 24px 16px;border-bottom:1px solid rgba(200,155,20,.12);flex-shrink:0;">
-      <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:#C89B14;margin-bottom:4px;">TEKNNUKU STUDIO · Contractor Agreement</div>
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#F2EDE4;">Probationary Contractor Agreement</div>
-    </div>
-    <!-- Scrollable body -->
-    <div style="overflow-y:auto;padding:20px 24px;flex:1;-webkit-overflow-scrolling:touch;">
-      <div style="font-size:.8rem;color:rgba(242,237,228,.65);line-height:1.8;">
-
-        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:14px 16px;margin-bottom:20px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:#ef4444;margin-bottom:6px;">⚠️ Please Read Carefully</div>
-          <div style="font-size:.78rem;color:rgba(242,237,228,.7);line-height:1.6;">This agreement governs your engagement with TEKNNUKU Studio during and after the probationary period. By signing, you confirm you have read, understood, and accept all terms below.</div>
-        </div>
-
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">1. Core Philosophy</div>
-          <p style="margin:0;color:rgba(242,237,228,.65);">TEKNNUKU Studio operates on a <strong style="color:#F2EDE4;">Performance Before Pay Stability</strong> model. Entry requires proving value. Growth earns stability. Rewards are tied exclusively to results. TEKNNUKU does not "hire people" — TEKNNUKU activates producers.</p>
-        </div>
-
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">2. Workforce Classification</div>
-          <div style="display:grid;gap:8px;">
-            <div style="background:rgba(245,158,11,.07);border-left:3px solid #f59e0b;padding:10px 12px;border-radius:0 6px 6px 0;">
-              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#f59e0b;margin-bottom:3px;">Stage 1 · Days 0–30 · Probationary Contractor</div>
-              <div style="font-size:.75rem;color:rgba(242,237,228,.65);">Independent contractor status. Performance-based engagement only. No guaranteed salary. Full access to tools. Daily reporting required.</div>
-            </div>
-            <div style="background:rgba(59,130,246,.07);border-left:3px solid #3b82f6;padding:10px 12px;border-radius:0 6px 6px 0;">
-              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#3b82f6;margin-bottom:3px;">Stage 2 · Days 30–60 · Provisional Employee</div>
-              <div style="font-size:.75rem;color:rgba(242,237,228,.65);">Semi-integrated team member. Base salary begins. Performance still monitored. KPI ≥ 80% required to proceed to confirmation.</div>
-            </div>
-            <div style="background:rgba(34,197,94,.07);border-left:3px solid #22c55e;padding:10px 12px;border-radius:0 6px 6px 0;">
-              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#22c55e;margin-bottom:3px;">Stage 3 · 60+ Days · Confirmed Employee</div>
-              <div style="font-size:.75rem;color:rgba(242,237,228,.65);">Full team member. Full compensation package unlocked. Performance bonuses active.</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">3. Probation Phases & Requirements</div>
-          <div style="display:grid;gap:8px;">
-            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.07);border-radius:6px;padding:10px 12px;">
-              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#f59e0b;margin-bottom:4px;">Phase 1 · Activation (Days 1–14)</div>
-              <div style="font-size:.75rem;color:rgba(242,237,228,.65);line-height:1.6;">No base salary. Commission or task-based pay only. Minimum one measurable output required. No output = immediate exit without further notice.</div>
-            </div>
-            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.07);border-radius:6px;padding:10px 12px;">
-              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#3b82f6;margin-bottom:4px;">Phase 2 · Proof (Days 15–30)</div>
-              <div style="font-size:.75rem;color:rgba(242,237,228,.65);line-height:1.6;">Consistency required. Optional micro-stipend may begin at discretion of management. KPI ≥ 60–70% of target required. Underperformance results in termination or role downgrade.</div>
-            </div>
-            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.07);border-radius:6px;padding:10px 12px;">
-              <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:#22c55e;margin-bottom:4px;">Phase 3 · Transition (Days 30–60)</div>
-              <div style="font-size:.75rem;color:rgba(242,237,228,.65);line-height:1.6;">Base salary introduced. Full responsibilities. ≥ 80% performance confirms employment. 60–79% extends probation. Below 60% results in exit.</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">4. Payment Terms</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin:0;padding:0;">
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>No guaranteed salary during Stage 1 (Days 0–30)</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>Commission is only paid on revenue actually received by TEKNNUKU</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>Task/milestone pay is only released upon verified completion</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>All pay structures are set out in your role-specific KPI & Compensation Sheet</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(242,237,228,.65);"><span style="color:#C89B14;flex-shrink:0;">→</span>Bonus pools are distributed based on verified individual contribution</li>
-          </ul>
-        </div>
-
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">5. Performance Evaluation</div>
-          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;">Performance is evaluated on a weighted model: <strong style="color:#F2EDE4;">Output (50%)</strong> — revenue generated, tasks delivered, features shipped; <strong style="color:#F2EDE4;">Consistency (30%)</strong> — daily execution and reporting; <strong style="color:#F2EDE4;">Behaviour (20%)</strong> — ownership, communication, and professionalism.</div>
-        </div>
-
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#ef4444;margin-bottom:8px;">6. Termination Conditions</div>
-          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;margin-bottom:8px;">TEKNNUKU Studio reserves the right to terminate engagement immediately, without prior notice, for any of the following:</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:5px;margin:0;padding:0;">
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>No activity or output for 2+ consecutive days</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Failure to meet Phase 1 minimum output requirement</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Missed daily reporting without prior notice</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Poor conduct, dishonesty, or disrespectful behaviour</li>
-            <li style="display:flex;gap:8px;font-size:.76rem;color:rgba(239,68,68,.8);"><span style="flex-shrink:0;">✗</span>Performance below 60% threshold in any evaluation phase</li>
-          </ul>
-        </div>
-
-        <div style="margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">7. Required Documentation</div>
-          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;">Upon engagement, you will be required to sign: (1) Probationary Contractor Agreement; (2) KPI & Compensation Sheet; (3) Role SOP Playbook; (4) Payment Terms Agreement. This application submission constitutes your initial agreement to these terms. Full documentation will be provided upon shortlisting.</div>
-        </div>
-
-        <div style="background:rgba(200,155,20,.07);border:1px solid rgba(200,155,20,.2);border-radius:8px;padding:14px 16px;margin-bottom:18px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:6px;">8. Company Performance Bonus</div>
-          <div style="font-size:.76rem;color:rgba(242,237,228,.65);line-height:1.6;">When company monthly revenue reaches ₦5M+, a team bonus pool is activated. When it reaches ₦10M+, a larger pool is distributed. Allocation is based on verified individual contribution across the evaluation period.</div>
-        </div>
-
-        <div style="font-size:.72rem;color:rgba(242,237,228,.35);line-height:1.6;border-top:1px solid rgba(242,237,228,.08);padding-top:14px;">
-          By digitally signing below, you confirm: (a) you have read and fully understood this agreement; (b) you accept the performance-before-pay model; (c) you understand the probation structure and termination conditions; (d) you agree to operate as an independent contractor during Stage 1 and transition as outlined above.
-        </div>
-
-      </div>
-    </div>
-    <!-- Signature section -->
-    <div style="padding:16px 24px;border-top:1px solid rgba(200,155,20,.12);flex-shrink:0;background:rgba(8,8,8,.8);">
-      <div style="margin-bottom:12px;">
-        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);margin-bottom:6px;">Type your full name as your digital signature *</div>
-        <input id="car-sig-name" type="text" placeholder="Your full legal name"
-          style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.1);border-radius:6px;padding:11px 14px;color:#F2EDE4;font-size:.88rem;outline:none;font-style:italic;letter-spacing:.02em;box-sizing:border-box;"
-          oninput="document.getElementById('car-agree-btn').disabled = this.value.trim().length < 3">
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;cursor:pointer;" onclick="var cb=document.getElementById('car-agree-cb');cb.checked=!cb.checked;">
-        <input type="checkbox" id="car-agree-cb"
-          style="width:16px;height:16px;accent-color:#C89B14;cursor:pointer;flex-shrink:0;">
-        <label style="font-size:.76rem;color:rgba(242,237,228,.65);cursor:pointer;line-height:1.5;">
-          I have read and understood the full Probationary Contractor Agreement and accept all terms, compensation structure, and termination conditions outlined above.
-        </label>
-      </div>
-      <div id="car-agree-err" style="display:none;font-family:'DM Mono',monospace;font-size:.68rem;color:#ef4444;margin-bottom:10px;"></div>
-      <div style="display:flex;gap:10px;">
-        <button id="car-agree-btn" onclick="confirmCarAgreement()"
-          style="flex:1;background:var(--gold);color:#080808;border:none;border-radius:7px;padding:13px;font-family:'Syne',sans-serif;font-weight:800;font-size:.88rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:all .2s;">
-          ✍️ Sign &amp; Submit Application
-        </button>
-        <button onclick="document.getElementById('car-agreement-modal').style.display='none'"
-          style="background:rgba(242,237,228,.05);border:1px solid rgba(242,237,228,.1);color:rgba(242,237,228,.5);border-radius:7px;padding:13px 18px;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
 </script>
 </body>
