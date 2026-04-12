@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEKNNUKU Studio — Admin Command Centre</title>
+<title>TEKNNUKU OS — Command Centre</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -305,6 +305,56 @@ tbody tr:last-child td{border-bottom:none;}
 .sw-btn.sw-primary { background: rgba(200,155,20,.08); border-color: rgba(200,155,20,.2); color: var(--gold); }
 .sw-btn .sw-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
 
+
+/* ── OS PANELS: KANBAN, VENTURES, FINANCE, REPORTS, SOPS ── */
+.kanban-board{display:grid;gap:14px;align-items:start;overflow-x:auto;}
+.kanban-col{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;min-width:180px;}
+.kanban-col-header{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.kanban-col-title{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--dim);}
+.col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.col-count{font-family:var(--mono);font-size:.56rem;color:var(--dimmer);background:var(--card);padding:2px 8px;border-radius:10px;}
+.kanban-col-body{padding:10px;min-height:140px;display:flex;flex-direction:column;gap:8px;}
+.kanban-item{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:11px 13px;cursor:pointer;transition:all .15s;}
+.kanban-item:hover{border-color:var(--borderB);transform:translateY(-1px);}
+.kanban-item-title{font-size:.8rem;font-weight:600;margin-bottom:7px;line-height:1.4;color:var(--white);}
+.venture-tag{font-family:var(--mono);font-size:.54rem;letter-spacing:.06em;color:var(--gold);background:rgba(200,155,20,.1);padding:2px 7px;border-radius:3px;}
+.health-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:10px;}
+.health-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+.hf-green{background:var(--green)}.hf-yellow{background:var(--amber)}.hf-red{background:var(--red)}
+.venture-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:all .15s;margin-bottom:14px;}
+.venture-card:hover{border-color:var(--borderB);}
+.venture-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:20px;}
+.sop-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px 18px;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.sop-card:hover{border-color:var(--borderB);}
+.sop-body{margin-top:12px;font-size:.78rem;color:var(--dim);line-height:1.8;display:none;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:12px;}
+.sop-body.open{display:block;}
+.sop-card-header{display:flex;align-items:center;justify-content:space-between;}
+.sop-card-title{font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--white);}
+.sop-arrow{color:var(--dimmer);font-size:.7rem;}
+.report-form-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px;margin-bottom:20px;}
+.perf-bar-wrap{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin:7px 0 10px;}
+.perf-bar-fill{height:100%;border-radius:2px;transition:width .8s ease;}
+.perf-flag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-family:var(--mono);font-size:.56rem;letter-spacing:.04em;}
+.flag-ok{background:rgba(34,197,94,.1);color:var(--green)}
+.flag-warn{background:rgba(245,158,11,.1);color:var(--amber)}
+.flag-crit{background:rgba(239,68,68,.1);color:var(--red)}
+.fin-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.fin-sum-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center;}
+.fin-sum-label{font-family:var(--mono);font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dimmer);margin-bottom:8px;}
+.fin-sum-val{font-family:var(--display);font-weight:800;font-size:1.8rem;line-height:1;}
+.fin-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(200,155,20,.05);font-size:.8rem;}
+.fin-row:last-child{border-bottom:none;}
+.fin-row-label{color:var(--dim);}
+.fin-income{color:var(--green);font-family:var(--mono);font-weight:600;}
+.fin-expense{color:var(--red);font-family:var(--mono);font-weight:600;}
+.fin-profit{font-family:var(--mono);font-weight:600;}
+.client-onboard-bar{display:flex;align-items:center;gap:6px;}
+.onboard-step{font-family:var(--mono);font-size:.55rem;padding:3px 8px;border-radius:3px;white-space:nowrap;}
+.onboard-done{background:rgba(34,197,94,.12);color:var(--green);}
+.onboard-active{background:rgba(200,155,20,.12);color:var(--gold);}
+.onboard-pending{background:rgba(242,237,228,.06);color:var(--dimmer);}
+@media(max-width:900px){.fin-summary-grid{grid-template-columns:1fr}.kanban-board{grid-template-columns:1fr!important}}
+
 </style>
 </head>
 <body>
@@ -412,12 +462,16 @@ window._updateDoc = async (col, id, data) => { data.updatedAt=serverTimestamp();
 window._deleteDoc = async (col, id) => { await deleteDoc(doc(db,col,id)); };
 
 window._loadAll = async function() {
-  const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config] = await Promise.all([
+  const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
+         ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports] = await Promise.all([
     getCol('intake_leads'), getCol('service_inquiries'), getCol('contact_messages'),
     getCol('proposals'), getCol('payments'), getCol('assignments'),
-    getCol('applicants'), getCol('team_members'), getCol('careers_config')
+    getCol('applicants'), getCol('team_members'), getCol('careers_config'),
+    getCol('ventures'), getCol('tasks'), getCol('crm_leads'),
+    getCol('clients'), getCol('financials'), getCol('daily_reports'), getCol('weekly_reports')
   ]);
-  window._data = { leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config };
+  window._data = { leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
+                   ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports };
   document.getElementById('last-refresh').textContent = 'Updated '+new Date().toLocaleTimeString();
   window._renderAll();
 };
@@ -452,13 +506,13 @@ onAuthStateChanged(auth, user => {
 // ═══════════════════════════════════════
 // CONSTANTS & CONFIG
 // ═══════════════════════════════════════
-var FOUNDER_EMAIL = 'nazzaraymond@gmail.com';
+var FOUNDER_EMAIL = 'nazzaraymond@gmail';
 
 // ── Cross-app URL config — update these per deployment ──
 var TEKNNUKU_URLS = {
   mainSite:      window.TEKNNUKU_STUDIO_URL   || 'https://studio.teknnuku.xyz',
   adminPortal:   window.TEKNNUKU_ADMIN_URL    || window.location.href,
-  commandCenter: window.TEKNNUKU_OS_URL       || 'https://teknnuku-studio-vos.vercel.app/dashboard.html'
+  commandCenter: window.TEKNNUKU_OS_URL       || 'https://teknnuku-studio-vos.vercel.app'
 }; // Founder email — full access
 
 var ROLE_LABELS = {
@@ -469,6 +523,104 @@ var ROLE_LABELS = {
   developer:'Developer', onboarding_specialist:'Onboarding Specialist',
   customer_success_manager:'Customer Success Manager', admin_finance_officer:'Admin / Finance Officer'
 };
+
+// ── Venture definitions (seed data) ──────────────────────────
+var VENTURES_SEED = [
+  {id:'studio',name:'TEKNNUKU Studio',focus:'Web, funnels, business systems',stage:'Revenue',color:'linear-gradient(135deg,#C89B14,#daa820)',segment:'type1'},
+  {id:'jobletters',name:'Jobletters.xyz',focus:'CV, career tools, job placement',stage:'Revenue',color:'linear-gradient(135deg,#3b82f6,#1a5f9c)',segment:'type2'},
+  {id:'tek1security',name:'TEK1SECURITY',focus:'Guard tracking, payroll systems',stage:'Building',color:'linear-gradient(135deg,#ef4444,#aa0022)',segment:'type3'},
+  {id:'gata',name:'GATA Protocol',focus:'Business ecosystem marketplace',stage:'Building',color:'linear-gradient(135deg,#00BCD4,#006688)',segment:'type1'},
+  {id:'globalbiz',name:'Global Biz Hub',focus:'Business directory and listings',stage:'Building',color:'linear-gradient(135deg,#a855f7,#3d2080)',segment:'type1'},
+  {id:'p2p',name:'Poverty2Prosperity',focus:'Business masterclass program',stage:'Revenue',color:'linear-gradient(135deg,#f59e0b,#cc8800)',segment:'type1'},
+  {id:'pawa',name:'Pawa+9ja',focus:'Energy solutions for Nigerian SMEs',stage:'Idea',color:'linear-gradient(135deg,#22c55e,#166534)',segment:'type3'},
+  {id:'autodex',name:'AUTODEX Trader',focus:'Automated trading systems',stage:'Building',color:'linear-gradient(135deg,#00BCD4,#C89B14)',segment:'type1'}
+];
+var V_MAP = {};
+VENTURES_SEED.forEach(function(v){V_MAP[v.id] = v;});
+
+// ── CRM Lead statuses ──────────────────────────────────────────
+var CRM_STATUSES = ['new_lead','contacted','qualified','proposal','won','lost'];
+
+// ── Deal tiers ────────────────────────────────────────────────
+var DEAL_TIERS = [
+  {id:1,label:'Tier 1',range:'₦0–₦250k',approver:'Closers (auto-close)',color:'var(--green)'},
+  {id:2,label:'Tier 2',range:'₦250k–₦1M',approver:'Sales Manager',color:'var(--amber)'},
+  {id:3,label:'Tier 3',range:'₦1M+',approver:'Ops Lead',color:'var(--red)'}
+];
+
+// ── Report templates per role ─────────────────────────────────
+var REPORT_TEMPLATES = {
+  ops_lead:{title:'Operations Lead Report',fields:[
+    {id:'revenueToday',label:'Total Revenue Today (₦)',type:'number'},
+    {id:'totalLeads',label:'Total Leads Today',type:'number'},
+    {id:'contacted',label:'Leads Contacted',type:'number'},
+    {id:'dealsClosed',label:'Deals Closed',type:'number'},
+    {id:'dealsValue',label:'Value Closed (₦)',type:'number'},
+    {id:'projectsDone',label:'Projects Completed',type:'number'},
+    {id:'issues',label:'Major Issues / Bottlenecks',type:'textarea'},
+    {id:'priority',label:'Priority for Tomorrow',type:'textarea'}]},
+  sales_manager:{title:'Sales Manager Report',fields:[
+    {id:'newLeads',label:'New Leads',type:'number'},
+    {id:'activeDeals',label:'Active Deals',type:'number'},
+    {id:'revenueClosed',label:'Revenue Closed Today (₦)',type:'number'},
+    {id:'topOpps',label:'Top High-Value Opportunities',type:'textarea'},
+    {id:'notes',label:'Team Performance Notes',type:'textarea'}]},
+  inbound_closer:{title:'Inbound Closer Report',fields:[
+    {id:'leadsContacted',label:'Leads Contacted',type:'number'},
+    {id:'callsBooked',label:'Calls Booked',type:'number'},
+    {id:'dealsClosed',label:'Deals Closed',type:'number'},
+    {id:'revenue',label:'Revenue Generated (₦)',type:'number'},
+    {id:'hotLeads',label:'Hot Leads (Ready to Close)',type:'textarea'},
+    {id:'challenges',label:'Challenges Faced',type:'textarea'}]},
+  outbound_closer:{title:'Outbound Closer Report',fields:[
+    {id:'callsMade',label:'Calls Made',type:'number'},
+    {id:'meetings',label:'Meetings Booked',type:'number'},
+    {id:'dealsClosed',label:'Deals Closed',type:'number'},
+    {id:'revenue',label:'Revenue Generated (₦)',type:'number'},
+    {id:'hotProspects',label:'Hot Prospects',type:'textarea'}]},
+  content_lead:{title:'Content Team Report',fields:[
+    {id:'videos',label:'Videos Created',type:'number'},
+    {id:'posts',label:'Posts Published',type:'number'},
+    {id:'platforms',label:'Platforms Posted',type:'text'},
+    {id:'views',label:'Total Views',type:'number'},
+    {id:'dms',label:'DMs Generated',type:'number'},
+    {id:'leads',label:'Leads From Content',type:'number'}]},
+  content_creator:{title:'Content Creator Report',fields:[
+    {id:'videos',label:'Videos Created',type:'number'},
+    {id:'posts',label:'Posts Published',type:'number'},
+    {id:'views',label:'Total Views',type:'number'},
+    {id:'leads',label:'Leads Generated',type:'number'}]},
+  outreach_lead_gen:{title:'Outreach / Lead Gen Report',fields:[
+    {id:'outreachSent',label:'Total Outreaches Sent',type:'number'},
+    {id:'replies',label:'Replies Received',type:'number'},
+    {id:'qualified',label:'Qualified Leads',type:'number'},
+    {id:'appointments',label:'Appointments Booked',type:'number'}]},
+  tech_product_lead:{title:'Tech / Product Lead Report',fields:[
+    {id:'projects',label:'Projects in Progress',type:'number'},
+    {id:'tasksCompleted',label:'Tasks Completed Today',type:'number'},
+    {id:'bugs',label:'Bugs Identified / Fixed',type:'text'},
+    {id:'risks',label:'Delivery Risks',type:'textarea'},
+    {id:'notes',label:'Team Performance Notes',type:'textarea'}]},
+  developer:{title:'Developer Report',fields:[
+    {id:'tasksCompleted',label:'Tasks Completed',type:'number'},
+    {id:'bugsFixed',label:'Bugs Fixed',type:'number'},
+    {id:'pending',label:'Pending Work',type:'textarea'}]},
+  onboarding_specialist:{title:'Onboarding Specialist Report',fields:[
+    {id:'newClients',label:'New Clients Onboarded',type:'number'},
+    {id:'setupsDone',label:'Setups Completed',type:'number'},
+    {id:'issues',label:'Issues During Setup',type:'textarea'}]},
+  customer_success_manager:{title:'Customer Success Report',fields:[
+    {id:'clientsContacted',label:'Clients Contacted',type:'number'},
+    {id:'issuesResolved',label:'Issues Resolved',type:'number'},
+    {id:'upsells',label:'Upsells Made',type:'number'},
+    {id:'upsellValue',label:'Upsell Value (₦)',type:'number'},
+    {id:'churnRisks',label:'Churn Risks Identified',type:'textarea'}]},
+  admin_finance_officer:{title:'Finance / Admin Report',fields:[
+    {id:'paymentsReceived',label:'Payments Received (₦)',type:'number'},
+    {id:'paymentsPending',label:'Payments Pending (₦)',type:'number'},
+    {id:'invoicesSent',label:'Invoices Sent',type:'number'}]}
+};
+
 var TEAM_FOR_ROLE = {
   ops_lead:'Operations', sales_manager:'Sales', inbound_closer:'Sales', outbound_closer:'Sales',
   content_lead:'Lead Generation', content_creator:'Lead Generation', outreach_lead_gen:'Lead Generation',
@@ -510,34 +662,41 @@ var PROBATION_PHASES = [
 // RBAC
 // ═══════════════════════════════════════
 var ROLE_PERMISSIONS = {
-  founder: ['overview','leads','inquiries','messages','applicants','people','proposals','payments','assignments','team','vacancies','settings'],
-  ops_lead: ['overview','leads','inquiries','messages','people','proposals','payments','assignments','team'],
-  sales_manager: ['overview','leads','inquiries','people','proposals','payments','assignments'],
-  inbound_closer: ['overview','leads','assignments'],
-  outbound_closer: ['overview','leads','assignments'],
-  content_lead: ['overview','leads','assignments'],
-  content_creator: ['overview','assignments'],
-  outreach_lead_gen: ['overview','leads','assignments'],
-  tech_product_lead: ['overview','assignments'],
-  developer: ['overview','assignments'],
-  onboarding_specialist: ['overview','assignments'],
-  customer_success_manager: ['overview','people','assignments'],
-  admin_finance_officer: ['overview','payments','proposals']
+  founder:                  ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','finance','team','vacancies','reports','sops','settings'],
+  ops_lead:                 ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','team','reports','sops'],
+  sales_manager:            ['overview','leads','inquiries','crm','people','proposals','payments','assignments','tasks','reports','sops'],
+  inbound_closer:           ['overview','crm','assignments','tasks','reports'],
+  outbound_closer:          ['overview','crm','assignments','tasks','reports'],
+  content_lead:             ['overview','crm','assignments','ventures','tasks','reports','sops'],
+  content_creator:          ['overview','assignments','tasks','reports'],
+  outreach_lead_gen:        ['overview','crm','assignments','tasks','reports'],
+  tech_product_lead:        ['overview','ventures','tasks','assignments','clients','reports','sops'],
+  developer:                ['overview','tasks','assignments','reports'],
+  onboarding_specialist:    ['overview','tasks','assignments','clients','reports'],
+  customer_success_manager: ['overview','people','clients','assignments','reports','sops'],
+  admin_finance_officer:    ['overview','payments','proposals','finance','reports']
 };
 
 var NAV_ITEMS = [
-  {id:'overview',icon:'⬡',label:'Overview',section:'Analytics'},
-  {id:'leads',icon:'📥',label:'Leads',badge:'nb-leads',section:'Incoming'},
-  {id:'inquiries',icon:'📋',label:'Inquiries',badge:'nb-inquiries',section:'Incoming'},
-  {id:'messages',icon:'💬',label:'Messages',badge:'nb-messages',section:'Incoming'},
-  {id:'applicants',icon:'🎯',label:'Applicants',badge:'nb-applicants',section:'Incoming'},
-  {id:'people',icon:'👥',label:'People',section:'Management'},
-  {id:'proposals',icon:'📄',label:'Proposals',section:'Management'},
-  {id:'payments',icon:'💰',label:'Payments',section:'Management'},
-  {id:'assignments',icon:'🗂️',label:'Assignments',section:'Management'},
-  {id:'team',icon:'🏢',label:'Team Members',section:'Operations'},
-  {id:'vacancies',icon:'📌',label:'Vacancies',section:'Operations'},
-  {id:'settings',icon:'⚙️',label:'Settings',section:'Operations'}
+  {id:'overview',   icon:'⬡',  label:'Overview',       section:'Analytics'},
+  {id:'leads',      icon:'📥', label:'Intake Leads',   badge:'nb-leads',      section:'Incoming'},
+  {id:'inquiries',  icon:'📋', label:'Inquiries',      badge:'nb-inquiries',  section:'Incoming'},
+  {id:'messages',   icon:'💬', label:'Messages',       badge:'nb-messages',   section:'Incoming'},
+  {id:'applicants', icon:'🎯', label:'Applicants',     badge:'nb-applicants', section:'Incoming'},
+  {id:'crm',        icon:'🔄', label:'CRM Pipeline',   badge:'nb-crm',        section:'Sales & CRM'},
+  {id:'people',     icon:'👥', label:'People',                                section:'Sales & CRM'},
+  {id:'proposals',  icon:'📄', label:'Proposals',                             section:'Sales & CRM'},
+  {id:'payments',   icon:'💰', label:'Payments',                              section:'Sales & CRM'},
+  {id:'assignments',icon:'🗂️', label:'Assignments',                           section:'Sales & CRM'},
+  {id:'ventures',   icon:'🏢', label:'Ventures',                              section:'Delivery'},
+  {id:'tasks',      icon:'✅', label:'Task Board',     badge:'nb-tasks',      section:'Delivery'},
+  {id:'clients',    icon:'🤝', label:'Clients',                               section:'Delivery'},
+  {id:'finance',    icon:'📊', label:'Finance',                               section:'Delivery'},
+  {id:'team',       icon:'👤', label:'Team Members',                          section:'People'},
+  {id:'vacancies',  icon:'📌', label:'Vacancies',                             section:'People'},
+  {id:'reports',    icon:'📋', label:'Daily Reports',                         section:'Reports'},
+  {id:'sops',       icon:'📖', label:'SOPs',                                  section:'Reports'},
+  {id:'settings',   icon:'⚙️', label:'Settings',                              section:'System'}
 ];
 
 window._userRole = null;
@@ -606,12 +765,19 @@ function _buildPanels() {
   if (canAccess('inquiries'))   ca.innerHTML += _panelInquiries();
   if (canAccess('messages'))    ca.innerHTML += _panelMessages();
   if (canAccess('applicants'))  ca.innerHTML += _panelApplicants();
+  if (canAccess('crm'))         ca.innerHTML += _panelCRM();
   if (canAccess('people'))      ca.innerHTML += _panelPeople();
   if (canAccess('proposals'))   ca.innerHTML += _panelProposals();
   if (canAccess('payments'))    ca.innerHTML += _panelPayments();
   if (canAccess('assignments')) ca.innerHTML += _panelAssignments();
+  if (canAccess('ventures'))    ca.innerHTML += _panelVentures();
+  if (canAccess('tasks'))       ca.innerHTML += _panelTasks();
+  if (canAccess('clients'))     ca.innerHTML += _panelClients();
+  if (canAccess('finance'))     ca.innerHTML += _panelFinance();
   if (canAccess('team'))        ca.innerHTML += _panelTeam();
   if (canAccess('vacancies'))   ca.innerHTML += _panelVacancies();
+  if (canAccess('reports'))     ca.innerHTML += _panelReports();
+  if (canAccess('sops'))        ca.innerHTML += _panelSOPs();
   if (canAccess('settings'))    ca.innerHTML += _panelSettings();
   _bindKeydown();
 }
@@ -632,6 +798,10 @@ function _panelOverview() {
       '<div class="kpi-card cyan"><div class="kpi-icon">🟢</div><div class="kpi-label">Tier A Leads</div><div class="kpi-value" id="kpi-tiera">—</div><div class="kpi-meta">score ≥ 70</div></div>' +
       '<div class="kpi-card orange"><div class="kpi-icon">🎯</div><div class="kpi-label">Applicants</div><div class="kpi-value" id="kpi-applicants">—</div><div class="kpi-meta">careers portal</div></div>' +
       '<div class="kpi-card green"><div class="kpi-icon">🏢</div><div class="kpi-label">Team Members</div><div class="kpi-value" id="kpi-team">—</div><div class="kpi-meta">active staff</div></div>' +
+      '<div class="kpi-card purple"><div class="kpi-icon">🔄</div><div class="kpi-label">CRM Pipeline</div><div class="kpi-value" id="kpi-crm">—</div><div class="kpi-meta">all leads</div></div>' +
+      '<div class="kpi-card cyan"><div class="kpi-icon">🏢</div><div class="kpi-label">Ventures</div><div class="kpi-value" id="kpi-ventures">—</div><div class="kpi-meta">active portfolio</div></div>' +
+      '<div class="kpi-card gold"><div class="kpi-icon">✅</div><div class="kpi-label">Tasks</div><div class="kpi-value" id="kpi-tasks">—</div><div class="kpi-meta">open today</div></div>' +
+      '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="kpi-clients">—</div><div class="kpi-meta">onboarded</div></div>' +
     '</div>' +
     '<div class="two-col">' +
       '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Recent Activity</div></div><div class="activity-feed" id="activity-feed"><div class="loading-row"><div class="spinner"></div></div></div></div>' +
@@ -741,6 +911,174 @@ function _panelVacancies() {
     '<div id="vacancies-list"><div class="loading-row"><div class="spinner"></div></div></div></div>';
 }
 
+</script>
+<script>
+// ═══════════════════════════════════════
+// OS PANEL HTML TEMPLATES
+// ═══════════════════════════════════════
+function _panelCRM() {
+  return '<div class="panel" id="panel-crm">' +
+    '<div class="eyebrow">Sales & CRM</div>' +
+    '<div class="panel-header"><div class="panel-title">CRM Pipeline</div>' +
+    '<div style="display:flex;gap:8px;">' +
+      '<select class="tbl-filter" id="crm-vfilter" onchange="filterCRM()"><option value="">All Ventures</option>' +
+      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+      '</select>' +
+      '<select class="tbl-filter" id="crm-sfilter" onchange="filterCRM()"><option value="">All Segments</option><option value="type1">Type 1 — SME</option><option value="type2">Type 2 — Job Seeker</option><option value="type3">Type 3 — Corporate</option></select>' +
+      (canAccess('crm') ? '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddCRMLead()">+ Add Lead</button>' : '') +
+    '</div></div>' +
+    '<div class="kpi-grid" style="margin-bottom:20px;">' +
+      '<div class="kpi-card purple"><div class="kpi-icon">📥</div><div class="kpi-label">New Leads</div><div class="kpi-value" id="crm-kpi-new">—</div><div class="kpi-meta">uncontacted</div></div>' +
+      '<div class="kpi-card gold"><div class="kpi-icon">🔥</div><div class="kpi-label">Hot Leads</div><div class="kpi-value" id="crm-kpi-hot">—</div><div class="kpi-meta">qualified + proposal</div></div>' +
+      '<div class="kpi-card green"><div class="kpi-icon">🏆</div><div class="kpi-label">Won</div><div class="kpi-value" id="crm-kpi-won">—</div><div class="kpi-meta">deals closed</div></div>' +
+      '<div class="kpi-card cyan"><div class="kpi-icon">💰</div><div class="kpi-label">Pipeline Value</div><div class="kpi-value" id="crm-kpi-value">—</div><div class="kpi-meta">active deals</div></div>' +
+    '</div>' +
+    '<div id="crm-board" class="kanban-board" style="grid-template-columns:repeat(6,minmax(185px,1fr));">' +
+      '<div class="loading-row"><div class="spinner"></div></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function _panelVentures() {
+  return '<div class="panel" id="panel-ventures">' +
+    '<div class="eyebrow">Portfolio</div>' +
+    '<div class="panel-header"><div class="panel-title">Ventures</div>' +
+    (canAccess('settings') ? '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddVenture()">+ Add Venture</button>' : '') +
+    '</div>' +
+    '<div class="kpi-grid" style="margin-bottom:20px;">' +
+      '<div class="kpi-card gold"><div class="kpi-icon">🏢</div><div class="kpi-label">Total Ventures</div><div class="kpi-value" id="ven-kpi-total">—</div><div class="kpi-meta">portfolio</div></div>' +
+      '<div class="kpi-card green"><div class="kpi-icon">📈</div><div class="kpi-label">Revenue Stage</div><div class="kpi-value" id="ven-kpi-revenue">—</div><div class="kpi-meta">generating</div></div>' +
+      '<div class="kpi-card cyan"><div class="kpi-icon">🔨</div><div class="kpi-label">Building</div><div class="kpi-value" id="ven-kpi-building">—</div><div class="kpi-meta">in progress</div></div>' +
+    '</div>' +
+    '<div id="ventures-grid" class="venture-card-grid"><div class="loading-row"><div class="spinner"></div></div></div>' +
+  '</div>';
+}
+
+function _panelTasks() {
+  return '<div class="panel" id="panel-tasks">' +
+    '<div class="eyebrow">Delivery</div>' +
+    '<div class="panel-header"><div class="panel-title">Task Board</div>' +
+    '<div style="display:flex;gap:8px;">' +
+      '<select class="tbl-filter" id="task-vfilter" onchange="filterTasks()"><option value="">All Ventures</option>' +
+      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+      '</select>' +
+      '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddTask()">+ Add Task</button>' +
+    '</div></div>' +
+    '<div class="kpi-grid" style="margin-bottom:20px;">' +
+      '<div class="kpi-card cyan"><div class="kpi-icon">📋</div><div class="kpi-label">Total Tasks</div><div class="kpi-value" id="task-kpi-total">—</div><div class="kpi-meta">all board</div></div>' +
+      '<div class="kpi-card gold"><div class="kpi-icon">🔄</div><div class="kpi-label">In Progress</div><div class="kpi-value" id="task-kpi-wip">—</div><div class="kpi-meta">active</div></div>' +
+      '<div class="kpi-card red"><div class="kpi-icon">⏰</div><div class="kpi-label">Overdue</div><div class="kpi-value" id="task-kpi-overdue">—</div><div class="kpi-meta">past deadline</div></div>' +
+      '<div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-label">Done</div><div class="kpi-value" id="task-kpi-done">—</div><div class="kpi-meta">completed</div></div>' +
+    '</div>' +
+    '<div id="tasks-board" class="kanban-board" style="grid-template-columns:repeat(4,1fr);">' +
+      '<div class="loading-row"><div class="spinner"></div>' +
+    '</div></div>' +
+  '</div>';
+}
+
+function _panelClients() {
+  return '<div class="panel" id="panel-clients">' +
+    '<div class="eyebrow">Onboarding & Retention</div>' +
+    '<div class="panel-header"><div class="panel-title">Clients</div>' +
+    '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddClient()">+ Add Client</button>' +
+    '</div>' +
+    '<div class="kpi-grid" style="margin-bottom:20px;">' +
+      '<div class="kpi-card teal" style="--teal:#00BCD4;"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="cl-kpi-active">—</div><div class="kpi-meta">on platform</div></div>' +
+      '<div class="kpi-card amber"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending Onboarding</div><div class="kpi-value" id="cl-kpi-pending">—</div><div class="kpi-meta">need setup</div></div>' +
+      '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Monthly MRR</div><div class="kpi-value" id="cl-kpi-mrr">—</div><div class="kpi-meta">recurring</div></div>' +
+    '</div>' +
+    '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">clients</div>' +
+      '<input class="tbl-search" placeholder="Search client…" oninput="filterTable(\'clients-tbody\',this.value)">' +
+      '<select class="tbl-filter" onchange="filterClientsByStatus(this.value)"><option value="">All Status</option><option value="active">Active</option><option value="pending">Pending</option><option value="churned">Churned</option></select>' +
+    '</div><div class="table-scroll"><table><thead><tr><th>Client</th><th>Venture</th><th>Package</th><th>Onboarding</th><th>Payment</th><th>MRR</th><th>CS Manager</th><th>Actions</th></tr></thead>' +
+    '<tbody id="clients-tbody"><tr><td colspan="8" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div>' +
+  '</div>';
+}
+
+function _panelFinance() {
+  return '<div class="panel" id="panel-finance">' +
+    '<div class="eyebrow">P&L Intelligence</div>' +
+    '<div class="panel-header"><div class="panel-title">Finance</div>' +
+    (canAccess('settings') || window._userRole === 'founder' || window._userRole === 'ops_lead' ? '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddTransaction()">+ Record Transaction</button>' : '') +
+    '</div>' +
+    '<div class="fin-summary-grid" id="fin-summary"><div class="loading-row"><div class="spinner"></div></div></div>' +
+    '<div class="two-col">' +
+      '<div id="fin-venture-pl"><div class="loading-row"><div class="spinner"></div></div></div>' +
+      '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Transactions</div>' +
+        '<select class="tbl-filter" onchange="filterTransactions(this.value)"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>' +
+      '</div><div class="table-scroll"><table><thead><tr><th>Date</th><th>Venture</th><th>Type</th><th>Category</th><th>Amount</th><th>Actions</th></tr></thead>' +
+      '<tbody id="finance-tbody"><tr><td colspan="6" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function _panelReports() {
+  var role = window._userRole || 'developer';
+  var tmpl = REPORT_TEMPLATES[role] || {title:'Daily Report',fields:[
+    {id:'done',label:'What did you complete today?',type:'textarea'},
+    {id:'undone',label:'What was not completed? Why?',type:'textarea'},
+    {id:'blockers',label:'Blockers or issues',type:'textarea'},
+    {id:'plan',label:'Plan for tomorrow',type:'textarea'}
+  ]};
+  var today = new Date().toISOString().split('T')[0];
+  var fieldsHtml = tmpl.fields.map(function(f){
+    return '<div class="form-field"><div class="form-label">'+escHtml(f.label)+'</div>' +
+      (f.type==='textarea' ? '<textarea class="form-textarea" id="rpt-f-'+f.id+'" placeholder="'+escHtml(f.label)+'…"></textarea>' :
+       '<input class="form-input" type="'+(f.type||'text')+'" id="rpt-f-'+f.id+'" placeholder="'+(f.type==='number'?'0':escHtml(f.label)+'…')+'">') +
+    '</div>';
+  }).join('');
+  return '<div class="panel" id="panel-reports">' +
+    '<div class="eyebrow">Accountability</div>' +
+    '<div class="panel-header"><div class="panel-title">Daily Reports</div></div>' +
+    '<div class="report-form-card" style="margin-bottom:20px;">' +
+      '<div style="font-family:var(--display);font-weight:700;font-size:1rem;margin-bottom:4px;">'+escHtml(tmpl.title)+'</div>' +
+      '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);letter-spacing:.1em;margin-bottom:18px;">Due by 7:00 PM daily</div>' +
+      '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Date</div><input class="form-input" id="rpt-date" type="date" value="'+today+'" style="max-width:200px;"></div>' +
+      fieldsHtml +
+      '<div class="form-field" style="margin-top:4px;"><div class="form-label">Summary (one line for overview)</div><input class="form-input" id="rpt-summary" placeholder="Brief summary of today…"></div>' +
+      '<div class="btn-row" style="margin-top:16px;"><button class="btn-primary" onclick="submitDailyReport()">Submit Report</button></div>' +
+    '</div>' +
+    '<div class="panel-header"><div class="panel-title" style="font-size:1rem;">'+
+      (window._userRole === 'founder' || window._userRole === 'ops_lead' ? 'All Reports' : 'My Reports') +
+    '</div>' +
+      (window._userRole === 'founder' || window._userRole === 'ops_lead' ? '<select class="tbl-filter" id="rpt-role-filter" onchange="renderReports(window._data.daily_reports||[])"><option value="">All Roles</option>' +
+        Object.entries(ROLE_LABELS).map(function(e){return'<option value="'+e[0]+'">'+e[1]+'</option>';}).join('') +
+      '</select>' : '') +
+    '</div>' +
+    '<div id="reports-list"><div class="loading-row"><div class="spinner"></div></div></div>' +
+  '</div>';
+}
+
+function _panelSOPs() {
+  var SOPS = [
+    {title:'🔁 Inbound System — Daily Flow',body:'Morning (8am–10am): Check new leads → Assign to closers → Follow up old leads\n\nMidday: Calls + WhatsApp conversions → Demo presentations → Send proposals\n\nEvening: Follow-ups → Close deals → Push urgency\n\nDaily Metrics: Leads received, Leads contacted, Calls booked, Deals closed'},
+    {title:'🚀 Outbound System — Daily Flow',body:'Daily Targets per agent: 50–100 outreaches/day, 10–20 replies, 5–10 calls booked\n\nChannels: WhatsApp, Instagram DMs, LinkedIn, Phone calls\n\nScript Flow:\n1. Hook: "Are you managing guards manually or digitally?"\n2. Problem: "Most companies lose ₦500k+ monthly from attendance fraud"\n3. Offer: "We help you track guards and eliminate payroll leakage"\n4. CTA: "Can I show you in 10 minutes?"'},
+    {title:'🎯 Lead Management SOP',body:'Lead Capture: All leads enter CRM via Forms, WhatsApp, DMs\n\nRouting Rules:\n• Segment A (Beginners) → Masterclass / Starter Package\n• Segment B (Business Owners) → Studio Packages\n• Segment C (Corporate/Security) → TEK1SECURITY\n\nAssignment: Sales Manager assigns immediately. No lead unassigned for more than 10 minutes.'},
+    {title:'💰 Inbound Sales SOP',body:'Response: Within 5 minutes\n\nQualification Questions: What do you do? Do you get customers online? Do you accept payments? What is your goal?\n\nSales Flow: Identify problem → Explain solution → Recommend package → Handle objections → Close\n\nFollow-Up: Every 24 hours, minimum 5 follow-ups per lead'},
+    {title:'🏆 Deal Closing — Authority System',body:'Tier 1 — ₦0 to ₦250k: Closers can close freely. No approval needed.\n\nTier 2 — ₦250k to ₦1M: Sales Manager must approve.\n\nTier 3 — ₦1M+: Handled by Sales Manager + Ops Lead.\n\nOFFSHORE HACK: Pre-record a Founder Pitch Video + TEK1SECURITY Authority Presentation. Closers use this during demos. Replaces your physical presence.'},
+    {title:'⚙️ Delivery & Onboarding SOP',body:'Project Handoff (Sales → Onboarding Specialist):\nRequired info: Client details, Package purchased, Requirements\n\nTimelines:\n• Starter: 2–3 days\n• Growth: 5–7 days\n• Scale: 10–14 days\n\nOnboarding Steps:\n1. Welcome message\n2. Collect client assets\n3. Setup system\n4. Training session\n5. Go live'},
+    {title:'🤝 Customer Success SOP',body:'Weekly Check-ins: Contact all active clients\n\nUpsell Process: Identify growth needs → Recommend upgrades\n\nRetention: Resolve issues quickly → Maintain relationship\n\nValue Ladder: Studio → GATA ecosystem → Enterprise tier'},
+    {title:'💼 Finance SOP',body:'Payment Tracking: Log all payments, confirm transactions\n\nInvoicing: Send invoice immediately after deal\n\nReporting:\n• Daily: Revenue summary\n• Monthly: Revenue per venture\n\nNon-negotiables: No payment untracked. No lead ignored. No task undocumented.'},
+    {title:'📋 Reporting — System Rules',body:'Daily Reports due by: 7:00 PM\nDaily Standup: 9:00 AM led by Operations Lead\n\nEvery report must include:\n• Leads generated / contacted\n• Deals closed + revenue\n• Tasks completed\n• Blockers\n\nNon-Negotiable Rules:\n✅ No lead is ignored\n✅ No payment is untracked\n✅ No task is undocumented\n✅ No role operates without KPIs'},
+    {title:'📈 Performance Management',body:'Weekly Review:\n• Sales performance\n• Lead generation output\n• Delivery efficiency\n\nUnderperformance Action:\n1. Warning\n2. Retraining\n3. Replacement\n\nPerformance Score Formula:\n(Tasks Completed ÷ Tasks Assigned) × 100\n\n🟢 80–100%: Excellent\n🟡 50–79%: Needs Attention\n🔴 Below 50%: Action Required'},
+    {title:'🔁 CRM Pipeline Stages',body:'1. New Lead — Just entered system\n2. Contacted — First touch made\n3. Qualified — Confirmed fit\n4. Proposal — Quote/package sent\n5. Won — Deal closed, payment received\n6. Lost — Not closing, reason logged\n\nRules:\n• No lead unassigned for more than 10 minutes\n• Minimum 5 follow-ups before marking Lost\n• Lost deals must have a reason logged'},
+    {title:'🌍 New Venture Onboarding',body:'When launching a new venture — do NOT hire a new team.\n\nSteps:\n1. Plug into Lead Gen → Create content angle\n2. Train Sales Team → Add script for new segment\n3. Plug into Delivery → Assign execution owner\n4. Add to Finance tracking\n5. Add to CRM routing rules'}
+  ];
+  return '<div class="panel" id="panel-sops">' +
+    '<div class="eyebrow">Procedures & Reference</div>' +
+    '<div class="panel-header"><div class="panel-title">SOPs</div></div>' +
+    '<div style="font-size:.8rem;color:var(--dimmer);margin-bottom:18px;padding:12px 16px;background:var(--raised);border:1px solid var(--border);border-radius:8px;">Click any SOP to expand. These are the operating procedures for TEKNNUKU and all ventures.</div>' +
+    SOPS.map(function(s,i){
+      return '<div class="sop-card" onclick="this.querySelector(\'.sop-body\').classList.toggle(\'open\');this.querySelector(\'.sop-arrow\').textContent=this.querySelector(\'.sop-body\').classList.contains(\'open\')?\'▲\':\'▼\'">' +
+        '<div class="sop-card-header"><div class="sop-card-title">'+escHtml(s.title)+'</div><div class="sop-arrow">▼</div></div>' +
+        '<div class="sop-body">'+escHtml(s.body)+'</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+
+</script>
+<script>
 function _panelSettings() {
   return '<div class="panel" id="panel-settings">' +
     '<div class="eyebrow">Configuration</div><div class="panel-header"><div class="panel-title">Settings</div></div>' +
@@ -757,7 +1095,7 @@ function _panelSettings() {
       '</div>' +
       '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Firebase Collections</div></div>' +
         '<div style="padding:16px;font-family:var(--mono);font-size:.72rem;color:var(--dim);line-height:2;">' +
-          ['intake_leads','service_inquiries','contact_messages','proposals','payments','assignments','applicants','team_members','careers_config'].map(function(c){
+          ['intake_leads','service_inquiries','contact_messages','proposals','payments','assignments','applicants','team_members','careers_config','ventures','tasks','crm_leads','clients','financials','daily_reports','weekly_reports'].map(function(c){
             return '<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:5px 0;"><span style="color:var(--cyan);">'+c+'</span><span id="col-count-'+c+'">—</span></div>';
           }).join('') +
         '</div>' +
@@ -798,7 +1136,7 @@ function toggleSidebar(){var sb=document.getElementById('main-sidebar');var ov=d
 function closeSidebar(){document.getElementById('main-sidebar').classList.remove('open');document.getElementById('mob-overlay').classList.remove('open');}
 function showPanelMob(name,el){showPanel(name,document.querySelector('.nav-item[data-panel="'+name+'"]'));document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');}
 
-var PANEL_TITLES={overview:'Overview → Dashboard',leads:'Leads → Intake Diagnostic',inquiries:'Inquiries → Service Forms',messages:'Messages → Contact Inbox',applicants:'Applicants → Careers Portal',people:'People → Unified Profiles',proposals:'Proposals → Quotes & Offers',payments:'Payments → Revenue Tracking',assignments:'Assignments → Routing',team:'Team Members → Active Staff',vacancies:'Vacancies → Role Management',settings:'Settings → Configuration'};
+var PANEL_TITLES={overview:'Overview → Dashboard',leads:'Intake Leads → Diagnostic Results',inquiries:'Inquiries → Service Forms',messages:'Messages → Contact Inbox',applicants:'Applicants → Careers Portal',crm:'CRM Pipeline → Lead Kanban',people:'People → Unified Profiles',proposals:'Proposals → Quotes & Offers',payments:'Payments → Revenue Tracking',assignments:'Assignments → Routing',ventures:'Ventures → Portfolio',tasks:'Task Board → Kanban',clients:'Clients → Onboarding',finance:'Finance → P&L Intelligence',team:'Team Members → Active Staff',vacancies:'Vacancies → Role Management',reports:'Daily Reports → Accountability',sops:'SOPs → Procedures & Reference',settings:'Settings → Configuration'};
 
 function showPanel(name,el){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
@@ -832,7 +1170,7 @@ function refreshAll(){if(!window._loadAll){toast('Still initialising','error');r
 window._renderAll = function(){
   var d=window._data;if(!d)return;
   // Settings collection counts
-  ['intake_leads','service_inquiries','contact_messages','proposals','payments','assignments','applicants','team_members','careers_config'].forEach(function(c){var el=document.getElementById('col-count-'+c);if(el)el.textContent=(d[c.replace(/-/g,'_')]||[]).length;});
+  ['intake_leads','service_inquiries','contact_messages','proposals','payments','assignments','applicants','team_members','careers_config','ventures','tasks','crm_leads','clients','financials','daily_reports','weekly_reports'].forEach(function(c){var el=document.getElementById('col-count-'+c);if(el)el.textContent=(d[c.replace(/-/g,'_')]||[]).length;});
   // Overview
   var ovLeads=document.getElementById('kpi-leads');if(ovLeads)ovLeads.textContent=d.leads.length;
   var ovInq=document.getElementById('kpi-inquiries');if(ovInq)ovInq.textContent=d.inquiries.length;
@@ -861,6 +1199,19 @@ window._renderAll = function(){
   if(canAccess('assignments'))renderAssignments(d.assignments);
   if(canAccess('team'))renderTeam(d.team_members||[]);
   if(canAccess('vacancies'))renderVacancies(d.careers_config||[],d.applicants||[],d.team_members||[]);
+  // OS panels
+  var ovCRM=document.getElementById('kpi-crm');if(ovCRM)ovCRM.textContent=(d.crm_leads||[]).length;
+  var ovVen=document.getElementById('kpi-ventures');if(ovVen)ovVen.textContent=(d.ventures||[]).length+VENTURES_SEED.length;
+  var ovTsk=document.getElementById('kpi-tasks');if(ovTsk)ovTsk.textContent=(d.tasks||[]).filter(function(t){return t.status!=='done';}).length;
+  var ovCl=document.getElementById('kpi-clients');if(ovCl)ovCl.textContent=(d.clients||[]).filter(function(c){return c.status!=='churned';}).length;
+  var nbCRM=document.getElementById('nb-crm');if(nbCRM)nbCRM.textContent=(d.crm_leads||[]).filter(function(l){return l.status==='new_lead';}).length;
+  var nbTsk=document.getElementById('nb-tasks');if(nbTsk)nbTsk.textContent=(d.tasks||[]).filter(function(t){return t.status!=='done'&&t.deadline&&new Date(t.deadline)<new Date();}).length;
+  if(canAccess('crm'))renderCRM(d.crm_leads||[]);
+  if(canAccess('ventures'))renderVentures(d.ventures||[],d.tasks||[],d.crm_leads||[],d.clients||[],d.financials||[]);
+  if(canAccess('tasks'))renderTasks(d.tasks||[],d.team_members||[]);
+  if(canAccess('clients'))renderClients(d.clients||[],d.team_members||[]);
+  if(canAccess('finance'))renderFinance(d.financials||[],d.clients||[]);
+  if(canAccess('reports'))renderReports(d.daily_reports||[]);
 };
 
 function renderActivity(d){
@@ -1415,6 +1766,476 @@ function openAssignmentDrawer(a,prefillName,prefillEmail){
   openDrawer(a?'Edit Assignment':'New Assignment',a?(a.personName||'Assignment'):'New Assignment',html);
 }
 function saveAssignment(){var data={personName:document.getElementById('asn-name').value.trim(),personEmail:document.getElementById('asn-email').value.trim(),venture:document.getElementById('asn-venture').value,assignedTo:document.getElementById('asn-to').value.trim(),status:document.getElementById('asn-status').value,priority:document.getElementById('asn-priority').value,notes:document.getElementById('asn-notes').value.trim(),targetDate:document.getElementById('asn-date').value,assignedAt:new Date().toISOString()};if(!data.personName||!data.venture){toast('Name and venture required','error');return;}var fn=_editingAssignmentId?window._updateDoc('assignments',_editingAssignmentId,data):window._saveDoc('assignments',data);fn.then(function(){toast('Assignment saved ✓','success');closeDrawer();window._loadAll();}).catch(function(e){toast('Save failed: '+(e.message||e),'error');});}
+
+// ═══════════════════════════════════════════════════════════════
+// OS RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+// ── CRM Pipeline ──────────────────────────────────────────────
+var _crmFilter = {venture:'', segment:''};
+function filterCRM(){
+  _crmFilter.venture = document.getElementById('crm-vfilter') ? document.getElementById('crm-vfilter').value : '';
+  _crmFilter.segment = document.getElementById('crm-sfilter') ? document.getElementById('crm-sfilter').value : '';
+  renderCRM(window._data.crm_leads||[]);
+}
+
+function renderCRM(list){
+  var vf = _crmFilter.venture, sf = _crmFilter.segment;
+  var filtered = list.filter(function(l){return(!vf||l.ventureId===vf)&&(!sf||l.segment===sf);});
+  var newL=filtered.filter(function(l){return l.status==='new_lead';}).length;
+  var hot=filtered.filter(function(l){return l.status==='qualified'||l.status==='proposal';}).length;
+  var won=filtered.filter(function(l){return l.status==='won';}).length;
+  var pipelineVal=filtered.filter(function(l){return l.status!=='won'&&l.status!=='lost';}).reduce(function(s,l){return s+(parseFloat(l.dealValue)||0);},0);
+  var elN=document.getElementById('crm-kpi-new');if(elN)elN.textContent=newL;
+  var elH=document.getElementById('crm-kpi-hot');if(elH)elH.textContent=hot;
+  var elW=document.getElementById('crm-kpi-won');if(elW)elW.textContent=won;
+  var elV=document.getElementById('crm-kpi-value');if(elV)elV.textContent='₦'+pipelineVal.toLocaleString();
+  var board = document.getElementById('crm-board'); if(!board)return;
+  var cols = [
+    {k:'new_lead',  l:'New Lead',  dot:'var(--blue)'},
+    {k:'contacted', l:'Contacted', dot:'var(--purple)'},
+    {k:'qualified', l:'Qualified', dot:'var(--amber)'},
+    {k:'proposal',  l:'Proposal',  dot:'var(--gold)'},
+    {k:'won',       l:'Won ✅',    dot:'var(--green)'},
+    {k:'lost',      l:'Lost ❌',   dot:'var(--red)'}
+  ];
+  board.innerHTML = cols.map(function(col){
+    var ct = filtered.filter(function(l){return l.status===col.k;});
+    return '<div class="kanban-col"><div class="kanban-col-header">' +
+      '<div class="kanban-col-title"><div class="col-dot" style="background:'+col.dot+'"></div>'+col.l+'</div>' +
+      '<div class="col-count">'+ct.length+'</div></div>' +
+      '<div class="kanban-col-body">' +
+      (ct.length ? ct.map(function(l){
+        var v=V_MAP[l.ventureId]||{};
+        var tier=parseFloat(l.dealValue||0)>=1000000?3:parseFloat(l.dealValue||0)>=250000?2:1;
+        return '<div class="kanban-item" onclick="openCRMLeadDrawer(\''+l.id+'\')">' +
+          '<div class="kanban-item-title">'+escHtml(l.name||'—')+'</div>' +
+          '<div style="font-size:.7rem;color:var(--dimmer);margin-bottom:7px;">'+escHtml(l.contact||'')+'</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:5px;">' +
+            (l.ventureId?'<span class="venture-tag">'+escHtml(v.name||l.ventureId)+'</span>':'') +
+            (l.dealValue?'<span style="font-family:var(--mono);font-size:.58rem;color:var(--gold);">₦'+Number(l.dealValue).toLocaleString()+'</span>':'') +
+            '<span class="badge badge-dim" style="font-size:.52rem;">T'+tier+'</span>' +
+          '</div>' +
+        '</div>';
+      }).join('') : '<div class="empty-state" style="padding:16px;"><div class="empty-icon" style="font-size:1.4rem;">📭</div></div>') +
+      '</div></div>';
+  }).join('');
+}
+
+function openAddCRMLead(){
+  var html = '<div class="drawer-form">' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Full Name</div><input class="form-input" id="crm-n" placeholder="Lead name"></div>' +
+    '<div class="form-field"><div class="form-label">Phone / WhatsApp</div><input class="form-input" id="crm-c" placeholder="+234…"></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Segment</div><select class="form-select" id="crm-seg" onchange="autoRouteCRM()">' +
+      '<option value="">Select…</option><option value="type1">Type 1 — SME / Business</option><option value="type2">Type 2 — Job Seeker</option><option value="type3">Type 3 — Corporate</option>' +
+    '</select></div><div class="form-field"><div class="form-label">Route to Venture</div><select class="form-select" id="crm-v">' +
+      '<option value="">Select…</option>' + VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '</select></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Source</div><select class="form-select" id="crm-src">' +
+      '<option value="whatsapp">WhatsApp</option><option value="instagram">Instagram DM</option><option value="linkedin">LinkedIn</option>' +
+      '<option value="form">Form Submission</option><option value="referral">Referral</option><option value="cold_call">Cold Call</option><option value="content">Content</option>' +
+    '</select></div><div class="form-field"><div class="form-label">Est. Deal Value (₦)</div><input class="form-input" id="crm-val" type="number" min="0" placeholder="0"></div></div>' +
+    '<div class="form-field"><div class="form-label">Notes</div><textarea class="form-textarea" id="crm-notes" placeholder="What do they need?"></textarea></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveCRMLead()">💾 Add Lead</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+  '</div>';
+  openDrawer('CRM Pipeline','Add Lead',html);
+}
+window.autoRouteCRM = function(){
+  var seg=document.getElementById('crm-seg').value, vs=document.getElementById('crm-v');
+  if(seg==='type1')vs.value='studio'; else if(seg==='type2')vs.value='jobletters'; else if(seg==='type3')vs.value='tek1security';
+};
+function saveCRMLead(){
+  var name=document.getElementById('crm-n').value.trim(); if(!name){toast('Name required','error');return;}
+  var val=parseFloat(document.getElementById('crm-val').value)||0;
+  var tier=val>=1000000?3:val>=250000?2:1;
+  window._saveDoc('crm_leads',{name:name,contact:document.getElementById('crm-c').value.trim(),segment:document.getElementById('crm-seg').value,ventureId:document.getElementById('crm-v').value,source:document.getElementById('crm-src').value,dealValue:val,tier:tier,notes:document.getElementById('crm-notes').value.trim(),status:'new_lead',assignedTo:'',createdAt:new Date().toISOString()})
+    .then(function(){toast('Lead added ✓','success');closeDrawer();window._loadAll();});
+}
+function openCRMLeadDrawer(id){
+  var l=(window._data.crm_leads||[]).find(function(x){return x.id===id;});if(!l)return;
+  var v=V_MAP[l.ventureId]||{};
+  var statusOpts=['new_lead','contacted','qualified','proposal','won','lost'].map(function(s){return'<option value="'+s+'"'+(l.status===s?' selected':'')+'>'+s.replace(/_/g,' ')+'</option>';}).join('');
+  var html='<div class="detail-section"><div class="detail-grid">' +
+    '<div class="detail-item"><div class="detail-label">Contact</div><div class="detail-val mono">'+escHtml(l.contact||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">'+escHtml(v.name||l.ventureId||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Deal Value</div><div class="detail-val gold">₦'+Number(l.dealValue||0).toLocaleString()+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Source</div><div class="detail-val">'+escHtml(l.source||'—')+'</div></div>' +
+    '</div></div>' +
+    (l.notes?'<div class="detail-section"><h4>Notes</h4><div style="padding:12px;background:rgba(255,255,255,.03);border-radius:6px;font-size:.82rem;color:var(--dim);">'+escHtml(l.notes)+'</div></div>':'') +
+    '<div class="detail-section"><h4>Update Status</h4>' +
+    '<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="crm-s-upd">'+statusOpts+'</select></div>' +
+    '<div class="form-field" style="margin-top:10px;"><div class="form-label">Update Notes</div><textarea class="form-textarea" id="crm-n-upd">'+escHtml(l.notes||'')+'</textarea></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="updateCRMLead(\''+l.id+'\')">Update</button>' +
+    (l.status!=='won'?'<button class="btn-success" onclick="crmLeadWon(\''+l.id+'\',\''+escHtml(l.name)+'\',\''+escHtml(l.contact||'')+'\',\''+escHtml(l.ventureId||'')+'\','+( l.dealValue||0)+')">✓ Mark Won → Create Client</button>':'') +
+    '<button class="action-btn danger" onclick="deleteRecord(\'crm_leads\',\''+l.id+'\');closeDrawer();">Delete</button></div></div>';
+  openDrawer('CRM Lead',escHtml(l.name||'—'),html);
+}
+function updateCRMLead(id){
+  var status=document.getElementById('crm-s-upd').value,notes=document.getElementById('crm-n-upd').value.trim();
+  window._updateDoc('crm_leads',id,{status:status,notes:notes}).then(function(){toast('Lead updated','success');closeDrawer();window._loadAll();});
+}
+function crmLeadWon(id,name,contact,ventureId,dealValue){
+  window._updateDoc('crm_leads',id,{status:'won'}).then(function(){
+    return window._saveDoc('clients',{name:name,contact:contact,ventureId:ventureId,package:'',onboardingStatus:'pending',paymentStatus:'pending',monthlyValue:dealValue||0,csManager:'',startDate:new Date().toISOString().split('T')[0],status:'active',leadId:id,createdAt:new Date().toISOString()});
+  }).then(function(){toast('Lead won — client record created!','success');closeDrawer();window._loadAll();});
+}
+
+// ── Ventures ──────────────────────────────────────────────────
+function renderVentures(dbVentures,tasks,crm_leads,clients,financials){
+  var elT=document.getElementById('ven-kpi-total');
+  var allV=[...VENTURES_SEED.filter(function(v){return!dbVentures.find(function(dv){return dv.id===v.id;});}),...dbVentures];
+  if(elT)elT.textContent=allV.length;
+  var elR=document.getElementById('ven-kpi-revenue');if(elR)elR.textContent=allV.filter(function(v){return(v.stage||'').toLowerCase()==='revenue';}).length;
+  var elB=document.getElementById('ven-kpi-building');if(elB)elB.textContent=allV.filter(function(v){return(v.stage||'').toLowerCase()==='building';}).length;
+  var grid=document.getElementById('ventures-grid');if(!grid)return;
+  var finMap={},taskMap={},leadMap={},clientMap={};
+  financials.forEach(function(f){if(!finMap[f.ventureId])finMap[f.ventureId]={i:0,e:0};if(f.type==='income')finMap[f.ventureId].i+=f.amount;else finMap[f.ventureId].e+=f.amount;});
+  tasks.forEach(function(t){if(!taskMap[t.ventureId])taskMap[t.ventureId]={tot:0,done:0};taskMap[t.ventureId].tot++;if(t.status==='done')taskMap[t.ventureId].done++;});
+  crm_leads.forEach(function(l){leadMap[l.ventureId]=(leadMap[l.ventureId]||0)+1;});
+  clients.forEach(function(c){clientMap[c.ventureId]=(clientMap[c.ventureId]||0)+1;});
+  grid.innerHTML = allV.map(function(v){
+    var f=finMap[v.id]||{i:0,e:0},tm=taskMap[v.id]||{tot:0,done:0};
+    var profit=f.i-f.e,h=tm.tot>0?Math.round(tm.done/tm.tot*100):(v.health||0);
+    var hc=h>=70?'hf-green':h>=40?'hf-yellow':'hf-red';
+    var sc=(v.stage||'idea').toLowerCase();
+    var stageColors={idea:'badge-dim',building:'badge-amber',revenue:'badge-green',scaling:'badge-cyan'};
+    return '<div class="venture-card">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
+        '<div style="width:38px;height:38px;border-radius:8px;background:'+escHtml(v.color||'var(--gold)')+';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:#080808;flex-shrink:0;">'+escHtml((v.name||'?')[0])+'</div>' +
+        '<div style="flex:1;"><div style="font-family:var(--display);font-weight:700;font-size:.95rem;">'+escHtml(v.name)+'</div>' +
+        '<div style="font-size:.72rem;color:var(--dimmer);">'+escHtml(v.focus||'')+'</div></div>' +
+        '<span class="badge '+(stageColors[sc]||'badge-dim')+'">'+escHtml(v.stage||'Idea')+'</span>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;text-align:center;">' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Leads</div><div style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--gold);">'+(leadMap[v.id]||0)+'</div></div>' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Clients</div><div style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--cyan);">'+(clientMap[v.id]||0)+'</div></div>' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Revenue</div><div style="font-family:var(--display);font-weight:700;font-size:.85rem;color:var(--green);">₦'+f.i.toLocaleString()+'</div></div>' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Net</div><div style="font-family:var(--display);font-weight:700;font-size:.85rem;color:'+(profit>=0?'var(--green)':'var(--red)')+';">₦'+Math.abs(profit).toLocaleString()+'</div></div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<div class="health-bar" style="flex:1;margin-top:0;"><div class="health-fill '+hc+'" style="width:'+h+'%;"></div></div>' +
+        '<span style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+h+'%</span>' +
+      '</div>' +
+      (canAccess('settings')&&dbVentures.find(function(dv){return dv.id===v.id;}) ?
+        '<div class="btn-row" style="margin-top:10px;"><button class="action-btn" onclick="openEditVenture(\''+v.id+'\')">Edit</button><button class="action-btn danger" onclick="deleteRecord(\'ventures\',\''+v.id+'\')">Delete</button></div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function openAddVenture(){
+  var html='<div class="drawer-form">' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Venture Name</div><input class="form-input" id="ven-name" placeholder="e.g. TEKNNUKU Logistics"></div>' +
+    '<div class="form-field"><div class="form-label">Stage</div><select class="form-select" id="ven-stage"><option>Idea</option><option>Building</option><option>Revenue</option><option>Scaling</option></select></div></div>' +
+    '<div class="form-field"><div class="form-label">Current Focus</div><input class="form-input" id="ven-focus" placeholder="What is this venture doing right now?"></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveVenture(null)">💾 Add Venture</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+  '</div>';
+  openDrawer('Ventures','Add Venture',html);
+}
+function openEditVenture(id){
+  var dbV=(window._data.ventures||[]).find(function(v){return v.id===id;});if(!dbV)return;
+  var html='<div class="drawer-form">' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Name</div><input class="form-input" id="ven-name" value="'+escHtml(dbV.name||'')+'"></div>' +
+    '<div class="form-field"><div class="form-label">Stage</div><select class="form-select" id="ven-stage">' +
+      ['Idea','Building','Revenue','Scaling'].map(function(s){return'<option'+(dbV.stage===s?' selected':'')+'>'+s+'</option>';}).join('') +
+    '</select></div></div>' +
+    '<div class="form-field"><div class="form-label">Focus</div><input class="form-input" id="ven-focus" value="'+escHtml(dbV.focus||'')+'"></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveVenture(\''+id+'\')">Update</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+  '</div>';
+  openDrawer('Ventures',escHtml(dbV.name||'—'),html);
+}
+function saveVenture(id){
+  var name=document.getElementById('ven-name').value.trim();if(!name){toast('Name required','error');return;}
+  var data={name:name,focus:document.getElementById('ven-focus').value.trim(),stage:document.getElementById('ven-stage').value};
+  var fn=id?window._updateDoc('ventures',id,data):window._saveDoc('ventures',data);
+  fn.then(function(){toast('Venture saved ✓','success');closeDrawer();window._loadAll();});
+}
+
+// ── Task Board ─────────────────────────────────────────────────
+var _taskVFilter='';
+function filterTasks(){_taskVFilter=document.getElementById('task-vfilter')?document.getElementById('task-vfilter').value:'';renderTasks(window._data.tasks||[],window._data.team_members||[]);}
+function renderTasks(tasks,members){
+  var filtered=_taskVFilter?tasks.filter(function(t){return t.ventureId===_taskVFilter;}):tasks;
+  var total=filtered.length,wip=filtered.filter(function(t){return t.status==='in_progress';}).length;
+  var today=new Date();
+  var overdue=filtered.filter(function(t){return t.status!=='done'&&t.deadline&&new Date(t.deadline)<today;}).length;
+  var done=filtered.filter(function(t){return t.status==='done';}).length;
+  var elT=document.getElementById('task-kpi-total');if(elT)elT.textContent=total;
+  var elW=document.getElementById('task-kpi-wip');if(elW)elW.textContent=wip;
+  var elO=document.getElementById('task-kpi-overdue');if(elO)elO.textContent=overdue;
+  var elD=document.getElementById('task-kpi-done');if(elD)elD.textContent=done;
+  var board=document.getElementById('tasks-board');if(!board)return;
+  var memberMap={};members.forEach(function(m){memberMap[m.id]=m;});
+  var cols=[{k:'todo',l:'To Do',dot:'var(--dimmer)'},{k:'in_progress',l:'In Progress',dot:'var(--gold)'},{k:'review',l:'Review',dot:'var(--amber)'},{k:'done',l:'Done',dot:'var(--green)'}];
+  board.innerHTML=cols.map(function(col){
+    var ct=filtered.filter(function(t){return t.status===col.k;});
+    return '<div class="kanban-col"><div class="kanban-col-header">' +
+      '<div class="kanban-col-title"><div class="col-dot" style="background:'+col.dot+'"></div>'+col.l+'</div>' +
+      '<div class="col-count">'+ct.length+'</div></div>' +
+      '<div class="kanban-col-body">' +
+      (ct.length?ct.map(function(t){
+        var v=V_MAP[t.ventureId]||{};var od=t.deadline&&new Date(t.deadline)<today&&t.status!=='done';
+        var m=t.assignedTo&&memberMap[t.assignedTo];
+        return '<div class="kanban-item" onclick="openTaskDrawer(\''+t.id+'\')">' +
+          '<div class="kanban-item-title">'+escHtml(t.title)+'</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:5px;">' +
+            (t.ventureId?'<span class="venture-tag">'+escHtml(v.name||t.ventureId)+'</span>':'') +
+            statusBadge(t.priority||'low') +
+          '</div>' +
+          (t.deadline?'<div style="font-size:.62rem;color:'+(od?'var(--red)':'var(--dimmer)')+'margin-top:4px;">'+(od?'⚠️ ':'📅 ')+fmtDate(t.deadline)+(od?' OVERDUE':'')+'</div>':'') +
+          (m?'<div style="font-size:.62rem;color:var(--dimmer);margin-top:3px;">👤 '+escHtml(m.name||m.email||'')+'</div>':'') +
+        '</div>';
+      }).join(''):'<div class="empty-state" style="padding:14px;"><div class="empty-icon" style="font-size:1.3rem;">📋</div></div>') +
+      '</div></div>';
+  }).join('');
+}
+function openAddTask(){
+  var members=window._data.team_members||[];
+  var html='<div class="drawer-form">' +
+    '<div class="form-field"><div class="form-label">Title</div><input class="form-input" id="tsk-title" placeholder="What needs to be done?"></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="tsk-v"><option value="">Select…</option>' +
+      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '</select></div><div class="form-field"><div class="form-label">Assign To</div><select class="form-select" id="tsk-a"><option value="">Unassigned</option>' +
+      members.map(function(m){return'<option value="'+m.id+'">'+escHtml(m.name||m.email||'')+'</option>';}).join('') +
+    '</select></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Priority</div><select class="form-select" id="tsk-p"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div>' +
+    '<div class="form-field"><div class="form-label">Deadline</div><input class="form-input" id="tsk-d" type="date"></div></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveTask(null)">💾 Add Task</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+  '</div>';
+  openDrawer('Task Board','Add Task',html);
+}
+function openTaskDrawer(id){
+  var t=(window._data.tasks||[]).find(function(x){return x.id===id;});if(!t)return;
+  var v=V_MAP[t.ventureId]||{};
+  var members=window._data.team_members||[];
+  var statusOpts=[{k:'todo',l:'To Do'},{k:'in_progress',l:'In Progress'},{k:'review',l:'Review'},{k:'done',l:'Done'}]
+    .map(function(s){return'<option value="'+s.k+'"'+(t.status===s.k?' selected':'')+'>'+s.l+'</option>';}).join('');
+  var memberOpts='<option value="">Unassigned</option>'+members.map(function(m){return'<option value="'+m.id+'"'+(t.assignedTo===m.id?' selected':'')+'>'+escHtml(m.name||m.email||'')+'</option>';}).join('');
+  var od=t.deadline&&new Date(t.deadline)<new Date()&&t.status!=='done';
+  var html='<div class="detail-section"><div class="detail-grid">' +
+    '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">'+escHtml(v.name||t.ventureId||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Priority</div><div class="detail-val">'+statusBadge(t.priority||'low')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Deadline</div><div class="detail-val" style="color:'+(od?'var(--red)':'var(--white)')+';">'+fmtDate(t.deadline)+(od?' ⚠️':'')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Created</div><div class="detail-val">'+fmtDate(t.createdAt)+'</div></div>' +
+    '</div></div>' +
+    '<div class="detail-section"><h4>Update Task</h4>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Status</div><select class="form-select" id="tsk-s-upd">'+statusOpts+'</select></div>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Assign To</div><select class="form-select" id="tsk-a-upd">'+memberOpts+'</select></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="updateTask(\''+t.id+'\')">Update</button>' +
+    '<button class="action-btn danger" onclick="deleteRecord(\'tasks\',\''+t.id+'\');closeDrawer();">Delete</button></div></div>';
+  openDrawer('Task',escHtml(t.title||'—'),html);
+}
+function saveTask(id){
+  var title=document.getElementById('tsk-title').value.trim();if(!title){toast('Title required','error');return;}
+  var data={title:title,ventureId:document.getElementById('tsk-v').value,assignedTo:document.getElementById('tsk-a').value,priority:document.getElementById('tsk-p').value,deadline:document.getElementById('tsk-d').value,status:'todo',createdAt:new Date().toISOString()};
+  window._saveDoc('tasks',data).then(function(){toast('Task added ✓','success');closeDrawer();window._loadAll();});
+}
+function updateTask(id){
+  var status=document.getElementById('tsk-s-upd').value,assignedTo=document.getElementById('tsk-a-upd').value;
+  window._updateDoc('tasks',id,{status:status,assignedTo:assignedTo}).then(function(){toast('Task updated','success');closeDrawer();window._loadAll();});
+}
+
+// ── Clients ────────────────────────────────────────────────────
+function renderClients(clients,members){
+  var active=clients.filter(function(c){return c.status!=='churned';}).length;
+  var pending=clients.filter(function(c){return c.onboardingStatus==='pending';}).length;
+  var mrr=clients.filter(function(c){return c.status!=='churned';}).reduce(function(s,c){return s+(parseFloat(c.monthlyValue)||0);},0);
+  var elA=document.getElementById('cl-kpi-active');if(elA)elA.textContent=active;
+  var elP=document.getElementById('cl-kpi-pending');if(elP)elP.textContent=pending;
+  var elM=document.getElementById('cl-kpi-mrr');if(elM)elM.textContent='₦'+mrr.toLocaleString();
+  var tbody=document.getElementById('clients-tbody');if(!tbody)return;
+  var memberMap={};members.forEach(function(m){memberMap[m.id]=m;});
+  if(!clients.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🤝</div>No clients yet. Win a CRM lead to auto-create one.</div></td></tr>';return;}
+  var sorted=clients.slice().sort(function(a,b){return a.onboardingStatus==='pending'?-1:1;});
+  tbody.innerHTML=sorted.map(function(c){
+    var v=V_MAP[c.ventureId]||{};var cs=memberMap[c.csManager];
+    var obColor=c.onboardingStatus==='complete'?'var(--green)':c.onboardingStatus==='in_progress'?'var(--amber)':'var(--red)';
+    return '<tr data-search="'+escHtml((c.name||'').toLowerCase())+'" data-status="'+escHtml(c.status||'')+'"><td>' +
+      '<div style="font-weight:600;">'+escHtml(c.name||'—')+'</div>' +
+      '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(c.contact||'')+'</div></td>' +
+      '<td><span class="venture-tag">'+escHtml(v.name||c.ventureId||'—')+'</span></td>' +
+      '<td><span class="badge badge-dim">'+escHtml(c.package||'—')+'</span></td>' +
+      '<td><span style="font-family:var(--mono);font-size:.65rem;color:'+obColor+';">'+escHtml(c.onboardingStatus||'pending')+'</span></td>' +
+      '<td>'+statusBadge(c.paymentStatus||'pending')+'</td>' +
+      '<td style="font-family:var(--mono);font-weight:700;color:var(--gold);">₦'+Number(c.monthlyValue||0).toLocaleString()+'</td>' +
+      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(cs?cs.name||cs.email:'—')+'</td>' +
+      '<td><div class="row-actions"><button class="action-btn" onclick="openClientDrawer(\''+c.id+'\')">Edit</button></div></td>' +
+    '</tr>';
+  }).join('');
+}
+function filterClientsByStatus(status){document.querySelectorAll('#clients-tbody tr[data-status]').forEach(function(r){r.style.display=!status||r.dataset.status===status?'':'none';});}
+function openAddClient(){
+  var members=window._data.team_members||[];
+  var html='<div class="drawer-form">' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Client Name</div><input class="form-input" id="cl-name" placeholder="Business or person name"></div>' +
+    '<div class="form-field"><div class="form-label">Phone / WhatsApp</div><input class="form-input" id="cl-contact" placeholder="+234…"></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="cl-v"><option value="">Select…</option>' +
+      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '</select></div><div class="form-field"><div class="form-label">Package</div><input class="form-input" id="cl-pkg" placeholder="e.g. Growth, Enterprise"></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Monthly Value (₦)</div><input class="form-input" id="cl-val" type="number" min="0" placeholder="0"></div>' +
+    '<div class="form-field"><div class="form-label">Start Date</div><input class="form-input" id="cl-date" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Payment Status</div><select class="form-select" id="cl-pay"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
+    '<div class="form-field"><div class="form-label">Onboarding Status</div><select class="form-select" id="cl-ob"><option value="pending">Pending</option><option value="in_progress">In Progress</option><option value="complete">Complete</option></select></div></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveClient(null)">💾 Add Client</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+  '</div>';
+  openDrawer('Clients','Add Client',html);
+}
+function openClientDrawer(id){
+  var c=(window._data.clients||[]).find(function(x){return x.id===id;});if(!c)return;
+  var members=window._data.team_members||[];
+  var v=V_MAP[c.ventureId]||{};
+  var csOpts='<option value="">None</option>'+members.map(function(m){return'<option value="'+m.id+'"'+(c.csManager===m.id?' selected':'')+'>'+escHtml(m.name||m.email||'')+'</option>';}).join('');
+  var html='<div class="detail-section"><div class="detail-grid">' +
+    '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">'+escHtml(v.name||c.ventureId||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Start Date</div><div class="detail-val">'+fmtDate(c.startDate)+'</div></div>' +
+    '</div></div>' +
+    '<div class="detail-section"><h4>Update Client</h4>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Package</div><input class="form-input" id="cl-u-pkg" value="'+escHtml(c.package||'')+'"></div>' +
+    '<div class="form-field"><div class="form-label">Monthly Value (₦)</div><input class="form-input" id="cl-u-val" type="number" value="'+(c.monthlyValue||0)+'"></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Payment Status</div><select class="form-select" id="cl-u-pay">' +
+      ['pending','paid','overdue'].map(function(s){return'<option value="'+s+'"'+(c.paymentStatus===s?' selected':'')+'>'+s+'</option>';}).join('') +
+    '</select></div><div class="form-field"><div class="form-label">Onboarding Status</div><select class="form-select" id="cl-u-ob">' +
+      ['pending','in_progress','complete'].map(function(s){return'<option value="'+s+'"'+(c.onboardingStatus===s?' selected':'')+'>'+s+'</option>';}).join('') +
+    '</select></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Client Status</div><select class="form-select" id="cl-u-st">' +
+      ['active','churned','paused'].map(function(s){return'<option value="'+s+'"'+(c.status===s?' selected':'')+'>'+s+'</option>';}).join('') +
+    '</select></div><div class="form-field"><div class="form-label">CS Manager</div><select class="form-select" id="cl-u-cs">'+csOpts+'</select></div></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveClient(\''+c.id+'\')">Update</button>' +
+    '<button class="action-btn danger" onclick="deleteRecord(\'clients\',\''+c.id+'\');closeDrawer();">Delete</button></div></div>';
+  openDrawer('Client',escHtml(c.name||'—'),html);
+}
+function saveClient(id){
+  var data;
+  if(id){
+    data={package:document.getElementById('cl-u-pkg').value.trim(),monthlyValue:parseFloat(document.getElementById('cl-u-val').value)||0,paymentStatus:document.getElementById('cl-u-pay').value,onboardingStatus:document.getElementById('cl-u-ob').value,status:document.getElementById('cl-u-st').value,csManager:document.getElementById('cl-u-cs').value};
+    window._updateDoc('clients',id,data).then(function(){toast('Client updated ✓','success');closeDrawer();window._loadAll();});
+  } else {
+    var name=document.getElementById('cl-name').value.trim();if(!name){toast('Name required','error');return;}
+    data={name:name,contact:document.getElementById('cl-contact').value.trim(),ventureId:document.getElementById('cl-v').value,package:document.getElementById('cl-pkg').value.trim(),monthlyValue:parseFloat(document.getElementById('cl-val').value)||0,startDate:document.getElementById('cl-date').value,paymentStatus:document.getElementById('cl-pay').value,onboardingStatus:document.getElementById('cl-ob').value,status:'active',csManager:'',createdAt:new Date().toISOString()};
+    window._saveDoc('clients',data).then(function(){toast('Client added ✓','success');closeDrawer();window._loadAll();});
+  }
+}
+
+// ── Finance ────────────────────────────────────────────────────
+var _finTxFilter='';
+function filterTransactions(type){_finTxFilter=type;renderFinance(window._data.financials||[],window._data.clients||[]);}
+function renderFinance(financials,clients){
+  var ti=0,te=0;financials.forEach(function(f){if(f.type==='income')ti+=f.amount;else te+=f.amount;});
+  var mrr=clients.filter(function(c){return c.status!=='churned';}).reduce(function(s,c){return s+(parseFloat(c.monthlyValue)||0);},0);
+  var profit=ti-te;var margin=ti>0?Math.round(profit/ti*100):0;
+  var sumEl=document.getElementById('fin-summary');
+  if(sumEl)sumEl.innerHTML=
+    '<div class="fin-sum-card"><div class="fin-sum-label">Total Revenue</div><div class="fin-sum-val" style="color:var(--green);">₦'+ti.toLocaleString()+'</div></div>' +
+    '<div class="fin-sum-card"><div class="fin-sum-label">Total Expenses</div><div class="fin-sum-val" style="color:var(--red);">₦'+te.toLocaleString()+'</div></div>' +
+    '<div class="fin-sum-card"><div class="fin-sum-label">Net Profit</div><div class="fin-sum-val" style="color:'+(profit>=0?'var(--gold)':'var(--red)')+';">₦'+Math.abs(profit).toLocaleString()+'</div></div>';
+  var plEl=document.getElementById('fin-venture-pl');
+  if(plEl){
+    var vdata={};VENTURES_SEED.forEach(function(v){vdata[v.id]={name:v.name,i:0,e:0};});
+    financials.forEach(function(f){if(!vdata[f.ventureId])vdata[f.ventureId]={name:f.ventureId||'Other',i:0,e:0};if(f.type==='income')vdata[f.ventureId].i+=f.amount;else vdata[f.ventureId].e+=f.amount;});
+    var plData=Object.values(vdata).filter(function(v){return v.i||v.e;});
+    plEl.innerHTML='<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Per-Venture P&L</div></div><div style="padding:14px;">' +
+      (plData.length ? plData.map(function(v){var p=v.i-v.e;return'<div style="margin-bottom:14px;"><div style="font-family:var(--display);font-weight:700;font-size:.88rem;margin-bottom:6px;">'+escHtml(v.name)+'</div>' +
+        '<div class="fin-row"><span class="fin-row-label">Revenue</span><span class="fin-income">₦'+v.i.toLocaleString()+'</span></div>' +
+        '<div class="fin-row"><span class="fin-row-label">Expenses</span><span class="fin-expense">₦'+v.e.toLocaleString()+'</span></div>' +
+        '<div class="fin-row"><span class="fin-row-label">Net</span><span class="fin-profit" style="color:'+(p>=0?'var(--gold)':'var(--red)')+';">₦'+Math.abs(p).toLocaleString()+'</span></div>' +
+      '</div>';}).join('') : '<div class="empty-state"><div class="empty-icon">📊</div>No financial records yet</div>') +
+    '</div></div>';
+  }
+  var tbody=document.getElementById('finance-tbody');if(!tbody)return;
+  var filtered=_finTxFilter?financials.filter(function(f){return f.type===_finTxFilter;}):financials;
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💰</div>No transactions yet</div></td></tr>';return;}
+  tbody.innerHTML=filtered.map(function(f){
+    var v=V_MAP[f.ventureId]||{name:f.ventureId||'—'};
+    return '<tr data-search="'+escHtml((f.description||'').toLowerCase())+'">' +
+      '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtDate(f.date||f.createdAt)+'</td>' +
+      '<td><span class="venture-tag">'+escHtml(v.name)+'</span></td>' +
+      '<td><span class="badge '+(f.type==='income'?'badge-green':'badge-red')+'">'+escHtml((f.type||'').toUpperCase())+'</span></td>' +
+      '<td style="font-size:.78rem;color:var(--dim);">'+escHtml(f.category||'—')+'</td>' +
+      '<td style="font-family:var(--mono);font-weight:700;color:'+(f.type==='income'?'var(--green)':'var(--red)')+';">'+(f.type==='income'?'+':'−')+'₦'+Number(f.amount||0).toLocaleString()+'</td>' +
+      '<td><button class="action-btn danger" onclick="deleteRecord(\'financials\',\''+f.id+'\')">Del</button></td>' +
+    '</tr>';
+  }).join('');
+}
+function openAddTransaction(){
+  var html='<div class="drawer-form">' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Type</div><select class="form-select" id="tx-type"><option value="income">Income</option><option value="expense">Expense</option></select></div>' +
+    '<div class="form-field"><div class="form-label">Amount (₦)</div><input class="form-input" id="tx-amt" type="number" min="0" placeholder="0"></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="tx-v"><option value="">Select…</option>' +
+      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '</select></div><div class="form-field"><div class="form-label">Date</div><input class="form-input" id="tx-date" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div></div>' +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Category</div><input class="form-input" id="tx-cat" placeholder="e.g. Client Payment, Salary, Ads"></div>' +
+    '<div class="form-field"><div class="form-label">Description</div><input class="form-input" id="tx-desc" placeholder="Short note"></div></div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveTransaction()">💾 Record</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+  '</div>';
+  openDrawer('Finance','Record Transaction',html);
+}
+function saveTransaction(){
+  var amt=parseFloat(document.getElementById('tx-amt').value);if(!amt||amt<=0){toast('Valid amount required','error');return;}
+  window._saveDoc('financials',{type:document.getElementById('tx-type').value,ventureId:document.getElementById('tx-v').value,amount:amt,category:document.getElementById('tx-cat').value.trim(),description:document.getElementById('tx-desc').value.trim(),date:document.getElementById('tx-date').value,createdAt:new Date().toISOString()})
+    .then(function(){toast('Transaction recorded ✓','success');closeDrawer();window._loadAll();});
+}
+
+// ── Daily Reports ─────────────────────────────────────────────
+function submitDailyReport(){
+  var role=window._userRole||'developer';
+  var tmpl=REPORT_TEMPLATES[role]||{fields:[{id:'done',type:'textarea'},{id:'undone',type:'textarea'},{id:'blockers',type:'textarea'},{id:'plan',type:'textarea'}]};
+  var data={};
+  tmpl.fields.forEach(function(f){var el=document.getElementById('rpt-f-'+f.id);if(el)data[f.id]=f.type==='number'?parseFloat(el.value)||0:el.value.trim();});
+  var date=document.getElementById('rpt-date').value;var summary=document.getElementById('rpt-summary').value.trim();
+  var tm=window._data&&window._data.team_members?window._data.team_members.find(function(m){return window._currentUser&&(m.email||'').toLowerCase()===(window._currentUser.email||'').toLowerCase();}):null;
+  window._saveDoc('daily_reports',{userId:window._currentUser?window._currentUser.uid:'',userName:tm?tm.name:window._currentUser?window._currentUser.email:'',role:role,reportType:role,date:date,data:data,summary:summary,submittedAt:new Date().toISOString()})
+    .then(function(){
+      toast('Daily report submitted ✓','success');
+      tmpl.fields.forEach(function(f){var el=document.getElementById('rpt-f-'+f.id);if(el)el.value='';});
+      var sumEl=document.getElementById('rpt-summary');if(sumEl)sumEl.value='';
+      window._loadAll();
+    }).catch(function(e){toast('Submit failed: '+(e.message||e),'error');});
+}
+function renderReports(list){
+  var el=document.getElementById('reports-list');if(!el)return;
+  var role=window._userRole||'developer';
+  var isLeader=(role==='founder'||role==='ops_lead');
+  var roleFilter=document.getElementById('rpt-role-filter')?document.getElementById('rpt-role-filter').value:'';
+  var uid=window._currentUser?window._currentUser.uid:'';
+  var filtered=isLeader?list:list.filter(function(r){return r.userId===uid;});
+  if(roleFilter)filtered=filtered.filter(function(r){return r.reportType===roleFilter;});
+  filtered=filtered.slice().sort(function(a,b){return new Date(b.submittedAt||0)-new Date(a.submittedAt||0);});
+  if(!filtered.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div>No reports yet</div>';return;}
+  el.innerHTML='<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">daily_reports</div></div><div class="table-scroll"><table><thead><tr>' +
+    (isLeader?'<th>Member</th>':'') +
+    '<th>Date</th><th>Role</th><th>Summary</th><th>Submitted</th><th>Actions</th></tr></thead><tbody>' +
+    filtered.slice(0,40).map(function(r){
+      return '<tr>' +
+        (isLeader?'<td style="font-weight:600;font-size:.82rem;">'+escHtml(r.userName||'—')+'</td>':'') +
+        '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtDate(r.date)+'</td>' +
+        '<td><span class="badge badge-cyan" style="font-size:.52rem;">'+escHtml((r.reportType||'report').replace(/_/g,' '))+'</span></td>' +
+        '<td style="font-size:.78rem;color:var(--dim);">'+escHtml((r.summary||'—').substring(0,60))+'</td>' +
+        '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+fmtTime(r.submittedAt)+'</td>' +
+        '<td><button class="action-btn" onclick="viewReport(\''+r.id+'\')">View</button></td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table></div></div>';
+}
+function viewReport(id){
+  var r=(window._data.daily_reports||[]).find(function(x){return x.id===id;});if(!r)return;
+  var entries=Object.entries(r.data||{}).filter(function(e){return e[1]!==undefined&&e[1]!==0&&e[1]!=='';});
+  var html='<div class="detail-section"><div class="detail-grid">' +
+    '<div class="detail-item"><div class="detail-label">Member</div><div class="detail-val">'+escHtml(r.userName||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Date</div><div class="detail-val">'+fmtDate(r.date)+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Role</div><div class="detail-val gold">'+escHtml((r.reportType||'').replace(/_/g,' '))+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Submitted</div><div class="detail-val">'+fmtTime(r.submittedAt)+'</div></div>' +
+    '</div>' +
+    (r.summary?'<div style="margin-top:10px;padding:10px 14px;background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.18);border-radius:6px;font-family:var(--mono);font-size:.7rem;color:var(--gold);">'+escHtml(r.summary)+'</div>':'') +
+    '</div>' +
+    '<div class="detail-section"><h4>Report Data</h4><div style="display:flex;flex-direction:column;gap:8px;">' +
+    entries.map(function(e){var isNum=typeof e[1]==='number';return'<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid rgba(200,155,20,.05);">' +
+      '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;color:var(--dimmer);text-transform:uppercase;min-width:140px;flex-shrink:0;padding-top:2px;">'+escHtml(e[0].replace(/([A-Z])/g,' $1').trim())+'</div>' +
+      '<div style="font-size:.82rem;color:var(--white);'+(isNum?'font-family:var(--mono);font-weight:600;color:var(--gold);':'')+'">'+escHtml(String(e[1]))+'</div>' +
+    '</div>';}).join('') +
+    '</div></div>' +
+    '<div class="btn-row"><button class="action-btn danger" onclick="deleteRecord(\'daily_reports\',\''+r.id+'\');closeDrawer();">Delete</button></div>';
+  openDrawer('Daily Report',escHtml(r.userName||'Report'),html);
+}
+
 
 // ═══════════════════════════════════════
 // FILTERS & UTILS
