@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEKNNUKU Studio — We Design, Build & Validate Digital Businesses</title>
+<meta name="description" content="TEKNNUKU Studio is a venture factory that designs, builds, and validates revenue-ready digital businesses. Not just websites. For serious founders and operators only.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK (for intake form) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyAjovgyVtPJOWwyte8gwdesEHesF9AzJlM",
+    authDomain:        "teknnuku-intake-form.firebaseapp.com",
+    projectId:         "teknnuku-intake-form",
+    storageBucket:     "teknnuku-intake-form.firebasestorage.app",
+    messagingSenderId: "661289555481",
+    appId:             "1:661289555481:web:f15b1f8983d5d460df3c88"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.__saveToFirebase = async function(payload) {
+    try {
+      const docRef = await addDoc(collection(db, "intake_leads"), {
+        ...payload,
+        createdAt: serverTimestamp()
+      });
+      console.log("✅ Lead saved:", docRef.id);
+      return docRef.id;
+    } catch (err) {
+      console.warn("⚠️ Firebase write failed:", err.message);
+      return null;
+    }
+  };
+
+  window.__saveContactToFirebase = async function(payload) {
+    try {
+      const docRef = await addDoc(collection(db, "contact_messages"), {
+        ...payload,
+        createdAt: serverTimestamp()
+      });
+      console.log("✅ Contact message saved:", docRef.id);
+      return docRef.id;
+    } catch (err) {
+      console.warn("⚠️ Firebase contact write failed:", err.message);
+      return null;
+    }
+  };
+
+  window.__saveServiceInquiry = async function(payload) {
+    try {
+      const docRef = await addDoc(collection(db, "service_inquiries"), {
+        ...payload,
+        createdAt: serverTimestamp()
+      });
+      console.log("✅ Service inquiry saved:", docRef.id);
+      return docRef.id;
+    } catch (err) {
+      console.warn("⚠️ Firebase service inquiry write failed:", err.message);
+      return null;
+    }
+  };
+</script>
+
+<style>
+/* ============================================
+   RESET & ROOT
+============================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --black:   #080808;
+  --dark:    #0f0f0f;
+  --panel:   #141414;
+  --card:    #181818;
+  --surface: #0e0e0e;
+  --gold:    #C89B14;
+  --gold2:   #E2C16A;
+  --cyan:    #00BCD4;
+  --green:   #22c55e;
+  --amber:   #f59e0b;
+  --blue:    #3b82f6;
+  --red:     #ef4444;
+  --white:   #F2EDE4;
+  --muted:   rgba(242,237,228,0.55);
+  --dimmer:  rgba(242,237,228,0.35);
+  --dim:     rgba(242,237,228,0.30);
+  --border:  rgba(201,168,76,0.18);
+  --borderS: rgba(242,237,228,0.07);
+  --r:       4px;
+  --r2:      10px;
+  --nav-h:   64px;
+  --shadow:  0 20px 60px rgba(0,0,0,.6);
+}
+
+html { scroll-behavior:smooth; font-size:16px; }
+
+body {
+  font-family:'DM Sans', sans-serif;
+  background:var(--black);
+  color:var(--white);
+  line-height:1.65;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+img { max-width:100%; display:block; }
+a { color:inherit; text-decoration:none; }
+button { cursor:pointer; font-family:inherit; }
+ul { list-style:none; }
+
+#scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--cyan));
+  z-index: 9999;
+  transition: width .1s linear;
+  pointer-events: none;
+}
+
+.t-eyebrow {
+  font-family:'DM Mono', monospace;
+  font-size:0.68rem;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--gold);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.t-eyebrow::before {
+  content:'';
+  width:18px; height:1px;
+  background:var(--gold);
+  display:inline-block;
+  flex-shrink:0;
+}
+
+h1 { font-family:'Syne',sans-serif; font-weight:800; line-height:1.06; letter-spacing:-0.025em; }
+h2 { font-family:'Syne',sans-serif; font-weight:800; line-height:1.1;  letter-spacing:-0.02em; }
+h3 { font-family:'Syne',sans-serif; font-weight:700; line-height:1.2;  letter-spacing:-0.015em; }
+h4 { font-family:'Syne',sans-serif; font-weight:700; line-height:1.3; }
+
+p { font-size:1rem; color:var(--muted); line-height:1.75; }
+
+.wrap   { max-width:1160px; margin:0 auto; padding:0 clamp(20px,4vw,48px); width:100%; }
+.wrap-s { max-width:860px;  margin:0 auto; padding:0 clamp(20px,4vw,48px); width:100%; }
+
+section { padding:clamp(72px,10vw,120px) 0; }
+
+.gold-rule { height:1px; background:linear-gradient(90deg,transparent,var(--gold) 40%,transparent); }
+
+.btn {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:14px 28px;
+  border-radius:var(--r);
+  font-weight:600;
+  font-size:0.88rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  transition:all .22s ease;
+  border:none;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.btn-gold    { background:var(--gold); color:#080808; }
+.btn-gold:hover  { background:var(--gold2); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.3); }
+.btn-outline { background:transparent; color:var(--white); border:1px solid rgba(242,237,228,.25); }
+.btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+.btn-ghost  { background: transparent; color: var(--dim); border: 1px solid var(--borderS); }
+.btn-ghost:hover { border-color: var(--dim); color: var(--muted); }
+
+.logo-img-block { display:flex; align-items:center; flex-shrink:0; text-decoration:none; gap:0; }
+.logo-img-full { display:block; height:44px; width:auto; object-fit:contain; }
+.logo-mobile-tagline { font-family:'Dancing Script', cursive; font-weight:600; font-size:0.62rem; color:rgba(200,155,20,.65); letter-spacing:0.02em; line-height:1; margin-top:1px; white-space:nowrap; }
+[data-theme="light"] .logo-mobile-tagline { color:rgba(138,110,8,.6); }
+.logo-mobile-combo { display:none; align-items:center; gap:9px; }
+.logo-img-icon { display:block; height:36px; width:auto; object-fit:contain; flex-shrink:0; }
+.logo-mobile-name { font-family:'Syne', sans-serif; font-weight:800; font-size:0.88rem; letter-spacing:0.03em; text-transform:uppercase; color:#C89B14; white-space:nowrap; line-height:1.18; display:flex; flex-direction:column; gap:0px; }
+.logo-mobile-name .ln-tek { color:#C89B14; font-size:0.88rem; font-weight:800; letter-spacing:0.04em; text-shadow:0 0 12px rgba(200,155,20,.4); }
+.logo-mobile-name em { color:#C89B14; font-style:normal; font-size:0.72rem; font-weight:800; letter-spacing:0.2em; }
+
+#site-header { position:fixed; top:0; left:0; right:0; z-index:998; height:var(--nav-h); background:rgba(8,8,8,.97); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-bottom:1px solid var(--border); display:flex; align-items:center; overflow:hidden; }
+.nav-inner { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; max-width:1160px; margin:0 auto; padding:0 clamp(14px,3.5vw,48px); box-sizing:border-box; }
+.logo-block { display:flex; flex-direction:column; line-height:1; flex-shrink:0; }
+.logo-main { font-family:'Syne',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--white); }
+.logo-main em { color:var(--gold); font-style:normal; }
+.logo-sub { font-family:'DM Mono',monospace; font-size:0.48rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--dimmer); margin-top:3px; }
+.nav-links { display:flex; align-items:center; gap:24px; }
+.nav-links a { font-size:0.83rem; font-weight:500; color:var(--dimmer); transition:color .2s; white-space:nowrap; }
+.nav-links a:hover { color:var(--gold); }
+.nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.theme-toggle { background:none; border:1px solid var(--borderS); color:var(--muted); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.85rem; transition:all .2s; flex-shrink:0; }
+.theme-toggle:hover { border-color:var(--gold); color:var(--gold); }
+.nav-btn-sm { padding:9px 16px; font-size:0.78rem; }
+.hamburger { display:none; flex-direction:column; justify-content:center; gap:5px; width:38px; height:38px; background:none; border:1px solid var(--borderS); border-radius:var(--r); padding:8px; transition:border-color .2s; flex-shrink:0; }
+.hamburger:hover { border-color:var(--gold); }
+.hamburger span { display:block; height:1.5px; background:var(--white); border-radius:2px; transition:all .25s ease; transform-origin:center; }
+.hamburger.open span:nth-child(1) { transform:translateY(6.5px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity:0; transform:scaleX(0); }
+.hamburger.open span:nth-child(3) { transform:translateY(-6.5px) rotate(-45deg); }
+#mobile-nav { display:none; position:fixed; top:var(--nav-h); left:0; right:0; background:rgba(10,10,10,.99); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--border); z-index:997; padding:20px clamp(20px,4vw,48px) 28px; flex-direction:column; gap:0; }
+#mobile-nav.open { display:flex; }
+#mobile-nav .mob-link { display:block; padding:14px 0; font-size:1rem; font-weight:500; color:var(--muted); border-bottom:1px solid var(--borderS); transition:color .2s, padding-left .2s; }
+#mobile-nav .mob-link:hover { color:var(--gold); padding-left:6px; }
+#mobile-nav .mob-cta { margin-top:20px; display:block; text-align:center; padding:14px; border-radius:var(--r); background:var(--gold); color:#080808; font-weight:700; font-size:0.9rem; letter-spacing:0.04em; text-transform:uppercase; }
+
+.hero { min-height:100svh; display:flex; align-items:center; padding-top:var(--nav-h); position:relative; overflow:hidden; }
+.hero-bg { position:absolute; inset:0; pointer-events:none; z-index:0; }
+.hero-bg::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 55% 55% at 8% 55%, rgba(201,168,76,.08) 0%, transparent 65%), radial-gradient(ellipse 40% 40% at 92% 25%, rgba(0,188,212,.07) 0%, transparent 65%); }
+.hero-bg::after { content:''; position:absolute; inset:0; background-image: linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px); background-size:52px 52px; }
+.hero-inner { position:relative; z-index:1; padding:clamp(48px,8vw,100px) 0; }
+.hero-tag { margin-bottom:28px; animation:fadeUp .6s ease both; }
+.hero h1 { font-size:clamp(2.2rem, 6.5vw, 5.2rem); margin-bottom:28px; max-width:860px; animation:fadeUp .6s .1s ease both; }
+.hero h1 .g { color:var(--gold); }
+.hero h1 .c { color:var(--cyan); }
+.hero-lead { font-size:clamp(1rem,2.2vw,1.18rem); max-width:580px; margin-bottom:12px; color:var(--muted); line-height:1.8; animation:fadeUp .6s .2s ease both; }
+.hero-filter-line { font-size:0.88rem; color:var(--dimmer); margin-bottom:36px; animation:fadeUp .6s .25s ease both; font-style:italic; max-width:520px; }
+.hero-filter-line strong { color:var(--gold); font-style:normal; font-weight:600; }
+.hero-ctas { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:14px; animation:fadeUp .6s .3s ease both; }
+.hero-micro { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.1em; color:var(--dimmer); text-transform:uppercase; margin-bottom:clamp(32px,6vw,56px); animation:fadeUp .6s .35s ease both; display:flex; align-items:center; gap:10px; }
+.hero-micro::before { content:'→'; color:var(--cyan); }
+.sp-strip { display:flex; align-items:center; gap:10px; flex-wrap:wrap; animation:fadeUp .6s .4s ease both; }
+.sp-text { font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:0.1em; color:var(--dimmer); text-transform:uppercase; }
+.sp-badges { display:flex; gap:8px; flex-wrap:wrap; }
+.sp-badge { background:var(--panel); border:1px solid var(--borderS); padding:5px 12px; border-radius:2px; font-size:0.75rem; color:var(--muted); }
+
+.traction-section { background:var(--panel); border-top:1px solid var(--borderS); border-bottom:1px solid var(--borderS); padding:clamp(28px,4vw,44px) 0; }
+.traction-inner { display:flex; align-items:center; gap:clamp(20px,4vw,52px); flex-wrap:wrap; justify-content:space-between; }
+.traction-label { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--dimmer); flex-shrink:0; }
+.traction-metrics { display:flex; flex:1; gap:1px; background:var(--borderS); flex-wrap:wrap; }
+.tm { flex:1; min-width:120px; background:var(--panel); padding:16px 20px; display:flex; flex-direction:column; gap:4px; }
+.tm .tv { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(1.1rem,2vw,1.5rem); color:var(--gold); line-height:1; }
+.tm .tk { font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--dimmer); }
+.traction-cta-sm { flex-shrink:0; }
+
+.problem-section { background:var(--dark); }
+.problem-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-top:clamp(32px,5vw,56px); }
+.prob-card { background:var(--panel); padding:clamp(24px,3.5vw,40px); transition:background .25s; }
+.prob-card:hover { background:var(--card); }
+.prob-card .prob-icon { font-size:1.6rem; margin-bottom:14px; }
+.prob-card h4 { font-size:1rem; color:var(--white); margin-bottom:10px; }
+.prob-card p  { font-size:0.88rem; line-height:1.75; }
+.prob-resolution { margin-top:2px; background:rgba(201,168,76,.07); border:1px solid var(--border); padding:clamp(26px,4vw,44px); display:flex; align-items:center; gap:clamp(20px,4vw,56px); flex-wrap:wrap; }
+.prob-resolution h3 { font-size:clamp(1.2rem,2.5vw,1.8rem); flex:1; min-width:200px; }
+.prob-resolution .res-p { flex:1; min-width:200px; font-size:1rem; font-style:italic; color:var(--gold); font-weight:600; line-height:1.6; }
+.prob-resolution .res-p small { display:block; color:var(--muted); font-weight:400; font-style:normal; font-size:0.88rem; margin-top:6px; }
+.manifesto-line { margin-top:2px; background:var(--black); border-left:3px solid var(--cyan); padding:clamp(16px,3vw,24px) clamp(22px,4vw,40px); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.manifesto-line p { font-family:'Syne',sans-serif; font-size:clamp(0.9rem,1.8vw,1.05rem); font-weight:700; color:var(--white); }
+.manifesto-line p em { color:var(--cyan); font-style:normal; }
+
+.identity-section { background:var(--black); }
+.identity-split { display:grid; grid-template-columns:1fr 1fr; gap:clamp(32px,6vw,80px); align-items:start; margin-top:clamp(32px,5vw,56px); }
+.id-left h2 { font-size:clamp(1.6rem,3.5vw,2.8rem); margin-bottom:20px; }
+.id-left p  { font-size:0.95rem; margin-bottom:14px; }
+.id-left .hl { color:var(--cyan); font-weight:600; }
+.id-quote { background:rgba(201,168,76,.08); border-left:3px solid var(--gold); padding:20px 24px; margin-top:26px; border-radius:0 var(--r) var(--r) 0; }
+.id-quote p { font-size:1rem; font-style:italic; color:var(--gold); font-weight:600; line-height:1.6; }
+.ecosystem-hint { background:rgba(0,188,212,.06); border:1px solid rgba(0,188,212,.18); border-radius:var(--r); padding:14px 18px; margin-top:16px; display:flex; align-items:center; gap:10px; }
+.ecosystem-hint span { font-size:1rem; flex-shrink:0; }
+.ecosystem-hint p { font-size:0.82rem; color:var(--muted); line-height:1.6; margin:0; }
+.ecosystem-hint p strong { color:var(--cyan); font-weight:600; }
+.id-right { display:flex; flex-direction:column; }
+.id-card { padding:20px 0; border-bottom:1px solid var(--borderS); }
+.id-card:first-child { padding-top:0; }
+.id-card:last-child  { border-bottom:none; }
+.id-card .num { font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--gold); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:8px; }
+.id-card h4 { font-size:0.97rem; color:var(--white); margin-bottom:6px; }
+.id-card p  { font-size:0.85rem; }
+
+.engines-section { background:var(--dark); }
+.engines-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; margin-top:clamp(32px,5vw,56px); }
+.eng-card { background:var(--panel); padding:clamp(24px,3.5vw,40px); position:relative; overflow:hidden; transition:background .25s, transform .25s; }
+.eng-card:hover { background:var(--card); transform:translateY(-4px); }
+.eng-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.eng-gold::before  { background:var(--gold); }
+.eng-cyan::before  { background:var(--cyan); }
+.eng-white::before { background:rgba(242,237,228,.3); }
+.eng-icon { font-size:1.8rem; margin-bottom:18px; display:block; }
+.eng-card h3 { font-size:clamp(1.1rem,2vw,1.5rem); margin-bottom:12px; }
+.eng-gold h3  { color:var(--gold); }
+.eng-cyan h3  { color:var(--cyan); }
+.eng-white h3 { color:var(--white); }
+.eng-card p { font-size:0.88rem; line-height:1.75; margin-bottom:20px; }
+.eng-goal { font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; padding-top:14px; border-top:1px solid var(--borderS); }
+.eng-gold .eng-goal  { color:var(--gold); }
+.eng-cyan .eng-goal  { color:var(--cyan); }
+.eng-white .eng-goal { color:var(--dimmer); }
+
+.intake-strip { background:rgba(201,168,76,.06); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:clamp(24px,4vw,36px) 0; }
+.intake-strip-inner { display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+.intake-strip-left h4 { font-size:clamp(1rem,2vw,1.2rem); color:var(--white); margin-bottom:6px; }
+.intake-strip-left p { font-size:0.85rem; color:var(--muted); margin:0; }
+.intake-strip-meta { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--dimmer); margin-top:10px; display:flex; align-items:center; gap:8px; }
+.intake-strip-meta::before { content:'→'; color:var(--cyan); }
+
+.services-section { background:var(--black); }
+.tier-nav { display:flex; gap:0; border-bottom:1px solid var(--borderS); margin:clamp(28px,5vw,52px) 0 0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.tier-nav::-webkit-scrollbar { display:none; }
+.tier-btn { background:none; border:none; border-bottom:2px solid transparent; padding:12px clamp(12px,2.5vw,24px); font-size:0.77rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--dimmer); font-family:'DM Mono',monospace; white-space:nowrap; margin-bottom:-1px; transition:all .2s; }
+.tier-btn:hover { color:var(--muted); }
+.tier-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+.tier-body { display:none; padding-top:clamp(28px,5vw,48px); }
+.tier-body.active { display:block; }
+.tier-head { display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,4vw,56px); margin-bottom:clamp(28px,5vw,48px); align-items:start; }
+.tier-meta .badge { display:inline-block; padding:4px 12px; border-radius:2px; font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:12px; }
+.t1 .badge { background:rgba(242,237,228,.06); color:var(--dimmer); }
+.t2 .badge { background:rgba(201,168,76,.1); color:var(--gold); }
+.t3 .badge { background:rgba(0,188,212,.1); color:var(--cyan); }
+.ta .badge { background:rgba(242,237,228,.04); color:var(--dimmer); }
+.tier-meta h3 { font-size:clamp(1.3rem,2.5vw,2rem); margin-bottom:12px; }
+.tier-meta p { font-size:0.9rem; }
+.tier-targets h5 { font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--dimmer); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:12px; font-weight:400; }
+.tags { display:flex; flex-wrap:wrap; gap:8px; }
+.tag { background:var(--borderS); padding:5px 12px; border-radius:2px; font-size:0.77rem; color:var(--muted); }
+.pkg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:2px; }
+.pkg { background:var(--panel); padding:clamp(22px,3vw,36px); transition:background .25s, transform .25s; }
+.pkg:hover { background:var(--card); transform:translateY(-4px); }
+.pkg .pkg-name { font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; color:var(--white); margin-bottom:8px; }
+.pkg .pkg-price { font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--gold); display:block; margin-bottom:14px; }
+.pkg .pkg-pitch { font-size:0.86rem; margin-bottom:16px; }
+.pkg-feat { list-style:none; border-top:1px solid var(--borderS); padding-top:12px; }
+.pkg-feat li { font-size:0.8rem; color:var(--muted); padding:5px 0 5px 16px; position:relative; border-bottom:1px solid rgba(242,237,228,.03); }
+.pkg-feat li:last-child { border-bottom:none; }
+.pkg-feat li::before { content:'→'; position:absolute; left:0; color:var(--cyan); font-size:0.73rem; }
+
+.process-section { background:var(--dark); }
+.verb-rail { display:flex; border:1px solid var(--borderS); margin:clamp(24px,4vw,46px) 0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.verb-rail::-webkit-scrollbar { display:none; }
+.verb { flex:1; min-width:90px; padding:clamp(14px,2vw,24px) clamp(12px,1.8vw,20px); text-align:center; border-right:1px solid var(--borderS); display:flex; flex-direction:column; gap:5px; }
+.verb:last-child { border-right:none; }
+.verb .vw { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(0.9rem,1.8vw,1.2rem); color:var(--gold); }
+.verb .vs { font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--dimmer); }
+.step-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
+.step { background:var(--panel); padding:clamp(22px,3vw,36px); transition:background .25s; }
+.step:hover { background:var(--card); }
+.step .snum { font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--gold); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:14px; display:block; }
+.step h3 { font-size:clamp(0.97rem,1.6vw,1.15rem); color:var(--white); margin-bottom:10px; }
+.step p  { font-size:0.86rem; }
+.process-rule { margin-top:2px; background:rgba(201,168,76,.07); border:1px solid var(--border); padding:clamp(20px,3vw,32px) clamp(22px,4vw,42px); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.process-rule span { font-size:1.3rem; flex-shrink:0; }
+.process-rule p { font-family:'Syne',sans-serif; font-size:clamp(0.92rem,1.8vw,1.05rem); font-weight:600; color:var(--gold); }
+
+.ventures-section { background:var(--black); }
+.venture-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2px; margin-top:clamp(32px,5vw,56px); }
+.vc { background:var(--panel); padding:clamp(22px,3.5vw,36px); border-top:2px solid transparent; transition:border-color .25s, background .25s, transform .25s; }
+.vc:hover { border-top-color:var(--gold); background:var(--card); transform:translateY(-4px); }
+.vstatus { display:inline-block; font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase; padding:4px 10px; border-radius:2px; margin-bottom:14px; }
+.s-cash     { background:rgba(0,188,212,.1); color:var(--cyan); }
+.s-validate { background:rgba(201,168,76,.1); color:var(--gold); }
+.s-build    { background:rgba(242,237,228,.05); color:var(--dimmer); }
+.s-b2b      { background:rgba(180,120,255,.1); color:#b47aff; }
+.vc h3 { font-size:clamp(1.2rem,2vw,1.5rem); color:var(--white); margin-bottom:8px; }
+.vc .vrole { font-size:0.86rem; margin-bottom:18px; }
+.vdetails { border-top:1px solid var(--borderS); padding-top:14px; }
+.vdetails li { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:0.79rem; padding:5px 0; border-bottom:1px solid rgba(242,237,228,.03); }
+.vdetails li:last-child { border-bottom:none; }
+.vdetails .dk { font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--dimmer); letter-spacing:0.08em; text-transform:uppercase; flex-shrink:0; }
+.vdetails .dv { color:var(--muted); text-align:right; }
+.vnote { margin-top:12px; font-size:0.78rem; font-weight:600; color:var(--cyan); padding-top:10px; border-top:1px solid var(--borderS); }
+.vc-link { display:inline-flex; align-items:center; gap:6px; margin-top:14px; font-family:'DM Mono',monospace; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:2px; transition:color .2s, border-color .2s; }
+.vc-link:hover { color:var(--gold2); border-color:var(--gold2); }
+
+.client-section { background:var(--dark); }
+.client-filter-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:clamp(28px,4vw,44px); margin-bottom:clamp(24px,4vw,40px); }
+.cf-pill { background:var(--panel); border:1px solid var(--borderS); padding:6px 14px; border-radius:20px; font-family:'DM Mono',monospace; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dimmer); cursor:pointer; transition:all .2s; }
+.cf-pill:hover, .cf-pill.active { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.07); }
+.client-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:2px; }
+.client-card { background:var(--panel); display:flex; flex-direction:column; overflow:hidden; transition:background .25s, transform .25s; position:relative; }
+.client-card:hover { background:var(--card); transform:translateY(-4px); }
+.client-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--gold),transparent); opacity:0; transition:opacity .25s; }
+.client-card:hover::before { opacity:1; }
+.cc-media { position:relative; width:100%; aspect-ratio:16/9; background:var(--black); overflow:hidden; flex-shrink:0; }
+.cc-preview-url { position:absolute; inset:0; border:none; width:100%; height:100%; pointer-events:none; opacity:.85; }
+.cc-media-overlay { position:absolute; inset:0; background:linear-gradient(to bottom, transparent 40%, var(--panel) 100%); pointer-events:none; z-index:2; }
+.cc-media-logo { position:absolute; bottom:14px; left:18px; z-index:3; display:flex; align-items:center; gap:8px; }
+.cc-media-logo .bname { font-family:'Syne',sans-serif; font-weight:800; font-size:.95rem; color:var(--white); text-shadow:0 1px 6px rgba(0,0,0,.6); }
+.cc-media-logo .bcat { font-family:'DM Mono',monospace; font-size:.55rem; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); background:rgba(0,0,0,.5); padding:2px 8px; border-radius:10px; }
+.cc-visit-btn { position:absolute; top:12px; right:12px; z-index:3; background:var(--gold); color:#080808; font-family:'DM Mono',monospace; font-size:.55rem; letter-spacing:.1em; text-transform:uppercase; font-weight:600; padding:5px 12px; border-radius:3px; text-decoration:none; transition:background .2s; }
+.cc-visit-btn:hover { background:var(--gold2); }
+.cc-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; background: var(--black); position:relative; overflow:hidden; }
+.cc-placeholder::before { content:''; position:absolute; inset:0; background-image: linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px), linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px); background-size:32px 32px; }
+.cc-placeholder .picon { font-size:2.4rem; position:relative; z-index:1; }
+.cc-placeholder .pname { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--gold); position:relative; z-index:1; }
+.cc-placeholder .ptag { font-family:'DM Mono',monospace; font-size:.58rem; letter-spacing:.12em; text-transform:uppercase; color:var(--dimmer); position:relative; z-index:1; }
+.cc-body { padding:clamp(18px,3vw,28px); flex:1; display:flex; flex-direction:column; gap:12px; }
+.cc-service-tag { display:inline-flex; align-items:center; gap:6px; font-family:'DM Mono',monospace; font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); padding:4px 10px; background:rgba(201,168,76,.08); border:1px solid rgba(201,168,76,.18); border-radius:2px; width:fit-content; }
+.cc-what { display:flex; flex-direction:column; gap:6px; }
+.cc-what-label { font-family:'DM Mono',monospace; font-size:.56rem; letter-spacing:.12em; text-transform:uppercase; color:var(--dimmer); }
+.cc-what-items { display:flex; flex-wrap:wrap; gap:6px; }
+.cc-what-item { font-size:.78rem; color:var(--muted); padding:3px 10px; background:var(--borderS); border-radius:2px; }
+.cc-quote { border-left:2px solid var(--gold); padding:12px 16px; background:rgba(201,168,76,.04); border-radius:0 var(--r) var(--r) 0; margin-top:4px; flex:1; }
+.cc-quote blockquote { font-size:.88rem; color:var(--muted); line-height:1.75; font-style:italic; margin-bottom:10px; }
+.cc-quote cite { display:flex; align-items:center; gap:10px; font-style:normal; }
+.cite-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--cyan)); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:.75rem; color:#080808; flex-shrink:0; }
+.cite-info .cite-name { font-family:'Syne',sans-serif; font-weight:700; font-size:.8rem; color:var(--white); display:block; }
+.cite-info .cite-role { font-family:'DM Mono',monospace; font-size:.56rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dimmer); }
+.cc-stars { display:flex; gap:3px; margin-bottom:6px; }
+.cc-stars span { font-size:.8rem; }
+.cc-result { display:flex; align-items:center; gap:8px; padding:10px 14px; background:rgba(34,197,94,.07); border:1px solid rgba(34,197,94,.18); border-radius:var(--r); margin-top:4px; }
+.cc-result .ri { font-size:.9rem; }
+.cc-result .rt { font-family:'Syne',sans-serif; font-weight:700; font-size:.8rem; color:var(--green); }
+.logo-strip { margin-top:clamp(36px,5vw,56px); border-top:1px solid var(--borderS); padding-top:clamp(24px,4vw,36px); display:flex; align-items:center; gap:clamp(20px,4vw,48px); flex-wrap:wrap; }
+.logo-strip-label { font-family:'DM Mono',monospace; font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dimmer); flex-shrink:0; }
+.logo-items { display:flex; gap:clamp(14px,3vw,32px); flex-wrap:wrap; align-items:center; }
+.logo-item { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(.78rem,1.5vw,.95rem); color:rgba(242,237,228,.2); letter-spacing:.04em; text-transform:uppercase; transition:color .2s; text-decoration:none; white-space:nowrap; }
+.logo-item:hover { color:var(--gold); }
+@media(max-width:600px){ .client-grid { grid-template-columns:1fr; } .client-filter-row { gap:6px; } }
+
+.pos-section { background:var(--dark); }
+.pos-quote { background:var(--panel); border:1px solid var(--border); padding:clamp(32px,5vw,56px); margin-top:clamp(28px,5vw,46px); position:relative; }
+.pos-quote::before { content:'"'; position:absolute; top:14px; left:28px; font-size:4.5rem; font-family:'Syne',sans-serif; color:var(--gold); opacity:.12; line-height:1; }
+.pos-quote p { font-family:'Syne',sans-serif; font-size:clamp(1rem,2.5vw,1.65rem); font-weight:700; color:var(--white); line-height:1.5; position:relative; z-index:1; }
+.pos-quote p em { color:var(--gold); font-style:normal; }
+.pos-rules { display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-top:2px; }
+.pr { background:var(--panel); padding:clamp(22px,3.5vw,36px); }
+.pr .prl { font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--dimmer); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:12px; }
+.pr .no  { font-size:0.86rem; color:var(--dimmer); text-decoration:line-through; margin-bottom:4px; }
+.pr .yes { font-family:'Syne',sans-serif; font-size:0.97rem; font-weight:700; color:var(--gold); margin-top:12px; }
+.pr .desc { font-size:0.87rem; line-height:1.75; }
+.gravity-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1px; background:var(--borderS); margin-top:2px; }
+.gravity-item { background:var(--panel); padding:16px 22px; display:flex; align-items:center; gap:10px; }
+.gravity-item span { color:var(--cyan); font-size:0.9rem; flex-shrink:0; }
+.gravity-item p { font-family:'Syne',sans-serif; font-size:0.82rem; font-weight:700; color:var(--white); margin:0; line-height:1.4; }
+
+.who-section { background:var(--black); }
+.who-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:2px; margin-top:clamp(28px,5vw,48px); }
+.who-card { background:var(--panel); padding:clamp(18px,3vw,28px); border-left:2px solid var(--gold); transition:background .25s, transform .25s; }
+.who-card:hover { background:var(--card); transform:translateY(-3px); }
+.who-card p { font-size:0.9rem; color:var(--muted); }
+.who-close { margin-top:clamp(28px,5vw,48px); background:rgba(201,168,76,.07); border:1px solid var(--border); padding:clamp(22px,4vw,36px); text-align:center; }
+.who-close p { font-family:'Syne',sans-serif; font-size:clamp(0.97rem,2vw,1.25rem); font-weight:700; color:var(--gold); }
+
+.cta-section { background:var(--dark); position:relative; overflow:hidden; }
+.cta-section::before { content:''; position:absolute; inset:0; pointer-events:none; background: radial-gradient(ellipse 50% 60% at 15% 50%, rgba(201,168,76,.08), transparent), radial-gradient(ellipse 40% 50% at 85% 50%, rgba(0,188,212,.06), transparent); }
+.cta-inner { position:relative; z-index:1; text-align:center; max-width:700px; margin:0 auto; }
+.cta-inner h2 { font-size:clamp(1.7rem,4.5vw,3.2rem); margin-bottom:18px; }
+.cta-inner .cta-lead { font-size:clamp(0.95rem,1.8vw,1.1rem); margin-bottom:16px; line-height:1.75; }
+.scarcity-note { display:inline-flex; align-items:center; gap:8px; background:rgba(242,237,228,.04); border:1px solid var(--borderS); padding:8px 16px; border-radius:2px; font-family:'DM Mono',monospace; font-size:0.63rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--dimmer); margin-bottom:32px; }
+.scarcity-dot { width:6px; height:6px; border-radius:50%; background:#4caf50; animation:pulse 2s infinite; flex-shrink:0; }
+.cta-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+footer { background:var(--black); border-top:1px solid var(--border); padding:clamp(52px,8vw,86px) 0 clamp(24px,4vw,36px); }
+.footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:clamp(28px,5vw,52px); margin-bottom:clamp(36px,6vw,56px); }
+.fb-name { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:4px; }
+.fb-name em { color:var(--gold); font-style:normal; }
+.fb-sub { font-family:'DM Mono',monospace; font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--dimmer); margin-bottom:16px; }
+.fb-desc { font-size:0.85rem; line-height:1.8; margin-bottom:14px; }
+.fb-tagline { font-family:'DM Mono',monospace; font-size:0.64rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); }
+.fc h5 { font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--gold); letter-spacing:0.15em; text-transform:uppercase; font-weight:400; margin-bottom:16px; }
+.fc a { display:block; font-size:0.83rem; color:var(--dimmer); padding:5px 0; transition:color .2s, padding-left .2s; }
+.fc a:hover { color:var(--gold); padding-left:4px; }
+.footer-bottom { border-top:1px solid var(--borderS); padding-top:clamp(20px,3vw,28px); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+.footer-bottom p { font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.07em; color:rgba(242,237,228,.28); }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(76,175,80,.4); } 50% { box-shadow:0 0 0 5px rgba(76,175,80,0); } }
+@keyframes shellIn { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes stepIn { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { 0% { background-position:200% center; } 100% { background-position:-200% center; } }
+@keyframes particleFloat { 0% { transform:translateY(0) translateX(0) scale(1); opacity:.6; } 50% { transform:translateY(-40px) translateX(20px) scale(1.2); opacity:.3; } 100% { transform:translateY(-80px) translateX(-10px) scale(.8); opacity:0; } }
+@keyframes slideRight { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
+@keyframes arrowBounce { 0%,100% { transform:rotate(45deg) translateY(0); } 50% { transform:rotate(45deg) translateY(5px); } }
+@keyframes glow { 0%,100% { box-shadow:0 0 20px rgba(201,168,76,.15); } 50% { box-shadow:0 0 40px rgba(201,168,76,.35); } }
+
+.hero-tag { animation:slideRight .7s ease .1s both; }
+.hero h1 { animation:fadeUp .9s ease .25s both; }
+.hero-ctas { animation:fadeUp .6s ease .75s both; }
+.btn-gold { animation:glow 3s ease-in-out infinite; animation-delay:2s; }
+.btn-gold:hover { animation:none; box-shadow:0 0 32px rgba(201,168,76,.5); }
+
+.reveal { opacity:0; transform:translateY(32px); transition:opacity .65s ease, transform .65s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+.stagger-children > * { opacity:0; transform:translateY(24px); transition:opacity .55s ease, transform .55s ease; }
+.stagger-children.visible > *:nth-child(1) { opacity:1; transform:translateY(0); transition-delay:.0s; }
+.stagger-children.visible > *:nth-child(2) { opacity:1; transform:translateY(0); transition-delay:.1s; }
+.stagger-children.visible > *:nth-child(3) { opacity:1; transform:translateY(0); transition-delay:.2s; }
+.stagger-children.visible > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay:.3s; }
+.stagger-children.visible > *:nth-child(5) { opacity:1; transform:translateY(0); transition-delay:.4s; }
+.stagger-children.visible > *:nth-child(6) { opacity:1; transform:translateY(0); transition-delay:.5s; }
+
+.pkg, .vc, .prob-card, .client-card, .step, .who-card, .eng-card { transition:background .25s, transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease; }
+.pkg:hover         { transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,0,0,.4); }
+.vc:hover          { transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,0,0,.4); }
+.prob-card:hover   { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,.35); }
+.client-card:hover { transform:translateY(-6px); box-shadow:0 20px 48px rgba(0,0,0,.4); }
+.eng-card:hover    { transform:translateY(-6px); box-shadow:0 16px 40px rgba(201,168,76,.12); }
+
+.hero-particles { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
+.particle { position:absolute; border-radius:50%; opacity:0; animation:particleFloat linear infinite; }
+
+.gold-rule { height:1px; background:linear-gradient(90deg,transparent,var(--gold) 40%,transparent); position:relative; overflow:hidden; }
+.gold-rule::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,220,100,.8),transparent); animation:shimmer 3s linear infinite; }
+
+header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
+
+.service-cta-strip { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:clamp(24px,4vw,36px); padding:clamp(18px,3vw,28px); background:rgba(201,168,76,.06); border:1px solid rgba(201,168,76,.2); border-radius:var(--r2); }
+.service-cta-strip-text { flex:1; min-width:200px; }
+.service-cta-strip-text strong { display:block; font-family:'Syne',sans-serif; font-weight:700; font-size:.95rem; color:var(--white); margin-bottom:4px; }
+.service-cta-strip-text span { font-size:.8rem; color:var(--muted); }
+.service-cta-strip .btns { display:flex; gap:10px; flex-wrap:wrap; }
+
+#scroll-rail { position:fixed; right:14px; top:50%; transform:translateY(-50%); z-index:500; display:flex; flex-direction:column; align-items:center; gap:0; pointer-events:none; }
+.rail-track { width:2px; height:180px; background:rgba(200,155,20,.12); border-radius:2px; position:relative; overflow:hidden; }
+.rail-fill { position:absolute; top:0; left:0; width:100%; background:linear-gradient(180deg, #C89B14, #00BCD4); border-radius:2px; transition:height .15s linear; height:0%; }
+.rail-dot { width:6px; height:6px; border-radius:50%; background:#C89B14; margin:0 -2px; box-shadow:0 0 8px rgba(200,155,20,.7); flex-shrink:0; }
+@media(max-width:480px) { #scroll-rail { display:none; } }
+
+#scroll-hint { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); z-index:500; display:flex; flex-direction:column; align-items:center; gap:4px; pointer-events:none; opacity:0; transition:opacity .4s ease; }
+#scroll-hint.visible { opacity:1; }
+.sh-label { font-family:'DM Mono', monospace; font-size:.52rem; letter-spacing:.16em; text-transform:uppercase; color:rgba(200,155,20,.6); }
+.sh-arrow { width:18px; height:18px; border-right:1.5px solid rgba(200,155,20,.6); border-bottom:1.5px solid rgba(200,155,20,.6); transform:rotate(45deg); animation:arrowBounce 1.6s ease-in-out infinite; }
+
+/* INTAKE MODAL */
+#intake-modal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(7,7,7,.96); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); align-items:flex-start; justify-content:center; overflow-y:auto; padding:0 0 32px; }
+#intake-modal.open { display:flex; }
+.modal-topbar { position:sticky; top:0; left:0; right:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:10px 20px; background:rgba(14,14,14,.96); border-bottom:1px solid var(--borderS); backdrop-filter:blur(8px); flex-shrink:0; width:100%; }
+.modal-topbar-title { font-family:'DM Mono',monospace; font-size:.58rem; letter-spacing:.18em; text-transform:uppercase; color:var(--dimmer); }
+.modal-topbar-close { background:none; border:1px solid var(--borderS); color:var(--muted); font-size:.72rem; font-family:'DM Mono',monospace; letter-spacing:.1em; text-transform:uppercase; padding:6px 14px; border-radius:var(--r); cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s; flex-shrink:0; }
+.modal-topbar-close:hover { border-color:var(--gold); color:var(--gold); }
+.modal-inner { position:relative; width:100%; max-width:760px; margin:0 auto; display:flex; flex-direction:column; animation:shellIn .4s ease both; }
+.modal-close-btn { display:none !important; }
+.form-shell-modal { width:100%; }
+.form-header-modal { text-align:center; margin-bottom:24px; }
+.form-logo-modal { font-family:'Syne', sans-serif; font-weight:800; font-size:.9rem; letter-spacing:.08em; text-transform:uppercase; color:var(--white); margin-bottom:6px; }
+.form-logo-modal em { color:var(--gold); font-style:normal; }
+.form-eyebrow-modal { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); display:flex; align-items:center; justify-content:center; gap:8px; }
+.form-eyebrow-modal::before, .form-eyebrow-modal::after { content:''; width:24px; height:1px; background:var(--gold); }
+.form-card-modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--r2); overflow:hidden; box-shadow:var(--shadow); }
+.progress-track-m { height:3px; background:var(--borderS); position:relative; }
+.progress-fill-m { height:100%; background:linear-gradient(90deg,var(--gold),var(--cyan)); border-radius:3px; transition:width .4s cubic-bezier(.4,0,.2,1); width:0%; }
+.progress-meta-m { display:flex; justify-content:space-between; align-items:center; padding:14px 28px 0; }
+.step-counter-m { font-family:'DM Mono', monospace; font-size:.62rem; color:var(--dim); letter-spacing:.1em; text-transform:uppercase; }
+.step-dots-m { display:flex; gap:5px; }
+.step-dot-m { width:6px; height:6px; border-radius:50%; background:var(--borderS); transition:background .3s; }
+.step-dot-m.done { background:var(--gold); }
+.step-dot-m.active { background:var(--cyan); box-shadow:0 0 6px var(--cyan); }
+.form-body-m { padding:28px 32px 32px; }
+.section-label-m { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.section-label-m::before { content:''; width:14px; height:1px; background:var(--gold); }
+.q-title-m { font-family:'Syne', sans-serif; font-weight:700; font-size:clamp(1.05rem, 3vw, 1.35rem); line-height:1.3; color:var(--white); margin-bottom:6px; }
+.q-hint-m { font-size:.82rem; color:var(--dim); margin-bottom:22px; line-height:1.6; }
+.step-panel-m { display:none; animation:stepIn .3s ease both; }
+.step-panel-m.active { display:block; }
+.options-grid-m { display:grid; gap:10px; }
+.options-grid-m.cols-2 { grid-template-columns:1fr 1fr; }
+.option-btn-m { display:flex; align-items:center; gap:12px; padding:14px 18px; background:var(--card); border:1px solid var(--borderS); border-radius:var(--r); cursor:pointer; transition:all .2s; text-align:left; width:100%; color:var(--white); font-family:'DM Sans', sans-serif; font-size:.92rem; font-weight:500; position:relative; overflow:hidden; }
+.option-btn-m::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(201,168,76,.04), transparent); opacity:0; transition:opacity .2s; }
+.option-btn-m:hover { border-color:var(--gold); transform:translateX(3px); }
+.option-btn-m:hover::before { opacity:1; }
+.option-btn-m.selected { border-color:var(--gold); background:rgba(201,168,76,.1); color:var(--gold); }
+.option-btn-m.selected .opt-check-m { border-color:var(--gold); background:var(--gold); }
+.option-btn-m.selected .opt-check-m::after { opacity:1; }
+.opt-check-m { width:18px; height:18px; flex-shrink:0; border:1.5px solid var(--dim); border-radius:50%; position:relative; transition:all .2s; }
+.opt-check-m::after { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:7px; height:7px; border-radius:50%; background:var(--bg); opacity:0; transition:opacity .2s; }
+.opt-check-m.square { border-radius:3px; }
+.opt-check-m.square::after { content:'✓'; font-size:.62rem; font-weight:700; color:var(--bg); background:none; width:auto; height:auto; }
+.option-btn-m.selected .opt-check-m.square { background:var(--gold); }
+.opt-icon-m { font-size:1.1rem; }
+.opt-label-m { flex:1; }
+.input-group-m { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+.input-wrap-m { display:flex; flex-direction:column; gap:6px; }
+.input-wrap-m label { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); }
+.input-wrap-m input { background:var(--card); border:1px solid var(--borderS); border-radius:var(--r); padding:13px 16px; color:var(--white); font-family:'DM Sans', sans-serif; font-size:.9rem; outline:none; transition:border-color .2s; width:100%; }
+.input-wrap-m input:focus { border-color:var(--gold); }
+.input-wrap-m input::placeholder { color:var(--dim); }
+.input-full-m { grid-column:1/-1; }
+.form-nav-m { display:flex; justify-content:space-between; align-items:center; padding:20px 32px 24px; border-top:1px solid var(--borderS); gap:12px; }
+.btn-back-wrap-m { min-width:90px; }
+.btn-gold-m   { background:var(--gold); color:#080808; }
+.btn-gold-m:hover { background:var(--gold2); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,.35); }
+.btn-ghost-m  { background:transparent; color:var(--dim); border:1px solid var(--borderS); }
+.btn-ghost-m:hover { border-color:var(--dim); color:var(--muted); }
+.form-btn-m { display:inline-flex; align-items:center; gap:8px; padding:13px 28px; border-radius:var(--r); font-weight:600; font-size:.86rem; letter-spacing:.04em; text-transform:uppercase; transition:all .22s; border:none; cursor:pointer; font-family:'DM Sans', sans-serif; }
+.val-msg-m { font-size:.78rem; color:var(--red); margin-top:10px; display:none; font-family:'DM Mono', monospace; letter-spacing:.04em; }
+.val-msg-m.show { display:block; }
+.loading-overlay-m { position:fixed; inset:0; z-index:10000; background:rgba(7,7,7,.85); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.loading-overlay-m.show { display:flex; }
+.spinner-m { width:44px; height:44px; border:3px solid var(--borderS); border-top-color:var(--gold); border-radius:50%; animation:spin .7s linear infinite; }
+.loading-text-m { font-family:'DM Mono', monospace; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); }
+.results-wrapper-m { display:none; }
+.results-wrapper-m.active { display:block; }
+.results-hero-m { padding:36px 32px 28px; text-align:center; position:relative; overflow:hidden; }
+.results-hero-m::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,168,76,.1), transparent); }
+.tier-badge-large-m { display:inline-flex; align-items:center; gap:10px; padding:8px 20px; border-radius:30px; font-family:'DM Mono', monospace; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; margin-bottom:20px; position:relative; z-index:1; }
+.tier-a-m .tier-badge-large-m { background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3); color:var(--green); }
+.tier-b-m .tier-badge-large-m { background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.3); color:var(--amber); }
+.tier-c-m .tier-badge-large-m { background:rgba(59,130,246,.12); border:1px solid rgba(59,130,246,.3); color:var(--blue); }
+.tier-dot-m { width:8px; height:8px; border-radius:50%; animation:pulse 2s infinite; }
+.tier-a-m .tier-dot-m { background:var(--green); }
+.tier-b-m .tier-dot-m { background:var(--amber); }
+.tier-c-m .tier-dot-m { background:var(--blue); }
+.results-name-m { font-family:'Syne', sans-serif; font-size:clamp(1.4rem,4vw,2rem); font-weight:800; margin-bottom:8px; position:relative; z-index:1; }
+.results-tagline-m { font-size:.9rem; color:var(--muted); position:relative; z-index:1; max-width:460px; margin:0 auto 20px; line-height:1.65; }
+.score-display-m { display:flex; align-items:center; justify-content:center; gap:32px; margin:20px 0; position:relative; z-index:1; flex-wrap:wrap; }
+.score-ring-m { position:relative; width:100px; height:100px; }
+.score-ring-m svg { transform:rotate(-90deg); }
+.score-ring-m circle { fill:none; stroke-width:6; }
+.score-ring-m .track-m { stroke:var(--borderS); }
+.score-ring-m .fill-m  { stroke:var(--gold); stroke-linecap:round; transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+.score-ring-m .num-m { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:'Syne', sans-serif; font-weight:800; font-size:1.4rem; color:var(--gold); line-height:1; }
+.score-ring-m .num-m small { font-size:.52rem; font-family:'DM Mono', monospace; color:var(--dim); letter-spacing:.1em; text-transform:uppercase; margin-top:3px; font-weight:400; }
+.score-breakdown-m { display:flex; flex-direction:column; gap:8px; text-align:left; }
+.score-row-m { display:flex; align-items:center; gap:10px; font-size:.8rem; }
+.score-row-m .sr-label-m { color:var(--dim); min-width:110px; font-family:'DM Mono', monospace; font-size:.62rem; letter-spacing:.06em; text-transform:uppercase; }
+.score-bar-wrap-m { width:100px; height:4px; background:var(--borderS); border-radius:4px; overflow:hidden; }
+.score-bar-fill-m { height:100%; border-radius:4px; background:var(--gold); transition:width 1s ease .3s; width:0; }
+.score-row-m .sr-val-m { color:var(--gold); font-family:'DM Mono', monospace; font-size:.7rem; min-width:28px; text-align:right; }
+.tags-row-m { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:4px 0 0; position:relative; z-index:1; }
+.tag-chip-m { padding:4px 12px; border-radius:20px; font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; background:var(--borderS); color:var(--dim); border:1px solid var(--borderS); }
+.tag-chip-m.gold-m { background:rgba(201,168,76,.12); border-color:rgba(201,168,76,.25); color:var(--gold); }
+.routes-section-m { padding:28px 32px; border-top:1px solid var(--borderS); }
+.routes-label-m { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); display:flex; align-items:center; gap:8px; margin-bottom:18px; }
+.routes-label-m::before { content:''; width:14px; height:1px; background:var(--gold); }
+.route-card-m { display:flex; align-items:center; gap:16px; padding:16px 18px; background:var(--card); border:1px solid var(--borderS); border-radius:var(--r); text-decoration:none; color:var(--white); transition:all .22s; position:relative; overflow:hidden; margin-bottom:10px; }
+.route-card-m::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; transition:background .2s; }
+.route-card-m:hover { border-color:var(--gold); transform:translateX(4px); }
+.route-card-m:hover::before { background:var(--gold); }
+.route-card-m.primary-m { border-color:rgba(201,168,76,.3); background:rgba(201,168,76,.07); }
+.route-card-m.primary-m::before { background:var(--gold); }
+.rc-icon-m { font-size:1.4rem; flex-shrink:0; }
+.rc-body-m { flex:1; }
+.rc-name-m { font-family:'Syne', sans-serif; font-weight:700; font-size:.95rem; color:var(--white); margin-bottom:3px; }
+.rc-desc-m { font-size:.8rem; color:var(--muted); line-height:1.5; }
+.rc-arrow-m { color:var(--gold); font-size:1rem; flex-shrink:0; }
+.primary-badge-m { position:absolute; top:8px; right:8px; background:var(--gold); color:#080808; font-family:'DM Mono', monospace; font-size:.52rem; letter-spacing:.1em; text-transform:uppercase; padding:2px 8px; border-radius:10px; font-weight:600; }
+.results-footer-m { padding:20px 32px 28px; border-top:1px solid var(--borderS); display:flex; gap:12px; flex-wrap:wrap; }
+.results-footer-m .rfbtn { flex:1; justify-content:center; min-width:140px; display:inline-flex; align-items:center; gap:8px; padding:13px 20px; border-radius:var(--r); font-weight:600; font-size:.86rem; letter-spacing:.04em; text-transform:uppercase; transition:all .22s; border:none; cursor:pointer; font-family:'DM Sans', sans-serif; text-decoration:none; }
+.rfbtn-gold { background:var(--gold); color:#080808; }
+.rfbtn-gold:hover { background:var(--gold2); }
+.rfbtn-ghost { background:transparent; color:var(--dim); border:1px solid var(--borderS); }
+.rfbtn-ghost:hover { border-color:var(--dim); color:var(--muted); }
+
+/* RESPONSIVE */
+@media (max-width:900px) {
+  .nav-links { display:none; }
+  .nav-right .btn-outline { display:none; }
+  .hamburger { display:flex; }
+  .identity-split { grid-template-columns:1fr; }
+  .engines-grid   { grid-template-columns:1fr 1fr; }
+  .step-grid      { grid-template-columns:1fr 1fr; }
+  .problem-grid   { grid-template-columns:1fr 1fr; }
+  .tier-head      { grid-template-columns:1fr; gap:24px; }
+  .pos-rules      { grid-template-columns:1fr; }
+  .footer-grid    { grid-template-columns:1fr 1fr; }
+  .addon-cols     { grid-template-columns:1fr 1fr; }
+  .nav-btn-sm { font-size:.68rem; padding:7px 12px; }
+}
+@media (max-width:600px) {
+  :root { --nav-h:58px; }
+  .hero h1 { font-size:clamp(1.9rem,8.5vw,2.8rem); }
+  .hero-ctas { flex-direction:column; }
+  .hero-ctas .btn { width:100%; justify-content:center; }
+  .engines-grid { grid-template-columns:1fr; }
+  .step-grid    { grid-template-columns:1fr; }
+  .problem-grid { grid-template-columns:1fr; }
+  .who-grid     { grid-template-columns:1fr 1fr; }
+  .footer-grid  { grid-template-columns:1fr; gap:28px; }
+  .prob-resolution { flex-direction:column; }
+  .process-rule    { flex-direction:column; }
+  .cta-btns { flex-direction:column; }
+  .cta-btns .btn { width:100%; justify-content:center; }
+  .footer-bottom { flex-direction:column; gap:6px; text-align:center; }
+  .traction-inner { flex-direction:column; }
+  .intake-strip-inner { flex-direction:column; gap:16px; }
+  .verb-rail { flex-wrap:wrap; overflow-x:visible; }
+  .verb { flex:1 1 calc(50% - 1px); min-width:calc(50% - 1px); border-right:1px solid var(--borderS); }
+  .verb:nth-child(even) { border-right:none; }
+  .verb:nth-child(3), .verb:nth-child(4), .verb:nth-child(5) { border-top:1px solid var(--borderS); }
+  .nav-btn-diag-text { display:none; }
+  .nav-btn-sm { min-width:36px; padding:7px 10px; }
+  .nav-right .btn-gold { display:none; }
+  .nav-right .btn-outline { display:none; }
+  .logo-img-full { display:none; }
+  .logo-mobile-combo { display:flex; }
+  .nav-inner { gap:8px; }
+  .nav-right { gap:6px; }
+  .form-body-m { padding:20px 18px 24px; }
+  .form-nav-m  { padding:16px 18px 20px; }
+  .options-grid-m.cols-2 { grid-template-columns:1fr; }
+  .input-group-m { grid-template-columns:1fr; }
+  .input-full-m { grid-column:1; }
+  .score-display-m { flex-direction:column; gap:18px; }
+  .routes-section-m { padding:20px 18px; }
+  .results-hero-m { padding:24px 18px 20px; }
+  .results-footer-m { padding:16px 18px 22px; flex-direction:column; }
+  .progress-meta-m { padding:12px 18px 0; }
+  .service-cta-strip { flex-direction:column; align-items:stretch; }
+  .service-cta-strip .btns { flex-direction:column; }
+  .service-cta-strip .btns .btn { justify-content:center; }
+  .modal-topbar { padding:8px 16px; }
+  .modal-topbar-title { display:none; }
+}
+@media (max-width:380px) {
+  .who-grid { grid-template-columns:1fr; }
+  .verb { flex:1 1 100%; border-right:none; border-top:1px solid var(--borderS); }
+  .verb:first-child { border-top:none; }
+}
+
+[data-theme="light"] { --black:#f0ede8; --dark:#e8e4dd; --panel:#ddd9d2; --card:#d4cfc7; --border:rgba(40,32,20,.14); --borderS:rgba(40,32,20,.09); --white:#1a1510; --muted:#4a3f30; --dim:#6b5c48; --dimmer:#8a7a68; --gold:#9e8010; --gold2:#c49010; --cyan:#0088a0; --green:#1a7a40; --amber:#b06010; --blue:#1a50a0; }
+[data-theme="light"] body { background:#f0ede8; color:#4a3f30; }
+[data-theme="light"] #scroll-progress { background:linear-gradient(90deg,var(--gold),var(--cyan)); }
+[data-theme="light"] #site-header { background:rgba(240,237,232,.97) !important; border-bottom:1px solid rgba(40,32,20,.14) !important; }
+[data-theme="light"] .hamburger span { background:#1a1510 !important; }
+[data-theme="light"] .hamburger { border:1.5px solid rgba(30,24,10,.35) !important; background:rgba(200,155,20,.06) !important; }
+[data-theme="light"] .logo-mobile-name { color:#8a6e08; }
+[data-theme="light"] footer, [data-theme="light"] .footer-inner { background:#1a1510; }
+[data-theme="light"] .hero { background:#e8e4dd; }
+[data-theme="light"] #intake-modal { background:rgba(232,228,221,.97); }
+[data-theme="light"] .form-card-modal { background:#ddd9d2; border-color:rgba(40,32,20,.15); }
+[data-theme="light"] .modal-topbar { background:#d0cbbf; border-color:rgba(40,32,20,.15); }
+</style>
+</head>
+<body>
+
+<!-- SERVICE INQUIRY MODAL — unchanged from source, paste your existing SI modal here -->
+<!-- CONTACT MODAL — unchanged from source, paste your existing contact modal here -->
+
+<!-- NOTE: Paste your full service inquiry modal, contact modal, intake modal,
+     and careers modal HTML from document 5 here — they are unchanged.
+     Only the sections below have been modified. -->
+
+<!-- Scroll Progress Bar -->
+<div id="scroll-progress"></div>
+<div id="scroll-rail" aria-hidden="true">
+  <div class="rail-dot rail-dot-top"></div>
+  <div class="rail-track"><div class="rail-fill" id="railFill"></div></div>
+  <div class="rail-dot rail-dot-btm"></div>
+</div>
+<div id="scroll-hint">
+  <span class="sh-label">Scroll</span>
+  <div class="sh-arrow"></div>
+</div>
+<div class="loading-overlay-m" id="intakeLoading">
+  <div class="spinner-m"></div>
+  <div class="loading-text-m">Analysing your profile…</div>
+</div>
+
+<!-- INTAKE MODAL — unchanged, paste from source -->
+
+<!-- HEADER — unchanged -->
+<header id="site-header">
+  <div class="nav-inner">
+    <a href="#" class="logo-block logo-img-block">
+      <img class="logo-img-full" src="https://pink-quiet-wolf-922.mypinata.cloud/ipfs/bafkreieczotismz3mdo3dxs7j2k565s4jfjepvebmpajgjg5h5olqnngdq" alt="TEKNNUKU STUDIO — Venture Factory" width="96" height="44">
+      <span class="logo-mobile-combo">
+        <img class="logo-img-icon" src="https://pink-quiet-wolf-922.mypinata.cloud/ipfs/bafkreicdqxx764xdwq3c3xhf2xvawlmihboia5oj5jas2yibrtsadeadxi" alt="TEKNNUKU STUDIO" width="36" height="36">
+        <span class="logo-mobile-name"><span class="ln-tek">TEKNNUKU</span><em>STUDIO</em><span class="logo-mobile-tagline">Venture Factory · Revenue Infrastructure</span></span>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#engines">What We Do</a>
+      <a href="#services">Services</a>
+      <a href="#ventures">Ventures</a>
+      <a href="#process">Process</a>
+      <a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
+      <a href="#contact" onclick="openContactModal();return false;">Contact</a>
+      <a href="#careers" onclick="openCareersModal();return false;" style="color:var(--gold);">Careers</a>
+    </nav>
+    <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle light/dark mode">☀️</button>
+      <a href="https://calendly.com/hello-teknnuku/30min" class="btn btn-outline nav-btn-sm" style="white-space:nowrap;">Book a Call</a>
+      <button class="btn btn-gold nav-btn-sm" onclick="openIntakeModal()" style="white-space:nowrap;"><span class="nav-btn-diag-text">Run Diagnostic</span><span> →</span></button>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<nav id="mobile-nav" aria-label="Mobile navigation">
+  <a href="#engines"  class="mob-link">What We Do</a>
+  <a href="#services" class="mob-link">Services &amp; Pricing</a>
+  <a href="#ventures" class="mob-link">Active Ventures</a>
+  <a href="#process"  class="mob-link">Our Process</a>
+  <a href="#contact" class="mob-link" onclick="closeMenu();openContactModal();return false;">Contact</a>
+  <a href="#careers" class="mob-link" onclick="closeMenu();openCareersModal();return false;" style="color:var(--gold);">Careers 🟢</a>
+  <a href="#" class="mob-cta" onclick="closeMenu(); openIntakeModal(); return false;">Find Out What My Business Needs →</a>
+</nav>
+
+<!-- ============================================
+     HERO — PATCH 1 APPLIED
+============================================ -->
+<section class="hero" id="home">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-particles" aria-hidden="true" id="heroParticles"></div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <div class="t-eyebrow hero-tag">TEKNNUKU Studio — Venture Factory</div>
+
+      <h1>
+        List Your Business. <span class="g">Get Customers.</span><br>
+        Build a <span class="c">Real Online</span> System.
+      </h1>
+
+      <p class="hero-lead">
+        Most businesses are invisible online.<br>
+        The few that are visible don't convert.<br>
+        TEKNNUKU Studio fixes both.
+      </p>
+      <p class="hero-filter-line">
+        Start by listing your business. Then scale into a complete digital system built to generate real revenue.
+        <strong>No website? No problem. &nbsp;·&nbsp; No customers yet? That's exactly why this exists.</strong>
+      </p>
+
+      <div class="hero-ctas">
+        <button class="btn btn-gold" onclick="openIntakeModal()">List Your Business Free →</button>
+        <button class="btn btn-outline" onclick="openIntakeModal()">Get Customers Now</button>
+        <button class="btn btn-outline" onclick="openIntakeModal()">Find Out What My Business Needs</button>
+      </div>
+
+      <div class="hero-micro">
+        Takes 2 minutes &nbsp;·&nbsp; Instant routing &nbsp;·&nbsp; No sales pressure
+      </div>
+
+      <div class="sp-strip">
+        <span class="sp-text">Trusted by</span>
+        <div class="sp-badges">
+          <span class="sp-badge">Founders</span>
+          <span class="sp-badge">Operators</span>
+          <span class="sp-badge">Startups</span>
+          <span class="sp-badge">Enterprise</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Traction Strip — unchanged -->
+<div class="traction-section">
+  <div class="wrap">
+    <div class="traction-inner">
+      <div class="traction-label">Studio Traction</div>
+      <div class="traction-metrics">
+        <div class="tm"><span class="tv">10+</span><span class="tk">Projects Delivered</span></div>
+        <div class="tm"><span class="tv">$250k+</span><span class="tk">Revenue Generated</span></div>
+        <div class="tm"><span class="tv">89%</span><span class="tk">Client Retention</span></div>
+        <div class="tm"><span class="tv">~3 wks</span><span class="tk">Avg Launch Time</span></div>
+      </div>
+      <div class="traction-cta-sm">
+        <button class="btn btn-outline nav-btn-sm" onclick="openIntakeModal()">Get Qualified →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     START HERE — PATCH 2: NEW SECTION
+============================================ -->
+<section style="background:var(--dark);padding:clamp(56px,8vw,88px) 0;" id="start">
+  <div class="wrap-s">
+    <div class="t-eyebrow">🏪 Start Here</div>
+    <h2 style="font-size:clamp(1.5rem,3.5vw,2.4rem);margin-top:14px;max-width:640px;">
+      Most businesses don't fail because they are bad — they fail because nobody can find them.
+    </h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:clamp(28px,4vw,44px);">
+      <div style="background:var(--panel);padding:clamp(22px,3vw,36px);border-top:3px solid var(--gold);text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.68rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;">Step 1</div>
+        <h3 style="font-size:1.1rem;color:var(--white);margin-bottom:8px;">Get Listed</h3>
+        <p style="font-size:.86rem;">Show up online</p>
+      </div>
+      <div style="background:var(--panel);padding:clamp(22px,3vw,36px);border-top:3px solid var(--gold);text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.68rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;">Step 2</div>
+        <h3 style="font-size:1.1rem;color:var(--white);margin-bottom:8px;">Get Seen</h3>
+        <p style="font-size:.86rem;">Attract attention</p>
+      </div>
+      <div style="background:var(--panel);padding:clamp(22px,3vw,36px);border-top:3px solid var(--cyan);text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:.68rem;color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;">Step 3</div>
+        <h3 style="font-size:1.1rem;color:var(--white);margin-bottom:8px;">Get Customers</h3>
+        <p style="font-size:.86rem;">Convert attention into revenue</p>
+      </div>
+    </div>
+    <div style="margin-top:clamp(24px,4vw,36px);background:rgba(201,168,76,.06);border:1px solid var(--border);padding:clamp(18px,3vw,28px);text-align:center;">
+      <p style="font-size:.95rem;margin-bottom:16px;color:var(--muted);">👉 Not sure where you are? <strong style="color:var(--gold);">Find out exactly what your business needs in 2 minutes.</strong></p>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Find Out What My Business Needs →</button>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     PROBLEM — PATCHES 3 & 4 APPLIED
+============================================ -->
+<section class="problem-section" id="problem">
+  <div class="wrap">
+    <div class="t-eyebrow">The Real Problem</div>
+
+    <!-- PATCH 3: new H2 + bullets -->
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;max-width:680px;">
+      You don't just have a traffic problem.<br>You have a visibility <em style="color:var(--gold);font-style:normal;">and</em> conversion problem.
+    </h2>
+    <div style="margin-top:20px;max-width:480px;display:flex;flex-direction:column;gap:8px;">
+      <p style="font-size:.95rem;color:var(--muted);">• People can't find you</p>
+      <p style="font-size:.95rem;color:var(--muted);">• People don't trust you</p>
+      <p style="font-size:.95rem;color:var(--muted);">• People don't buy from you</p>
+      <p style="font-size:.92rem;color:var(--white);font-weight:600;margin-top:8px;">That's not a marketing problem. That's a system problem.</p>
+    </div>
+
+    <div class="problem-grid">
+      <div class="prob-card"><div class="prob-icon">😤</div><h4>You paid for a website. It sits there doing nothing.</h4><p>Thousands spent on design. Zero in return. The agency delivered what they promised — but nobody promised revenue.</p></div>
+      <div class="prob-card"><div class="prob-icon">🔁</div><h4>You're trapped in the "build, wait, hope" cycle.</h4><p>Launch. Crickets. Tweak. Crickets. Most founders repeat this for years before realising the platform itself was broken from the start.</p></div>
+      <div class="prob-card"><div class="prob-icon">⚙️</div><h4>Your infrastructure is built for looks — not growth.</h4><p>A beautiful website that doesn't convert is an expensive billboard in a desert. Impressive. Useless.</p></div>
+      <div class="prob-card"><div class="prob-icon">📉</div><h4>Every month without a system is money left behind.</h4><p>While you figure it out, your market is moving. Every week without a working funnel is compounding lost revenue.</p></div>
+    </div>
+
+    <!-- PATCH 4: new prob-resolution copy -->
+    <div class="prob-resolution">
+      <h3>We solve one thing first:</h3>
+      <div>
+        <p class="res-p">"How does your business consistently make money online?"
+          <small>If there's no clear answer — we fix that before anything else.</small>
+        </p>
+      </div>
+    </div>
+
+    <div class="manifesto-line">
+      <p><em>Pretty without performance is failure.</em> If it won't monetise, we won't build it.</p>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- IDENTITY — unchanged -->
+<section class="identity-section" id="engines">
+  <div class="wrap">
+    <div class="t-eyebrow">What We Are</div>
+    <div class="identity-split">
+      <div class="id-left">
+        <h2>The venture factory behind the TEKNNUKU ecosystem</h2>
+        <p>TEKNNUKU Studio is not a web agency. It is the <span class="hl">venture-building arm</span> of the TEKNNUKU ecosystem — the unit that systematically creates, tests, and launches revenue-generating businesses.</p>
+        <p>Inside every serious empire, there is a builder. The HoldCo allocates capital. The Studio turns it into companies. OpCos run what survives. We are the Studio — and we extend that same capability to our clients.</p>
+        <p>We don't just advise founders or business owners. We are the founders and the business builders — and when we take your project on, we treat it exactly as we treat our own.</p>
+        <div class="id-quote"><p>"A factory that builds companies — not just ideas. We don't take every client. We optimize for revenue, not applause."</p></div>
+        <div class="ecosystem-hint">
+          <span>🔗</span>
+          <p>When appropriate, we connect clients into the <strong><a href="https://teknnuku.xyz" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:underline;text-underline-offset:3px;">broader TEKNNUKU ecosystem</a></strong> — Poverty2Prosperity, GATA, TEK1SECURITY, Power+9ja — to accelerate growth beyond what any single platform can offer.</p>
+        </div>
+      </div>
+      <div class="id-right">
+        <div class="id-card"><div class="num">// 01 Design</div><h4>Revenue architecture before a single pixel is drawn</h4><p>We define the business model, the customer journey, and the monetisation structure before design begins. Strategy is never an afterthought here.</p></div>
+        <div class="id-card"><div class="num">// 02 Validate</div><h4>Real users. Real payments. Or we kill it.</h4><p>We don't rely on opinions or gut feeling. We look for one thing: will someone actually pay? No payment signal means no further investment — simple as that.</p></div>
+        <div class="id-card"><div class="num">// 03 Incubate</div><h4>Winners get fuel. Losers get cut — fast.</h4><p>This is how our venture studio outperforms agencies and solo founders. Ruthless resource allocation protects capital and focuses energy where it actually compounds.</p></div>
+        <div class="id-card"><div class="num">// 04 Spin-Out</div><h4>The product becomes its own company</h4><p>When a product reaches product-market fit, it becomes a standalone operating company — its own team, its own capital, and aggressively scales from there.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- THREE ENGINES — unchanged -->
+<section class="engines-section">
+  <div class="wrap">
+    <div class="t-eyebrow">Studio Architecture</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;max-width:620px;">Three machines running under one roof</h2>
+    <p style="margin-top:12px;max-width:560px;font-size:0.95rem;">Each engine funds the next. Cash from services builds client platforms. Client platforms seed internal ventures. Internal ventures become the empire.</p>
+    <div class="engines-grid">
+      <div class="eng-card eng-gold"><span class="eng-icon">🪙</span><h3>Engine 1 — Studio Services</h3><p>Volume-driven work for growing businesses — brand systems, landing pages, and business setups. Priced for accessibility, engineered for results. This is the front door that funds the factory.</p><div class="eng-goal">Purpose: Cash flow + client pipeline</div></div>
+      <div class="eng-card eng-cyan"><span class="eng-icon">🏗️</span><h3>Engine 2 — Custom Digital Systems</h3><p>High-ticket B2B platform engineering. Custom SaaS, enterprise marketplaces, automation infrastructure, and white-label systems for companies that operate at scale. This is where the Studio becomes genuinely dangerous.</p><div class="eng-goal">Purpose: Premium revenue + market authority</div></div>
+      <div class="eng-card eng-white"><span class="eng-icon">🚀</span><h3>Engine 3 — Internal Venture Factory</h3><p>Jobletters, TEK1SECURITY, Power+9ja, and beyond. We build these with the same systems we use for clients — validate fast, kill early, scale only what wins. Equity is the long game.</p><div class="eng-goal">Purpose: Long-term asymmetric upside</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- Intake Entry Point Strip — unchanged -->
+<div class="intake-strip" id="apply">
+  <div class="wrap">
+    <div class="intake-strip-inner">
+      <div class="intake-strip-left">
+        <h4>Not sure which tier fits you?</h4>
+        <p>Run the Smart Intake in 2 minutes and we'll route you to the right solution — instantly.</p>
+        <div class="intake-strip-meta">Takes 2 minutes &nbsp;·&nbsp; Instant routing &nbsp;·&nbsp; No sales pressure</div>
+      </div>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Find Out What My Business Needs →</button>
+    </div>
+  </div>
+</div>
+
+<div class="gold-rule"></div>
+
+<!-- CLIENT WORK — unchanged, paste your existing client section here -->
+<!-- WHO WE SERVE — unchanged, paste your existing who section here -->
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     P2P — LEARN THE SYSTEM — PATCH 5: NEW SECTION
+============================================ -->
+<section style="background:var(--black);padding:clamp(56px,8vw,80px) 0;">
+  <div class="wrap-s">
+    <div class="t-eyebrow">🧠 Don't Just Build — Learn the System</div>
+    <h2 style="font-size:clamp(1.5rem,3.5vw,2.2rem);margin-top:14px;max-width:640px;">
+      Most business owners don't fail because they lack tools.<br>They fail because they don't understand the system.
+    </h2>
+    <div style="margin-top:clamp(28px,4vw,44px);background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r2);padding:clamp(24px,4vw,40px);">
+      <div style="display:flex;align-items:flex-start;gap:32px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:var(--white);margin-bottom:12px;">🎓 Poverty2Prosperity Digital Business System</div>
+          <p style="font-size:.9rem;margin-bottom:16px;">We don't just build for you — we show you how it works.</p>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <p style="font-size:.85rem;color:var(--muted);">→ How to attract customers online</p>
+            <p style="font-size:.85rem;color:var(--muted);">→ How to sell using WhatsApp &amp; simple funnels</p>
+            <p style="font-size:.85rem;color:var(--muted);">→ How to structure a real business system</p>
+            <p style="font-size:.85rem;color:var(--muted);">→ Weekly live workshops</p>
+            <p style="font-size:.85rem;color:var(--muted);">→ Advanced Inner Circle training</p>
+          </div>
+          <div style="margin-top:16px;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">👉 Included FREE in most paid service packages</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+          <a href="https://p2p.teknnuku.xyz" target="_blank" class="btn btn-gold">Join Free Workshop →</a>
+          <button onclick="openIntakeModal()" class="btn btn-outline">Get Inner Circle Access</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- ============================================
+     SERVICES — PATCH 6 APPLIED (eyebrow + heading)
+============================================ -->
+
+<!-- HOW THIS WORKS -->
+<section style="background:var(--dark);padding:clamp(56px,8vw,88px) 0;">
+  <div class="wrap-s">
+    <div class="t-eyebrow">🧭 How This Works</div>
+    <h2 style="font-size:clamp(1.5rem,3.5vw,2.2rem);margin-top:14px;max-width:600px;">
+      Most businesses move through this exact path.
+    </h2>
+    <p style="margin-top:12px;max-width:540px;font-size:.92rem;">You're simply choosing where you are right now — and we build the next step.</p>
+    <div style="margin-top:clamp(28px,4vw,44px);display:flex;align-items:stretch;gap:0;overflow-x:auto;scrollbar-width:none;">
+      <div style="flex:1;min-width:100px;background:var(--panel);border:1px solid var(--borderS);padding:clamp(14px,2.5vw,20px) clamp(10px,2vw,16px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;"><div style="font-size:1.4rem;">👁️</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;color:var(--gold);">Get Visible</div><div style="font-size:.7rem;color:var(--muted);">Be found</div></div>
+      <div style="display:flex;align-items:center;padding:0 6px;color:var(--gold);font-size:1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:100px;background:var(--panel);border:1px solid var(--borderS);padding:clamp(14px,2.5vw,20px) clamp(10px,2vw,16px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;"><div style="font-size:1.4rem;">🤝</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;color:var(--gold);">Build Trust</div><div style="font-size:.7rem;color:var(--muted);">Look credible</div></div>
+      <div style="display:flex;align-items:center;padding:0 6px;color:var(--gold);font-size:1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:100px;background:var(--panel);border:1px solid var(--borderS);padding:clamp(14px,2.5vw,20px) clamp(10px,2vw,16px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;"><div style="font-size:1.4rem;">💰</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;color:var(--gold);">Start Selling</div><div style="font-size:.7rem;color:var(--muted);">Consistent sales</div></div>
+      <div style="display:flex;align-items:center;padding:0 6px;color:var(--gold);font-size:1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:100px;background:rgba(201,168,76,.08);border:1px solid var(--border);padding:clamp(14px,2.5vw,20px) clamp(10px,2vw,16px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;"><div style="font-size:1.4rem;">⚙️</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;color:var(--gold);">Systemize</div><div style="font-size:.7rem;color:var(--muted);">Scale operations</div></div>
+      <div style="display:flex;align-items:center;padding:0 6px;color:var(--gold);font-size:1rem;flex-shrink:0;">→</div>
+      <div style="flex:1;min-width:100px;background:rgba(0,188,212,.08);border:1px solid rgba(0,188,212,.18);padding:clamp(14px,2.5vw,20px) clamp(10px,2vw,16px);display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;"><div style="font-size:1.4rem;">🚀</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;color:var(--cyan);">Scale</div><div style="font-size:.7rem;color:var(--muted);">Build platforms</div></div>
+    </div>
+    <div style="margin-top:clamp(24px,3vw,32px);text-align:center;">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:14px;">👉 Not sure where you fit? We'll tell you exactly what to do.</p>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Find Out What My Business Needs →</button>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<section class="services-section" id="services">
+  <div class="wrap">
+    <div class="t-eyebrow">🧩 Choose Your Situation</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Pick what best describes where you are right now.</h2>
+    <p style="margin-top:12px;max-width:620px;font-size:0.92rem;">Eight entry points. One studio. Zero confusion. Choose your situation and we'll show you exactly what to build next.</p>
+
+    <div style="display:grid;gap:2px;margin-top:clamp(28px,4vw,48px);">
+
+      <!-- Situation 1 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;border-left:4px solid var(--gold);">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 01</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"People Can't Find My Business"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--gold);font-weight:700;margin-bottom:10px;">→ Visibility Setup</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">You're invisible online. No visibility = no customers. We get your business listed and positioned to be discovered.</p>
+          <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">People can now find and contact your business online</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--gold);">Free – <span class="price-ngn" data-ngn="10000">₦10,000</span>/month</div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Do</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>List your business on key platforms</li><li>Improve online visibility &amp; discoverability</li><li>Position you to be found by the right customers</li></ul>
+          <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">List My Business →</button>
+        </div>
+      </div>
+
+      <!-- Situation 2 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 02</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"People See Me But Don't Trust Me"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--gold);font-weight:700;margin-bottom:10px;">→ Brand Authority System</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">You exist online — but you don't look credible. We build the identity and visual system that makes customers trust you instantly.</p>
+          <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Your business looks professional and trustworthy within seconds</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--gold);"><span class="price-ngn" data-ngn="150000">₦150k</span> – <span class="price-ngn" data-ngn="350000">₦350k</span></div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Build</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>Brand identity (logo, colours, fonts)</li><li>Visual system &amp; messaging guide</li><li>Social media profiles &amp; presence setup</li><li>Marketing structure framework</li></ul>
+          <button onclick="openServiceInquiry('brand_launch')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Build My Brand →</button>
+        </div>
+      </div>
+
+      <!-- Situation 3 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 03</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I Get Messages But No Consistent Sales"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--gold);font-weight:700;margin-bottom:10px;">→ Sales Conversion System</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">You're getting attention — but not money. We build the system that turns audience into buyers automatically.</p>
+          <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Customers can view, order, and pay without you chasing them manually</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--gold);"><span class="price-ngn" data-ngn="400000">₦400k</span> – <span class="price-ngn" data-ngn="1400000">₦1.4M</span></div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Build</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>Product / service landing page</li><li>Payment integration (Paystack / Flutterwave)</li><li>Automated order flow &amp; confirmations</li><li>WhatsApp Business automation</li><li>Sales funnel + lead capture</li></ul>
+          <button onclick="openServiceInquiry('sales_system')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Fix My Sales →</button>
+        </div>
+      </div>
+
+      <!-- Situation 4 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 04</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"My Business Is Chaotic &amp; Not Scalable"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--gold);font-weight:700;margin-bottom:10px;">→ Full Business Systemization</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">Everything depends on you. Nothing is structured. We transform the whole operation — brand, sales, automation, analytics — into one coherent system.</p>
+          <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Your business runs with structure, automation, and less manual stress</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--gold);"><span class="price-ngn" data-ngn="600000">₦600k</span> – <span class="price-ngn" data-ngn="2000000">₦2M</span></div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Build</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>Full brand + identity setup</li><li>Sales system + payment integration</li><li>Automation tools (orders, responses, follow-ups)</li><li>Social media optimization (all platforms)</li><li>Analytics dashboard</li></ul>
+          <button onclick="openServiceInquiry('systemization')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Systemize My Business →</button>
+        </div>
+      </div>
+
+      <!-- Situation 5 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--green);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 05</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I Want to Start Selling Immediately"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--green);font-weight:700;margin-bottom:10px;">→ Marketplace + GATA Onboarding</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">You don't want to wait months to build a platform. We plug you directly into a live marketplace with payments and logistics already built.</p>
+          <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Your products go live and start receiving orders within days</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--green);"><span class="price-ngn" data-ngn="25000">₦25k</span> – <span class="price-ngn" data-ngn="150000">₦150k</span></div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Do</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>Set up your store on GATA marketplace</li><li>Upload &amp; list your products</li><li>Enable payment wallet setup</li><li>Connect logistics (GATANow)</li><li>Transaction training included</li></ul>
+          <button onclick="openServiceInquiry('gata_onboard')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Start Selling Now →</button>
+        </div>
+      </div>
+
+      <!-- Situation 6 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--cyan);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 06</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I Just Need a Platform Built"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--cyan);font-weight:700;margin-bottom:10px;">→ Platform Development</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">You already know what you want to build. You just need it executed properly — architecture, frontend, backend, deployment.</p>
+          <div style="background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">A fully functional platform users can sign up on, use, and pay through</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--cyan);"><span class="price-ngn" data-ngn="1500000">₦1.5M</span> – <span class="price-ngn" data-ngn="10000000+">₦10M+</span></div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Do</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>Platform architecture design</li><li>UI/UX + full frontend build</li><li>Backend + API development</li><li>Payment + subscription systems</li><li>Cloud deployment + admin dashboard</li></ul>
+          <button onclick="openServiceInquiry('platform_dev')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Build My Platform →</button>
+        </div>
+      </div>
+
+      <!-- Situation 7 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--amber);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 07</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I Want to Build a Startup But Need Help"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--amber);font-weight:700;margin-bottom:10px;">→ Venture Build Partnership</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">You're not just building software — you're building a business. We validate, design, build, and support your launch and growth.</p>
+          <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">A real, revenue-ready business — not just an app</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--amber);"><span class="price-ngn" data-ngn="500000">₦500k</span> – <span class="price-ngn" data-ngn="2000000">₦2M</span> or Equity (10–30%)</div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Do</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>Idea validation + market analysis</li><li>Business model design</li><li>Platform architecture + development</li><li>MVP build + deployment</li><li>Launch strategy + growth infrastructure</li></ul>
+          <button onclick="openServiceInquiry('venture_build')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Apply for Venture Build →</button>
+        </div>
+      </div>
+
+      <!-- Situation 8 -->
+      <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--blue);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 08</div>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"We Need Custom Software for Our Company"</h3>
+          <div style="font-family:'Syne',sans-serif;font-size:.9rem;color:var(--blue);font-weight:700;margin-bottom:10px;">→ Enterprise Systems</div>
+          <p style="font-size:.88rem;margin-bottom:14px;">Your operations require serious, tailored infrastructure — internal systems, automation tools, and enterprise platforms built to your exact spec.</p>
+          <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Outcome</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Software built specifically for your operations and scale</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--blue);"><span class="price-ngn" data-ngn="3000000">₦3M</span> – <span class="price-ngn" data-ngn="20000000+">₦20M+</span></div>
+        </div>
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dimmer);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">What We Build</div>
+          <ul class="pkg-feat" style="margin-bottom:20px;"><li>Custom workflow architecture</li><li>Operations &amp; management dashboards</li><li>Staff / resource management systems</li><li>Mobile app (optional)</li><li>API integrations + maintenance SLA</li></ul>
+          <button onclick="openServiceInquiry('enterprise_sw')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Get Custom Build →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:clamp(32px,5vw,52px);background:rgba(201,168,76,.05);border:1px solid var(--border);border-radius:var(--r2);padding:clamp(24px,4vw,40px);text-align:center;">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Not Sure Which Situation Fits You?</div>
+      <h3 style="font-size:clamp(1.1rem,2.5vw,1.5rem);color:var(--white);margin-bottom:10px;">Run the 2-minute diagnostic — we'll tell you exactly what to do.</h3>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn btn-gold" onclick="openIntakeModal()">Find Out What My Business Needs →</button>
+        <a href="https://calendly.com/hello-teknnuku/30min" class="btn btn-outline">Book a Free Consultation</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLIENT WORK -->
+<section class="client-section" id="clients">
+  <div class="wrap">
+    <div class="t-eyebrow">💼 Real Businesses. Real Results.</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Businesses we've built, transformed, and launched.</h2>
+    <p style="margin-top:12px;max-width:600px;font-size:0.92rem;">These are real businesses we've designed, built, and systemized — each with a real platform, real results, and a real story.</p>
+
+    <div class="client-filter-row">
+      <span class="cf-pill active" data-filter="all">All Clients</span>
+      <span class="cf-pill" data-filter="brand">Brand &amp; Identity</span>
+      <span class="cf-pill" data-filter="sales">Sales Systems</span>
+      <span class="cf-pill" data-filter="platform">Platform Builds</span>
+      <span class="cf-pill" data-filter="web3">Web3</span>
+    </div>
+
+    <div class="client-grid">
+      <div class="client-card" data-cat="brand sales">
+        <div class="cc-media">
+          <iframe class="cc-preview-url" src="https://anjzkitchen.vercel.app" title="Anjzkitchen website preview" loading="lazy" sandbox="allow-scripts allow-same-origin"></iframe>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo"><span class="bname">AnjzKitchen</span><span class="bcat">Food Business</span></div>
+          <a href="https://anjzkitchen.vercel.app" target="_blank" rel="noopener" class="cc-visit-btn">Visit Site ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag">🎨 Brand + Digital Presence</div>
+          <div style="background:rgba(201,168,76,.06);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Before</div>
+            <div style="font-size:.84rem;color:var(--muted);">Taking orders manually through Instagram DMs</div>
+          </div>
+          <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">After</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Structured online food business with automated order flow</div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars"><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span></div>
+            <blockquote>"Now customers can see my full menu and orders come in automatically. It looks like a real business — because it is one now."</blockquote>
+            <cite><div class="cite-avatar">AK</div><div class="cite-info"><span class="cite-name">Anjorin Damilola</span><span class="cite-role">Founder · AnjzKitchen</span></div></cite>
+          </div>
+        </div>
+      </div>
+
+      <div class="client-card" data-cat="brand sales platform">
+        <div class="cc-media">
+          <div class="cc-placeholder"><span class="picon">🧵</span><span class="pname">Celestial Threads</span><span class="ptag">Fashion &amp; Commerce</span></div>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo"><span class="bname">Celestial Threads</span><span class="bcat">Fashion Brand</span></div>
+          <a href="https://celestial-threads.vercel.app" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag">🛍️ Brand + Sales System + Commerce</div>
+          <div style="background:rgba(201,168,76,.06);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Before</div>
+            <div style="font-size:.84rem;color:var(--muted);">Informal fashion seller with no real brand</div>
+          </div>
+          <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">After</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Full eCommerce brand with strong customer trust and structured sales</div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars"><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span></div>
+            <blockquote>"We now look like a real brand — and customers trust us. Our sales reflect that."</blockquote>
+            <cite><div class="cite-avatar">CT</div><div class="cite-info"><span class="cite-name">Precious CN</span><span class="cite-role">Founder · Celestial Threads Fashion</span></div></cite>
+          </div>
+        </div>
+      </div>
+
+      <div class="client-card" data-cat="web3 platform">
+        <div class="cc-media">
+          <div class="cc-placeholder" style="background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(180,120,255,.12),transparent);"><span class="picon">🌐</span><span class="pname">1Billion2Web3</span><span class="ptag">Web3 Education &amp; Alliance</span></div>
+          <div class="cc-media-overlay"></div>
+          <div class="cc-media-logo"><span class="bname">Lotus Global Alliances</span><span class="bcat">Web3 Platform</span></div>
+          <a href="https://1billion2web3initiative.lotusglobalalliances.com" target="_blank" rel="noopener" class="cc-visit-btn">Visit Platform ↗</a>
+        </div>
+        <div class="cc-body">
+          <div class="cc-service-tag" style="color:#b47aff;background:rgba(180,120,255,.08);border-color:rgba(180,120,255,.2);">🔗 Web3 Platform + Community System</div>
+          <div style="background:rgba(201,168,76,.06);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--dimmer);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Before</div>
+            <div style="font-size:.84rem;color:var(--muted);">Vision without infrastructure</div>
+          </div>
+          <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;">
+            <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">After</div>
+            <div style="font-size:.84rem;color:var(--white);font-weight:600;">Full platform + community system serving a growing global audience</div>
+          </div>
+          <div class="cc-quote">
+            <div class="cc-stars"><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span></div>
+            <blockquote>"TEKNNUKU built infrastructure that actually works at scale. They think like builders, not just developers."</blockquote>
+            <cite><div class="cite-avatar" style="background:linear-gradient(135deg,#b47aff,var(--cyan));">LG</div><div class="cite-info"><span class="cite-name">Amy Marcella</span><span class="cite-role">Director · Lotus Global 1Billion2Web3 Initiative</span></div></cite>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="logo-strip">
+      <span class="logo-strip-label">Also Built For</span>
+      <div class="logo-items">
+        <a href="https://anjzkitchen.vercel.app" target="_blank" class="logo-item">AnjzKitchen</a>
+        <a href="https://celestial-threads.vercel.app" target="_blank" class="logo-item">Celestial Threads</a>
+        <a href="https://1billion2web3initiative.lotusglobalalliances.com" target="_blank" class="logo-item">Lotus Global Alliances</a>
+        <a href="https://jobletters.xyz" target="_blank" class="logo-item">Jobletters.xyz</a>
+        <a href="https://gataprotocol.org" target="_blank" class="logo-item">GATA Ecosystem</a>
+        <a href="https://tek1security.teknnuku.xyz" target="_blank" class="logo-item">TEK1SECURITY</a>
+      </div>
+    </div>
+
+    <div style="margin-top:clamp(32px,5vw,52px);text-align:center;padding:clamp(24px,4vw,40px);background:rgba(201,168,76,.05);border:1px solid var(--border);border-radius:var(--r2);">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Your Business Could Be Next</div>
+      <h3 style="font-size:clamp(1.1rem,2.5vw,1.6rem);color:var(--white);margin-bottom:10px;">Ready to become a case study?</h3>
+      <p style="font-size:.9rem;max-width:440px;margin:0 auto 20px;">Run the 2-minute diagnostic and find out exactly which service fits your business right now.</p>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Get My Growth Plan →</button>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT TEKNNUKU STUDIO REALLY IS -->
+<section style="background:var(--panel);padding:clamp(56px,8vw,88px) 0;">
+  <div class="wrap-s">
+    <div class="t-eyebrow">🧠 What TEKNNUKU Studio Really Is</div>
+    <h2 style="font-size:clamp(1.5rem,3.5vw,2.2rem);margin-top:14px;max-width:600px;">Not a web design agency. A business system builder.</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:clamp(24px,4vw,40px);">
+      <div style="background:var(--card);padding:clamp(22px,3.5vw,36px);">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dimmer);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;">We don't build</div>
+        <div style="font-size:.9rem;color:var(--dimmer);text-decoration:line-through;margin-bottom:6px;">Websites that sit there doing nothing</div>
+        <div style="font-size:.9rem;color:var(--dimmer);text-decoration:line-through;margin-bottom:6px;">Pretty pages with no revenue system</div>
+        <div style="font-size:.9rem;color:var(--dimmer);text-decoration:line-through;">Designs that don't convert</div>
+      </div>
+      <div style="background:var(--card);padding:clamp(22px,3.5vw,36px);border-left:3px solid var(--gold);">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;">We build</div>
+        <div style="font-size:.9rem;color:var(--white);font-weight:600;margin-bottom:6px;">→ Customer acquisition systems</div>
+        <div style="font-size:.9rem;color:var(--white);font-weight:600;margin-bottom:6px;">→ Sales conversion infrastructure</div>
+        <div style="font-size:.9rem;color:var(--white);font-weight:600;">→ Revenue systems that compound</div>
+      </div>
+    </div>
+    <div style="margin-top:2px;background:var(--card);padding:clamp(20px,3.5vw,32px);border-bottom:3px solid var(--gold);">
+      <p style="font-family:'Syne',sans-serif;font-size:clamp(.95rem,2vw,1.15rem);font-weight:700;color:var(--gold);text-align:center;">Everything we create is designed to turn attention into money.</p>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- POSITIONING -->
+<section class="pos-section">
+  <div class="wrap">
+    <div class="t-eyebrow">How We Position</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">We don't chase trends. We build durable systems.</h2>
+    <div class="pos-quote">
+      <p>TEKNNUKU Studio builds and launches <em>serious digital business systems</em> for ambitious business owners or companies — and incubates <em>category-defining ventures</em> internally. We are the builders behind the empire.</p>
+    </div>
+    <div class="pos-rules">
+      <div class="pr"><div class="prl">We are not</div><div class="no">logo designers</div><div class="no">web designers</div><div class="no">not just a digital agency</div><div class="yes">→ We are a Digital Business Systems Builder</div></div>
+      <div class="pr"><div class="prl">Why this matters to you</div><p class="desc">When your builder thinks like a business engineer — not an artist — every decision is made with revenue in mind. Your layout, your copy, your flow. All of it optimised for one outcome: turning visitors into customers, and customers into advocates.</p></div>
+    </div>
+    <div class="gravity-strip">
+      <div class="gravity-item"><span>→</span><p>We don't take every client.</p></div>
+      <div class="gravity-item"><span>→</span><p>We optimise for revenue, not applause.</p></div>
+      <div class="gravity-item"><span>→</span><p>Pretty without performance is failure.</p></div>
+      <div class="gravity-item"><span>→</span><p>If it won't monetise, we won't build it.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- WHO WE SERVE -->
+<section class="who-section">
+  <div class="wrap-s">
+    <div class="t-eyebrow">🎯 Who This Is For</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Built for founders who are serious about building.</h2>
+    <p style="margin-top:12px;font-size:0.92rem;">If you want customers — not just a website — this is for you.</p>
+    <div class="who-grid">
+      <div class="who-card"><p>Business owners who need more customers</p></div>
+      <div class="who-card"><p>Vendors and sellers going digital</p></div>
+      <div class="who-card"><p>Founders building platforms</p></div>
+      <div class="who-card"><p>Companies scaling operations</p></div>
+      <div class="who-card"><p>Operators who measure by revenue</p></div>
+      <div class="who-card"><p>Institutions needing custom systems</p></div>
+    </div>
+    <div class="who-close"><p>If your platform needs to generate revenue — not just exist — we're the right team for this.</p></div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- HOW EVERYTHING CONNECTS -->
+<section style="background:var(--dark);padding:clamp(56px,8vw,88px) 0;">
+  <div class="wrap-s">
+    <div class="t-eyebrow">🔗 How Everything Connects</div>
+    <h2 style="font-size:clamp(1.5rem,3.5vw,2.2rem);margin-top:14px;max-width:580px;">You don't need everything at once. You just need the next right step.</h2>
+    <div style="margin-top:clamp(28px,4vw,44px);display:flex;align-items:center;gap:0;overflow-x:auto;scrollbar-width:none;">
+      <div style="background:var(--panel);padding:14px 18px;border:1px solid var(--borderS);font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--gold);white-space:nowrap;">List</div>
+      <div style="color:var(--gold);padding:0 10px;font-size:1.1rem;">→</div>
+      <div style="background:var(--panel);padding:14px 18px;border:1px solid var(--borderS);font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--gold);white-space:nowrap;">Get Seen</div>
+      <div style="color:var(--gold);padding:0 10px;font-size:1.1rem;">→</div>
+      <div style="background:var(--panel);padding:14px 18px;border:1px solid var(--borderS);font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--gold);white-space:nowrap;">Get Customers</div>
+      <div style="color:var(--gold);padding:0 10px;font-size:1.1rem;">→</div>
+      <div style="background:rgba(201,168,76,.08);padding:14px 18px;border:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--gold);white-space:nowrap;">Build System</div>
+      <div style="color:var(--gold);padding:0 10px;font-size:1.1rem;">→</div>
+      <div style="background:rgba(0,188,212,.08);padding:14px 18px;border:1px solid rgba(0,188,212,.18);font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--cyan);white-space:nowrap;">Scale</div>
+      <div style="color:var(--gold);padding:0 10px;font-size:1.1rem;">→</div>
+      <div style="background:rgba(180,120,255,.08);padding:14px 18px;border:1px solid rgba(180,120,255,.18);font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:#b47aff;white-space:nowrap;">Expand</div>
+    </div>
+    <div style="margin-top:clamp(24px,4vw,36px);text-align:center;">
+      <p style="font-size:.92rem;color:var(--muted);margin-bottom:16px;">👉 Not sure where you fit? We'll tell you exactly what to do.</p>
+      <button class="btn btn-gold" onclick="openIntakeModal()">Find Out What My Business Needs →</button>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- PROCESS -->
+<section class="process-section" id="process">
+  <div class="wrap">
+    <div class="t-eyebrow">How We Work</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Four verbs. Zero wasted time.</h2>
+    <p style="margin-top:12px;max-width:540px;font-size:0.92rem;">Most agencies iterate endlessly and bill by the hour. We move by outcome. Every project follows the same proven sequence — because it works every time.</p>
+    <div class="verb-rail">
+      <div class="verb"><span class="vw">Design</span><span class="vs">Revenue first</span></div>
+      <div class="verb"><span class="vw">Build</span><span class="vs">Fast &amp; clean</span></div>
+      <div class="verb"><span class="vw">Validate</span><span class="vs">Real payments</span></div>
+      <div class="verb"><span class="vw">Scale</span><span class="vs">Winners grow</span></div>
+    </div>
+    <div class="step-grid">
+      <div class="step"><span class="snum">// 01 — Design</span><h3>We define how your business makes money</h3><p>Before we open a design file, we answer the question every platform must answer: how does this make money? Revenue model, audience, and structure come first. Always.</p></div>
+      <div class="step"><span class="snum">// 02 — Build</span><h3>We create the system fast</h3><p>We build the simplest version that can generate a real market signal. Not a prototype. Not a mockup. A working product in the hands of real potential customers — fast.</p></div>
+      <div class="step"><span class="snum">// 03 — Validate</span><h3>Real users. Real payments.</h3><p>We don't celebrate activity — we celebrate payment. Real users paying real money. No payment signal means we pivot. This saves years and protects capital.</p></div>
+      <div class="step"><span class="snum">// 04 — Scale</span><h3>What works grows. What doesn't gets removed.</h3><p>Winners reach product-market fit, get their own team, and are scaled aggressively. We allocate resources ruthlessly toward what's working and cut what isn't.</p></div>
+    </div>
+    <div class="process-rule">
+      <span>⚙️</span>
+      <p>Every project is built as permanent infrastructure — not a one-time deliverable. We build it once. We build it right. It compounds from there.</p>
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- VENTURES -->
+<section class="ventures-section" id="ventures">
+  <div class="wrap">
+    <div class="t-eyebrow">🚀 We Don't Just Build for Clients. We Build Our Own.</div>
+    <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Everything we offer has been tested in real businesses we operate.</h2>
+    <p style="margin-top:12px;max-width:560px;font-size:0.92rem;">These are live ventures inside the TEKNNUKU factory — tested against the same standards we hold your project to.</p>
+    <div class="venture-grid">
+
+      <div class="vc">
+        <span class="vstatus s-cash">⭐ Primary Cash Engine</span>
+        <h3>Jobletters.xyz</h3>
+        <p class="vrole">A live AI platform helping users create CVs, cover letters, and professional documents. Proof that we build and monetize real software.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Type</span><span class="dv">AI productivity tool</span></li>
+          <li><span class="dk">Stage</span><span class="dv">Live &amp; generating revenue</span></li>
+          <li><span class="dk">Proof</span><span class="dv">We build and monetize real software</span></li>
+        </ul>
+        <a href="https://jobletters.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc" style="border-top:3px solid var(--gold);grid-column:1/-1;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
+          <div>
+            <span class="vstatus s-validate" style="margin-bottom:10px;display:inline-block;">🌟 Featured Program · Live &amp; Active</span>
+            <h3 style="font-size:clamp(1.3rem,2.5vw,1.9rem);margin-bottom:8px;">Poverty2Prosperity System</h3>
+            <p style="font-size:.88rem;color:var(--dim);max-width:640px;line-height:1.75;">The knowledge &amp; systems transformation arm of TEKNNUKU Studio. Every week, TEKNNUKU hosts <strong style="color:var(--white);">free public workshops</strong> and a <strong style="color:var(--gold);">paid Inner Circle Masterclass</strong> that teaches entrepreneurs the system to move from poverty to prosperity.</p>
+          </div>
+          <a href="https://p2p.teknnuku.xyz" target="_blank" rel="noopener" class="vc-link" style="white-space:nowrap;">Visit Platform →</a>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button onclick="openIntakeModal()" class="btn btn-gold" style="font-size:.8rem;padding:10px 20px;">Join the Inner Circle →</button>
+          <a href="https://p2p.teknnuku.xyz" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:.8rem;padding:10px 20px;">Register for Free Workshop →</a>
+        </div>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-b2b">B2B Validation</span>
+        <h3>TEK1SECURITY</h3>
+        <p class="vrole">A SaaS platform for managing security operations — guard tracking, shift management, incident reporting. Proof that we build systems businesses depend on.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Type</span><span class="dv">Guard management SaaS</span></li>
+          <li><span class="dk">Proof</span><span class="dv">We build systems businesses depend on</span></li>
+        </ul>
+        <a href="https://tek1security.teknnuku.xyz" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-validate">Early Validation</span>
+        <h3>Pawa+9ja</h3>
+        <p class="vrole">An eCommerce platform selling power and energy solutions — inverters, solar equipment — for households and businesses across Nigeria. Proof that we understand real markets.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Type</span><span class="dv">Power products eCommerce</span></li>
+          <li><span class="dk">Proof</span><span class="dv">We understand real consumer markets</span></li>
+        </ul>
+        <a href="https://pawaplus.vercel.app" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+      <div class="vc">
+        <span class="vstatus s-build">Build Phase</span>
+        <h3>GATA Ecosystem</h3>
+        <p class="vrole">Marketplace + logistics infrastructure. GATAMarket connects buyers and sellers. GATANow handles delivery. GATA Token powers the economy. Proof that we build at ecosystem scale.</p>
+        <ul class="vdetails">
+          <li><span class="dk">Platforms</span><span class="dv">GATAMarket + GATANow</span></li>
+          <li><span class="dk">Proof</span><span class="dv">We build at ecosystem scale</span></li>
+        </ul>
+        <a href="https://gataprotocol.org" target="_blank" rel="noopener" class="vc-link">Visit Platform →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+
+<!-- FINAL CTA -->
+<section class="cta-section" id="contact">
+  <div class="wrap">
+    <div class="cta-inner">
+      <div class="t-eyebrow" style="justify-content:center;margin-bottom:16px;">🔥 Final Call</div>
+      <h2>Stop Guessing. Start Building What Actually Works.</h2>
+      <p class="cta-lead" style="margin-top:18px;">The fastest way to grow is knowing exactly what your business needs. Start there — and we'll tell you exactly what to do.</p>
+      <div class="scarcity-note" style="margin-top:16px;">
+        <span class="scarcity-dot"></span>
+        We take a limited number of new projects each month — spots fill fast
+      </div>
+      <div class="cta-btns" style="margin-top:0;">
+        <button class="btn btn-gold" onclick="openIntakeModal()">Find Out What My Business Needs →</button>
+        <button class="btn btn-outline" onclick="openIntakeModal()">List My Business Free</button>
+        <button class="btn btn-outline" onclick="openIntakeModal()">Build My System</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div id="currency-note" style="display:none;text-align:center;font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:rgba(242,237,228,.25);padding:8px 0;background:rgba(200,155,20,.04);border-top:1px solid rgba(200,155,20,.08);"></div>
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="fb-name">TEKNNUKU <em>STUDIO</em></div>
+        <div class="fb-sub">Venture Factory · Revenue Infrastructure</div>
+        <p class="fb-desc">The venture-building arm of the TEKNNUKU ecosystem. We systematically design, build, validate, and launch revenue-generating businesses — for our own portfolio and for our clients.</p>
+        <div class="fb-tagline">Design → Build → Validate → Scale</div>
+      </div>
+      <div class="fc"><h5>Services</h5><a href="#services">Get Listed</a><a href="#services">Brand Authority</a><a href="#services">Sales Systems</a><a href="#services">Platform Builds</a><a href="#services">Enterprise Custom</a></div>
+      <div class="fc"><h5>Ventures</h5><a href="#ventures">Jobletters.xyz</a><a href="#ventures">Poverty2Prosperity</a><a href="#ventures">GATA Ecosystem</a><a href="#ventures">Pawa+9ja</a><a href="#ventures">TEK1SECURITY</a></div>
+      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="#" onclick="openCareersModal();return false;" style="color:var(--gold);">Careers — Join the Team</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/hello-teknnuku/30min">Book a Consultation</a><a href="#contact" onclick="openContactModal();return false;">Contact Studio</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 TEKNNUKU Studio Ltd. All rights reserved.</p>
+      <p>Venture Factory · Digital Platform Engineering · Revenue Infrastructure</p>
+    </div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
+(function() {
+  var progressBar = document.getElementById('scroll-progress');
+  var header = document.getElementById('site-header');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (header) { if (scrollTop > 60) header.classList.add('scrolled'); else header.classList.remove('scrolled'); }
+  }, { passive: true });
+
+  // Hero Particles
+  (function() {
+    var container = document.getElementById('heroParticles');
+    if (!container) return;
+    var colors = ['rgba(201,168,76,.6)','rgba(0,188,212,.4)','rgba(201,168,76,.3)','rgba(255,255,255,.15)'];
+    for (var i = 0; i < 18; i++) {
+      (function(i) {
+        var p = document.createElement('div');
+        p.className = 'particle';
+        var size = Math.random() * 5 + 2;
+        var x = Math.random() * 100;
+        var delay = Math.random() * 8;
+        var dur = Math.random() * 8 + 6;
+        var color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.cssText = ['width:'+size+'px','height:'+size+'px','left:'+x+'%','bottom:'+(Math.random()*40)+'%','background:'+color,'animation-duration:'+dur+'s','animation-delay:'+delay+'s','animation-iteration-count:infinite','animation-name:particleFloat','animation-timing-function:ease-in-out'].join(';');
+        container.appendChild(p);
+      })(i);
+    }
+  })();
+
+  // Scroll Reveal
+  (function() {
+    var selectors = ['.prob-card','.eng-card','.step','.who-card','.vc','.pkg','.client-card','.t-eyebrow','.id-card','.intake-strip-inner','.pos-quote','.pr','.cc-body','.service-cta-strip'];
+    selectors.forEach(function(sel) {
+      document.querySelectorAll(sel).forEach(function(el, i) {
+        el.classList.add('reveal');
+        el.style.transitionDelay = (i % 4) * 0.08 + 's';
+      });
+    });
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) { entry.target.classList.add('visible'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el) { io.observe(el); });
+  })();
+
+  // Counter Animation
+  (function() {
+    function animateCounter(el, target, suffix, prefix, duration) {
+      var startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var ease = 1 - Math.pow(1 - progress, 3);
+        el.textContent = prefix + Math.floor(ease * target) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = prefix + target + suffix;
+      }
+      requestAnimationFrame(step);
+    }
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.querySelectorAll('.tv').forEach(function(el) {
+          var raw = el.textContent.trim();
+          var prefix = (raw.match(/^\D+/) || [''])[0];
+          var suffix = (raw.match(/\D+$/) || [''])[0];
+          var numStr = raw.replace(/[^0-9]/g, '');
+          if (!numStr) return;
+          animateCounter(el, parseInt(numStr, 10), suffix, prefix, 1800);
+        });
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.5 });
+    var ts = document.querySelector('.traction-section');
+    if (ts) obs.observe(ts);
+  })();
+
+  // Mobile Menu
+  var hamburger = document.getElementById('hamburger');
+  var mobileNav = document.getElementById('mobile-nav');
+  window.closeMenu = function() { hamburger.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); mobileNav.classList.remove('open'); };
+  hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (mobileNav.classList.contains('open')) closeMenu();
+    else { hamburger.classList.add('open'); hamburger.setAttribute('aria-expanded','true'); mobileNav.classList.add('open'); }
+  });
+  document.addEventListener('click', function(e) {
+    if (mobileNav.classList.contains('open') && !hamburger.contains(e.target) && !mobileNav.contains(e.target)) closeMenu();
+  });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeMenu(); if(window.closeIntakeModal) closeIntakeModal(); } });
+
+  // Service Tabs
+  document.querySelectorAll('.tier-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = this.getAttribute('data-tier');
+      document.querySelectorAll('.tier-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tier-body').forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      var panel = document.getElementById(target);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  // Client Filter Pills
+  document.querySelectorAll('.cf-pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('.cf-pill').forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      var filter = this.getAttribute('data-filter');
+      document.querySelectorAll('.client-card').forEach(function(card) {
+        if (filter === 'all') { card.style.display = ''; }
+        else {
+          var cats = (card.getAttribute('data-cat') || '').split(' ');
+          card.style.display = cats.indexOf(filter) !== -1 ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // Theme Toggle
+  var themeBtn = document.getElementById('themeToggle');
+  var currentTheme = localStorage.getItem('tek-theme') || 'dark';
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeBtn.textContent = t === 'light' ? '🌙' : '☀️';
+    localStorage.setItem('tek-theme', t);
+  }
+  applyTheme(currentTheme);
+  themeBtn.addEventListener('click', function() {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+  });
+
+  // Smooth Scroll
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      var href = this.getAttribute('href');
+      if (href === '#') return;
+      var target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        var headerH = document.getElementById('site-header').offsetHeight;
+        window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - headerH - 8, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Scroll Rail
+  var railFill = document.getElementById('railFill');
+  var scrollHint = document.getElementById('scroll-hint');
+  var hintShown = false;
+  setTimeout(function() {
+    if (!hintShown && window.scrollY < 80) { scrollHint.classList.add('visible'); hintShown = true; setTimeout(function() { scrollHint.classList.remove('visible'); }, 3000); }
+  }, 1500);
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.scrollY;
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docH > 0 ? (scrollTop / docH) * 100 : 0;
+    if (railFill) railFill.style.height = pct + '%';
+    if (scrollTop > 60) scrollHint.classList.remove('visible');
+  }, { passive: true });
+
+})();
+
+// ════════ INTAKE MODAL ════════
+window.openIntakeModal = function() {
+  document.getElementById('intake-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  mShowStep(mState.step);
+};
+window.closeIntakeModal = function() {
+  document.getElementById('intake-modal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+document.getElementById('intake-modal').addEventListener('click', function(e) { if (e.target === this) closeIntakeModal(); });
+
+var mState = { step:0, totalSteps:11, answers:{ firstName:'', lastName:'', email:'', phone:'', q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[] } };
+
+(function() {
+  var container = document.getElementById('mStepDots');
+  for (var i = 0; i < mState.totalSteps; i++) {
+    var d = document.createElement('div'); d.className = 'step-dot-m'; d.id = 'mdot-' + i; container.appendChild(d);
+  }
+})();
+
+function mUpdateDots() {
+  for (var i = 0; i < mState.totalSteps; i++) {
+    var d = document.getElementById('mdot-' + i);
+    if (!d) continue;
+    d.className = 'step-dot-m' + (i < mState.step ? ' done' : i === mState.step ? ' active' : '');
+  }
+}
+function mUpdateProgress() {
+  document.getElementById('mProgressFill').style.width = (mState.step / (mState.totalSteps - 1)) * 100 + '%';
+  document.getElementById('mStepCounter').textContent = 'Step ' + (mState.step + 1) + ' of ' + mState.totalSteps;
+  mUpdateDots();
+}
+window.mSelect = function(btn, groupId, mode, maxSel) {
+  if (mode === 'single') {
+    document.querySelectorAll('#' + groupId + ' .option-btn-m').forEach(function(b) { b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    mState.answers['q' + parseInt(groupId.replace('mq',''))] = [btn.dataset.value];
+  } else {
+    var max = maxSel || 99;
+    var selected = document.querySelectorAll('#' + groupId + ' .option-btn-m.selected');
+    if (btn.classList.contains('selected')) btn.classList.remove('selected');
+    else if (selected.length < max) btn.classList.add('selected');
+    var vals = [];
+    document.querySelectorAll('#' + groupId + ' .option-btn-m.selected').forEach(function(b) { vals.push(b.dataset.value); });
+    mState.answers['q' + parseInt(groupId.replace('mq',''))] = vals;
+  }
+  var vm = document.getElementById('mval-' + mState.step);
+  if (vm) vm.classList.remove('show');
+};
+function mValidate(step) {
+  if (step === 0) {
+    var fn = document.getElementById('m_firstName').value.trim();
+    var ln = document.getElementById('m_lastName').value.trim();
+    var em = document.getElementById('m_email').value.trim();
+    var ph = document.getElementById('m_phone').value.trim();
+    if (!fn || !ln || !em || !ph) { document.getElementById('mval-0').classList.add('show'); return false; }
+    if (!/\S+@\S+\.\S+/.test(em)) { document.getElementById('mval-0').classList.add('show'); return false; }
+    mState.answers.firstName = fn; mState.answers.lastName = ln; mState.answers.email = em; mState.answers.phone = ph;
+    return true;
+  }
+  if (!mState.answers['q' + step] || mState.answers['q' + step].length === 0) {
+    var vm = document.getElementById('mval-' + step); if (vm) vm.classList.add('show'); return false;
+  }
+  return true;
+}
+function mShowStep(n) {
+  document.querySelectorAll('.step-panel-m').forEach(function(p) { p.classList.remove('active'); });
+  var panel = document.querySelector('[data-mstep="' + n + '"]'); if (panel) panel.classList.add('active');
+  document.getElementById('mBtnBack').style.display = n === 0 ? 'none' : 'inline-flex';
+  document.getElementById('mBtnNext').textContent = n === mState.totalSteps - 1 ? 'Get My Results →' : 'Continue →';
+  mUpdateProgress();
+  var modal = document.getElementById('intake-modal'); if (modal) modal.scrollTop = 0;
+}
+window.mGoNext = function() { if (!mValidate(mState.step)) return; if (mState.step < mState.totalSteps - 1) { mState.step++; mShowStep(mState.step); } else { mSubmitForm(); } };
+window.mGoBack = function() { if (mState.step > 0) { mState.step--; mShowStep(mState.step); } };
+
+function mComputeScore() {
+  var score = 0; var breakdown = { revenue:0, budget:0, stage:0, urgency:0, gap:0 };
+  var rev = { zero:0, low:5, mid:10, high:20, premium:30 }; breakdown.revenue = rev[mState.answers.q3[0]] || 0; score += breakdown.revenue;
+  var bud = { free_only:0, low_cost:8, can_invest:18, premium_ready:25 }; breakdown.budget = bud[mState.answers.q6[0]] || 0; score += breakdown.budget;
+  var stg = { idea:2, recently_started:6, some_sales:12, consistent_revenue:16, scaling:20 }; breakdown.stage = stg[mState.answers.q2[0]] || 0; score += breakdown.stage;
+  var urg = { exploring:2, three_months:6, thirty_days:10, immediately:15 }; breakdown.urgency = urg[mState.answers.q7[0]] || 0; score += breakdown.urgency;
+  if (mState.answers.q9.indexOf('none') > -1) { breakdown.gap = 10; } else { breakdown.gap = Math.min((4 - Math.min(mState.answers.q9.length, 4)) * 2, 5); }
+  score += breakdown.gap;
+  return { total: Math.min(score, 100), breakdown: breakdown };
+}
+function mComputeTags(score) {
+  var tags = []; var q1 = mState.answers.q1[0]; var q6 = mState.answers.q6[0]; var q3 = mState.answers.q3[0];
+  if (score >= 70) tags.push('high_value'); else if (score >= 40) tags.push('growth_business'); else tags.push('beginner');
+  if (q1 === 'physical_seller') tags.push('seller'); if (q1 === 'service_provider') tags.push('service_provider');
+  if (q1 === 'company_team') tags.push('operator'); if (q1 === 'security_firm') tags.push('security_firm');
+  if (q1 === 'solar_vendor') tags.push('solar_vendor'); if (q1 === 'just_starting') tags.push('beginner');
+  if (q3 === 'high' || q3 === 'premium') tags.push('revenue_positive');
+  if (q6 === 'premium_ready') tags.push('premium_buyer');
+  if (mState.answers.q5.indexOf('marketplace') > -1) tags.push('marketplace_interest');
+  if (mState.answers.q7[0] === 'immediately') tags.push('hot_lead');
+  return tags.filter(function(v, i, a) { return a.indexOf(v) === i; });
+}
+function mComputeRoutes(score, tags) {
+  var q1 = mState.answers.q1[0]; var q5 = mState.answers.q5; var q6 = mState.answers.q6[0]; var q3 = mState.answers.q3[0];
+  var routes = [];
+  if (q1 === 'security_firm') routes.push({ icon:'🛡️', name:'TEK1SECURITY', primary:true, desc:'Guard management SaaS built for your exact industry.', url:'https://tek1security.teknnuku.xyz' });
+  if (q1 === 'solar_vendor') routes.push({ icon:'☀️', name:'Pawa+9ja', primary:true, desc:'Solar customer acquisition marketplace for vendors like you.', url:'https://pawaplus.vercel.app/' });
+  if (q5.indexOf('marketplace') > -1) routes.push({ icon:'🛒', name:'GATA Marketplace', primary:q1==='physical_seller', desc:'List your products on a marketplace built for Nigerian sellers.', url:'https://gataprotocol.org' });
+  if (score >= 70) {
+    routes.push({ icon:'🏗️', name:'TEKNNUKU Studio — Custom Systems', primary:routes.length===0, desc:'You qualify for our premium digital platform builds.', url:'https://studio.teknnuku.xyz' });
+    routes.push({ icon:'📞', name:'Book a Strategy Call', primary:false, desc:"Speak directly with the Studio team. We'll map out your system and quote within 48 hours.", url:'https://calendly.com/hello-teknnuku/30min' });
+  } else if (score >= 40) {
+    if (['can_invest','premium_ready'].indexOf(q6) > -1) routes.push({ icon:'🏗️', name:'TEKNNUKU Studio — Starter Packages', primary:routes.length===0, desc:'Brand kits, sales systems, and business setups matched to your stage.', url:'https://studio.teknnuku.xyz' });
+    routes.push({ icon:'📚', name:'Poverty2Prosperity Workshop', primary:false, desc:'Build the income, business, and systems knowledge that will 10x your results.', url:'https://p2p.teknnuku.xyz' });
+    routes.push({ icon:'🛒', name:'GATA Ecosystem Onboarding', primary:false, desc:'Start selling on the GATA marketplace within days.', url:'https://gataprotocol.org' });
+  } else {
+    routes.push({ icon:'🆓', name:'Free Training Resources', primary:true, desc:'Start with our free business fundamentals — no cost, no pressure.', url:'https://update-six-gules.vercel.app/' });
+    routes.push({ icon:'📚', name:'Poverty2Prosperity Entry Programme', primary:false, desc:'The guided pathway from zero income to your first consistent online revenue stream.', url:'https://p2p.teknnuku.xyz' });
+    routes.push({ icon:'💬', name:'Join the Community', primary:false, desc:'Connect with founders at your stage inside the TEKNNUKU community network.', url:'https://discord.gg/FvRfdb94wC' });
+  }
+  var seen = {};
+  return routes.filter(function(r) { return seen[r.name] ? false : (seen[r.name] = true); });
+}
+
+function mRenderResults(scoreObj, tags) {
+  var score = scoreObj.total; var bd = scoreObj.breakdown;
+  var tier, tierLabel, tagline;
+  var heroEl = document.getElementById('mResultsCard');
+  if (score >= 70) { tier='tier-a-m'; tierLabel='🟢 Tier A — High-Value Client'; tagline="You're exactly the kind of client TEKNNUKU Studio is built for. We're ready to build your revenue system now."; }
+  else if (score >= 40) { tier='tier-b-m'; tierLabel='🟡 Tier B — Growth Business'; tagline="Your business has real momentum. The right system will unlock the next level."; }
+  else { tier='tier-c-m'; tierLabel='🔵 Tier C — Early Builder'; tagline="Every empire started here. There's a clear, guided path from exactly where you are."; }
+  heroEl.className = tier;
+  heroEl.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);';
+  document.getElementById('mTierBadgeText').textContent = tierLabel;
+  document.getElementById('mResultsName').textContent = 'Hi, ' + mState.answers.firstName + ' 👋';
+  document.getElementById('mResultsTagline').textContent = tagline;
+  setTimeout(function() {
+    var circumference = 276.5;
+    document.getElementById('mScoreCircle').style.strokeDashoffset = circumference - (score / 100) * circumference;
+    document.getElementById('mScoreNum').innerHTML = score + '<small>SQS</small>';
+  }, 200);
+  var bdHtml = [{label:'Revenue',val:bd.revenue,max:30},{label:'Budget',val:bd.budget,max:25},{label:'Stage',val:bd.stage,max:20},{label:'Urgency',val:bd.urgency,max:15},{label:'Infra Gap',val:bd.gap,max:10}].map(function(row) {
+    return '<div class="score-row-m"><span class="sr-label-m">'+row.label+'</span><div class="score-bar-wrap-m"><div class="score-bar-fill-m" data-pct="'+(row.val/row.max*100)+'"></div></div><span class="sr-val-m">'+row.val+'/'+row.max+'</span></div>';
+  }).join('');
+  document.getElementById('mScoreBreakdown').innerHTML = bdHtml;
+  setTimeout(function() { document.querySelectorAll('.score-bar-fill-m').forEach(function(b) { b.style.width = b.dataset.pct + '%'; }); }, 400);
+  document.getElementById('mTagsRow').innerHTML = tags.map(function(t) { return '<span class="tag-chip-m gold-m">'+t.replace(/_/g,' ')+'</span>'; }).join('');
+  var routes = mComputeRoutes(score, tags);
+  document.getElementById('mRouteCards').innerHTML = routes.map(function(r) {
+    return '<a href="'+r.url+'" class="route-card-m'+(r.primary?' primary-m':'')+'" target="_blank">'+(r.primary?'<span class="primary-badge-m">Best Match</span>':'')+
+      '<span class="rc-icon-m">'+r.icon+'</span><div class="rc-body-m"><div class="rc-name-m">'+r.name+'</div><div class="rc-desc-m">'+r.desc+'</div></div><span class="rc-arrow-m">→</span></a>';
+  }).join('');
+}
+
+async function mSubmitForm() {
+  document.getElementById('intakeLoading').classList.add('show');
+  var scoreObj = mComputeScore(); var tags = mComputeTags(scoreObj.total); var routes = mComputeRoutes(scoreObj.total, tags);
+  var tier = scoreObj.total >= 70 ? 'A' : scoreObj.total >= 40 ? 'B' : 'C';
+  var payload = { firstName: mState.answers.firstName, lastName: mState.answers.lastName, email: mState.answers.email, phone: mState.answers.phone, responses: { q1_identity:mState.answers.q1, q2_stage:mState.answers.q2, q3_revenue:mState.answers.q3, q4_pain:mState.answers.q4, q5_needs:mState.answers.q5, q6_budget:mState.answers.q6, q7_urgency:mState.answers.q7, q8_channels:mState.answers.q8, q9_infra:mState.answers.q9, q10_goal:mState.answers.q10 }, score: scoreObj.total, scoreBreakdown: scoreObj.breakdown, tier: 'Tier ' + tier, tags: tags, primaryRoute: routes[0] ? routes[0].name : 'none', completedAt: new Date().toISOString() };
+  if (window.__saveToFirebase) await window.__saveToFirebase(payload);
+  await new Promise(function(r) { setTimeout(r, 1200); });
+  document.getElementById('intakeLoading').classList.remove('show');
+  document.getElementById('intake-form-view').style.display = 'none';
+  document.getElementById('intake-results-view').classList.add('active');
+  mRenderResults(scoreObj, tags);
+  document.getElementById('intake-modal').scrollTop = 0;
+}
+window.mRestart = function() {
+  mState = { step:0, totalSteps:11, answers:{ firstName:'', lastName:'', email:'', phone:'', q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[] } };
+  document.querySelectorAll('.option-btn-m').forEach(function(b) { b.classList.remove('selected'); });
+  document.querySelectorAll('.val-msg-m').forEach(function(m) { m.classList.remove('show'); });
+  ['m_firstName','m_lastName','m_email','m_phone'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('intake-results-view').classList.remove('active');
+  document.getElementById('intake-form-view').style.display = '';
+  mShowStep(0);
+};
+
+// ════════ CONTACT MODAL ════════
+window.openContactModal = function() { var m=document.getElementById('contact-modal'); m.style.display='flex'; document.body.style.overflow='hidden'; m.scrollTop=0; };
+window.closeContactModal = function() { document.getElementById('contact-modal').style.display='none'; document.body.style.overflow=''; };
+document.getElementById('contact-modal').addEventListener('click', function(e) { if (e.target === this) closeContactModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { if(window.closeContactModal) closeContactModal(); if(window.closeIntakeModal) closeIntakeModal(); if(window.closeServiceInquiry) closeServiceInquiry(); } });
+
+window.submitContactForm = async function() {
+  var name=(document.getElementById('ct_name').value||'').trim(); var email=(document.getElementById('ct_email').value||'').trim(); var subject=document.getElementById('ct_subject').value; var message=(document.getElementById('ct_message').value||'').trim(); var valMsg=document.getElementById('ct_valmsg'); var btn=document.getElementById('ct_btn_text');
+  valMsg.style.display='none';
+  if (!name||!email||!message) { valMsg.textContent='Please fill in your name, email, and message.'; valMsg.style.display='block'; return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { valMsg.textContent='Please enter a valid email address.'; valMsg.style.display='block'; return; }
+  btn.textContent='Sending…';
+  var payload = { name:name, email:email, subject:subject||'general', message:message, source:'contact_modal', sentAt:new Date().toISOString() };
+  try { if (window.__saveContactToFirebase) await window.__saveContactToFirebase(payload); else if (window.__saveToFirebase) await window.__saveToFirebase(payload); } catch(e) {}
+  document.getElementById('contact-form-body').style.display='none';
+  document.getElementById('contact-success').style.display='block';
+};
+window.resetContactForm = function() {
+  ['ct_name','ct_email','ct_message'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('ct_subject').selectedIndex=0;
+  document.getElementById('ct_valmsg').style.display='none';
+  document.getElementById('ct_btn_text').textContent='Send Message →';
+  document.getElementById('contact-form-body').style.display='block';
+  document.getElementById('contact-success').style.display='none';
+};
+
+// ════════ SERVICE INQUIRY MODAL ════════
+var TEK_FMT = { code:'NGN', rate:1, symbol:'₦', fmt:function(ngn) { var v=ngn*this.rate; var s=this.symbol; if(v>=1000000) return s+(v/1000000).toFixed(v%1000000===0?0:1)+'M'; if(v>=1000) return s+Math.round(v/1000)+'k'; return s+Math.round(v).toLocaleString(); }, range:function(lo,hi,plus) { return this.fmt(lo)+' – '+this.fmt(hi)+(plus?'+':''); } };
+
+var SI_SERVICES = {
+  brand_launch: { title:'Digital Brand Launch', subtitle:"Tell us about your brand goals and we'll scope the right identity package for you.", badge:'01 · Brand & Identity', successMsg:"Our brand strategist will review your brief and reach out within 24 hours with a tailored proposal.", fields:[{id:'si_industry',label:'Your Industry / Niche',type:'text',placeholder:'e.g. Food & Beverage, Fashion, Tech'},{id:'si_audience',label:'Target audience',type:'text',placeholder:'e.g. Young professionals in Lagos'},{id:'si_timeline',label:'Desired launch timeline',type:'select',options:['Within 2 weeks','1 month','2–3 months','Just exploring']},{id:'si_budget_brand',label:'Budget range',type:'priceSelect',priceOptions:[{label:'Starter',lo:150000,hi:250000},{label:'Standard',lo:250000,hi:350000},{label:'Not sure yet',lo:0,hi:0}]}] },
+  sales_system: { title:'Sales System Setup', subtitle:"Share your current sales situation and we'll build the system that closes more deals.", badge:'02 · Sales Infrastructure', successMsg:"Our sales systems specialist will analyse your brief and respond with a personalised roadmap.", fields:[{id:'si_current_sales',label:'How do you currently get sales?',type:'select',options:['Mostly referrals','Social media DMs','Walk-ins','Online ads','No consistent method']},{id:'si_monthly_leads',label:'Monthly leads?',type:'select',options:['0–10','10–50','50–200','200+']},{id:'si_biggest_gap',label:'Biggest sales gap right now',type:'text',placeholder:'e.g. Leads do not convert, no follow-up system'},{id:'si_sales_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Starter',lo:400000,hi:600000},{label:'Growth',lo:700000,hi:1000000},{label:'Full System',lo:1100000,hi:1400000},{label:'Not sure yet',lo:0,hi:0}]}] },
+  systemization: { title:'Business Systemization', subtitle:"Let's understand your operations so we can design the systems that eliminate chaos.", badge:'03 · Ops & Systems', successMsg:"Our operations consultant will reach out to schedule an in-depth systems audit call.", fields:[{id:'si_team_size',label:'Team size',type:'select',options:['Solo founder','2–5 people','6–15 people','15–50 people','50+ people']},{id:'si_biggest_bottleneck',label:'Biggest operational bottleneck',type:'text',placeholder:'e.g. No SOPs, manual invoicing'},{id:'si_sys_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Audit + SOPs',lo:600000,hi:900000},{label:'Full System Design',lo:1000000,hi:1500000},{label:'Not sure yet',lo:0,hi:0}]}] },
+  gata_onboard: { title:'GATA Ecosystem Onboarding', subtitle:"Join Nigeria's growing digital commerce ecosystem.", badge:"06 · GATA Ecosystem", successMsg:"Welcome! Our onboarding coordinator will send your access details shortly.", fields:[{id:'si_biz_type',label:'Type of business',type:'select',options:['Physical product seller','Digital product / service','Freelancer / Consultant','Food & Beverage','Fashion & Apparel','Other']},{id:'si_gata_goal',label:'Primary goal for joining GATA',type:'select',options:['Access the marketplace','Join the community','Distribute my products','All of the above']},{id:'si_gata_tier',label:'Membership tier',type:'priceSelect',priceOptions:[{label:'Basic Access',lo:25000,hi:40000},{label:'Standard Member',lo:50000,hi:80000},{label:'Premium Partner',lo:90000,hi:150000},{label:'Not sure yet',lo:0,hi:0}]}] },
+  platform_dev: { title:'Platform Development', subtitle:"Describe the platform you want built and we'll scope it with you.", badge:'06 · Platform Engineering', successMsg:"Our technical lead will arrange a scoping session within 48 hours.", fields:[{id:'si_platform_type',label:'What type of platform?',type:'select',options:['Marketplace / E-commerce','SaaS / Web App','Booking / Scheduling','CRM / Internal Tool','Other']},{id:'si_core_features',label:'Key features needed',type:'text',placeholder:'e.g. User login, payments, dashboards'},{id:'si_platform_budget',label:'Budget range',type:'priceSelect',priceOptions:[{label:'MVP',lo:1500000,hi:2500000},{label:'Standard Web App',lo:2800000,hi:4500000},{label:'Full Platform',lo:5000000,hi:10000000,plus:true},{label:'To be scoped',lo:0,hi:0}]}] },
+  venture_build: { title:'Startup Venture Building', subtitle:"Apply to co-build a revenue-generating venture with the TEKNNUKU Studio team.", badge:'07 · Venture Building', successMsg:"Your venture application has been received. Our investment team reviews applications weekly.", fields:[{id:'si_venture_idea',label:'Your venture idea / concept',type:'text',placeholder:'Describe the problem you are solving'},{id:'si_venture_stage',label:'Current stage',type:'select',options:['Idea only','Research done','MVP built','Pilot customers','Early revenue']},{id:'si_equity_range',label:'Equity open to offering',type:'select',options:['10–15%','15–20%','20–30%','30%+','Open to discussion']},{id:'si_venture_invest',label:'Min. capital you can commit',type:'priceSelect',priceOptions:[{label:'Seed',lo:500000,hi:1000000},{label:'Early',lo:1200000,hi:2000000},{label:'Equity-only deal',lo:0,hi:0}]}] },
+  enterprise_sw: { title:'Custom Software Development', subtitle:"Tell us about your enterprise project and we'll prepare a detailed technical quote.", badge:'08 · Enterprise Software', successMsg:"Our engineering team will prepare a technical proposal within 48 hours.", fields:[{id:'si_org_size',label:'Organisation size',type:'select',options:['1–10 people','11–50 people','51–200 people','200+ people','Government / Public sector']},{id:'si_project_scope',label:'Project scope description',type:'text',placeholder:'e.g. ERP system, HR platform, logistics tracking'},{id:'si_ent_budget',label:'Budget range',type:'priceSelect',priceOptions:[{label:'Standard',lo:3000000,hi:5000000},{label:'Mid-Scale',lo:6000000,hi:10000000},{label:'Enterprise',lo:12000000,hi:20000000,plus:true},{label:'To be scoped',lo:0,hi:0}]}] }
+};
+
+var currentServiceId = null;
+window.openServiceInquiry = function(serviceId) {
+  currentServiceId = serviceId;
+  var svc = SI_SERVICES[serviceId];
+  if (!svc) return;
+  document.getElementById('si-form-body').style.display='block'; document.getElementById('si-success').style.display='none';
+  ['si_name','si_email','si_phone','si_biz','si_notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('si_valmsg').style.display='none';
+  document.getElementById('si_btn_text').textContent='Submit Enquiry →';
+  document.getElementById('si-title').textContent=svc.title;
+  document.getElementById('si-subtitle').textContent=svc.subtitle;
+  document.getElementById('si-badge').textContent=svc.badge;
+  document.getElementById('si-topbar-label').textContent='TEKNNUKU Studio · '+svc.badge;
+  var df = document.getElementById('si-dynamic-fields');
+  df.innerHTML = (svc.fields||[]).map(function(f) {
+    var input='';
+    if (f.type==='priceSelect') {
+      var pOpts = f.priceOptions.map(function(o,i){ var label=(o.lo&&o.hi)?(o.label+' — '+TEK_FMT.range(o.lo,o.hi,o.plus)):o.label; return '<option value="'+o.label+'" style="background:#141414;"'+(i===0?' selected':'')+'>'+label+'</option>'; }).join('');
+      input='<select id="'+f.id+'" style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);border-radius:4px;padding:11px 13px;color:#F2EDE4;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:100%;box-sizing:border-box;-webkit-appearance:none;cursor:pointer;transition:border-color .2s;" onfocus="this.style.borderColor='#C89B14'" onblur="this.style.borderColor='rgba(242,237,228,.07)'">'+pOpts+'</select>';
+    } else if (f.type==='select') {
+      input='<select id="'+f.id+'" style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);border-radius:4px;padding:11px 13px;color:#F2EDE4;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:100%;box-sizing:border-box;-webkit-appearance:none;cursor:pointer;transition:border-color .2s;" onfocus="this.style.borderColor='#C89B14'" onblur="this.style.borderColor='rgba(242,237,228,.07)'">'+f.options.map(function(o,i){return '<option value="'+o+'" style="background:#141414;"'+(i===0?' selected':'')+'>'+o+'</option>';}).join('')+'</select>';
+    } else {
+      input='<input id="'+f.id+'" type="text" placeholder="'+(f.placeholder||'')+'" style="background:rgba(24,24,24,.9);border:1px solid rgba(242,237,228,.07);border-radius:4px;padding:11px 13px;color:#F2EDE4;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:100%;box-sizing:border-box;transition:border-color .2s;" onfocus="this.style.borderColor='#C89B14'" onblur="this.style.borderColor='rgba(242,237,228,.07)'">';
+    }
+    return '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;"><label style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(242,237,228,.35);">'+f.label+'</label>'+input+'</div>';
+  }).join('');
+  var m=document.getElementById('service-inquiry-modal'); m.style.display='flex'; document.body.style.overflow='hidden'; m.scrollTop=0;
+};
+window.closeServiceInquiry = function() { document.getElementById('service-inquiry-modal').style.display='none'; document.body.style.overflow=''; };
+document.getElementById('service-inquiry-modal').addEventListener('click', function(e) { if (e.target===this) closeServiceInquiry(); });
+window.submitServiceInquiry = async function() {
+  var name=(document.getElementById('si_name').value||'').trim(); var email=(document.getElementById('si_email').value||'').trim();
+  var val=document.getElementById('si_valmsg'); var btn=document.getElementById('si_btn_text');
+  val.style.display='none';
+  if (!name||!email) { val.textContent='Please enter your name and email to continue.'; val.style.display='block'; return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { val.textContent='Please enter a valid email address.'; val.style.display='block'; return; }
+  btn.textContent='Submitting…';
+  var svc=SI_SERVICES[currentServiceId]||{};
+  var dynamicData={};
+  if(svc.fields) svc.fields.forEach(function(f){var el=document.getElementById(f.id);if(el)dynamicData[f.id]=el.value;});
+  var payload={service:currentServiceId,serviceName:svc.title||'',name:name,email:email,phone:(document.getElementById('si_phone').value||'').trim(),businessName:(document.getElementById('si_biz').value||'').trim(),serviceDetails:dynamicData,notes:(document.getElementById('si_notes').value||'').trim(),source:'service_inquiry_modal',submittedAt:new Date().toISOString()};
+  try { if(window.__saveServiceInquiry) await window.__saveServiceInquiry(payload); else if(window.__saveToFirebase) await window.__saveToFirebase(payload); } catch(e){}
+  document.getElementById('si-form-body').style.display='none';
+  document.getElementById('si-success-msg').textContent=svc.successMsg||"We'll be in touch within 24 hours.";
+  document.getElementById('si-success').style.display='block';
+  document.getElementById('service-inquiry-modal').scrollTop=0;
+};
+
+// ════════ CURRENCY CONVERSION ════════
+(function() {
+  var CURRENCY_SYMBOLS = {NGN:'₦',USD:'$',GBP:'£',EUR:'€',CAD:'CA$',AUD:'A$',GHS:'GH₵',KES:'KSh',ZAR:'R',EGP:'E£',INR:'₹',JPY:'¥',CNY:'¥',BRL:'R$',MXN:'MX$',DEFAULT:'₦'};
+  window.formatCurrencyAmount = function(ngn,rate,symbol,currency) { var v=ngn*rate; if(v>=1000000) return symbol+(v/1000000).toFixed(1).replace(/\.0$/,'')+'M'; if(v>=1000) return symbol+Math.round(v/1000)+'k'; return symbol+Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,','); };
+  function applyRates(currency,rate) {
+    TEK_FMT.code=currency; TEK_FMT.rate=rate; TEK_FMT.symbol=CURRENCY_SYMBOLS[currency]||CURRENCY_SYMBOLS.DEFAULT;
+    var symbol=TEK_FMT.symbol;
+    window.__currency=currency; window.__currencyRate=rate; window.__currencySymbol=symbol;
+    document.querySelectorAll('.price-ngn').forEach(function(el) {
+      var raw=el.getAttribute('data-ngn'); if(!raw) return;
+      if (raw.indexOf('-') !== -1) {
+        var parts=raw.split('-'); var lo=parseFloat(parts[0]); var hi=parseFloat(parts[1]);
+        var suffix=raw.indexOf('+')!==-1?'+':'';
+        el.textContent=formatCurrencyAmount(lo,rate,symbol,currency)+' – '+formatCurrencyAmount(hi,rate,symbol,currency)+suffix;
+      } else {
+        var plus=raw.indexOf('+')!==-1?'+':'';
+        var val=parseFloat(raw.replace('+',''));
+        el.textContent=symbol+(currency==='NGN'?Number(val).toLocaleString():Math.round(val*rate).toLocaleString())+plus;
+      }
+    });
+    var note=document.getElementById('currency-note');
+    if(note&&currency!=='NGN'){note.textContent='Prices shown in '+currency+' (approx.)';note.style.display='block';}
+  }
+  window.__currency='NGN'; window.__currencyRate=1; window.__currencySymbol='₦';
+  async function detectAndConvert() {
+    try {
+      var geoRes=await fetch('https://ipapi.co/json/'); var geo=await geoRes.json();
+      var currency=(geo.currency||'NGN').toUpperCase();
+      if(currency==='NGN'){applyRates('NGN',1);return;}
+      var rateRes=await fetch('https://api.exchangerate-api.com/v4/latest/NGN'); var rateData=await rateRes.json();
+      var rate=rateData.rates&&rateData.rates[currency];
+      if(!rate){applyRates('NGN',1);return;}
+      applyRates(currency,rate);
+    } catch(e){console.info('Currency detection unavailable, showing NGN');}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',detectAndConvert); else detectAndConvert();
+})();
+
+// ════════ CAREERS MODAL (stub — use your full careers system) ════════
+window.openCareersModal = function() {
+  var m=document.getElementById('careers-modal');
+  if(m) { m.style.display='flex'; document.body.style.overflow='hidden'; }
+};
+window.closeCareersModal = function() {
+  var m=document.getElementById('careers-modal');
+  if(m) { m.style.display='none'; document.body.style.overflow=''; }
+};
+</script>
+
+<!-- CAREERS MODAL (full system from original) -->
+<div id="careers-modal" role="dialog" aria-modal="true" aria-label="Careers at TEKNNUKU Studio"
+  style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,7,7,.96);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  align-items:flex-start;justify-content:center;overflow-y:auto;padding:0 0 60px;">
+  <div style="position:relative;width:100%;max-width:740px;margin:0 auto;animation:shellIn .4s ease both;display:flex;flex-direction:column;">
+    <div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:18px 24px 16px;background:rgba(8,8,8,.95);border-bottom:1px solid rgba(200,155,20,.12);backdrop-filter:blur(10px);">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:3px;">TEKNNUKU STUDIO · CAREERS</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;" id="car-modal-title">Open Roles</div>
+      </div>
+      <button onclick="closeCareersModal()" aria-label="Close" style="background:rgba(242,237,228,.06);border:1px solid rgba(242,237,228,.1);color:rgba(242,237,228,.6);border-radius:6px;padding:8px 16px;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✕ Close</button>
+    </div>
+    <div style="padding:40px 24px;text-align:center;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--white);margin-bottom:12px;">Build with TEKNNUKU Studio.</div>
+      <p style="font-size:.9rem;color:rgba(242,237,228,.55);max-width:480px;margin:0 auto 24px;line-height:1.7;">We're building the infrastructure for Africa's next wave of digital businesses. If you're sharp and driven, check <a href="https://teknnuku.xyz/careers" target="_blank" style="color:var(--gold);">our careers page</a> for open roles.</p>
+      <a href="https://calendly.com/hello-teknnuku/30min" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#080808;font-weight:700;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;padding:13px 24px;border-radius:var(--r);text-decoration:none;">Book an Intro Call →</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
