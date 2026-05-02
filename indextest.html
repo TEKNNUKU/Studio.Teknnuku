@@ -2613,6 +2613,258 @@ header.scrolled { box-shadow:0 4px 24px rgba(0,0,0,.3); }
   0%,100% { transform:rotate(45deg) translateY(0); }
   50%      { transform:rotate(45deg) translateY(5px); }
 }
+
+/* ── Global overflow fix ──────────────────
+   Switch body from "hidden" to "clip" so
+   child overflow-x:auto containers can still
+   scroll without being clipped by body.     */
+html { overflow-x: hidden; }
+body { overflow-x: clip; }
+
+/* Prevent grid/flex children from blowing
+   past their containers on narrow screens   */
+* { min-width: 0; }
+
+/* Touch-scroll + thin scrollbar for ALL
+   horizontal containers                     */
+[style*="overflow-x:auto"] {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,155,20,.25) transparent;
+}
+[style*="overflow-x:auto"]::-webkit-scrollbar { height: 3px; }
+[style*="overflow-x:auto"]::-webkit-scrollbar-thumb {
+  background: rgba(200,155,20,.3);
+  border-radius: 3px;
+}
+
+/* ══════════════════════════════════════════
+   TABLET  ≤ 900px
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .client-grid { grid-template-columns: 1fr !important; }
+  .venture-grid .vc[style*="grid-column:1/-1"] { grid-column: auto !important; }
+  .who-grid    { grid-template-columns: 1fr 1fr !important; }
+  .gravity-strip { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE  ≤ 640px  — primary breakpoint
+══════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* ── Service Situation Cards (01–08) ────
+     Inline style has display:grid/1fr 1fr.
+     Force column so description sits above
+     the features list on narrow screens.   */
+  #services .wrap > div[style] > div[style*="grid-template-columns:1fr 1fr"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  /* CTA buttons inside situation cards     */
+  #services .wrap > div[style] > div > div:last-child .btn,
+  #services .wrap > div[style] > div > div > button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* ── "Start Here" — 3-col → 1-col ───── */
+  #start-here div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Generic inline 2-col grid catchall ─*/
+  .wrap   [style*="grid-template-columns:1fr 1fr"],
+  .wrap-s [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── "How Everything Connects" flow ──── */
+  section > .wrap div[style*="overflow-x:auto"],
+  section > .wrap-s div[style*="overflow-x:auto"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+  }
+  section > .wrap div[style*="overflow-x:auto"] > div,
+  section > .wrap-s div[style*="overflow-x:auto"] > div {
+    flex-shrink: 0 !important;
+  }
+
+  /* ── Contact Modal — 3-channel → 2 col ─ */
+  #contact-modal div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* ── Service Inquiry Modal form fields ── */
+  #si-form-body div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── Careers form grids ──────────────── */
+  #car-form-content div[style*="grid-template-columns:1fr 1fr"],
+  #car-view-form    div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── Careers Agreement — bottom sheet ── */
+  #car-agreement-modal {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  #car-agreement-modal > div {
+    max-height: 92vh !important;
+    border-radius: 16px 16px 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── Grid classes ────────────────────── */
+  .client-grid   { grid-template-columns: 1fr !important; }
+  .venture-grid  { grid-template-columns: 1fr !important; }
+  .venture-grid .vc[style*="grid-column:1/-1"] { grid-column: auto !important; }
+  .pos-rules     { grid-template-columns: 1fr !important; }
+  .gravity-strip { grid-template-columns: 1fr !important; }
+  .who-grid      { grid-template-columns: 1fr !important; }
+  .pkg-grid      { grid-template-columns: 1fr !important; }
+  .addon-cols    { grid-template-columns: 1fr !important; }
+  .step-grid     { grid-template-columns: 1fr !important; }
+  .engines-grid  { grid-template-columns: 1fr !important; }
+  .problem-grid  { grid-template-columns: 1fr !important; }
+  .hero-stats    { grid-template-columns: 1fr 1fr !important; }
+  .tier-head     { grid-template-columns: 1fr !important; }
+  .identity-split { grid-template-columns: 1fr !important; }
+  .footer-grid   { grid-template-columns: 1fr !important; gap: 24px; }
+
+  /* ── Verb rail ───────────────────────── */
+  .verb-rail { overflow-x: auto; flex-wrap: nowrap; }
+  .verb      { flex: 0 0 auto; min-width: 90px; }
+
+  /* ── Strips & CTA rows ───────────────── */
+  .traction-metrics   { flex-wrap: wrap; }
+  .tm                 { flex: 1 1 140px; min-width: 130px; }
+  .traction-inner     { flex-direction: column; align-items: flex-start; }
+  .traction-cta-sm    { width: 100%; }
+  .traction-cta-sm .btn { width: 100%; justify-content: center; }
+
+  .intake-strip-inner { flex-direction: column; gap: 16px; }
+  .intake-strip-inner .btn { width: 100%; justify-content: center; }
+
+  .cta-btns .btn { width: 100%; justify-content: center; }
+
+  .service-cta-strip  { flex-direction: column; }
+  .service-cta-strip .btns { flex-direction: column; }
+  .service-cta-strip .btns .btn { width: 100%; justify-content: center; }
+
+  .logo-strip  { flex-direction: column; align-items: flex-start; }
+  .logo-items  { flex-wrap: wrap; gap: 8px 16px; }
+
+  /* ── Layout fragments ────────────────── */
+  .prob-resolution { flex-direction: column; gap: 16px; }
+  .process-rule    { flex-direction: column; gap: 12px; }
+  .manifesto-line  { flex-direction: column; }
+  .sp-strip        { flex-direction: column; gap: 8px; }
+  .sp-badges       { gap: 6px; }
+  .footer-bottom   { flex-direction: column; text-align: center; gap: 6px; }
+
+  /* ── Intake / results modal ──────────── */
+  .score-display-m   { flex-direction: column; align-items: center; }
+  .score-breakdown-m { width: 100%; }
+  .score-bar-wrap-m  { width: 80px; }
+  .results-footer-m  { flex-direction: column; }
+  .results-footer-m .rfbtn { width: 100%; justify-content: center; }
+  .options-grid-m.cols-2 { grid-template-columns: 1fr !important; }
+  .input-group-m { grid-template-columns: 1fr !important; }
+  .input-full-m  { grid-column: 1 !important; }
+  .form-body-m   { padding: 16px 14px 20px !important; }
+  .form-nav-m    { padding: 14px 14px 18px !important; }
+  .progress-meta-m { padding: 10px 14px 0; }
+}
+
+/* ══════════════════════════════════════════
+   EXTRA-SMALL  ≤ 480px
+══════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* Catch any remaining inline 2/3-col grids */
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns:repeat(2,1fr)"],
+  [style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Contact modal channels — full stack */
+  #contact-modal div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Service inquiry form inner padding */
+  #si-form-body { padding: 18px 16px !important; }
+  #si-form-body div[style*="grid"] { grid-template-columns: 1fr !important; }
+
+  /* Careers */
+  #car-roles-grid > div > div > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Hero */
+  .hero h1 { font-size: clamp(1.75rem, 8vw, 2.6rem) !important; }
+  .hero-ctas { flex-direction: column; }
+  .hero-ctas .btn { width: 100%; justify-content: center; }
+  .sp-strip { flex-direction: column; }
+
+  /* Stat boxes */
+  .stat-box .n { font-size: 1.2rem; }
+  .stat-box .l { font-size: 0.52rem; }
+
+  /* Who grid: fully single on tiny */
+  .who-grid { grid-template-columns: 1fr !important; }
+
+  /* Modal top bar */
+  .modal-topbar-title { display: none; }
+  #si-topbar-label    { font-size: 0.5rem !important; letter-spacing: .1em !important; }
+
+  /* Scarcity note */
+  .scarcity-note {
+    font-size: 0.54rem;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+
+  /* Route cards */
+  .route-card-m { padding: 14px; }
+  .rc-icon-m    { font-size: 1.1rem; }
+
+  /* CTA */
+  .cta-inner h2 { font-size: clamp(1.5rem, 6vw, 2.2rem) !important; }
+
+  /* Si-success CTA */
+  #si-success a { width: 100%; display: flex; justify-content: center; }
+}
+
+/* ══════════════════════════════════════════
+   ULTRA-SMALL  ≤ 360px
+══════════════════════════════════════════ */
+@media (max-width: 360px) {
+  :root { --nav-h: 54px; }
+
+  .wrap, .wrap-s { padding: 0 14px !important; }
+  section { padding: clamp(48px, 8vw, 72px) 0 !important; }
+
+  .hero h1      { font-size: 1.6rem !important; }
+  .nav-btn-sm   { padding: 6px 8px !important; font-size: 0.7rem !important; }
+  .btn          { padding: 11px 18px; font-size: 0.82rem; }
+  .t-eyebrow    { font-size: 0.58rem; }
+  .form-logo-modal   { font-size: 0.78rem; }
+  .form-eyebrow-modal { font-size: 0.52rem; }
+}
 </style>
 </head>
 <body>
