@@ -3999,7 +3999,7 @@ body { overflow-x: clip; }
     </a>
     <nav class="nav-links" aria-label="Main navigation">
       <a href="#engines">What We Do</a>
-      <a href="#services">Services</a>
+      <a href="#services">Services</a> → <a href="#" onclick="openServicesModal();return false;">Services & Pricing</a>
       <a href="#ventures">Ventures</a>
       <a href="#process">Process</a>
       <a href="https://globalbizhub.teknnuku.xyz" target="_blank" style="color:var(--gold);">List Free 🌐</a><a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
@@ -4017,7 +4017,7 @@ body { overflow-x: clip; }
 
 <nav id="mobile-nav" aria-label="Mobile navigation">
   <a href="#engines"  class="mob-link">What We Do</a>
-  <a href="#services" class="mob-link">Services &amp; Pricing</a>
+  <a href="#" class="mob-link" onclick="closeMenu();openServicesModal();return false;">Services & Pricing</a>
   <a href="#ventures" class="mob-link">Active Ventures</a>
   <a href="#process"  class="mob-link">Our Process</a>
   <a href="#contact" class="mob-link" onclick="closeMenu();openContactModal();return false;">Contact</a>
