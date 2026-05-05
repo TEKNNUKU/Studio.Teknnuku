@@ -2865,24 +2865,17 @@ body { overflow-x: clip; }
   .form-logo-modal   { font-size: 0.78rem; }
   .form-eyebrow-modal { font-size: 0.52rem; }
 }
-  
-<!-- ══════════════════════════════════════════════════════════
-     SERVICES MODAL — CSS
-     Paste inside your existing <style> block
-══════════════════════════════════════════════════════════ -->
-<style>
-/* ── Services Modal Base ── */
+
+/* ── SERVICES MODAL CSS ── */
 #services-modal { animation:none; }
 #services-modal.open { display:flex !important; }
  
 .svm-eyebrow {
-  font-family:'DM Mono',monospace;
-  font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
-  color:#C89B14;display:flex;align-items:center;gap:8px;
+  font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.18em;
+  text-transform:uppercase;color:#C89B14;display:flex;align-items:center;gap:8px;
 }
 .svm-eyebrow::before { content:'';width:14px;height:1px;background:#C89B14;flex-shrink:0; }
  
-/* Journey pills */
 .svm-journey-pill {
   font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;
   text-transform:uppercase;padding:5px 12px;border-radius:20px;
@@ -2890,191 +2883,108 @@ body { overflow-x: clip; }
   color:rgba(242,237,228,.4);
 }
 .svm-journey-pill.active { border-color:rgba(200,155,20,.25);color:rgba(200,155,20,.7); }
-.svm-journey-pill.gold   { background:rgba(200,155,20,.1);border-color:rgba(200,155,20,.4);color:#C89B14;font-weight:600; }
+.svm-journey-pill.gold { background:rgba(200,155,20,.1);border-color:rgba(200,155,20,.4);color:#C89B14;font-weight:600; }
 .svm-journey-arrow { color:rgba(200,155,20,.4);font-size:.9rem;padding:0 3px; }
  
-/* Tabs */
 .svm-tab {
   background:none;border:none;border-bottom:2px solid transparent;
   padding:12px clamp(14px,2.5vw,24px);font-size:.72rem;font-weight:600;
   letter-spacing:.06em;text-transform:uppercase;color:rgba(242,237,228,.4);
-  font-family:'DM Mono',monospace;white-space:nowrap;
-  margin-bottom:-1px;transition:all .2s;cursor:pointer;flex-shrink:0;
+  font-family:'DM Mono',monospace;white-space:nowrap;margin-bottom:-1px;
+  transition:all .2s;cursor:pointer;flex-shrink:0;
 }
 .svm-tab:hover { color:rgba(242,237,228,.7); }
 .svm-tab.active { color:#C89B14;border-bottom-color:#C89B14; }
- 
 .svm-tab-body { display:none; }
 .svm-tab-body.active { display:block; }
  
-/* Problems strip */
 .svm-problems-strip {
   background:rgba(200,155,20,.04);border:1px solid rgba(200,155,20,.1);
   border-radius:10px;padding:16px 20px;margin-bottom:28px;
 }
 .svm-prob-chip {
   display:inline-block;font-family:'DM Mono',monospace;font-size:.58rem;
-  letter-spacing:.06em;text-transform:uppercase;
-  padding:5px 12px;border-radius:20px;border:1px solid rgba(242,237,228,.08);
-  color:rgba(242,237,228,.5);background:rgba(242,237,228,.03);
+  letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:20px;
+  border:1px solid rgba(242,237,228,.08);color:rgba(242,237,228,.5);background:rgba(242,237,228,.03);
 }
  
-/* Pillar block */
 .svm-pillar { margin-bottom:36px; }
 .svm-pillar-header {
-  display:flex;align-items:flex-start;gap:16px;
-  padding:18px 20px;border-radius:8px 8px 0 0;
+  display:flex;align-items:flex-start;gap:16px;padding:18px 20px;border-radius:8px 8px 0 0;
   border-left:4px solid;border-top:1px solid rgba(242,237,228,.07);
-  border-right:1px solid rgba(242,237,228,.07);
-  background:rgba(255,255,255,.02);margin-bottom:2px;
+  border-right:1px solid rgba(242,237,228,.07);background:rgba(255,255,255,.02);margin-bottom:2px;
 }
 .svm-pillar-num {
-  font-family:'DM Mono',monospace;font-weight:700;font-size:1.3rem;
-  flex-shrink:0;width:44px;height:44px;border-radius:50%;
-  border:2px solid;display:flex;align-items:center;justify-content:center;
-  line-height:1;
+  font-family:'DM Mono',monospace;font-weight:700;font-size:1.3rem;flex-shrink:0;
+  width:44px;height:44px;border-radius:50%;border:2px solid;
+  display:flex;align-items:center;justify-content:center;line-height:1;
 }
 .svm-pillar-label { font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px; }
 .svm-pillar-title { font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.05rem,2.5vw,1.4rem);color:#F2EDE4;margin-bottom:6px; }
 .svm-pillar-problems { display:flex;flex-wrap:wrap;gap:5px; }
 .svm-pillar-problems span { font-size:.76rem;color:rgba(242,237,228,.5);display:block; }
  
-/* Cards row */
-.svm-cards-row {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:2px;
-}
+.svm-cards-row { display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px; }
 .svm-cards-4 { grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
  
-/* Card */
 .svm-card {
   background:#141414;border:1px solid rgba(242,237,228,.06);
   padding:clamp(18px,3vw,26px);display:flex;flex-direction:column;gap:10px;
-  transition:background .25s,transform .3s cubic-bezier(.34,1.56,.64,1);
-  position:relative;overflow:hidden;
+  transition:background .25s,transform .3s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;
 }
 .svm-card:hover { background:#1a1a1a;transform:translateY(-4px); }
 .svm-card-wide { grid-column:1 / -1; }
-.svm-card-featured {
-  border-color:rgba(200,155,20,.25);
-  background:rgba(200,155,20,.04);
-}
+.svm-card-top { display:flex;flex-direction:column;gap:4px; }
+.svm-card-featured { border-color:rgba(200,155,20,.25);background:rgba(200,155,20,.04); }
 .svm-card-featured:hover { background:rgba(200,155,20,.07); }
 .svm-featured-badge {
-  position:absolute;top:10px;right:10px;
-  background:#C89B14;color:#080808;
-  font-family:'DM Mono',monospace;font-size:.52rem;
-  letter-spacing:.1em;text-transform:uppercase;
-  padding:3px 10px;border-radius:20px;font-weight:600;
+  position:absolute;top:10px;right:10px;background:#C89B14;color:#080808;
+  font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:3px 10px;border-radius:20px;font-weight:600;
 }
-.svm-card-name {
-  font-family:'Syne',sans-serif;font-weight:700;
-  font-size:.95rem;color:#F2EDE4;line-height:1.3;
-}
-.svm-card-price {
-  font-family:'DM Mono',monospace;font-size:.85rem;
-  color:#C89B14;font-weight:600;
-}
+.svm-card-name { font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#F2EDE4;line-height:1.3; }
+.svm-card-price { font-family:'DM Mono',monospace;font-size:.85rem;color:#C89B14;font-weight:600; }
 .svm-card-price span { font-size:.68rem;opacity:.7; }
-.svm-card-price.free {
-  color:#22c55e;font-size:1rem;
-  text-shadow:0 0 12px rgba(34,197,94,.3);
-}
-.svm-card-label {
-  font-family:'DM Mono',monospace;font-size:.54rem;
-  letter-spacing:.12em;text-transform:uppercase;color:rgba(242,237,228,.3);
-}
+.svm-card-price.free { color:#22c55e;font-size:1rem;text-shadow:0 0 12px rgba(34,197,94,.3); }
+.svm-card-label { font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(242,237,228,.3); }
 .svm-list { list-style:none;display:flex;flex-direction:column;gap:5px;flex:1; }
-.svm-list li {
-  font-size:.8rem;color:rgba(242,237,228,.65);
-  padding-left:14px;position:relative;line-height:1.55;
-}
+.svm-list li { font-size:.8rem;color:rgba(242,237,228,.65);padding-left:14px;position:relative;line-height:1.55; }
 .svm-list li::before { content:'→';position:absolute;left:0;color:#C89B14;font-size:.72rem; }
- 
 .svm-outcome {
-  font-size:.78rem;color:rgba(242,237,228,.55);
-  background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.12);
-  border-radius:6px;padding:10px 12px;line-height:1.5;
-  margin-top:auto;
+  font-size:.78rem;color:rgba(242,237,228,.55);background:rgba(200,155,20,.06);
+  border:1px solid rgba(200,155,20,.12);border-radius:6px;padding:10px 12px;line-height:1.5;margin-top:auto;
 }
 .svm-outcome-tall { display:flex;flex-direction:column;justify-content:center; }
-.svm-outcome-label {
-  display:block;font-family:'DM Mono',monospace;
-  font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
-  color:#C89B14;margin-bottom:4px;
-}
+.svm-outcome-label { display:block;font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:#C89B14;margin-bottom:4px; }
  
-/* Buttons */
 .svm-btn {
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
   padding:11px 20px;border-radius:5px;font-weight:600;font-size:.78rem;
-  letter-spacing:.06em;text-transform:uppercase;
-  transition:all .22s;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;
-  text-decoration:none;
+  letter-spacing:.06em;text-transform:uppercase;transition:all .22s;
+  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;
 }
 .svm-btn.gold { background:#C89B14;color:#080808; }
 .svm-btn.gold:hover { background:#daa820;transform:translateY(-2px); }
-.svm-btn.outline {
-  background:transparent;color:rgba(242,237,228,.6);
-  border:1px solid rgba(242,237,228,.15);
-}
+.svm-btn.outline { background:transparent;color:rgba(242,237,228,.6);border:1px solid rgba(242,237,228,.15); }
 .svm-btn.outline:hover { border-color:#C89B14;color:#C89B14; }
 .svm-btn.sm { padding:8px 14px;font-size:.68rem; }
  
-/* Section divider */
-.svm-section-divider {
-  display:flex;align-items:center;gap:12px;
-  margin:28px 0 16px;
-}
-.svm-section-divider span {
-  font-family:'DM Mono',monospace;font-size:.62rem;
-  letter-spacing:.16em;text-transform:uppercase;color:#C89B14;
-  white-space:nowrap;
-}
-.svm-section-divider::before,
-.svm-section-divider::after {
-  content:'';flex:1;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(200,155,20,.2),transparent);
-}
+.svm-section-divider { display:flex;align-items:center;gap:12px;margin:28px 0 16px; }
+.svm-section-divider span { font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;white-space:nowrap; }
+.svm-section-divider::before,.svm-section-divider::after { content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(200,155,20,.2),transparent); }
  
-/* Footer CTA block */
-.svm-footer-cta {
-  text-align:center;
-  padding:clamp(24px,4vw,40px);
-  background:rgba(200,155,20,.04);border:1px solid rgba(200,155,20,.12);
-  border-radius:10px;margin-top:28px;
-}
+.svm-footer-cta { text-align:center;padding:clamp(24px,4vw,40px);background:rgba(200,155,20,.04);border:1px solid rgba(200,155,20,.12);border-radius:10px;margin-top:28px; }
  
-/* Addon blocks */
 .svm-addon-category { margin-bottom:28px; }
-.svm-addon-cat-header {
-  display:flex;align-items:flex-start;gap:14px;
-  padding:16px 18px;border-radius:8px 8px 0 0;
-  border-left:4px solid;margin-bottom:2px;
-}
+.svm-addon-cat-header { display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:8px 8px 0 0;border-left:4px solid;margin-bottom:2px; }
 .svm-addon-card { padding:clamp(14px,2.5vw,20px); }
-.svm-addon-icon {
-  font-size:1.4rem;margin-bottom:6px;display:block;
-}
+.svm-addon-icon { font-size:1.4rem;margin-bottom:6px;display:block; }
+.svm-bundle-box { background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.2);border-radius:10px;padding:clamp(20px,3.5vw,32px);margin-top:24px; }
  
-/* Bundle box */
-.svm-bundle-box {
-  background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.2);
-  border-radius:10px;padding:clamp(20px,3.5vw,32px);margin-top:24px;
-}
- 
-/* Choose grid */
-.svm-choose-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:2px;margin-bottom:28px;
-}
+.svm-choose-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;margin-bottom:28px; }
 .svm-choose-card {
-  background:#141414;border:1px solid rgba(242,237,228,.06);
-  padding:clamp(18px,3vw,26px);cursor:pointer;
-  transition:background .25s,transform .25s;
-  display:flex;flex-direction:column;gap:6px;
+  background:#141414;border:1px solid rgba(242,237,228,.06);padding:clamp(18px,3vw,26px);
+  cursor:pointer;transition:background .25s,transform .25s;display:flex;flex-direction:column;gap:6px;
 }
 .svm-choose-card:hover { background:#1a1a1a;border-color:rgba(200,155,20,.2);transform:translateY(-3px); }
 .svm-choose-icon { font-size:1.6rem; }
@@ -3082,36 +2992,24 @@ body { overflow-x: clip; }
 .svm-choose-arrow { font-size:1.2rem;color:#C89B14;font-weight:bold; }
 .svm-choose-solution { font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;color:#C89B14; }
 .svm-choose-cta { font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(242,237,228,.35); }
+.svm-expectation-box { background:#141414;border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:clamp(20px,3.5vw,32px);margin-bottom:24px; }
  
-/* Expectation box */
-.svm-expectation-box {
-  background:#141414;border:1px solid rgba(239,68,68,.15);
-  border-radius:10px;padding:clamp(20px,3.5vw,32px);margin-bottom:24px;
-}
- 
-/* ── MOBILE overrides ── */
 @media (max-width:640px) {
   .svm-pillar-header { flex-direction:row;gap:12px;padding:14px 16px; }
   .svm-pillar-num { width:36px;height:36px;font-size:1rem; }
-  .svm-cards-row  { grid-template-columns:1fr !important; }
-  .svm-cards-4    { grid-template-columns:1fr !important; }
+  .svm-cards-row { grid-template-columns:1fr !important; }
+  .svm-cards-4 { grid-template-columns:1fr !important; }
   .svm-choose-grid { grid-template-columns:1fr !important; }
-  .svm-card-wide div[style*="grid-template-columns:1fr 1fr"] {
-    display:flex !important;flex-direction:column !important;
-  }
+  .svm-card-wide > div[style*="grid-template-columns"] { display:flex !important;flex-direction:column !important; }
   #svm-tabs { padding:0 12px; }
-  .svm-tab  { padding:10px 12px;font-size:.62rem; }
+  .svm-tab { padding:10px 12px;font-size:.62rem; }
   .svm-journey-pill { font-size:.5rem;padding:4px 8px; }
-  .svm-bundle-box { padding:18px 16px; }
-  .svm-footer-cta { padding:20px 16px; }
-  .svm-footer-cta div[style*="display:flex"] { flex-direction:column; }
+  .svm-bundle-box,.svm-footer-cta { padding:18px 16px; }
   .svm-footer-cta .svm-btn { width:100%;justify-content:center; }
   #svm-topbar { padding:10px 16px; }
 }
- 
 @media (max-width:480px) {
   .svm-addon-cat-header { gap:10px;padding:12px 14px; }
-  .svm-addon-cat-header > span { font-size:1rem;flex-shrink:0; }
   .svm-pillar-problems { flex-direction:column; }
   .svm-choose-card { padding:16px; }
   .svm-problems-strip { padding:12px 16px; }
@@ -3458,6 +3356,368 @@ body { overflow-x: clip; }
   </div>
 </div>
 
+<!-- ============================================================
+     SERVICES & PRICING MODAL
+============================================================ -->
+<div id="services-modal" role="dialog" aria-modal="true" aria-label="Services & Pricing"
+  style="display:none;position:fixed;inset:0;z-index:10000;
+  background:rgba(5,5,5,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  align-items:flex-start;justify-content:center;overflow-y:auto;padding:0 0 60px;">
+ 
+  <div style="position:relative;width:100%;max-width:1080px;margin:0 auto;
+    display:flex;flex-direction:column;animation:shellIn .35s ease both;">
+ 
+    <!-- Sticky top bar -->
+    <div id="svm-topbar" style="position:sticky;top:0;z-index:20;display:flex;
+      align-items:center;justify-content:space-between;padding:12px 24px;
+      background:rgba(8,8,8,.98);border-bottom:1px solid rgba(200,155,20,.15);
+      backdrop-filter:blur(10px);flex-shrink:0;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:#C89B14;">TEKNNUKU STUDIO</div>
+        <div style="width:1px;height:14px;background:rgba(200,155,20,.25);"></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:#F2EDE4;">Services &amp; Pricing</div>
+      </div>
+      <button onclick="closeServicesModal()" aria-label="Close"
+        style="background:rgba(242,237,228,.05);border:1px solid rgba(242,237,228,.1);
+        color:rgba(242,237,228,.6);border-radius:5px;padding:7px 16px;
+        font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;
+        text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;"
+        onmouseover="this.style.borderColor='#C89B14';this.style.color='#C89B14'"
+        onmouseout="this.style.borderColor='rgba(242,237,228,.1)';this.style.color='rgba(242,237,228,.6)'">✕ Close</button>
+    </div>
+ 
+    <!-- Hero intro -->
+    <div style="padding:36px 28px 28px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(200,155,20,.07),transparent);"></div>
+      <div class="svm-eyebrow" style="justify-content:center;margin-bottom:14px;">🚀 TEKNNUKU Studio — How We Help</div>
+      <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.4rem,4vw,2.2rem);color:#F2EDE4;margin-bottom:10px;position:relative;z-index:1;">
+        We help you get customers, make sales,<br>and grow your business online.
+      </h2>
+      <p style="font-size:.88rem;color:rgba(242,237,228,.55);max-width:540px;margin:0 auto 20px;line-height:1.75;position:relative;z-index:1;">
+        Whether you're just starting or already selling — we help you move from visibility to revenue.
+      </p>
+      <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 0;position:relative;z-index:1;">
+        <span class="svm-journey-pill">Nobody knows me</span>
+        <span class="svm-journey-arrow">→</span>
+        <span class="svm-journey-pill active">People trust me</span>
+        <span class="svm-journey-arrow">→</span>
+        <span class="svm-journey-pill active">I get customers</span>
+        <span class="svm-journey-arrow">→</span>
+        <span class="svm-journey-pill gold">Consistent sales</span>
+      </div>
+    </div>
+ 
+    <!-- Tab navigation -->
+    <div id="svm-tabs" style="display:flex;gap:0;border-bottom:1px solid rgba(242,237,228,.07);
+      padding:0 20px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;flex-shrink:0;background:rgba(10,10,10,.8);">
+      <button class="svm-tab active" data-tab="main" onclick="svmTab(this,'main')">📦 Main Services</button>
+      <button class="svm-tab" data-tab="addons" onclick="svmTab(this,'addons')">🔥 Growth Add-Ons</button>
+      <button class="svm-tab" data-tab="choose" onclick="svmTab(this,'choose')">💡 How to Choose</button>
+    </div>
+ 
+    <!-- TAB 1: MAIN SERVICES -->
+    <div id="svm-tab-main" class="svm-tab-body active" style="padding:28px 20px;">
+      <div class="svm-problems-strip">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(242,237,228,.35);margin-bottom:10px;text-align:center;">We solve 5 core business problems</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+          <span class="svm-prob-chip">🔍 Can't be found</span>
+          <span class="svm-prob-chip">🤷 Not trusted</span>
+          <span class="svm-prob-chip">📉 No customers</span>
+          <span class="svm-prob-chip">⏰ No time</span>
+          <span class="svm-prob-chip">💸 Not enough sales</span>
+        </div>
+      </div>
+ 
+      <!-- PILLAR 1 -->
+      <div class="svm-pillar">
+        <div class="svm-pillar-header" style="border-color:#C89B14;">
+          <div class="svm-pillar-num" style="color:#C89B14;border-color:rgba(200,155,20,.3);">01</div>
+          <div><div class="svm-pillar-label" style="color:#C89B14;">Visibility &amp; Setup</div><div class="svm-pillar-title">Get Found</div><div class="svm-pillar-problems"><span>👉 "People can't find my business"</span><span>👉 "I'm not set up to sell"</span></div></div>
+        </div>
+        <div class="svm-cards-row">
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Basic Listing</div><div class="svm-card-price free">FREE</div></div>
+            <div class="svm-card-label">We help you:</div>
+            <ul class="svm-list"><li>Create your business profile</li><li>Put your business online</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> A shareable link so people can find you</div>
+            <a href="https://globalbizhub.teknnuku.xyz" target="_blank" class="svm-btn gold" onclick="closeServicesModal()">List Free →</a>
+          </div>
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Visibility Boost</div><div class="svm-card-price">₦10,000<span>/month</span></div></div>
+            <div class="svm-card-label">We help you:</div>
+            <ul class="svm-list"><li>Improve your profile for search discovery</li><li>Add right keywords &amp; descriptions</li><li>Boost visibility inside our platform</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> More people can discover your business</div>
+            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Get Started →</button>
+          </div>
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Business Setup</div><div class="svm-card-price">₦55k – ₦150k</div></div>
+            <div class="svm-card-label">We help you:</div>
+            <ul class="svm-list"><li>Set up your store (WhatsApp / marketplace / website)</li><li>Upload products &amp; services properly</li><li>Set up how you receive payments</li><li>Structure your business professionally</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Fully ready to start selling immediately</div>
+            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('sales_system')">Start Selling →</button>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- PILLAR 2 -->
+      <div class="svm-pillar">
+        <div class="svm-pillar-header" style="border-color:#00BCD4;">
+          <div class="svm-pillar-num" style="color:#00BCD4;border-color:rgba(0,188,212,.3);">02</div>
+          <div><div class="svm-pillar-label" style="color:#00BCD4;">Brand &amp; Trust</div><div class="svm-pillar-title">Look Trusted</div><div class="svm-pillar-problems"><span>👉 "People see me but don't take me seriously"</span><span>👉 "They don't trust me enough to buy"</span></div></div>
+        </div>
+        <div class="svm-cards-row">
+          <div class="svm-card svm-card-wide">
+            <div class="svm-card-top"><div class="svm-card-name">Brand Setup</div><div class="svm-card-price">₦150,000 – ₦350,000</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
+              <div><div class="svm-card-label">We help you:</div><ul class="svm-list"><li>Define what your business stands for</li><li>Make your page look clean &amp; professional</li><li>Show proof — testimonials, deliveries, etc.</li><li>Guide you on what to post</li></ul></div>
+              <div class="svm-outcome svm-outcome-tall"><span class="svm-outcome-label">You get:</span> People trust your business and feel confident buying from you</div>
+            </div>
+            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Build My Brand →</button>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- PILLAR 3 -->
+      <div class="svm-pillar">
+        <div class="svm-pillar-header" style="border-color:#22c55e;">
+          <div class="svm-pillar-num" style="color:#22c55e;border-color:rgba(34,197,94,.3);">03</div>
+          <div><div class="svm-pillar-label" style="color:#22c55e;">Customer Acquisition 🔥</div><div class="svm-pillar-title">Get Customers</div><div class="svm-pillar-problems"><span>👉 "I don't get customers consistently"</span><span>👉 "I post but nothing happens"</span></div></div>
+        </div>
+        <div class="svm-cards-row">
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Starter Growth Plan</div><div class="svm-card-price">₦100,000</div></div>
+            <div class="svm-card-label">We help you:</div>
+            <ul class="svm-list"><li>Choose best platform (WhatsApp, Instagram)</li><li>Know what content to post</li><li>Craft attention-grabbing hooks</li><li>Identify where customers will come from</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> You understand how to start attracting customers</div>
+            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('sales_system')">Get Plan →</button>
+          </div>
+          <div class="svm-card svm-card-featured">
+            <div class="svm-featured-badge">Most Popular</div>
+            <div class="svm-card-top"><div class="svm-card-name">Full Customer Flow System</div><div class="svm-card-price">₦250,000 – ₦400,000</div></div>
+            <div class="svm-card-label">We help you:</div>
+            <ul class="svm-list"><li>Set up how people see you → message → buy</li><li>Create a 30-day content plan</li><li>Set up WhatsApp / DM capture system</li><li>Create follow-up messages that close sales</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Consistent messages and inquiries from real buyers</div>
+            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('sales_system')">Get Customer Flow →</button>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- PILLAR 4 -->
+      <div class="svm-pillar">
+        <div class="svm-pillar-header" style="border-color:#f59e0b;">
+          <div class="svm-pillar-num" style="color:#f59e0b;border-color:rgba(245,158,11,.3);">04</div>
+          <div><div class="svm-pillar-label" style="color:#f59e0b;">Content Execution 🔧</div><div class="svm-pillar-title">We Do the Work For You</div><div class="svm-pillar-problems"><span>👉 "I don't have time to create content"</span><span>👉 "I don't know what to post"</span></div></div>
+        </div>
+        <div class="svm-cards-row svm-cards-4">
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Basic Content Support</div><div class="svm-card-price">₦30k – ₦80k<span>/mo</span></div></div>
+            <ul class="svm-list"><li>3–5 posts weekly</li><li>WhatsApp &amp; Instagram support</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Business stays active &amp; visible</div>
+            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Start →</button>
+          </div>
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Dedicated Growth Manager</div><div class="svm-card-price">₦100k – ₦250k<span>/mo</span></div></div>
+            <ul class="svm-list"><li>Daily posts (videos + updates)</li><li>Captions &amp; messages written</li><li>Customer replies handled</li><li>Weekly content planning</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Business runs daily without stress</div>
+            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Get Manager →</button>
+          </div>
+          <div class="svm-card svm-card-featured">
+            <div class="svm-featured-badge">Best Value</div>
+            <div class="svm-card-top"><div class="svm-card-name">Full Growth Team</div><div class="svm-card-price">₦300k – ₦800k<span>/mo</span></div></div>
+            <ul class="svm-list"><li>High-quality video creation</li><li>Pages run professionally</li><li>Multi-platform content push</li><li>Full customer acquisition alignment</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Fast &amp; serious growth</div>
+            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('systemization')">Get Full Team →</button>
+          </div>
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">One-Time Campaign</div><div class="svm-card-price">₦15k – ₦150k</div></div>
+            <ul class="svm-list"><li>Run promotions</li><li>Launch products</li><li>Push sales campaigns</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Quick boost in attention or sales</div>
+            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Book Campaign →</button>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- PILLAR 5 -->
+      <div class="svm-pillar">
+        <div class="svm-pillar-header" style="border-color:#ef4444;">
+          <div class="svm-pillar-num" style="color:#ef4444;border-color:rgba(239,68,68,.3);">05</div>
+          <div><div class="svm-pillar-label" style="color:#ef4444;">Sales &amp; Business System 🔥</div><div class="svm-pillar-title">Make More Sales</div><div class="svm-pillar-problems"><span>👉 "People message me but don't buy"</span><span>👉 "My business is not organised"</span></div></div>
+        </div>
+        <div class="svm-cards-row">
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Sales Setup</div><div class="svm-card-price">₦120k – ₦250k</div></div>
+            <ul class="svm-list"><li>Structure how you sell</li><li>Improve your pricing &amp; offers</li><li>Guide customers to buy</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> More people who message you will buy</div>
+            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('sales_system')">Fix My Sales →</button>
+          </div>
+          <div class="svm-card svm-card-featured">
+            <div class="svm-featured-badge">Recommended</div>
+            <div class="svm-card-top"><div class="svm-card-name">Sales Boost System</div><div class="svm-card-price">₦400k – ₦1.4M</div></div>
+            <ul class="svm-list"><li>Improve how you close sales</li><li>Message scripts that convert</li><li>Follow-ups to bring customers back</li><li>Fix payment &amp; ordering process</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> More money from the same number of customers</div>
+            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('sales_system')">Boost My Sales →</button>
+          </div>
+          <div class="svm-card">
+            <div class="svm-card-top"><div class="svm-card-name">Full Business System</div><div class="svm-card-price">₦600k – ₦2M</div></div>
+            <ul class="svm-list"><li>Organise your entire business</li><li>Set up get customers + sell + deliver</li><li>Track your revenue</li><li>Automate parts of your business</li></ul>
+            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> A structured business that grows consistently</div>
+            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('systemization')">Systemize Me →</button>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- MONTHLY SUPPORT -->
+      <div class="svm-section-divider"><span>🔁 Monthly Support — Keep Growing</span></div>
+      <div class="svm-cards-row">
+        <div class="svm-card">
+          <div class="svm-card-top"><div class="svm-card-name">Growth Membership</div><div class="svm-card-price">₦25,000<span>/month</span></div></div>
+          <ul class="svm-list"><li>Boost your visibility</li><li>Ongoing support</li><li>Access to opportunities</li></ul>
+          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('gata_onboard')">Join →</button>
+        </div>
+        <div class="svm-card">
+          <div class="svm-card-top"><div class="svm-card-name">Growth Engine</div><div class="svm-card-price">₦50k – ₦75k<span>/month</span></div></div>
+          <ul class="svm-list"><li>Weekly content ideas</li><li>Ready-to-use templates</li><li>Monthly business review</li><li>Guidance to improve consistently</li></ul>
+          <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> You don't get stuck — you keep growing</div>
+          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Get Engine →</button>
+        </div>
+      </div>
+ 
+      <!-- BIGGER PROJECTS -->
+      <div class="svm-section-divider"><span>🏗️ Bigger Projects</span></div>
+      <div class="svm-cards-row">
+        <div class="svm-card">
+          <div class="svm-card-top"><div class="svm-card-name">Platform Development</div><div class="svm-card-price">₦1.5M – ₦10M+</div></div>
+          <ul class="svm-list"><li>Apps, websites, platforms</li></ul>
+          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('platform_dev')">Discuss →</button>
+        </div>
+        <div class="svm-card">
+          <div class="svm-card-top"><div class="svm-card-name">Venture Build</div><div class="svm-card-price">₦500k–₦2M or Equity</div></div>
+          <ul class="svm-list"><li>Turn your idea into a real business</li></ul>
+          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('venture_build')">Apply →</button>
+        </div>
+        <div class="svm-card">
+          <div class="svm-card-top"><div class="svm-card-name">Enterprise Systems</div><div class="svm-card-price">₦2M+</div></div>
+          <ul class="svm-list"><li>Internal software for companies</li></ul>
+          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Get Quote →</button>
+        </div>
+      </div>
+ 
+      <div class="svm-footer-cta">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">Not sure where to start?</div>
+        <p style="font-size:.88rem;color:rgba(242,237,228,.55);margin-bottom:16px;">Run our 2-minute diagnostic — we'll tell you exactly which service fits your situation.</p>
+        <button class="svm-btn gold" onclick="closeServicesModal();openIntakeModal()">Find Out What My Business Needs →</button>
+      </div>
+    </div>
+ 
+    <!-- TAB 2: GROWTH ADD-ONS -->
+    <div id="svm-tab-addons" class="svm-tab-body" style="padding:28px 20px;display:none;">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div class="svm-eyebrow" style="justify-content:center;margin-bottom:10px;">🔧 Growth Add-Ons</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.1rem,3vw,1.6rem);color:#F2EDE4;margin-bottom:8px;">Already set up? Upgrade your business engine.</h3>
+        <p style="font-size:.84rem;color:rgba(242,237,228,.5);max-width:460px;margin:0 auto;">Add these anytime — with or without a full package.</p>
+      </div>
+ 
+      <!-- ADDON CAT 1 -->
+      <div class="svm-addon-category">
+        <div class="svm-addon-cat-header" style="border-color:#ef4444;background:rgba(239,68,68,.05);">
+          <span style="font-size:1.3rem;">🔥</span>
+          <div><div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#ef4444;">Category 01</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Get More Sales — Conversion Boosters</div><div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "People message me but don't buy"</div></div>
+        </div>
+        <div class="svm-cards-row svm-cards-4">
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">💬</div><div class="svm-card-name">WhatsApp Automation</div><div class="svm-card-price">₦50k – ₦150k</div><ul class="svm-list"><li>Auto-replies for new messages</li><li>Instant responses when offline</li><li>Structured reply flow</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You never miss a customer again</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('sales_system')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🤖</div><div class="svm-card-name">AI Chatbot / Lead Qualifier</div><div class="svm-card-price">₦100k – ₦300k</div><ul class="svm-list"><li>Smart chatbot talks to customers</li><li>Filters serious buyers</li><li>Sends right products/services</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You only deal with serious customers</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🔍</div><div class="svm-card-name">Funnel Check &amp; Fix</div><div class="svm-card-price">₦50k – ₦120k</div><ul class="svm-list"><li>Review entire customer journey</li><li>Find where you lose sales</li><li>Fix weak points</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> More people who see you will buy</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('sales_system')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🔔</div><div class="svm-card-name">Follow-Up &amp; Reminder System</div><div class="svm-card-price">₦70k – ₦200k</div><ul class="svm-list"><li>Automatic follow-ups</li><li>Reminder messages</li><li>"Come back and buy" system</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You recover lost customers</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('sales_system')">Add This →</button></div>
+        </div>
+      </div>
+ 
+      <!-- ADDON CAT 2 -->
+      <div class="svm-addon-category">
+        <div class="svm-addon-cat-header" style="border-color:#00BCD4;background:rgba(0,188,212,.05);">
+          <span style="font-size:1.3rem;">📡</span>
+          <div><div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#00BCD4;">Category 02</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Get More Customers — Traffic &amp; Growth</div><div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "I need more people seeing my business"</div></div>
+        </div>
+        <div class="svm-cards-row svm-cards-4">
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">📣</div><div class="svm-card-name">Paid Ads Setup</div><div class="svm-card-price" style="font-size:.75rem;color:#C89B14;">Instagram / Facebook / Google</div><div class="svm-card-price">₦100k – ₦300k</div><ul class="svm-list"><li>Set up your ads account</li><li>Create first campaigns</li><li>Target the right audience</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Faster visibility, reach more people</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🌐</div><div class="svm-card-name">SEO Setup</div><div class="svm-card-price" style="font-size:.75rem;color:#C89B14;">Google Visibility</div><div class="svm-card-price">₦80k – ₦200k</div><ul class="svm-list"><li>Optimise for Google search</li><li>Set up keywords</li><li>Improve online presence</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> People find you when they search</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">📅</div><div class="svm-card-name">30-Day Content Campaign</div><div class="svm-card-price">₦50k – ₦150k</div><ul class="svm-list"><li>Plan 30 days of content</li><li>Daily post ideas</li><li>Hooks included</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You never run out of content ideas</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">✉️</div><div class="svm-card-name">Email / SMS Campaign Setup</div><div class="svm-card-price">₦70k – ₦200k</div><ul class="svm-list"><li>Bulk messaging system</li><li>Campaign messages created</li><li>Reach audience directly</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Reach customers anytime</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button></div>
+        </div>
+      </div>
+ 
+      <!-- ADDON CAT 3 -->
+      <div class="svm-addon-category">
+        <div class="svm-addon-cat-header" style="border-color:#a855f7;background:rgba(168,85,247,.05);">
+          <span style="font-size:1.3rem;">⚙️</span>
+          <div><div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#a855f7;">Category 03</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Automate Your Business — Infrastructure</div><div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "Things are manual and stressful"</div></div>
+        </div>
+        <div class="svm-cards-row svm-cards-4">
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">💳</div><div class="svm-card-name">Payment Gateway Setup</div><div class="svm-card-price">₦50k – ₦150k</div><ul class="svm-list"><li>Integrate payment systems</li><li>Enable card / online payments</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Customers can pay easily and faster</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">📊</div><div class="svm-card-name">Revenue &amp; Analytics Dashboard</div><div class="svm-card-price">₦100k – ₦300k</div><ul class="svm-list"><li>Set up tracking system</li><li>See sales, customers, growth</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You understand your business clearly</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">📆</div><div class="svm-card-name">Booking / Appointment System</div><div class="svm-card-price">₦50k – ₦150k</div><ul class="svm-list"><li>Set up scheduling system</li><li>Customers book automatically</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> No more manual scheduling stress</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🔗</div><div class="svm-card-name">System Integrations (Advanced)</div><div class="svm-card-price">₦100k – ₦500k+</div><ul class="svm-list"><li>Connect your tools together</li><li>Automate workflows</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Business runs smoother and faster</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Add This →</button></div>
+        </div>
+      </div>
+ 
+      <!-- ADDON CAT 4 -->
+      <div class="svm-addon-category">
+        <div class="svm-addon-cat-header" style="border-color:#C89B14;background:rgba(200,155,20,.05);">
+          <span style="font-size:1.3rem;">🏅</span>
+          <div><div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;">Category 04</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Look Premium &amp; Trusted — Authority Boosters</div><div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "My business doesn't look serious or premium"</div></div>
+        </div>
+        <div class="svm-cards-row svm-cards-4">
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🎨</div><div class="svm-card-name">Branding Upgrade Kit</div><div class="svm-card-price">₦80k – ₦250k</div><ul class="svm-list"><li>Improve visual identity</li><li>Upgrade business look</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You look more professional instantly</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">⭐</div><div class="svm-card-name">Trust &amp; Credibility Page</div><div class="svm-card-price">₦100k – ₦300k</div><ul class="svm-list"><li>Testimonials &amp; results page</li><li>Proof shown clearly</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Customers trust you faster</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🎬</div><div class="svm-card-name">Brand Video / Reel</div><div class="svm-card-price">₦100k – ₦400k</div><ul class="svm-list"><li>Professional brand video created</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You stand out and attract attention</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button></div>
+          <div class="svm-card svm-addon-card"><div class="svm-addon-icon">🗣️</div><div class="svm-card-name">Review &amp; Social Proof System</div><div class="svm-card-price">₦70k – ₦200k</div><ul class="svm-list"><li>Collect &amp; display reviews systematically</li></ul><div class="svm-outcome"><span class="svm-outcome-label">Does:</span> More people believe in your business</div><button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button></div>
+        </div>
+      </div>
+ 
+      <div class="svm-bundle-box">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><span style="font-size:1.4rem;">💰</span><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#C89B14;">Bundle Advantage</div></div>
+        <p style="font-size:.84rem;color:rgba(242,237,228,.6);margin-bottom:12px;">When you combine 2 or more add-ons, you get better pricing, better integration, and better results.</p>
+        <button class="svm-btn gold" onclick="closeServicesModal();openIntakeModal()">Find the Right Bundle for Me →</button>
+      </div>
+    </div>
+ 
+    <!-- TAB 3: HOW TO CHOOSE -->
+    <div id="svm-tab-choose" class="svm-tab-body" style="padding:28px 20px;display:none;">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div class="svm-eyebrow" style="justify-content:center;margin-bottom:10px;">💡 Simple Way to Choose</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.1rem,3vw,1.5rem);color:#F2EDE4;margin-bottom:8px;">Pick your situation. We do the rest.</h3>
+      </div>
+      <div class="svm-choose-grid">
+        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;"><div class="svm-choose-icon">🔍</div><div class="svm-choose-if">Nobody knows my business exists</div><div class="svm-choose-arrow">→</div><div class="svm-choose-solution">Visibility &amp; Setup (Pillar 1)</div><div class="svm-choose-cta">Start with Basic Listing (Free)</div></div>
+        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;"><div class="svm-choose-icon">🤷</div><div class="svm-choose-if">People see me but don't trust me</div><div class="svm-choose-arrow">→</div><div class="svm-choose-solution">Brand &amp; Trust (Pillar 2)</div><div class="svm-choose-cta">₦150k – ₦350k</div></div>
+        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;"><div class="svm-choose-icon">📉</div><div class="svm-choose-if">I don't get customers consistently</div><div class="svm-choose-arrow">→</div><div class="svm-choose-solution">Customer Acquisition (Pillar 3)</div><div class="svm-choose-cta">₦100k – ₦400k</div></div>
+        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;"><div class="svm-choose-icon">⏰</div><div class="svm-choose-if">I don't have time for online growth</div><div class="svm-choose-arrow">→</div><div class="svm-choose-solution">Content Execution (Pillar 4)</div><div class="svm-choose-cta">₦30k – ₦800k/month</div></div>
+        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;"><div class="svm-choose-icon">💸</div><div class="svm-choose-if">I get messages but people don't buy</div><div class="svm-choose-arrow">→</div><div class="svm-choose-solution">Sales System (Pillar 5)</div><div class="svm-choose-cta">₦120k – ₦2M</div></div>
+        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=addons]'),'addons');document.getElementById('services-modal').scrollTop=0;"><div class="svm-choose-icon">⚙️</div><div class="svm-choose-if">Already set up, want to upgrade</div><div class="svm-choose-arrow">→</div><div class="svm-choose-solution">Growth Add-Ons</div><div class="svm-choose-cta">Pick your upgrade →</div></div>
+      </div>
+      <div class="svm-expectation-box">
+        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:#ef4444;margin-bottom:10px;">⚠️ Important — Set Your Expectation</div>
+        <p style="font-size:.9rem;font-family:'Syne',sans-serif;font-weight:700;color:#F2EDE4;margin-bottom:8px;">We don't sell magic.</p>
+        <p style="font-size:.84rem;color:rgba(242,237,228,.6);margin-bottom:14px;line-height:1.7;">We build systems that bring attention, build trust, and increase your chances of sales.</p>
+        <div style="background:rgba(200,155,20,.07);border:1px solid rgba(200,155,20,.18);border-radius:8px;padding:16px;font-size:.84rem;color:rgba(242,237,228,.7);line-height:1.75;">
+          You don't need <em style="color:#F2EDE4;font-style:normal;font-weight:600;">"more posting"</em>. You don't need <em style="color:#F2EDE4;font-style:normal;font-weight:600;">"just a logo"</em>.<br>
+          What you need is: <strong style="color:#C89B14;font-size:1rem;">👉 Customers → Sales → Growth</strong>
+        </div>
+      </div>
+      <div class="svm-footer-cta">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">Still not sure?</div>
+        <p style="font-size:.88rem;color:rgba(242,237,228,.55);margin-bottom:16px;">Answer 11 quick questions and we'll route you to the exact right solution.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+          <button class="svm-btn gold" onclick="closeServicesModal();openIntakeModal()">Run My Business Diagnostic →</button>
+          <a href="https://calendly.com/hello-teknnuku/30min" target="_blank" class="svm-btn outline" onclick="closeServicesModal()" style="text-decoration:none;">Book a Free Call</a>
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+</div>
+<!-- END SERVICES MODAL -->
+  
 <!-- Scroll Progress Bar -->
 <div id="scroll-progress"></div>
 <div id="scroll-rail" aria-hidden="true">
@@ -3739,7 +3999,7 @@ body { overflow-x: clip; }
     </a>
     <nav class="nav-links" aria-label="Main navigation">
       <a href="#engines">What We Do</a>
-      <a href="#" onclick="openServicesModal();return false;">Services & Pricing</a>
+      <a href="#services">Services</a>
       <a href="#ventures">Ventures</a>
       <a href="#process">Process</a>
       <a href="https://globalbizhub.teknnuku.xyz" target="_blank" style="color:var(--gold);">List Free 🌐</a><a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
@@ -3757,7 +4017,7 @@ body { overflow-x: clip; }
 
 <nav id="mobile-nav" aria-label="Mobile navigation">
   <a href="#engines"  class="mob-link">What We Do</a>
-  <a href="#" class="mob-link" onclick="closeMenu();openServicesModal();return false;">Services & Pricing</a>
+  <a href="#services" class="mob-link">Services &amp; Pricing</a>
   <a href="#ventures" class="mob-link">Active Ventures</a>
   <a href="#process"  class="mob-link">Our Process</a>
   <a href="#contact" class="mob-link" onclick="closeMenu();openContactModal();return false;">Contact</a>
@@ -6654,795 +6914,13 @@ function showCarConfirmation(score, tier) {
   document.getElementById('car-score-tier').textContent = tier.tier;
 }
 
-<!-- ══════════════════════════════════════════════════════════
-     SERVICES MODAL — HTML
-══════════════════════════════════════════════════════════ -->  
-  <div id="services-modal" role="dialog" aria-modal="true" aria-label="Services & Pricing"
-  style="display:none;position:fixed;inset:0;z-index:10000;
-  background:rgba(5,5,5,.97);backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-  align-items:flex-start;justify-content:center;
-  overflow-y:auto;padding:0 0 60px;">
- 
-  <div style="position:relative;width:100%;max-width:1080px;
-    margin:0 auto;display:flex;flex-direction:column;
-    animation:shellIn .35s ease both;">
- 
-    <!-- ── Sticky top bar ── -->
-    <div id="svm-topbar" style="position:sticky;top:0;z-index:20;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:12px 24px;background:rgba(8,8,8,.98);
-      border-bottom:1px solid rgba(200,155,20,.15);
-      backdrop-filter:blur(10px);flex-shrink:0;gap:12px;">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="font-family:'DM Mono',monospace;font-size:.54rem;
-          letter-spacing:.2em;text-transform:uppercase;color:#C89B14;">
-          TEKNNUKU STUDIO
-        </div>
-        <div style="width:1px;height:14px;background:rgba(200,155,20,.25);"></div>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;
-          font-size:.95rem;color:#F2EDE4;">Services & Pricing</div>
-      </div>
-      <button onclick="closeServicesModal()" aria-label="Close"
-        style="background:rgba(242,237,228,.05);border:1px solid rgba(242,237,228,.1);
-        color:rgba(242,237,228,.6);border-radius:5px;padding:7px 16px;
-        font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;
-        text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;
-        flex-shrink:0;"
-        onmouseover="this.style.borderColor='#C89B14';this.style.color='#C89B14'"
-        onmouseout="this.style.borderColor='rgba(242,237,228,.1)';this.style.color='rgba(242,237,228,.6)'">
-        ✕ Close
-      </button>
-    </div>
- 
-    <!-- ── Hero intro ── -->
-    <div style="padding:36px 28px 28px;text-align:center;position:relative;overflow:hidden;">
-      <div style="position:absolute;inset:0;pointer-events:none;
-        background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(200,155,20,.07),transparent);"></div>
-      <div class="svm-eyebrow" style="justify-content:center;margin-bottom:14px;">🚀 TEKNNUKU Studio — How We Help</div>
-      <h2 style="font-family:'Syne',sans-serif;font-weight:800;
-        font-size:clamp(1.4rem,4vw,2.2rem);color:#F2EDE4;margin-bottom:10px;
-        position:relative;z-index:1;">
-        We help you get customers, make sales,<br>and grow your business online.
-      </h2>
-      <p style="font-size:.88rem;color:rgba(242,237,228,.55);max-width:540px;
-        margin:0 auto 20px;line-height:1.75;position:relative;z-index:1;">
-        Whether you're just starting or already selling — we help you move from visibility to revenue.
-      </p>
- 
-      <!-- Journey strip -->
-      <div style="display:flex;align-items:center;justify-content:center;
-        flex-wrap:wrap;gap:6px 0;position:relative;z-index:1;">
-        <span class="svm-journey-pill">Nobody knows me</span>
-        <span class="svm-journey-arrow">→</span>
-        <span class="svm-journey-pill active">People trust me</span>
-        <span class="svm-journey-arrow">→</span>
-        <span class="svm-journey-pill active">I get customers</span>
-        <span class="svm-journey-arrow">→</span>
-        <span class="svm-journey-pill gold">Consistent sales</span>
-      </div>
-    </div>
- 
-    <!-- ── Tab navigation ── -->
-    <div id="svm-tabs" style="display:flex;gap:0;border-bottom:1px solid rgba(242,237,228,.07);
-      padding:0 20px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-      scrollbar-width:none;flex-shrink:0;background:rgba(10,10,10,.8);">
-      <button class="svm-tab active" data-tab="main" onclick="svmTab(this,'main')">
-        📦 Main Services
-      </button>
-      <button class="svm-tab" data-tab="addons" onclick="svmTab(this,'addons')">
-        🔥 Growth Add-Ons
-      </button>
-      <button class="svm-tab" data-tab="choose" onclick="svmTab(this,'choose')">
-        💡 How to Choose
-      </button>
-    </div>
- 
-    <!-- ════════════════════════════════════════
-         TAB 1 — MAIN SERVICES
-    ════════════════════════════════════════ -->
-    <div id="svm-tab-main" class="svm-tab-body active" style="padding:28px 20px;">
- 
-      <!-- 5 Problems strip -->
-      <div class="svm-problems-strip">
-        <div style="font-family:'DM Mono',monospace;font-size:.58rem;
-          letter-spacing:.16em;text-transform:uppercase;color:rgba(242,237,228,.35);
-          margin-bottom:10px;text-align:center;">We solve 5 core business problems</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-          <span class="svm-prob-chip">🔍 Can't be found</span>
-          <span class="svm-prob-chip">🤷 Not trusted</span>
-          <span class="svm-prob-chip">📉 No customers</span>
-          <span class="svm-prob-chip">⏰ No time</span>
-          <span class="svm-prob-chip">💸 Not enough sales</span>
-        </div>
-      </div>
- 
-      <!-- ── PILLAR 1: GET FOUND ── -->
-      <div class="svm-pillar">
-        <div class="svm-pillar-header" style="border-color:#C89B14;">
-          <div class="svm-pillar-num" style="color:#C89B14;border-color:rgba(200,155,20,.3);">01</div>
-          <div>
-            <div class="svm-pillar-label" style="color:#C89B14;">Visibility & Setup</div>
-            <div class="svm-pillar-title">Get Found</div>
-            <div class="svm-pillar-problems">
-              <span>👉 "People can't find my business"</span>
-              <span>👉 "I'm not set up to sell"</span>
-            </div>
-          </div>
-        </div>
- 
-        <div class="svm-cards-row">
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Basic Listing</div>
-              <div class="svm-card-price free">FREE</div>
-            </div>
-            <div class="svm-card-label">We help you:</div>
-            <ul class="svm-list">
-              <li>Create your business profile</li>
-              <li>Put your business online</li>
-            </ul>
-            <div class="svm-outcome">
-              <span class="svm-outcome-label">You get:</span>
-              A shareable link so people can find you
-            </div>
-            <a href="https://globalbizhub.teknnuku.xyz" target="_blank" class="svm-btn gold" onclick="closeServicesModal()">List Free →</a>
-          </div>
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Visibility Boost</div>
-              <div class="svm-card-price">₦10,000<span>/month</span></div>
-            </div>
-            <div class="svm-card-label">We help you:</div>
-            <ul class="svm-list">
-              <li>Improve your profile for search discovery</li>
-              <li>Add right keywords & descriptions</li>
-              <li>Boost visibility inside our platform</li>
-            </ul>
-            <div class="svm-outcome">
-              <span class="svm-outcome-label">You get:</span>
-              More people can discover your business
-            </div>
-            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Get Started →</button>
-          </div>
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Business Setup</div>
-              <div class="svm-card-price">₦55k – ₦150k</div>
-            </div>
-            <div class="svm-card-label">We help you:</div>
-            <ul class="svm-list">
-              <li>Set up your store (WhatsApp / marketplace / website)</li>
-              <li>Upload products & services properly</li>
-              <li>Set up how you receive payments</li>
-              <li>Structure your business professionally</li>
-            </ul>
-            <div class="svm-outcome">
-              <span class="svm-outcome-label">You get:</span>
-              Fully ready to start selling immediately
-            </div>
-            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('sales_system')">Start Selling →</button>
-          </div>
- 
-        </div>
-      </div>
- 
-      <!-- ── PILLAR 2: LOOK TRUSTED ── -->
-      <div class="svm-pillar">
-        <div class="svm-pillar-header" style="border-color:#00BCD4;">
-          <div class="svm-pillar-num" style="color:#00BCD4;border-color:rgba(0,188,212,.3);">02</div>
-          <div>
-            <div class="svm-pillar-label" style="color:#00BCD4;">Brand & Trust</div>
-            <div class="svm-pillar-title">Look Trusted</div>
-            <div class="svm-pillar-problems">
-              <span>👉 "People see my page but don't take me seriously"</span>
-              <span>👉 "They don't trust me enough to buy"</span>
-            </div>
-          </div>
-        </div>
- 
-        <div class="svm-cards-row">
-          <div class="svm-card svm-card-wide">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Brand Setup</div>
-              <div class="svm-card-price">₦150,000 – ₦350,000</div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
-              <div>
-                <div class="svm-card-label">We help you:</div>
-                <ul class="svm-list">
-                  <li>Clearly define what your business stands for</li>
-                  <li>Make your page look clean & professional</li>
-                  <li>Show proof — testimonials, deliveries, etc.</li>
-                  <li>Guide you on what to post and how to speak to customers</li>
-                </ul>
-              </div>
-              <div class="svm-outcome svm-outcome-tall">
-                <span class="svm-outcome-label">You get:</span>
-                People trust your business and feel confident buying from you
-              </div>
-            </div>
-            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Build My Brand →</button>
-          </div>
-        </div>
-      </div>
- 
-      <!-- ── PILLAR 3: GET CUSTOMERS ── -->
-      <div class="svm-pillar">
-        <div class="svm-pillar-header" style="border-color:#22c55e;">
-          <div class="svm-pillar-num" style="color:#22c55e;border-color:rgba(34,197,94,.3);">03</div>
-          <div>
-            <div class="svm-pillar-label" style="color:#22c55e;">Customer Acquisition 🔥</div>
-            <div class="svm-pillar-title">Get Customers</div>
-            <div class="svm-pillar-problems">
-              <span>👉 "I don't get customers consistently"</span>
-              <span>👉 "I post but nothing happens"</span>
-            </div>
-          </div>
-        </div>
- 
-        <div class="svm-cards-row">
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Starter Growth Plan</div>
-              <div class="svm-card-price">₦100,000</div>
-            </div>
-            <div class="svm-card-label">We help you:</div>
-            <ul class="svm-list">
-              <li>Choose the best platform (WhatsApp, Instagram, etc.)</li>
-              <li>Know what kind of content to post</li>
-              <li>Craft attention-grabbing hooks</li>
-              <li>Identify where customers will come from</li>
-            </ul>
-            <div class="svm-outcome">
-              <span class="svm-outcome-label">You get:</span>
-              You understand how to start attracting customers
-            </div>
-            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('sales_system')">Get Plan →</button>
-          </div>
- 
-          <div class="svm-card svm-card-featured">
-            <div class="svm-featured-badge">Most Popular</div>
-            <div class="svm-card-top">
-              <div class="svm-card-name">Full Customer Flow System</div>
-              <div class="svm-card-price">₦250,000 – ₦400,000</div>
-            </div>
-            <div class="svm-card-label">We help you:</div>
-            <ul class="svm-list">
-              <li>Set up how people see you → message you → buy from you</li>
-              <li>Create a 30-day content plan</li>
-              <li>Set up WhatsApp or DM system to capture customers</li>
-              <li>Create follow-up messages that close sales</li>
-            </ul>
-            <div class="svm-outcome">
-              <span class="svm-outcome-label">You get:</span>
-              Consistent messages and inquiries from real buyers
-            </div>
-            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('sales_system')">Get Customer Flow →</button>
-          </div>
- 
-        </div>
-      </div>
- 
-      <!-- ── PILLAR 4: CONTENT EXECUTION ── -->
-      <div class="svm-pillar">
-        <div class="svm-pillar-header" style="border-color:#f59e0b;">
-          <div class="svm-pillar-num" style="color:#f59e0b;border-color:rgba(245,158,11,.3);">04</div>
-          <div>
-            <div class="svm-pillar-label" style="color:#f59e0b;">Content Execution 🔧</div>
-            <div class="svm-pillar-title">We Do the Work For You</div>
-            <div class="svm-pillar-problems">
-              <span>👉 "I don't have time to create content"</span>
-              <span>👉 "I don't know what to post"</span>
-            </div>
-          </div>
-        </div>
- 
-        <div class="svm-cards-row svm-cards-4">
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Basic Content Support</div>
-              <div class="svm-card-price">₦30k – ₦80k<span>/mo</span></div>
-            </div>
-            <ul class="svm-list">
-              <li>3–5 posts weekly</li>
-              <li>WhatsApp & Instagram support</li>
-            </ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Business stays active & visible</div>
-            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Start →</button>
-          </div>
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Dedicated Growth Manager</div>
-              <div class="svm-card-price">₦100k – ₦250k<span>/mo</span></div>
-            </div>
-            <ul class="svm-list">
-              <li>Daily posts (videos + updates)</li>
-              <li>Captions & messages written</li>
-              <li>Customer replies handled</li>
-              <li>Weekly content planning</li>
-            </ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Business runs daily without stress</div>
-            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Get Manager →</button>
-          </div>
- 
-          <div class="svm-card svm-card-featured">
-            <div class="svm-featured-badge">Best Value</div>
-            <div class="svm-card-top">
-              <div class="svm-card-name">Full Growth Team</div>
-              <div class="svm-card-price">₦300k – ₦800k<span>/mo</span></div>
-            </div>
-            <ul class="svm-list">
-              <li>High-quality video creation</li>
-              <li>Pages run professionally</li>
-              <li>Multi-platform content push</li>
-              <li>Full customer acquisition alignment</li>
-            </ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Fast & serious growth</div>
-            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('systemization')">Get Full Team →</button>
-          </div>
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">One-Time Campaign</div>
-              <div class="svm-card-price">₦15k – ₦150k</div>
-            </div>
-            <ul class="svm-list">
-              <li>Run promotions</li>
-              <li>Launch products</li>
-              <li>Push sales campaigns</li>
-            </ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> Quick boost in attention or sales</div>
-            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Book Campaign →</button>
-          </div>
- 
-        </div>
-      </div>
- 
-      <!-- ── PILLAR 5: MAKE MORE SALES ── -->
-      <div class="svm-pillar">
-        <div class="svm-pillar-header" style="border-color:#ef4444;">
-          <div class="svm-pillar-num" style="color:#ef4444;border-color:rgba(239,68,68,.3);">05</div>
-          <div>
-            <div class="svm-pillar-label" style="color:#ef4444;">Sales & Business System 🔥</div>
-            <div class="svm-pillar-title">Make More Sales</div>
-            <div class="svm-pillar-problems">
-              <span>👉 "People message me but don't buy"</span>
-              <span>👉 "My business is not organised"</span>
-            </div>
-          </div>
-        </div>
- 
-        <div class="svm-cards-row">
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Sales Setup</div>
-              <div class="svm-card-price">₦120k – ₦250k</div>
-            </div>
-            <ul class="svm-list">
-              <li>Structure how you sell</li>
-              <li>Improve your pricing & offers</li>
-              <li>Guide customers to buy</li>
-            </ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> More people who message you will buy</div>
-            <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('sales_system')">Fix My Sales →</button>
-          </div>
- 
-          <div class="svm-card svm-card-featured">
-            <div class="svm-featured-badge">Recommended</div>
-            <div class="svm-card-top">
-              <div class="svm-card-name">Sales Boost System</div>
-              <div class="svm-card-price">₦400k – ₦1.4M</div>
-            </div>
-            <ul class="svm-list">
-              <li>Improve how you close sales</li>
-              <li>Message scripts that convert</li>
-              <li>Follow-ups to bring customers back</li>
-              <li>Fix payment & ordering process</li>
-            </ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> More money from the same number of customers</div>
-            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('sales_system')">Boost My Sales →</button>
-          </div>
- 
-          <div class="svm-card">
-            <div class="svm-card-top">
-              <div class="svm-card-name">Full Business System</div>
-              <div class="svm-card-price">₦600k – ₦2M</div>
-            </div>
-            <ul class="svm-list">
-              <li>Organise your entire business</li>
-              <li>Set up get customers + sell + deliver</li>
-              <li>Track your revenue</li>
-              <li>Automate parts of your business</li>
-            </ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> A structured business that grows consistently</div>
-            <button class="svm-btn gold" onclick="closeServicesModal();openServiceInquiry('systemization')">Systemize Me →</button>
-          </div>
- 
-        </div>
-      </div>
- 
-      <!-- ── MONTHLY SUPPORT ── -->
-      <div class="svm-section-divider">
-        <span>🔁 Monthly Support — Keep Growing</span>
-      </div>
- 
-      <div class="svm-cards-row">
-        <div class="svm-card">
-          <div class="svm-card-top">
-            <div class="svm-card-name">Growth Membership</div>
-            <div class="svm-card-price">₦25,000<span>/month</span></div>
-          </div>
-          <ul class="svm-list">
-            <li>Boost your visibility</li>
-            <li>Ongoing support</li>
-            <li>Access to opportunities</li>
-          </ul>
-          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('gata_onboard')">Join →</button>
-        </div>
-        <div class="svm-card">
-          <div class="svm-card-top">
-            <div class="svm-card-name">Growth Engine</div>
-            <div class="svm-card-price">₦50k – ₦75k<span>/month</span></div>
-          </div>
-          <ul class="svm-list">
-            <li>Weekly content ideas</li>
-            <li>Ready-to-use templates</li>
-            <li>Monthly business review</li>
-            <li>Guidance to improve consistently</li>
-          </ul>
-          <div class="svm-outcome"><span class="svm-outcome-label">You get:</span> You don't get stuck — you keep growing</div>
-          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('systemization')">Get Engine →</button>
-        </div>
-      </div>
- 
-      <!-- ── BIGGER PROJECTS ── -->
-      <div class="svm-section-divider">
-        <span>🏗️ Bigger Projects</span>
-      </div>
- 
-      <div class="svm-cards-row">
-        <div class="svm-card">
-          <div class="svm-card-top">
-            <div class="svm-card-name">Platform Development</div>
-            <div class="svm-card-price">₦1.5M – ₦10M+</div>
-          </div>
-          <ul class="svm-list"><li>Apps, websites, platforms</li></ul>
-          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('platform_dev')">Discuss →</button>
-        </div>
-        <div class="svm-card">
-          <div class="svm-card-top">
-            <div class="svm-card-name">Venture Build</div>
-            <div class="svm-card-price">₦500k–₦2M or Equity</div>
-          </div>
-          <ul class="svm-list"><li>Turn your idea into a real business</li></ul>
-          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('venture_build')">Apply →</button>
-        </div>
-        <div class="svm-card">
-          <div class="svm-card-top">
-            <div class="svm-card-name">Enterprise Systems</div>
-            <div class="svm-card-price">₦2M+</div>
-          </div>
-          <ul class="svm-list"><li>Internal software for companies</li></ul>
-          <button class="svm-btn outline" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Get Quote →</button>
-        </div>
-      </div>
- 
-      <!-- ── Footer CTA ── -->
-      <div class="svm-footer-cta">
-        <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">Not sure where to start?</div>
-        <p style="font-size:.88rem;color:rgba(242,237,228,.55);margin-bottom:16px;">Run our 2-minute diagnostic — we'll tell you exactly which service fits your situation right now.</p>
-        <button class="svm-btn gold" onclick="closeServicesModal();openIntakeModal()">Find Out What My Business Needs →</button>
-      </div>
-    </div>
- 
-    <!-- ════════════════════════════════════════
-         TAB 2 — GROWTH ADD-ONS
-    ════════════════════════════════════════ -->
-    <div id="svm-tab-addons" class="svm-tab-body" style="padding:28px 20px;display:none;">
- 
-      <div style="text-align:center;margin-bottom:28px;">
-        <div class="svm-eyebrow" style="justify-content:center;margin-bottom:10px;">🔧 Growth Add-Ons</div>
-        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.1rem,3vw,1.6rem);color:#F2EDE4;margin-bottom:8px;">Already set up? Upgrade your business engine.</h3>
-        <p style="font-size:.84rem;color:rgba(242,237,228,.5);max-width:460px;margin:0 auto;">Add these anytime — with or without a full package. Each one fixes a specific problem and improves a specific result.</p>
-      </div>
- 
-      <!-- ADDON CATEGORY 1: CONVERSION -->
-      <div class="svm-addon-category">
-        <div class="svm-addon-cat-header" style="border-color:#ef4444;background:rgba(239,68,68,.05);">
-          <span style="font-size:1.3rem;">🔥</span>
-          <div>
-            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#ef4444;">Category 01</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Get More Sales — Conversion Boosters</div>
-            <div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "People message me but don't buy" · "I lose customers after they show interest"</div>
-          </div>
-        </div>
-        <div class="svm-cards-row svm-cards-4">
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">💬</div>
-            <div class="svm-card-name">WhatsApp Automation</div>
-            <div class="svm-card-price">₦50k – ₦150k</div>
-            <ul class="svm-list"><li>Auto-replies for new messages</li><li>Instant responses when offline</li><li>Structured reply flow</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You never miss a customer again</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('sales_system')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🤖</div>
-            <div class="svm-card-name">AI Chatbot / Lead Qualifier</div>
-            <div class="svm-card-price">₦100k – ₦300k</div>
-            <ul class="svm-list"><li>Smart chatbot that talks to customers</li><li>Filters serious buyers</li><li>Sends right products/services</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You only deal with serious customers</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🔍</div>
-            <div class="svm-card-name">Funnel Check & Fix</div>
-            <div class="svm-card-price">₦50k – ₦120k</div>
-            <ul class="svm-list"><li>Review entire customer journey</li><li>Find where you lose sales</li><li>Fix weak points</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> More people who see you will buy</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('sales_system')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🔔</div>
-            <div class="svm-card-name">Follow-Up & Reminder System</div>
-            <div class="svm-card-price">₦70k – ₦200k</div>
-            <ul class="svm-list"><li>Automatic follow-ups</li><li>Reminder messages</li><li>"Come back and buy" system</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You recover lost customers</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('sales_system')">Add This →</button>
-          </div>
-        </div>
-      </div>
- 
-      <!-- ADDON CATEGORY 2: TRAFFIC -->
-      <div class="svm-addon-category">
-        <div class="svm-addon-cat-header" style="border-color:#00BCD4;background:rgba(0,188,212,.05);">
-          <span style="font-size:1.3rem;">📡</span>
-          <div>
-            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#00BCD4;">Category 02</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Get More Customers — Traffic & Growth</div>
-            <div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "I need more people seeing my business"</div>
-          </div>
-        </div>
-        <div class="svm-cards-row svm-cards-4">
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">📣</div>
-            <div class="svm-card-name">Paid Ads Setup</div>
-            <div class="svm-card-price" style="font-size:.75rem;color:#C89B14;">Instagram / Facebook / Google</div>
-            <div class="svm-card-price">₦100k – ₦300k</div>
-            <ul class="svm-list"><li>Set up your ads account</li><li>Create first campaigns</li><li>Target the right audience</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Faster visibility, reach more people</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🌐</div>
-            <div class="svm-card-name">SEO Setup</div>
-            <div class="svm-card-price" style="font-size:.75rem;color:#C89B14;">Google Visibility</div>
-            <div class="svm-card-price">₦80k – ₦200k</div>
-            <ul class="svm-list"><li>Optimise for Google search</li><li>Set up keywords</li><li>Improve online presence</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> People find you when they search</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">📅</div>
-            <div class="svm-card-name">30-Day Content Campaign</div>
-            <div class="svm-card-price">₦50k – ₦150k</div>
-            <ul class="svm-list"><li>Plan 30 days of content</li><li>Daily post ideas</li><li>Hooks included</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You never run out of content ideas</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">✉️</div>
-            <div class="svm-card-name">Email / SMS Campaign Setup</div>
-            <div class="svm-card-price">₦70k – ₦200k</div>
-            <ul class="svm-list"><li>Bulk messaging system</li><li>Campaign messages created</li><li>Reach audience directly</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Reach customers anytime</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button>
-          </div>
-        </div>
-      </div>
- 
-      <!-- ADDON CATEGORY 3: AUTOMATION -->
-      <div class="svm-addon-category">
-        <div class="svm-addon-cat-header" style="border-color:#a855f7;background:rgba(168,85,247,.05);">
-          <span style="font-size:1.3rem;">⚙️</span>
-          <div>
-            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#a855f7;">Category 03</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Automate Your Business — Infrastructure</div>
-            <div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "Things are manual and stressful" · "I want things to run smoothly"</div>
-          </div>
-        </div>
-        <div class="svm-cards-row svm-cards-4">
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">💳</div>
-            <div class="svm-card-name">Payment Gateway Setup</div>
-            <div class="svm-card-price">₦50k – ₦150k</div>
-            <ul class="svm-list"><li>Integrate payment systems</li><li>Enable card / online payments</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Customers can pay easily and faster</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">📊</div>
-            <div class="svm-card-name">Revenue & Analytics Dashboard</div>
-            <div class="svm-card-price">₦100k – ₦300k</div>
-            <ul class="svm-list"><li>Set up tracking system</li><li>See sales, customers, growth</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You understand your business clearly</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">📆</div>
-            <div class="svm-card-name">Booking / Appointment System</div>
-            <div class="svm-card-price">₦50k – ₦150k</div>
-            <ul class="svm-list"><li>Set up scheduling system</li><li>Customers book automatically</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> No more manual scheduling stress</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('systemization')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🔗</div>
-            <div class="svm-card-name">System Integrations (Advanced)</div>
-            <div class="svm-card-price">₦100k – ₦500k+</div>
-            <ul class="svm-list"><li>Connect your tools together</li><li>Automate workflows</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Business runs smoother and faster</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('enterprise_sw')">Add This →</button>
-          </div>
-        </div>
-      </div>
- 
-      <!-- ADDON CATEGORY 4: AUTHORITY -->
-      <div class="svm-addon-category">
-        <div class="svm-addon-cat-header" style="border-color:#C89B14;background:rgba(200,155,20,.05);">
-          <span style="font-size:1.3rem;">🏅</span>
-          <div>
-            <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;">Category 04</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#F2EDE4;">Look Premium & Trusted — Authority Boosters</div>
-            <div style="font-size:.78rem;color:rgba(242,237,228,.45);margin-top:3px;">👉 "My business doesn't look serious or premium"</div>
-          </div>
-        </div>
-        <div class="svm-cards-row svm-cards-4">
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🎨</div>
-            <div class="svm-card-name">Branding Upgrade Kit</div>
-            <div class="svm-card-price">₦80k – ₦250k</div>
-            <ul class="svm-list"><li>Improve visual identity</li><li>Upgrade business look</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You look more professional instantly</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">⭐</div>
-            <div class="svm-card-name">Trust & Credibility Page</div>
-            <div class="svm-card-price">₦100k – ₦300k</div>
-            <ul class="svm-list"><li>Testimonials & results page</li><li>Proof shown clearly</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> Customers trust you faster</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🎬</div>
-            <div class="svm-card-name">Brand Video / Reel</div>
-            <div class="svm-card-price">₦100k – ₦400k</div>
-            <ul class="svm-list"><li>Professional brand video created</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> You stand out and attract attention</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button>
-          </div>
-          <div class="svm-card svm-addon-card">
-            <div class="svm-addon-icon">🗣️</div>
-            <div class="svm-card-name">Review & Social Proof System</div>
-            <div class="svm-card-price">₦70k – ₦200k</div>
-            <ul class="svm-list"><li>Collect & display reviews systematically</li></ul>
-            <div class="svm-outcome"><span class="svm-outcome-label">Does:</span> More people believe in your business</div>
-            <button class="svm-btn outline sm" onclick="closeServicesModal();openServiceInquiry('brand_launch')">Add This →</button>
-          </div>
-        </div>
-      </div>
- 
-      <!-- Bundle advantage -->
-      <div class="svm-bundle-box">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-          <span style="font-size:1.4rem;">💰</span>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:#C89B14;">Bundle Advantage</div>
-        </div>
-        <p style="font-size:.84rem;color:rgba(242,237,228,.6);margin-bottom:12px;">When you combine 2 or more add-ons, you get better pricing, better integration, and better results. These aren't random tools — they're upgrades to your growth system.</p>
-        <button class="svm-btn gold" onclick="closeServicesModal();openIntakeModal()">Find the Right Bundle for Me →</button>
-      </div>
- 
-    </div>
- 
-    <!-- ════════════════════════════════════════
-         TAB 3 — HOW TO CHOOSE
-    ════════════════════════════════════════ -->
-    <div id="svm-tab-choose" class="svm-tab-body" style="padding:28px 20px;display:none;">
- 
-      <div style="text-align:center;margin-bottom:28px;">
-        <div class="svm-eyebrow" style="justify-content:center;margin-bottom:10px;">💡 Simple Way to Choose</div>
-        <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.1rem,3vw,1.5rem);color:#F2EDE4;margin-bottom:8px;">Pick your situation. We do the rest.</h3>
-      </div>
- 
-      <div class="svm-choose-grid">
-        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;">
-          <div class="svm-choose-icon">🔍</div>
-          <div class="svm-choose-if">Nobody knows my business exists</div>
-          <div class="svm-choose-arrow">→</div>
-          <div class="svm-choose-solution">Visibility & Setup (Pillar 1)</div>
-          <div class="svm-choose-cta">Start with Basic Listing (Free)</div>
-        </div>
-        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;">
-          <div class="svm-choose-icon">🤷</div>
-          <div class="svm-choose-if">People see me but don't trust me</div>
-          <div class="svm-choose-arrow">→</div>
-          <div class="svm-choose-solution">Brand & Trust (Pillar 2)</div>
-          <div class="svm-choose-cta">₦150k – ₦350k</div>
-        </div>
-        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;">
-          <div class="svm-choose-icon">📉</div>
-          <div class="svm-choose-if">I don't get customers consistently</div>
-          <div class="svm-choose-arrow">→</div>
-          <div class="svm-choose-solution">Customer Acquisition (Pillar 3)</div>
-          <div class="svm-choose-cta">₦100k – ₦400k</div>
-        </div>
-        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;">
-          <div class="svm-choose-icon">⏰</div>
-          <div class="svm-choose-if">I don't have time for online growth</div>
-          <div class="svm-choose-arrow">→</div>
-          <div class="svm-choose-solution">Content Execution (Pillar 4)</div>
-          <div class="svm-choose-cta">₦30k – ₦800k/month</div>
-        </div>
-        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=main]'),'main');document.getElementById('services-modal').scrollTop=0;">
-          <div class="svm-choose-icon">💸</div>
-          <div class="svm-choose-if">I get messages but people don't buy</div>
-          <div class="svm-choose-arrow">→</div>
-          <div class="svm-choose-solution">Sales System (Pillar 5)</div>
-          <div class="svm-choose-cta">₦120k – ₦2M</div>
-        </div>
-        <div class="svm-choose-card" onclick="svmTab(document.querySelector('.svm-tab[data-tab=addons]'),'addons');document.getElementById('services-modal').scrollTop=0;">
-          <div class="svm-choose-icon">⚙️</div>
-          <div class="svm-choose-if">Already set up, want to upgrade</div>
-          <div class="svm-choose-arrow">→</div>
-          <div class="svm-choose-solution">Growth Add-Ons</div>
-          <div class="svm-choose-cta">Pick your upgrade →</div>
-        </div>
-      </div>
- 
-      <!-- Expectation setter -->
-      <div class="svm-expectation-box">
-        <div style="font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:#ef4444;margin-bottom:10px;">⚠️ Important — Set Your Expectation</div>
-        <p style="font-size:.9rem;font-family:'Syne',sans-serif;font-weight:700;color:#F2EDE4;margin-bottom:8px;">We don't sell magic.</p>
-        <p style="font-size:.84rem;color:rgba(242,237,228,.6);margin-bottom:14px;line-height:1.7;">We build systems that bring attention, build trust, and increase your chances of sales. Your results improve when you follow the system — or when we manage it for you.</p>
-        <div style="background:rgba(200,155,20,.07);border:1px solid rgba(200,155,20,.18);border-radius:8px;padding:16px;font-size:.84rem;color:rgba(242,237,228,.7);line-height:1.75;">
-          You don't need <em style="color:#F2EDE4;font-style:normal;font-weight:600;">"more posting"</em>.<br>
-          You don't need <em style="color:#F2EDE4;font-style:normal;font-weight:600;">"just a logo"</em>.<br>
-          What you need is:<br>
-          <strong style="color:#C89B14;font-size:1rem;">👉 Customers → Sales → Growth</strong>
-        </div>
-      </div>
- 
-      <div class="svm-footer-cta">
-        <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:#C89B14;margin-bottom:8px;">Still not sure?</div>
-        <p style="font-size:.88rem;color:rgba(242,237,228,.55);margin-bottom:16px;">Answer 11 quick questions and we'll route you to the exact right solution for your business right now.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-          <button class="svm-btn gold" onclick="closeServicesModal();openIntakeModal()">Run My Business Diagnostic →</button>
-          <a href="https://calendly.com/hello-teknnuku/30min" target="_blank" class="svm-btn outline" onclick="closeServicesModal()" style="text-decoration:none;">Book a Free Call</a>
-        </div>
-      </div>
-    </div>
- 
-  </div><!-- /modal inner -->
-</div><!-- /services-modal -->
-
-<!-- ══════════════════════════════════════════════════════════
-     SERVICES MODAL — JAVASCRIPT
-     Paste before </body>
-══════════════════════════════════════════════════════════ -->
 <script>
-// ── Open / Close Services Modal ──
+// ════════════════════════════════════════════
+//  SERVICES MODAL JS
+// ════════════════════════════════════════════
 window.openServicesModal = function() {
   var m = document.getElementById('services-modal');
   m.style.display = 'flex';
-  m.classList.add('open');
   document.body.style.overflow = 'hidden';
   m.scrollTop = 0;
 };
@@ -7450,37 +6928,35 @@ window.openServicesModal = function() {
 window.closeServicesModal = function() {
   var m = document.getElementById('services-modal');
   m.style.display = 'none';
-  m.classList.remove('open');
   document.body.style.overflow = '';
 };
  
-// ── Tab switching ──
 window.svmTab = function(btn, tabId) {
-  // Deactivate all tabs and bodies
   document.querySelectorAll('.svm-tab').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.svm-tab-body').forEach(function(b) {
     b.style.display = 'none';
     b.classList.remove('active');
   });
-  // Activate selected
   btn.classList.add('active');
   var body = document.getElementById('svm-tab-' + tabId);
   if (body) { body.style.display = 'block'; body.classList.add('active'); }
-  // Scroll modal to top of content
   var modal = document.getElementById('services-modal');
-  if (modal) modal.scrollTop = document.getElementById('svm-tabs').offsetTop - 64;
+  var tabs  = document.getElementById('svm-tabs');
+  if (modal && tabs) modal.scrollTop = tabs.offsetTop - 64;
 };
  
-// ── Close on backdrop click ──
 document.getElementById('services-modal').addEventListener('click', function(e) {
   if (e.target === this) closeServicesModal();
 });
  
-// ── ESC key closes it ──
+// ESC also closes services modal (merged with existing ESC handlers)
 (function() {
-  var origKeydown = document.onkeydown;
+  var origKd = document.onkeydown;
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeServicesModal();
+    if (e.key === 'Escape') {
+      var sm = document.getElementById('services-modal');
+      if (sm && sm.style.display !== 'none') closeServicesModal();
+    }
   });
 })();
 </script>
