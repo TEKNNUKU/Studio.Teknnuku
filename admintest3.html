@@ -782,6 +782,31 @@ function _buildPanels() {
   _bindKeydown();
 }
 
+  // ── OVERVIEW UTILITIES ──────────────────────────────────────────
+function setText(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function tsToDate(v) {
+  if (!v) return new Date(0);
+  if (v.seconds) return new Date(v.seconds * 1000);
+  var d = new Date(v);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+}
+function getWeekStart() {
+  var now = new Date();
+  var monday = new Date(now);
+  monday.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+function matchReportToMember(report, member) {
+  var rn = (report.userName || '').trim().toLowerCase();
+  var mn = (member.name   || '').trim().toLowerCase();
+  var me = (member.email  || '').trim().toLowerCase();
+  return (rn && mn && rn === mn) || (rn && me && rn === me);
+}
+  
 // ═══════════════════════════════════════
 // PANEL HTML TEMPLATES
 // ═══════════════════════════════════════
@@ -802,6 +827,53 @@ function _panelOverview() {
       '<div class="kpi-card cyan"><div class="kpi-icon">🏢</div><div class="kpi-label">Ventures</div><div class="kpi-value" id="kpi-ventures">—</div><div class="kpi-meta">active portfolio</div></div>' +
       '<div class="kpi-card gold"><div class="kpi-icon">✅</div><div class="kpi-label">Tasks</div><div class="kpi-value" id="kpi-tasks">—</div><div class="kpi-meta">open today</div></div>' +
       '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="kpi-clients">—</div><div class="kpi-meta">onboarded</div></div>' +
+    // ── Financial KPIs ───────────────────────────────────────────
+    '<div style="font-family:var(--mono);font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px;"><span style="width:14px;height:1px;background:var(--gold);display:inline-block;"></span>Financial Summary</div>' +
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-bottom:8px;">' +
+      '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="ov-revenue">—</div><div class="kpi-meta">all income logged</div></div>' +
+      '<div class="kpi-card red"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="ov-expenses">—</div><div class="kpi-meta">all outgoings</div></div>' +
+      '<div class="kpi-card green" id="ov-profit-card"><div class="kpi-icon">📈</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="ov-profit">—</div><div class="kpi-meta" id="ov-margin">net margin</div></div>' +
+      '<div class="kpi-card amber"><div class="kpi-icon">⚠️</div><div class="kpi-label">System Liability</div><div class="kpi-value" id="ov-liability">—</div><div class="kpi-meta" id="ov-liability-meta">pending + overdue</div></div>' +
+    '</div>' +
+
+    // ── Underperforming ventures alert strip ─────────────────────
+    '<div id="ov-underperf-alert" style="display:none;margin-bottom:16px;"></div>' +
+
+    // ── Operational KPIs ─────────────────────────────────────────
+    '<div style="font-family:var(--mono);font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:4px 0 10px;display:flex;align-items:center;gap:8px;"><span style="width:14px;height:1px;background:var(--gold);display:inline-block;"></span>Operational Pulse</div>' +
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:24px;">' +
+      '<div class="kpi-card red"><div class="kpi-icon">⏰</div><div class="kpi-label">Tasks Overdue</div><div class="kpi-value" id="ov-overdue">—</div><div class="kpi-meta">past deadline</div></div>' +
+      '<div class="kpi-card cyan"><div class="kpi-icon">🔥</div><div class="kpi-label">Hot CRM Leads</div><div class="kpi-value" id="ov-hot-leads">—</div><div class="kpi-meta">qualified + proposal</div></div>' +
+      '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="ov-clients">—</div><div class="kpi-meta" id="ov-mrr">MRR</div></div>' +
+      '<div class="kpi-card purple"><div class="kpi-icon">📥</div><div class="kpi-label">Leads This Week</div><div class="kpi-value" id="ov-leads-week">—</div><div class="kpi-meta">intake + CRM</div></div>' +
+    '</div>' +
+
+    // ── Venture health + team side-by-side ───────────────────────
+    '<div class="two-col" style="align-items:start;margin-bottom:20px;">' +
+      '<div class="table-wrap">' +
+        '<div class="table-toolbar"><div class="table-toolbar-title">Venture Health <span id="ov-underperf-badge"></span></div></div>' +
+        '<div id="ov-venture-health"><div class="loading-row"><div class="spinner"></div></div></div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:16px;">' +
+        '<div class="table-wrap">' +
+          '<div class="table-toolbar"><div class="table-toolbar-title">Report Submissions</div><span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">This week</span></div>' +
+          '<div id="ov-report-status"><div class="loading-row"><div class="spinner"></div></div></div>' +
+        '</div>' +
+        '<div class="table-wrap">' +
+          '<div class="table-toolbar"><div class="table-toolbar-title">Weekly Performance</div><span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">Score / 100</span></div>' +
+          '<div style="padding:12px 16px;" id="ov-perf-scores"><div class="loading-row"><div class="spinner"></div></div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── Latest reports ───────────────────────────────────────────
+    '<div class="table-wrap">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">Latest Reports</div>' +
+        '<button class="action-btn" onclick="showPanel(\'reports\',document.querySelector(\'[data-panel=reports]\'))">View All →</button>' +
+      '</div>' +
+      '<div id="ov-latest-reports"><div class="loading-row"><div class="spinner"></div></div></div>' +
+    '</div>' +
+    
     '</div>' +
     '<div class="two-col">' +
       '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Recent Activity</div></div><div class="activity-feed" id="activity-feed"><div class="loading-row"><div class="spinner"></div></div></div></div>' +
@@ -809,6 +881,322 @@ function _panelOverview() {
     '</div></div>';
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  OVERVIEW RENDER — master + 4 sub-renders
+// ═══════════════════════════════════════════════════════════════
+function renderOverview(d) {
+  var financials = d.financials    || [];
+  var payments   = d.payments      || [];
+  var tasks      = d.tasks         || [];
+  var team       = d.team_members  || [];
+  var reports    = d.daily_reports || [];
+  var crm        = d.crm_leads     || [];
+  var clients    = d.clients       || [];
+  var leads      = d.leads         || [];
+  var weekStart  = getWeekStart();
+  var today      = new Date(); today.setHours(0, 0, 0, 0);
+
+  // Financial totals
+  var totalRevenue = 0, totalExpenses = 0;
+  financials.forEach(function(f) {
+    var amt = parseFloat(f.amount) || 0;
+    if (f.type === 'income') totalRevenue += amt; else totalExpenses += amt;
+  });
+  var netProfit = totalRevenue - totalExpenses;
+  var margin    = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
+
+  // System liability — pending + overdue payments
+  var pendingAmt = 0, overdueAmt = 0;
+  payments.forEach(function(p) {
+    var amt = parseFloat(p.amount) || 0;
+    if (p.status === 'pending') pendingAmt += amt;
+    if (p.status === 'overdue') overdueAmt += amt;
+  });
+
+  // Operational
+  var overdueTasks  = tasks.filter(function(t) { return t.status !== 'done' && t.deadline && new Date(t.deadline) < today; });
+  var hotLeads      = crm.filter(function(l) { return l.status === 'qualified' || l.status === 'proposal'; }).length;
+  var activeClients = clients.filter(function(c) { return c.status !== 'churned'; });
+  var mrr           = activeClients.reduce(function(s, c) { return s + (parseFloat(c.monthlyValue) || 0); }, 0);
+  var leadsWeek     = leads.filter(function(l) { return tsToDate(l.completedAt || l.createdAt) >= weekStart; }).length
+                    + crm.filter(function(l)   { return tsToDate(l.createdAt) >= weekStart; }).length;
+
+  // Set KPI text
+  setText('ov-revenue',       '₦' + totalRevenue.toLocaleString());
+  setText('ov-expenses',      '₦' + totalExpenses.toLocaleString());
+  setText('ov-profit',        (netProfit < 0 ? '−' : '') + '₦' + Math.abs(netProfit).toLocaleString());
+  setText('ov-margin',        margin + '% net margin');
+  setText('ov-liability',     '₦' + (pendingAmt + overdueAmt).toLocaleString());
+  setText('ov-liability-meta','₦' + pendingAmt.toLocaleString() + ' pending · ₦' + overdueAmt.toLocaleString() + ' overdue');
+  setText('ov-overdue',       overdueTasks.length);
+  setText('ov-hot-leads',     hotLeads);
+  setText('ov-clients',       activeClients.length);
+  setText('ov-mrr',           '₦' + mrr.toLocaleString() + '/mo MRR');
+  setText('ov-leads-week',    leadsWeek);
+  setText('overview-updated', 'Updated ' + new Date().toLocaleTimeString());
+
+  // Flip profit card red when loss
+  var profitCard = document.getElementById('ov-profit-card');
+  if (profitCard) profitCard.className = 'kpi-card ' + (netProfit >= 0 ? 'green' : 'red');
+
+  // Sub-renders
+  ovVentureHealth(financials, tasks, clients, today);
+  ovReportStatus(team, reports, weekStart);
+  ovPerfScores(team, reports, tasks, weekStart);
+  ovLatestReports(reports);
+}
+
+// ── Venture health rows ────────────────────────────────────────
+function ovVentureHealth(financials, tasks, clients, today) {
+  var el = document.getElementById('ov-venture-health');
+  if (!el) return;
+
+  var stats = VENTURES_SEED.map(function(v) {
+    var fi       = financials.filter(function(f) { return f.ventureId === v.id; });
+    var rev      = fi.filter(function(f) { return f.type === 'income'; }).reduce(function(s, f) { return s + (parseFloat(f.amount) || 0); }, 0);
+    var exp      = fi.filter(function(f) { return f.type === 'expense'; }).reduce(function(s, f) { return s + (parseFloat(f.amount) || 0); }, 0);
+    var vTasks   = tasks.filter(function(t) { return t.ventureId === v.id; });
+    var done     = vTasks.filter(function(t) { return t.status === 'done'; }).length;
+    var taskPct  = vTasks.length > 0 ? Math.round((done / vTasks.length) * 100) : 0;
+    var clCount  = clients.filter(function(c) { return c.ventureId === v.id && c.status !== 'churned'; }).length;
+    var odCount  = vTasks.filter(function(t) { return t.status !== 'done' && t.deadline && new Date(t.deadline) < today; }).length;
+    var health   = Math.min(100, Math.round(taskPct * 0.5 + (rev > 0 ? 30 : 0) + (clCount > 0 ? 20 : 0)));
+    return { v:v, rev:rev, exp:exp, net:rev-exp, taskPct:taskPct, clCount:clCount, odCount:odCount, health:health };
+  });
+
+  stats.sort(function(a, b) { return a.health - b.health; });
+
+  // Underperforming alert
+  var bad = stats.filter(function(s) { return s.health < 40; });
+  var alertEl = document.getElementById('ov-underperf-alert');
+  var badgeEl = document.getElementById('ov-underperf-badge');
+  if (alertEl) {
+    if (bad.length) {
+      alertEl.style.display = 'block';
+      alertEl.innerHTML =
+        '<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-left:3px solid var(--red);border-radius:var(--r);padding:14px 18px;">' +
+          '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:8px;">⚠ Underperforming Ventures — ' + bad.length + ' flagged</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+            bad.map(function(s) {
+              return '<span style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:.6rem;color:var(--red);">' +
+                escHtml(s.v.name) + ' · ' + s.health + '% health' +
+                (s.odCount ? ' · ' + s.odCount + ' overdue' : '') +
+                (s.rev === 0 ? ' · no revenue' : '') +
+              '</span>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+    } else {
+      alertEl.style.display = 'none';
+    }
+  }
+  if (badgeEl) {
+    badgeEl.innerHTML = bad.length
+      ? '<span class="badge badge-red" style="font-size:.5rem;margin-left:8px;">' + bad.length + ' underperforming</span>'
+      : '';
+  }
+
+  el.innerHTML = stats.map(function(s) {
+    var hColor = s.health >= 70 ? 'var(--green)' : s.health >= 40 ? 'var(--amber)' : 'var(--red)';
+    var rowBg  = s.health < 40 ? 'background:rgba(239,68,68,.03);' : '';
+    return '<div style="padding:11px 16px;border-bottom:1px solid rgba(200,155,20,.05);display:flex;align-items:center;gap:10px;' + rowBg + '">' +
+      '<div style="width:8px;height:8px;border-radius:50%;background:' + hColor + ';flex-shrink:0;"></div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">' +
+          '<div style="font-size:.8rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;">' + escHtml(s.v.name) + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.62rem;font-weight:700;color:' + hColor + ';">' + s.health + '%</div>' +
+        '</div>' +
+        '<div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;">' +
+          '<div style="width:' + s.health + '%;height:100%;background:' + hColor + ';border-radius:2px;transition:width .6s ease;"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;margin-top:5px;">' +
+          '<span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">' + s.clCount + ' client' + (s.clCount !== 1 ? 's' : '') + '</span>' +
+          '<span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">' + s.taskPct + '% tasks</span>' +
+          (s.odCount ? '<span style="font-family:var(--mono);font-size:.54rem;color:var(--red);">⚠ ' + s.odCount + ' overdue</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0;min-width:88px;">' +
+        '<div style="font-family:var(--mono);font-size:.65rem;color:var(--green);">+₦' + s.rev.toLocaleString() + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.58rem;color:' + (s.net >= 0 ? 'var(--gold)' : 'var(--red)') + ';">Net: ' + (s.net < 0 ? '−' : '') + '₦' + Math.abs(s.net).toLocaleString() + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('') || '<div class="empty-state"><div class="empty-icon">🏢</div>No venture data yet</div>';
+}
+
+// ── Team report submissions ────────────────────────────────────
+function ovReportStatus(team, reports, weekStart) {
+  var el = document.getElementById('ov-report-status');
+  if (!el) return;
+  if (!team.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div>No team members yet</div>';
+    return;
+  }
+
+  // Count working days elapsed this week
+  var daysSoFar = 0, cursor = new Date(weekStart), now = new Date();
+  while (cursor <= now && daysSoFar < 5) {
+    if (cursor.getDay() !== 0 && cursor.getDay() !== 6) daysSoFar++;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  var expected = Math.max(daysSoFar, 1);
+
+  var rows = team.map(function(m) {
+    var weekRpts = reports.filter(function(r) {
+      return matchReportToMember(r, m) && tsToDate(r.submittedAt || r.createdAt) >= weekStart;
+    });
+    return { m:m, count:weekRpts.length };
+  });
+  rows.sort(function(a, b) {
+    if (a.count === 0 && b.count > 0) return -1;
+    if (b.count === 0 && a.count > 0) return  1;
+    return a.count - b.count;
+  });
+
+  var submitted = rows.filter(function(r) { return r.count > 0; }).length;
+  var missing   = rows.filter(function(r) { return r.count === 0; }).length;
+
+  var html =
+    '<div style="display:flex;gap:12px;padding:10px 16px 8px;border-bottom:1px solid rgba(200,155,20,.07);">' +
+      '<span style="font-family:var(--mono);font-size:.58rem;color:var(--green);">✅ ' + submitted + ' submitted</span>' +
+      (missing ? '<span style="font-family:var(--mono);font-size:.58rem;color:var(--red);">⚠ ' + missing + ' missing</span>' : '') +
+    '</div>';
+
+  html += rows.map(function(row) {
+    var pct   = Math.round((row.count / expected) * 100);
+    var color = row.count === 0 ? 'var(--red)' : pct < 60 ? 'var(--amber)' : 'var(--green)';
+    var rowBg = row.count === 0 ? 'background:rgba(239,68,68,.04);' : '';
+    return '<div style="padding:9px 16px;border-bottom:1px solid rgba(200,155,20,.04);display:flex;align-items:center;gap:10px;' + rowBg + '">' +
+      '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:10px;color:#080808;flex-shrink:0;">' + initials(row.m.name || row.m.email || '?') + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:.78rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(row.m.name || row.m.email || '—') + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">' + escHtml((ROLE_LABELS[row.m.role] || row.m.role || '').substring(0, 26)) + '</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0;">' +
+        '<div style="font-family:var(--mono);font-size:.65rem;color:' + color + ';">' + row.count + ' / ' + expected + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.5rem;color:' + color + ';">' + (row.count === 0 ? '⚠ not submitted' : 'reports in') + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.innerHTML = html;
+}
+
+// ── Weekly performance scores ──────────────────────────────────
+function ovPerfScores(team, reports, tasks, weekStart) {
+  var el = document.getElementById('ov-perf-scores');
+  if (!el) return;
+  if (!team.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:12px 0;">No team yet</div>';
+    return;
+  }
+
+  var daysSoFar = 0, cursor = new Date(weekStart), now = new Date();
+  while (cursor <= now && daysSoFar < 5) {
+    if (cursor.getDay() !== 0 && cursor.getDay() !== 6) daysSoFar++;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  var expected = Math.max(daysSoFar, 1);
+
+  var scores = team.map(function(m) {
+    var weekRpts = reports.filter(function(r) {
+      return matchReportToMember(r, m) && tsToDate(r.submittedAt || r.createdAt) >= weekStart;
+    });
+
+    // Submission score — 50 pts max
+    var subScore = Math.min(Math.round((weekRpts.length / expected) * 50), 50);
+
+    // Metric quality score — 30 pts max
+    var metricScore = 0;
+    weekRpts.forEach(function(r) {
+      var positives = Object.values(r.data || {}).filter(function(v) { return typeof v === 'number' && v > 0; }).length;
+      if (positives >= 4) metricScore = Math.max(metricScore, 30);
+      else if (positives >= 2) metricScore = Math.max(metricScore, 18);
+      else if (positives >= 1) metricScore = Math.max(metricScore, 8);
+    });
+
+    // Task completion score — 20 pts max
+    var myTasks  = tasks.filter(function(t) { return t.assignedTo === m.id; });
+    var doneTasks = myTasks.filter(function(t) { return t.status === 'done'; }).length;
+    var taskScore = myTasks.length > 0 ? Math.min(Math.round((doneTasks / myTasks.length) * 20), 20) : 0;
+
+    var total = subScore + metricScore + taskScore;
+    return { m:m, score:total, subs:weekRpts.length, tasks:myTasks.length, done:doneTasks };
+  });
+
+  scores.sort(function(a, b) { return b.score - a.score; });
+
+  var underperf = scores.filter(function(s) { return s.score < 40; }).length;
+  var html = '';
+
+  if (underperf) {
+    html += '<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.15);border-radius:5px;padding:8px 12px;margin-bottom:12px;font-family:var(--mono);font-size:.58rem;color:var(--red);">⚠ ' + underperf + ' member' + (underperf !== 1 ? 's' : '') + ' underperforming this week</div>';
+  }
+
+  html += scores.map(function(s) {
+    var color = s.score >= 70 ? 'var(--green)' : s.score >= 40 ? 'var(--amber)' : 'var(--red)';
+    var flag  = s.score >= 70 ? '✅' : s.score >= 40 ? '🟡' : '⚠️';
+    return '<div style="padding:9px 0;border-bottom:1px solid rgba(200,155,20,.05);display:flex;align-items:center;gap:8px;">' +
+      '<span style="font-size:.7rem;flex-shrink:0;width:18px;">' + flag + '</span>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:.76rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(s.m.name || s.m.email || '—') + '</div>' +
+        '<div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:5px;">' +
+          '<div style="width:' + s.score + '%;height:100%;background:' + color + ';border-radius:2px;transition:width .5s ease;"></div>' +
+        '</div>' +
+        '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);margin-top:3px;">' +
+          s.subs + ' report' + (s.subs !== 1 ? 's' : '') + ' · ' + s.done + '/' + s.tasks + ' tasks' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-family:var(--mono);font-weight:700;font-size:.82rem;color:' + color + ';flex-shrink:0;min-width:34px;text-align:right;">' + s.score + '</div>' +
+    '</div>';
+  }).join('');
+
+  el.innerHTML = html;
+}
+
+// ── Latest 10 reports table ────────────────────────────────────
+function ovLatestReports(reports) {
+  var el = document.getElementById('ov-latest-reports');
+  if (!el) return;
+  if (!reports.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No reports submitted yet</div>';
+    return;
+  }
+
+  var sorted = reports.slice().sort(function(a, b) {
+    return tsToDate(b.submittedAt || b.createdAt) - tsToDate(a.submittedAt || a.createdAt);
+  }).slice(0, 10);
+
+  var html = '<div class="table-scroll"><table><thead><tr>' +
+    '<th>Member</th><th>Role</th><th>Date</th><th>Summary</th><th>Top Metric</th><th>Submitted</th><th></th>' +
+    '</tr></thead><tbody>';
+
+  sorted.forEach(function(r) {
+    var data = r.data || {};
+    var mKey = '', mVal = '';
+    Object.entries(data).some(function(e) {
+      if (typeof e[1] === 'number' && e[1] > 0) {
+        mKey = e[0].replace(/([A-Z])/g, ' $1').trim();
+        mVal = e[1].toLocaleString();
+        return true;
+      }
+    });
+    html += '<tr>' +
+      '<td style="font-weight:600;font-size:.82rem;">' + escHtml(r.userName || '—') + '</td>' +
+      '<td><span class="badge badge-cyan" style="font-size:.52rem;">' + escHtml((r.reportType || '').replace(/_/g, ' ')) + '</span></td>' +
+      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + fmtDate(r.date) + '</td>' +
+      '<td style="font-size:.76rem;color:var(--dim);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml((r.summary || '—').substring(0, 55)) + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.62rem;">' +
+        (mVal ? '<span style="color:var(--dimmer);">' + escHtml(mKey) + ': </span><strong style="color:var(--gold);">' + escHtml(mVal) + '</strong>' : '<span style="color:var(--dimmer);">—</span>') +
+      '</td>' +
+      '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + timeAgo(r.submittedAt || r.createdAt) + '</td>' +
+      '<td><button class="action-btn" onclick="viewReport(\'' + r.id + '\')">View</button></td>' +
+    '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+  
 function _panelLeads() {
   return '<div class="panel" id="panel-leads">' +
     '<div class="eyebrow">Intake Diagnostic</div>' +
