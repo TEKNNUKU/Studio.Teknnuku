@@ -828,8 +828,9 @@ function _panelOverview() {
       '<div class="kpi-card gold"><div class="kpi-icon">✅</div><div class="kpi-label">Tasks</div><div class="kpi-value" id="kpi-tasks">—</div><div class="kpi-meta">open today</div></div>' +
       '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="kpi-clients">—</div><div class="kpi-meta">onboarded</div></div>' +
     // ── Financial KPIs ───────────────────────────────────────────
-    '<div style="font-family:var(--mono);font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px;"><span style="width:14px;height:1px;background:var(--gold);display:inline-block;"></span>Financial Summary</div>' +
-    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-bottom:8px;">' +
+    '</div>' +
+    '<div class="eyebrow" style="margin-top:20px;margin-bottom:12px;">Financial Summary</div>' +
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-bottom:16px;">' +
       '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="ov-revenue">—</div><div class="kpi-meta">all income logged</div></div>' +
       '<div class="kpi-card red"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="ov-expenses">—</div><div class="kpi-meta">all outgoings</div></div>' +
       '<div class="kpi-card green" id="ov-profit-card"><div class="kpi-icon">📈</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="ov-profit">—</div><div class="kpi-meta" id="ov-margin">net margin</div></div>' +
@@ -840,7 +841,7 @@ function _panelOverview() {
     '<div id="ov-underperf-alert" style="display:none;margin-bottom:16px;"></div>' +
 
     // ── Operational KPIs ─────────────────────────────────────────
-    '<div style="font-family:var(--mono);font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:4px 0 10px;display:flex;align-items:center;gap:8px;"><span style="width:14px;height:1px;background:var(--gold);display:inline-block;"></span>Operational Pulse</div>' +
+    '<div class="eyebrow" style="margin:16px 0 12px;">Operational Pulse</div>' +
     '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:24px;">' +
       '<div class="kpi-card red"><div class="kpi-icon">⏰</div><div class="kpi-label">Tasks Overdue</div><div class="kpi-value" id="ov-overdue">—</div><div class="kpi-meta">past deadline</div></div>' +
       '<div class="kpi-card cyan"><div class="kpi-icon">🔥</div><div class="kpi-label">Hot CRM Leads</div><div class="kpi-value" id="ov-hot-leads">—</div><div class="kpi-meta">qualified + proposal</div></div>' +
@@ -1577,6 +1578,7 @@ window._renderAll = function(){
 
   renderActivity(d);
   renderTierBreakdown(d.leads);
+  if(canAccess('overview'))renderOverview(d);
   if(canAccess('leads'))renderLeads(d.leads);
   if(canAccess('inquiries'))renderInquiries(d.inquiries);
   if(canAccess('messages'))renderMessages(d.messages);
