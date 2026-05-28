@@ -1675,7 +1675,7 @@ function doLogin(){
   window._signIn(email,pass).then(function(){btn.textContent='Access Dashboard →';btn.disabled=false;}).catch(function(){err.textContent='Access denied. Check your credentials.';err.style.display='block';btn.textContent='Access Dashboard →';btn.disabled=false;});
 }
 function doLogout(){window._signOut().then(function(){toast('Signed out successfully');});}
-function refreshAll(){if(!window._loadAll){toast('Still initialising','error');return;}toast('Refreshing data…');window._loadAll().then(function(){toast('Data refreshed ✓','success');}).catch(function(){toast('Refresh failed','error');});}
+function refreshAll(){if(!window._loadAll){toast('Still initialising','error');return;}toast('Refreshing data…');_crmSynced=false;window._loadAll().then(function(){toast('Data refreshed ✓','success');}).catch(function(){toast('Refresh failed','error');});}
 
 // ═══════════════════════════════════════
 // RENDER ALL
