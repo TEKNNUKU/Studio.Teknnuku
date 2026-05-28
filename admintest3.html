@@ -2745,7 +2745,284 @@ function displayProposals(proposals) {
   }).join('');
 }
 
-function updateProposalStatus(id,status){window._updateDoc('proposals',id,{status:status}).then(function(){toast('Proposal updated','success');window._loadAll();});}
+function updateProposalStatus(id, status) {
+  window._updateDoc('proposals', id, {status: status}).then(function() {
+    toast('Proposal marked ' + status, 'success');
+    window._loadAll().then(function() {
+      if (status === 'accepted') {
+        var prop = (window._data.proposals || []).find(function(p) { return p.id === id; });
+        if (prop && prop.leadId) {
+          var pay = (window._data.payments || []).find(function(p) { return p.leadId === prop.leadId && p.status === 'paid'; });
+          if (pay) autoWinLead(prop.leadId, pay);
+        }
+      }
+    });
+  });
+}
+
+// ── Lead change handler ───────────────────────────────────────
+function onProposalLeadChange() {
+  var leadId = (document.getElementById('prop-lead') || {}).value || '';
+  var infoDiv = document.getElementById('prop-lead-info');
+  if (!leadId) { if (infoDiv) infoDiv.style.display = 'none'; return; }
+  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  if (!lead) { if (infoDiv) infoDiv.style.display = 'none'; return; }
+  var v = V_MAP[lead.ventureId] || {};
+  if (infoDiv) infoDiv.style.display = 'block';
+  setText('prop-li-name',    lead.name    || '—');
+  setText('prop-li-email',   lead.email   || '—');
+  setText('prop-li-phone',   lead.phone   || '—');
+  setText('prop-li-venture', v.name || lead.ventureId || '—');
+}
+
+// ── Service change — update title, amount, duration options ───
+function onProposalServiceChange() {
+  var svc  = (document.getElementById('prop-service') || {}).value || '';
+  var tmpl = PROPOSAL_TEMPLATES[svc];
+  if (!tmpl) return;
+  var titleEl = document.getElementById('prop-title');
+  if (titleEl && !titleEl.value) titleEl.value = tmpl.defaultTitle || '';
+  var amtEl = document.getElementById('prop-amount');
+  if (amtEl && !amtEl.value) amtEl.value = tmpl.defaultAmount || '';
+  var durEl = document.getElementById('prop-duration');
+  if (durEl) {
+    durEl.innerHTML = (tmpl.durations || ['One-time payment', '2 instalments (50/50)', 'Monthly retainer']).map(function(d) {
+      return '<option value="' + d + '">' + d + '</option>';
+    }).join('');
+  }
+  updateInstalmentsBreakdown();
+}
+
+// ── Auto-fill body from template ──────────────────────────────
+function autoFillProposalBody() {
+  var svc  = (document.getElementById('prop-service') || {}).value || '';
+  var tmpl = PROPOSAL_TEMPLATES[svc];
+  if (!tmpl || !tmpl.body) { toast('Please select a service first', 'error'); return; }
+  var bodyEl = document.getElementById('prop-body');
+  if (bodyEl) { bodyEl.value = tmpl.body; }
+  var titleEl = document.getElementById('prop-title');
+  if (titleEl && !titleEl.value) titleEl.value = tmpl.defaultTitle || '';
+  var amtEl = document.getElementById('prop-amount');
+  if (amtEl && !amtEl.value) amtEl.value = tmpl.defaultAmount || '';
+  toast('Proposal filled from template ✓', 'success');
+  updateInstalmentsBreakdown();
+}
+
+// ── Instalment breakdown live preview ─────────────────────────
+function updateInstalmentsBreakdown() {
+  var div = document.getElementById('prop-instal-breakdown');
+  if (!div) return;
+  var dur = (document.getElementById('prop-duration') || {}).value || '';
+  var amt = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
+  if (!dur || !amt) { div.style.display = 'none'; return; }
+  var html = '';
+  var sep = '<span style="color:var(--dimmer);margin:0 6px;">·</span>';
+  if (dur.includes('2 instal') || dur.includes('50/50')) {
+    var h = Math.round(amt / 2);
+    html = '<div style="font-family:var(--mono);font-size:.58rem;color:var(--gold);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;">Payment Breakdown</div>' +
+      '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
+        '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">1st payment:</span> <strong style="color:var(--white);">₦' + h.toLocaleString() + '</strong> <span style="color:var(--dimmer);font-size:.7rem;">(on signing)</span></div>' +
+        '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">2nd payment:</span> <strong style="color:var(--white);">₦' + (amt - h).toLocaleString() + '</strong> <span style="color:var(--dimmer);font-size:.7rem;">(on delivery)</span></div>' +
+      '</div>';
+  } else if (dur.includes('3 month') || dur.includes('3 milestone') || dur.includes('× 3')) {
+    var t = Math.round(amt / 3);
+    html = '<div style="font-family:var(--mono);font-size:.58rem;color:var(--gold);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;">Payment Breakdown</div>' +
+      '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
+        '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">1st:</span> <strong style="color:var(--white);">₦' + t.toLocaleString() + '</strong></div>' +
+        '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">2nd:</span> <strong style="color:var(--white);">₦' + t.toLocaleString() + '</strong></div>' +
+        '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">3rd:</span> <strong style="color:var(--white);">₦' + (amt - t * 2).toLocaleString() + '</strong></div>' +
+      '</div>';
+  } else if (dur.toLowerCase().includes('milestone')) {
+    html = '<div style="font-size:.78rem;color:var(--amber);">Milestone-based — define payment schedule in proposal body above.</div>';
+  } else if (dur.toLowerCase().includes('month') || dur.toLowerCase().includes('retainer')) {
+    html = '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">Monthly billing:</span> <strong style="color:var(--white);">₦' + amt.toLocaleString() + '/month</strong></div>';
+  } else if (dur.toLowerCase().includes('annual') || dur.toLowerCase().includes('year')) {
+    var monthly = Math.round(amt / 12);
+    html = '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">Annual total:</span> <strong style="color:var(--white);">₦' + amt.toLocaleString() + '</strong>' + sep + '<span style="color:var(--dimmer);">≈ ₦' + monthly.toLocaleString() + '/month</span></div>';
+  } else {
+    html = '<div style="font-size:.8rem;"><span style="color:var(--dimmer);">Full payment on signing:</span> <strong style="color:var(--white);">₦' + amt.toLocaleString() + '</strong></div>';
+  }
+  if (html) { div.style.display = 'block'; div.innerHTML = html; }
+  else div.style.display = 'none';
+}
+
+// ── Generate full proposal message text ───────────────────────
+function generateProposalMessage(p) {
+  var lead   = window._data ? (window._data.crm_leads || []).find(function(l) { return l.id === p.leadId; }) : null;
+  var cn     = FW_CONFIG.companyName || 'TEKNNUKU Studio';
+  var ce     = FW_CONFIG.companyEmail || 'hello@teknnuku.xyz';
+  var cp     = FW_CONFIG.companyPhone || '';
+  var line   = '═'.repeat(38);
+  var subline= '─'.repeat(38);
+  var dv     = parseFloat(p.amount) || 0;
+
+  var paySection = '\n\n💰 PAYMENT DETAILS\n' + subline + '\n';
+  paySection += '• Total Amount:    ₦' + dv.toLocaleString() + '\n';
+  if (p.duration)         paySection += '• Payment Terms:   ' + p.duration + '\n';
+  if (p.contractDuration) paySection += '• Contract Period: ' + p.contractDuration + '\n';
+  if (p.validUntil)       paySection += '• Offer Valid Until: ' + new Date(p.validUntil).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'}) + '\n';
+
+  // Instalment breakdown
+  if (p.duration && p.duration.includes('50/50')) {
+    var h = Math.round(dv / 2);
+    paySection += '\nInstalment Schedule:\n  • Instalment 1: ₦' + h.toLocaleString() + ' (due on signing)\n  • Instalment 2: ₦' + (dv - h).toLocaleString() + ' (due on delivery)\n';
+  } else if (p.duration && p.duration.includes('3')) {
+    var t = Math.round(dv / 3);
+    paySection += '\nInstalment Schedule:\n  • Payment 1: ₦' + t.toLocaleString() + '\n  • Payment 2: ₦' + t.toLocaleString() + '\n  • Payment 3: ₦' + (dv - t * 2).toLocaleString() + '\n';
+  }
+
+  var methods = p.paymentMethods || ['bank_transfer'];
+  if (methods.indexOf('bank_transfer') !== -1 && p.bankAccountNumber) {
+    paySection += '\n🏦 BANK TRANSFER\n';
+    paySection += '   Bank: ' + (p.bankName || '') + '\n';
+    paySection += '   Account Number: ' + (p.bankAccountNumber || '') + '\n';
+    paySection += '   Account Name: ' + (p.bankAccountName || '') + '\n';
+  }
+  if ((methods.indexOf('card') !== -1 || methods.indexOf('ussd') !== -1) && p.paymentLink) {
+    paySection += '\n💳 ONLINE PAYMENT\n';
+    paySection += '   Payment Link: ' + p.paymentLink + '\n';
+  } else if (p.paymentLink) {
+    paySection += '\n💳 PAYMENT LINK: ' + p.paymentLink + '\n';
+  }
+  if (p.paymentNotes) {
+    paySection += '\n📌 Important: ' + p.paymentNotes + '\n';
+  }
+
+  var msg = 'PROPOSAL FROM ' + cn.toUpperCase() + '\n' + line + '\n\n' +
+    'Dear ' + (p.personName || 'Valued Client') + ',\n\n' +
+    'Thank you for your interest in our services. Please find below our formal proposal:\n\n' +
+    '📋 ' + (p.title || 'Service Proposal').toUpperCase() + '\n' + subline + '\n\n' +
+    (p.body || '') +
+    paySection +
+    '\n\n✍️ TO ACCEPT THIS PROPOSAL\n' + subline + '\n' +
+    'To accept this proposal:\n' +
+    '1. Reply to confirm your acceptance\n' +
+    '2. Proceed with the deposit payment to begin work\n' +
+    '3. We will send you a formal invoice upon receipt\n\n' +
+    '📞 QUESTIONS OR CLARIFICATIONS\n' + subline + '\n' +
+    'Email: ' + ce + '\n' +
+    (cp ? 'WhatsApp/Phone: ' + cp + '\n' : '') +
+    '\nWe look forward to working with you.\n\n' +
+    'Kind regards,\n' + cn + ' Team\n' + line;
+
+  return msg;
+}
+
+// ── Send via Email ────────────────────────────────────────────
+function sendProposalEmail(propId) {
+  var p = (window._data.proposals || []).find(function(x) { return x.id === propId; });
+  if (!p) { toast('Proposal not found', 'error'); return; }
+  var msg     = generateProposalMessage(p);
+  var subject = encodeURIComponent((p.title || 'Service Proposal') + ' — ' + (FW_CONFIG.companyName || 'TEKNNUKU Studio'));
+  var body    = encodeURIComponent(msg);
+  var email   = encodeURIComponent(p.personEmail || '');
+  window.open('mailto:' + email + '?subject=' + subject + '&body=' + body, '_blank');
+  if (p.status === 'draft') {
+    window._updateDoc('proposals', propId, {status: 'sent'}).then(function() { window._loadAll(); });
+    toast('Proposal marked as Sent ✓', 'success');
+  }
+}
+
+// ── Send via WhatsApp ─────────────────────────────────────────
+function sendProposalWhatsApp(propId) {
+  var p = (window._data.proposals || []).find(function(x) { return x.id === propId; });
+  if (!p) { toast('Proposal not found', 'error'); return; }
+  var lead  = window._data ? (window._data.crm_leads || []).find(function(l) { return l.id === p.leadId; }) : null;
+  var phone = p.personPhone || (lead ? lead.phone : '') || '';
+  if (!phone) { toast('No phone number linked to this lead. Add a phone number via CRM.', 'error'); return; }
+  var msg = generateProposalMessage(p);
+  phone   = phone.replace(/\s+/g, '').replace(/[^0-9+]/g, '');
+  if (phone.startsWith('0')) phone = '+234' + phone.slice(1);
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+  if (p.status === 'draft') {
+    window._updateDoc('proposals', propId, {status: 'sent'}).then(function() { window._loadAll(); });
+    toast('Proposal sent via WhatsApp ✓', 'success');
+  }
+}
+
+// ── Save then send ────────────────────────────────────────────
+function saveAndSendProposalEmail() {
+  var leadId = (document.getElementById('prop-lead') || {}).value || '';
+  if (!leadId) { toast('Please select a recipient first', 'error'); return; }
+  var title  = (document.getElementById('prop-title') || {}).value || '';
+  var amount = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
+  if (!title || !amount) { toast('Title and amount are required', 'error'); return; }
+
+  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  var methods = [];
+  document.querySelectorAll('.prop-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
+
+  var data = buildProposalData(leadId, lead, title, amount, methods);
+  data.status = 'sent';
+
+  var fn = _editingProposalId
+    ? window._updateDoc('proposals', _editingProposalId, data)
+    : window._saveDoc('proposals', data);
+
+  fn.then(function(newId) {
+    closeDrawer();
+    window._loadAll().then(function() {
+      var pid = _editingProposalId || newId;
+      var saved = (window._data.proposals || []).find(function(p) { return p.id === pid || (p.leadId === leadId && p.title === title); });
+      if (saved) sendProposalEmail(saved.id);
+    });
+    _editingProposalId = null;
+  });
+}
+
+function saveAndSendProposalWhatsApp() {
+  var leadId = (document.getElementById('prop-lead') || {}).value || '';
+  if (!leadId) { toast('Please select a recipient first', 'error'); return; }
+  var title  = (document.getElementById('prop-title') || {}).value || '';
+  var amount = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
+  if (!title || !amount) { toast('Title and amount are required', 'error'); return; }
+
+  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  var methods = [];
+  document.querySelectorAll('.prop-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
+
+  var data = buildProposalData(leadId, lead, title, amount, methods);
+  data.status = 'sent';
+
+  var fn = _editingProposalId
+    ? window._updateDoc('proposals', _editingProposalId, data)
+    : window._saveDoc('proposals', data);
+
+  fn.then(function(newId) {
+    closeDrawer();
+    window._loadAll().then(function() {
+      var pid = _editingProposalId || newId;
+      var saved = (window._data.proposals || []).find(function(p) { return p.id === pid || (p.leadId === leadId && p.title === title); });
+      if (saved) sendProposalWhatsApp(saved.id);
+    });
+    _editingProposalId = null;
+  });
+}
+
+// ── Shared data builder ───────────────────────────────────────
+function buildProposalData(leadId, lead, title, amount, methods) {
+  return {
+    leadId:            leadId,
+    personName:        lead ? lead.name    || '' : '',
+    personEmail:       lead ? lead.email   || '' : '',
+    personPhone:       lead ? lead.phone   || '' : '',
+    ventureId:         lead ? lead.ventureId || '' : '',
+    title:             title,
+    service:           (document.getElementById('prop-service')       || {}).value || '',
+    amount:            amount,
+    duration:          (document.getElementById('prop-duration')       || {}).value || '',
+    contractDuration:  (document.getElementById('prop-contract-dur')   || {}).value || '',
+    validUntil:        (document.getElementById('prop-valid')          || {}).value || '',
+    body:              (document.getElementById('prop-body')           || {}).value || '',
+    paymentMethods:    methods,
+    bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
+    bankAccountNumber: (document.getElementById('prop-bank-acct')      || {}).value || '',
+    bankAccountName:   (document.getElementById('prop-bank-accname')   || {}).value || '',
+    paymentLink:       (document.getElementById('prop-fw-link')        || {}).value || '',
+    paymentNotes:      (document.getElementById('prop-pay-notes')      || {}).value || '',
+    sentAt:            new Date().toISOString()
+  };
+}
 
 // ═══════════════════════════════════════
 // PAYMENTS
