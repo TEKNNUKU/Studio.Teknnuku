@@ -1252,11 +1252,443 @@ function _panelPeople() {
     '<div id="people-list"><div class="loading-row"><div class="spinner"></div></div></div></div>';
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  PROPOSAL SYSTEM — CONFIG + TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+var FW_CONFIG = {
+  publicKey:     localStorage.getItem('tek_fw_pk')      || '',
+  bankName:      localStorage.getItem('tek_bank_name')  || '',
+  accountNumber: localStorage.getItem('tek_bank_accno') || '',
+  accountName:   localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
+  companyEmail:  localStorage.getItem('tek_cmp_email')  || 'hello@teknnuku.xyz',
+  companyPhone:  localStorage.getItem('tek_cmp_phone')  || '',
+  companyName:   localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio'
+};
+
+function saveFWConfig() {
+  var fields = {
+    tek_fw_pk:      'fw-pk',
+    tek_bank_name:  'fw-bank',
+    tek_bank_accno: 'fw-accno',
+    tek_bank_accnm: 'fw-accnm',
+    tek_cmp_email:  'fw-email',
+    tek_cmp_phone:  'fw-phone',
+    tek_cmp_name:   'fw-cmpname'
+  };
+  Object.keys(fields).forEach(function(key) {
+    var el = document.getElementById(fields[key]);
+    if (el) localStorage.setItem(key, el.value.trim());
+  });
+  FW_CONFIG = {
+    publicKey:     localStorage.getItem('tek_fw_pk')      || '',
+    bankName:      localStorage.getItem('tek_bank_name')  || '',
+    accountNumber: localStorage.getItem('tek_bank_accno') || '',
+    accountName:   localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
+    companyEmail:  localStorage.getItem('tek_cmp_email')  || 'hello@teknnuku.xyz',
+    companyPhone:  localStorage.getItem('tek_cmp_phone')  || '',
+    companyName:   localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio'
+  };
+  toast('Payment config saved ✓', 'success');
+}
+
+var PROPOSAL_TEMPLATES = {
+  brand_launch: {
+    defaultTitle: 'Digital Brand Launch Package',
+    defaultAmount: 200000,
+    durations: ['One-time payment', '2 instalments (50/50)', '3 monthly payments'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will design and launch your complete digital brand identity.
+
+DELIVERABLES
+──────────────────────────────────────
+✦ Brand Strategy
+   • Target audience definition & brand positioning
+   • Brand voice, tone & messaging guide
+
+✦ Visual Identity
+   • Logo design (3 concepts, 2 revision rounds)
+   • Colour palette & typography system
+   • Business card & letterhead design
+
+✦ Digital Presence Setup
+   • Social media profiles (Instagram, Facebook, WhatsApp Business)
+   • Profile photos, cover images, story highlight covers
+   • Conversion-optimised bio copy for all platforms
+
+✦ Brand Guidelines PDF
+   • Complete brand usage guide delivered digitally
+
+TIMELINE
+──────────────────────────────────────
+- Week 1: Brand strategy session + logo concepts
+- Week 2: Visual identity delivery + revision round
+- Week 3: All digital profiles set up + brand guide
+
+WHAT WE NEED FROM YOU
+──────────────────────────────────────
+- Business name, tagline & description
+- Target audience information
+- 3–5 reference brands for style direction
+- Any existing assets or materials
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 50% deposit required before work begins
+- Balance due upon final delivery
+- 2 revision rounds included in price
+- All source files transferred upon full payment
+- Additional revisions billed at agreed rate`
+  },
+
+  sales_system: {
+    defaultTitle: 'Sales Conversion System',
+    defaultAmount: 700000,
+    durations: ['One-time payment', '2 instalments (50/50)', 'Monthly retainer (3-month min)'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will architect and build your complete sales and revenue conversion infrastructure.
+
+DELIVERABLES
+──────────────────────────────────────
+✦ Sales Funnel Build
+   • Lead capture landing page (mobile-responsive)
+   • Thank-you, confirmation & upsell pages
+   • A/B tested headlines and CTAs
+
+✦ Payment Integration
+   • Flutterwave or Paystack gateway setup
+   • Automated order confirmation emails
+   • Invoice & receipt generation
+
+✦ WhatsApp Business Automation
+   • Welcome & nurture message sequences
+   • Lead qualification conversation flow
+   • 7-day automated follow-up campaign
+
+✦ Sales Scripts & Playbook
+   • Proven inbound conversation scripts
+   • Objection handling framework
+   • Closing techniques document
+
+TIMELINE
+──────────────────────────────────────
+- Week 1: Funnel architecture + page build
+- Week 2: Payment integration + automation
+- Week 3: Sales scripts + team training
+- Week 4: Launch + 30-day support period
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 50% deposit required before work begins
+- Balance due upon go-live confirmation
+- 30 days post-launch support included
+- Ongoing support available as monthly retainer`
+  },
+
+  systemization: {
+    defaultTitle: 'Full Business Systemization Package',
+    defaultAmount: 1200000,
+    durations: ['One-time payment', '3 milestone payments', 'Monthly retainer (6-month min)'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+Complete end-to-end systemization of your business operations.
+
+DELIVERABLES
+──────────────────────────────────────
+✦ Operations Audit & Report
+   • Full workflow analysis across all departments
+   • Bottleneck identification & efficiency scoring
+   • Written audit report with recommendations
+
+✦ Standard Operating Procedures (SOPs)
+   • SOPs for all core business processes
+   • Staff training materials & guides
+   • Quality control checklists
+
+✦ Digital Operations Dashboard
+   • Custom management dashboard build
+   • Staff performance tracking system
+   • Revenue & KPI monitoring
+
+✦ Automation Setup
+   • Repetitive task automation
+   • Notification, alert & reminder systems
+   • Automated reporting workflows
+
+TIMELINE
+──────────────────────────────────────
+- Weeks 1–2: Audit + SOP documentation
+- Weeks 3–4: Digital system build
+- Week 5: Automation & analytics setup
+- Week 6: Team training + full handover
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 40% deposit to begin
+- 40% at Week 3 milestone delivery
+- 20% upon final handover
+- 30-day post-handover support included`
+  },
+
+  platform_dev: {
+    defaultTitle: 'Custom Platform Development',
+    defaultAmount: 3000000,
+    durations: ['Milestone-based payments', 'Monthly development retainer', 'Equity + cash hybrid'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+Full-stack custom platform development from architecture to production deployment.
+
+DELIVERABLES
+──────────────────────────────────────
+✦ Discovery & Architecture
+   • Technical requirements specification document
+   • System architecture & database schema design
+   • UI/UX wireframes & design system
+
+✦ Frontend Development
+   • Fully responsive web application
+   • Admin dashboard & management panel
+   • User-facing application interface
+
+✦ Backend Development
+   • REST API & server architecture
+   • User authentication & authorisation (RBAC)
+   • Third-party API integrations
+
+✦ Payments & Commerce Layer
+   • Flutterwave / Paystack full integration
+   • Subscription & recurring billing
+   • Automated invoicing & receipts
+
+✦ Deployment & Infrastructure
+   • Cloud hosting setup (Vercel / Firebase)
+   • Domain, SSL & CDN configuration
+   • CI/CD pipeline + monitoring
+
+✦ Post-Launch Support
+   • 60-day bug-fix warranty (post go-live)
+   • Complete technical documentation
+   • Team onboarding & training session
+
+PAYMENT MILESTONES
+──────────────────────────────────────
+- Milestone 1 (30%): Architecture & design approved
+- Milestone 2 (30%): Core build complete on staging
+- Milestone 3 (20%): All integrations tested
+- Milestone 4 (20%): Live deployment + handover
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- Payment tied to milestone delivery & approval
+- Full source code transferred on final payment
+- Hosting, domain & third-party costs billed separately`
+  },
+
+  gata_onboard: {
+    defaultTitle: 'GATA Ecosystem Onboarding',
+    defaultAmount: 50000,
+    durations: ['One-time setup fee', 'Monthly membership', 'Annual membership (save 20%)'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+Complete onboarding into the GATA digital business ecosystem.
+
+DELIVERABLES
+──────────────────────────────────────
+✦ GATAMarket Store Setup
+   • Full product/service listing creation
+   • Profile optimisation for search discovery
+   • Category placement & tagging
+
+✦ Payment Wallet Activation
+   • GATA digital wallet setup
+   • Payout account configuration
+   • Fiat conversion walkthrough
+
+✦ GATANow Logistics Integration
+   • Delivery zone & pricing configuration
+   • Order management system walkthrough
+   • First delivery test run
+
+✦ Training & Onboarding Session
+   • 1-hour live platform walkthrough
+   • Seller dashboard mastery session
+   • First live product listing published
+
+TIMELINE
+──────────────────────────────────────
+- Day 1–2: Store setup + wallet activation
+- Day 3: Training session (1 hour, scheduled)
+- Day 4–5: First listing live + verification
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- Full setup fee due before onboarding begins
+- Monthly membership billed from next calendar month
+- Visibility boost included for first 30 days`
+  },
+
+  venture_build: {
+    defaultTitle: 'Venture Build Partnership',
+    defaultAmount: 1000000,
+    durations: ['Milestone-based payments', 'Equity-only arrangement', 'Cash + equity hybrid'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+Full venture co-building partnership from idea to revenue-generating business.
+
+PHASES
+──────────────────────────────────────
+✦ Phase 1 — Validation Sprint (Weeks 1–4)
+   • Market research & demand validation
+   • Competitive landscape analysis
+   • Business model design & unit economics
+   • Go-to-market strategy document
+
+✦ Phase 2 — MVP Build (Weeks 5–12)
+   • Core product/platform development
+   • Beta user onboarding & testing
+   • Iteration based on real user feedback
+
+✦ Phase 3 — Launch Infrastructure (Weeks 13–16)
+   • Sales system & conversion funnel setup
+   • Marketing automation & content systems
+   • Team structure & hiring support
+
+✦ Phase 4 — Growth (Ongoing)
+   • Customer acquisition engine build
+   • Revenue optimisation & unit economics
+   • Strategic partnership development
+   • Investor preparation (if applicable)
+
+EQUITY & COMPENSATION STRUCTURE
+──────────────────────────────────────
+[Detailed term sheet to be provided separately]
+Standard arrangement: 15–30% equity + agreed cash contribution
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- Mutual NDA signed before detailed disclosure
+- Equity subject to vesting schedule (12-month cliff)
+- Monthly performance milestones required
+- Exit provisions detailed in shareholder agreement`
+  },
+
+  enterprise_sw: {
+    defaultTitle: 'Enterprise Software Solution',
+    defaultAmount: 5000000,
+    durations: ['Milestone-based payments', 'Annual contract (SLA)', 'Monthly SLA retainer'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+Custom enterprise-grade software development and organisational integration.
+
+DELIVERABLES
+──────────────────────────────────────
+✦ Discovery & Requirements
+   • Stakeholder interviews & process mapping
+   • Full technical specification document
+   • System architecture & security design
+
+✦ Core System Development
+   • Custom workflow management engine
+   • Multi-department role-based dashboard
+   • Advanced data management & reporting
+
+✦ Integrations & Connectivity
+   • Existing systems integration (ERP/CRM)
+   • Third-party API connections
+   • Mobile application (iOS + Android) — optional add-on
+
+✦ Security & Compliance
+   • End-to-end data encryption
+   • Full audit trail & access logging
+   • NDPR & data privacy compliance
+
+✦ Deployment & Ongoing Support
+   • On-premise or cloud deployment
+   • Full staff onboarding & training programme
+   • 12-month SLA support agreement
+   • Quarterly system review sessions
+
+PRICING STRUCTURE
+──────────────────────────────────────
+- Development fee: As quoted above
+- Annual maintenance: 15% of development cost/year
+- Additional modules: Scoped & quoted separately
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 30% deposit required to commence
+- Progress payments tied to milestone delivery
+- Source code escrow arrangement available on request
+- Hosting and infrastructure billed separately`
+  },
+
+  web3_dev: {
+    defaultTitle: 'Web3 / Blockchain Development',
+    defaultAmount: 2000000,
+    durations: ['Milestone-based payments', 'Monthly retainer', 'Token/equity allocation'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+Web3 platform development and smart contract engineering.
+
+DELIVERABLES
+──────────────────────────────────────
+✦ Smart Contract Development
+   • Solidity smart contract coding
+   • Internal code review & security audit
+   • Testnet deployment + QA testing
+   • Mainnet deployment & verification
+
+✦ Web3 Frontend Application
+   • Wallet integration (MetaMask, WalletConnect)
+   • Token interaction & staking UI
+   • Transaction history & portfolio dashboard
+   • Fully mobile-responsive design
+
+✦ Backend & Off-chain Layer
+   • Blockchain event listeners & indexers
+   • Off-chain data management
+   • IPFS/Arweave integration (if required)
+   • Fiat-to-crypto bridge integration
+
+✦ Documentation Package
+   • Smart contract technical documentation
+   • End-user guide & FAQ
+   • Contribution to technical whitepaper
+
+PAYMENT MILESTONES
+──────────────────────────────────────
+- Milestone 1 (40%): Smart contracts developed & audited
+- Milestone 2 (30%): Frontend complete + testnet live
+- Milestone 3 (30%): Mainnet deployment + handover
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- Gas fees and network costs billed at cost
+- Third-party security audit available on request
+- Token allocation subject to separate vesting agreement`
+  }
+};
+
 function _panelProposals() {
   return '<div class="panel" id="panel-proposals">' +
-    '<div class="eyebrow">Proposals & Quotes</div><div class="panel-header"><div class="panel-title">Proposals</div><button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openNewProposal()">+ New Proposal</button></div>' +
-    '<div class="tab-bar"><button class="tab-btn active" onclick="filterProposals(\'all\',this)">All</button><button class="tab-btn" onclick="filterProposals(\'draft\',this)">Draft</button><button class="tab-btn" onclick="filterProposals(\'sent\',this)">Sent</button><button class="tab-btn" onclick="filterProposals(\'accepted\',this)">Accepted</button><button class="tab-btn" onclick="filterProposals(\'declined\',this)">Declined</button></div>' +
-    '<div id="proposals-list"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+    '<div class="eyebrow">Proposals & Quotes</div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Proposals</div>' +
+      '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openProposalDrawer(null,\'\')">+ New Proposal</button>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;">' +
+      '<div class="tab-bar" style="margin-bottom:0;">' +
+        '<button class="tab-btn active" onclick="filterProposals(\'all\',this)">All</button>' +
+        '<button class="tab-btn" onclick="filterProposals(\'draft\',this)">Draft</button>' +
+        '<button class="tab-btn" onclick="filterProposals(\'sent\',this)">Sent</button>' +
+        '<button class="tab-btn" onclick="filterProposals(\'accepted\',this)">Accepted</button>' +
+        '<button class="tab-btn" onclick="filterProposals(\'declined\',this)">Declined</button>' +
+      '</div>' +
+      '<input class="tbl-search" id="prop-search" style="width:180px;margin-left:auto;" placeholder="Search proposals…" oninput="displayProposals(window._data?window._data.proposals:[])">' +
+    '</div>' +
+    '<div id="proposals-list"><div class="loading-row"><div class="spinner"></div></div></div>' +
+  '</div>';
 }
 
 function _panelPayments() {
@@ -2200,15 +2632,119 @@ function openPersonDrawer(email){
 // ═══════════════════════════════════════
 // PROPOSALS
 // ═══════════════════════════════════════
-var _proposalFilter='all';
-function renderProposals(proposals){displayProposals(proposals);}
-function displayProposals(proposals){
-  var el=document.getElementById('proposals-list');if(!el)return;
-  var filtered=proposals.filter(function(p){return _proposalFilter==='all'||p.status===_proposalFilter;});
-  if(!filtered.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📄</div>No proposals found</div>';return;}
-  el.innerHTML=filtered.map(function(p){return'<div class="proposal-card"><div class="proposal-header"><div class="proposal-title">'+escHtml(p.title||'Untitled Proposal')+'</div>'+statusBadge(p.status||'draft')+'</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);margin-bottom:8px;">To: '+escHtml(p.personName||p.personEmail||'—')+'</div><div class="proposal-body">'+escHtml(p.body||'')+'</div><div class="proposal-footer"><span class="proposal-meta">₦'+Number(p.amount||0).toLocaleString()+' · '+fmtDate(p.sentAt||p.createdAt)+'</span><div class="row-actions" style="margin-left:auto;"><button class="action-btn" onclick="openProposalDrawer(window._data.proposals.find(function(x){return x.id===\''+p.id+'\'}))">Edit</button>'+(p.status!=='accepted'?'<button class="action-btn success" onclick="updateProposalStatus(\''+p.id+'\',\'accepted\')">Accepted</button>':'')+'<button class="action-btn danger" onclick="deleteRecord(\'proposals\',\''+p.id+'\')">Delete</button></div></div></div>';}).join('');
+var _proposalFilter = 'all';
+
+function renderProposals(proposals) {
+  displayProposals(proposals);
 }
-function filterProposals(status,btn){_proposalFilter=status;document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');displayProposals(window._data?window._data.proposals:[]);}
+
+function filterProposals(status, btn) {
+  _proposalFilter = status;
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  displayProposals(window._data ? window._data.proposals : []);
+}
+
+function displayProposals(proposals) {
+  var el = document.getElementById('proposals-list');
+  if (!el) return;
+  var q = ((document.getElementById('prop-search') || {}).value || '').toLowerCase().trim();
+  var filtered = proposals.filter(function(p) {
+    if (_proposalFilter !== 'all' && p.status !== _proposalFilter) return false;
+    if (q) {
+      var hay = ((p.personName||'') + (p.personEmail||'') + (p.title||'')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div>No proposals found</div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(function(p) {
+    var lead      = window._data ? (window._data.crm_leads||[]).find(function(l){ return l.id === p.leadId; }) : null;
+    var v         = lead ? (V_MAP[lead.ventureId] || {}) : {};
+    var hasPaidPay= window._data ? (window._data.payments||[]).some(function(pay){ return pay.leadId === p.leadId && pay.status === 'paid'; }) : false;
+    var methods   = p.paymentMethods || [];
+    var dv        = parseFloat(p.amount) || 0;
+    var phone     = p.personPhone || (lead ? lead.phone : '') || '';
+
+    // Payment breakdown display
+    var breakdown = '';
+    if (p.duration) {
+      if (p.duration.includes('2 instal') || p.duration.includes('50/50')) {
+        var half = Math.round(dv / 2);
+        breakdown = '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">₦' + half.toLocaleString() + ' now · ₦' + (dv - half).toLocaleString() + ' on delivery</div>';
+      } else if (p.duration.includes('3')) {
+        var third = Math.round(dv / 3);
+        breakdown = '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">₦' + third.toLocaleString() + ' × 3 payments</div>';
+      } else if (p.duration.toLowerCase().includes('monthly')) {
+        breakdown = '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">₦' + dv.toLocaleString() + '/month</div>';
+      }
+    }
+
+    return '<div class="proposal-card">' +
+
+      // ── Header ────────────────────────────────────────────
+      '<div class="proposal-header">' +
+        '<div style="flex:1;">' +
+          '<div class="proposal-title">' + escHtml(p.title || 'Untitled Proposal') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-top:3px;">' +
+            'To: ' + escHtml(p.personName || p.personEmail || '—') +
+            (v.name ? ' <span style="color:var(--gold);">· ' + escHtml(v.name) + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">' +
+          statusBadge(p.status || 'draft') +
+          (hasPaidPay && p.status !== 'accepted' ? '<span class="badge badge-green" style="font-size:.5rem;">💰 Payment Confirmed</span>' : '') +
+        '</div>' +
+      '</div>' +
+
+      // ── Financial info ────────────────────────────────────
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">' +
+        (p.service ? '<span class="badge badge-cyan">' + serviceLabel(p.service) + '</span>' : '') +
+        '<span style="font-family:var(--mono);font-size:.75rem;color:var(--gold);font-weight:700;">₦' + dv.toLocaleString() + '</span>' +
+        (p.duration ? '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.07);padding:2px 8px;border-radius:3px;">' + escHtml(p.duration) + '</span>' : '') +
+        (p.contractDuration ? '<span style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">· ' + escHtml(p.contractDuration) + '</span>' : '') +
+      '</div>' +
+      breakdown +
+
+      // ── Payment methods ───────────────────────────────────
+      (methods.length ? '<div style="display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 10px;">' +
+        (methods.indexOf('card')           !== -1 ? '<span style="font-size:.68rem;background:rgba(59,130,246,.1);color:var(--blue);padding:2px 8px;border-radius:3px;font-family:var(--mono);">💳 Card</span>' : '') +
+        (methods.indexOf('bank_transfer')  !== -1 ? '<span style="font-size:.68rem;background:rgba(34,197,94,.08);color:var(--green);padding:2px 8px;border-radius:3px;font-family:var(--mono);">🏦 Bank Transfer</span>' : '') +
+        (methods.indexOf('ussd')           !== -1 ? '<span style="font-size:.68rem;background:rgba(245,158,11,.08);color:var(--amber);padding:2px 8px;border-radius:3px;font-family:var(--mono);">📱 USSD</span>' : '') +
+        (methods.indexOf('mobile_money')   !== -1 ? '<span style="font-size:.68rem;background:rgba(168,85,247,.08);color:var(--purple);padding:2px 8px;border-radius:3px;font-family:var(--mono);">📲 Mobile Money</span>' : '') +
+        (methods.indexOf('crypto')         !== -1 ? '<span style="font-size:.68rem;background:rgba(200,155,20,.1);color:var(--gold);padding:2px 8px;border-radius:3px;font-family:var(--mono);">₿ Crypto</span>' : '') +
+      '</div>' : '') +
+
+      // ── Proposal body preview ─────────────────────────────
+      (p.body ? '<div class="proposal-body">' + escHtml(p.body) + '</div>' : '') +
+
+      // ── Bank info strip ───────────────────────────────────
+      (p.bankAccountNumber ? '<div style="background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.12);border-radius:5px;padding:8px 12px;margin:8px 0;font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">🏦 ' +
+        escHtml(p.bankName||'') + ' · Acct: ' + escHtml(p.bankAccountNumber||'') + ' · ' + escHtml(p.bankAccountName||'') +
+      '</div>' : '') +
+
+      // ── Footer / actions ──────────────────────────────────
+      '<div class="proposal-footer" style="gap:6px;">' +
+        '<span class="proposal-meta">' + fmtDate(p.sentAt || p.createdAt) + (p.validUntil ? ' · Valid: ' + fmtDate(p.validUntil) : '') + '</span>' +
+        '<div class="row-actions" style="margin-left:auto;flex-wrap:wrap;">' +
+          (p.personEmail ? '<button class="action-btn" style="border-color:rgba(200,155,20,.3);color:var(--gold);" onclick="sendProposalEmail(\'' + p.id + '\')">✉ Email</button>' : '') +
+          (phone ? '<button class="action-btn" style="border-color:rgba(34,197,94,.3);color:var(--green);" onclick="sendProposalWhatsApp(\'' + p.id + '\')">💬 WhatsApp</button>' : '') +
+          (p.paymentLink ? '<a href="' + escHtml(p.paymentLink) + '" target="_blank" class="action-btn" style="border-color:rgba(0,188,212,.3);color:var(--cyan);text-decoration:none;">💳 Pay Link</a>' : '') +
+          (p.status !== 'accepted' ? '<button class="action-btn success" onclick="updateProposalStatus(\'' + p.id + '\',\'accepted\')">✓ Accept</button>' : '') +
+          '<button class="action-btn" onclick="openProposalDrawer(window._data.proposals.find(function(x){return x.id===\'' + p.id + '\'}),\'\')">Edit</button>' +
+          '<button class="action-btn danger" onclick="deleteRecord(\'proposals\',\'' + p.id + '\')">Del</button>' +
+        '</div>' +
+      '</div>' +
+
+    '</div>';
+  }).join('');
+}
+
 function updateProposalStatus(id,status){window._updateDoc('proposals',id,{status:status}).then(function(){toast('Proposal updated','success');window._loadAll();});}
 
 // ═══════════════════════════════════════
@@ -2261,25 +2797,213 @@ function openMessageDrawer(m){if(!m)return;var html='<div class="detail-section"
 // ═══════════════════════════════════════
 // PROPOSAL, PAYMENT, ASSIGNMENT DRAWERS
 // ═══════════════════════════════════════
-var _editingProposalId=null;
-function openNewProposal(){openProposalDrawer(null,'','');}
-function quickProposal(srcId,name,email){closeDrawer();setTimeout(function(){openProposalDrawer(null,name,email);showPanel('proposals',document.querySelector('[data-panel="proposals"]'));},200);}
-function openProposalDrawer(p,prefillName,prefillEmail){
-  _editingProposalId=p?p.id:null;
-  var services=['brand_launch','sales_system','systemization','platform_dev','web3_dev','gata_onboard','venture_build','enterprise_sw'];
-  var crmLeads = (window._data ? window._data.crm_leads || [] : []).filter(function(l){ return l.status!=='won'&&l.status!=='lost'; });
-  var leadOpts = '<option value="">— Not linked to a CRM lead —</option>' + crmLeads.map(function(l) {
-    var selected = (p && p.leadId === l.id) ? ' selected' : (prefillLeadId === l.id ? ' selected' : '');
-    return '<option value="'+l.id+'"'+selected+'>'+escHtml(l.name||'—')+' · '+escHtml((V_MAP[l.ventureId]||{}).name||'')+' ['+l.status.replace(/_/g,' ')+']</option>';
+var _editingProposalId = null;
+
+function openNewProposal() {
+  openProposalDrawer(null, '');
+}
+
+function quickProposal(srcId, name, email) {
+  closeDrawer();
+  setTimeout(function() {
+    openProposalDrawer(null, srcId || '');
+    showPanel('proposals', document.querySelector('[data-panel="proposals"]'));
+  }, 200);
+}
+
+function openProposalDrawer(p, prefillLeadId) {
+  _editingProposalId = p ? p.id : null;
+
+  var allLeads = window._data ? (window._data.crm_leads || []) : [];
+  var pLeadId  = p ? (p.leadId || '') : (prefillLeadId || '');
+  var selLead  = pLeadId ? allLeads.find(function(l) { return l.id === pLeadId; }) : null;
+  var selSvc   = p ? (p.service || '') : '';
+  var selTmpl  = PROPOSAL_TEMPLATES[selSvc] || {};
+
+  // Build recipient options — all CRM leads
+  var STATUS_LABELS = {new_lead:'New Lead',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won',lost:'Lost'};
+  var leadOpts = '<option value="">— Select recipient from CRM Pipeline —</option>' +
+    allLeads.map(function(l) {
+      var v   = V_MAP[l.ventureId] || {};
+      var sel = selLead && selLead.id === l.id ? ' selected' : '';
+      return '<option value="' + l.id + '"' + sel + '>' +
+        escHtml(l.name || '—') + ' — ' + escHtml(v.name || l.ventureId || '—') +
+        ' [' + (STATUS_LABELS[l.status] || l.status) + ']' +
+      '</option>';
+    }).join('');
+
+  // Duration options from template
+  var durList = selTmpl.durations || ['One-time payment', '2 instalments (50/50)', '3 milestone payments', 'Monthly retainer', 'Annual contract'];
+  var durOpts = durList.map(function(d) {
+    return '<option value="' + d + '"' + (p && p.duration === d ? ' selected' : '') + '>' + d + '</option>';
   }).join('');
-  var html='<div class="drawer-form">' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Client Name</div><input class="form-input" id="pay-name" value="'+escHtml(p?p.personName:(prefillName||''))+'"></div><div class="form-field"><div class="form-label">Client Email</div><input class="form-input" id="pay-email" type="email" value="'+escHtml(p?p.personEmail:(prefillEmail||''))+'"></div></div>' +
-    '<div class="form-field"><div class="form-label">Link to CRM Lead (required for auto-win)</div><select class="form-select" id="pay-lead">'+leadOpts+'</select></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Service</div><input class="form-input" id="pay-service" value="'+escHtml(p?p.service||'':'')+'"></div><div class="form-field"><div class="form-label">Amount (₦)</div><input class="form-input" id="pay-amount" type="number" value="'+(p?p.amount||'':'')+'"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Status</div><select class="form-select" id="pay-status"><option value="pending"'+((!p||p.status==="pending")?" selected":"")+'>Pending</option><option value="partial"'+(p&&p.status==="partial"?" selected":"")+'>Partial</option><option value="paid"'+(p&&p.status==="paid"?" selected":"")+'>Paid</option><option value="overdue"'+(p&&p.status==="overdue"?" selected":"")+'>Overdue</option></select></div><div class="form-field"><div class="form-label">Date</div><input class="form-input" id="pay-date" type="date" value="'+escHtml(p?p.paidAt||'':'')+'"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Invoice Ref</div><input class="form-input" id="pay-ref" value="'+escHtml(p?p.invoiceRef||'':'')+'"></div><div class="form-field"><div class="form-label">Method</div><select class="form-select" id="pay-method"><option value="bank_transfer">Bank Transfer</option><option value="cash">Cash</option><option value="crypto">Crypto</option><option value="card">Card</option></select></div></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="savePayment()">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div></div>';
-  openDrawer(p?'Edit Payment':'Log Payment',p?(p.personName||'Payment'):'New Payment',html);
+
+  // Payment method checkboxes
+  var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
+  var methodList = [
+    ['card',         '💳 Card (Visa/Mastercard)'],
+    ['bank_transfer','🏦 Bank Transfer'],
+    ['ussd',         '📱 USSD'],
+    ['mobile_money', '📲 Mobile Money'],
+    ['crypto',       '₿ Crypto (USDT/ETH)']
+  ];
+
+  var leadInfoDisplay = selLead ? '' : 'display:none;';
+  var selV = selLead ? (V_MAP[selLead.ventureId] || {}) : {};
+
+  var html =
+
+    // ════ SECTION 1: Recipient ═══════════════════════════════
+    '<div class="detail-section"><h4>👤 Recipient (from CRM Pipeline)</h4>' +
+    '<div class="form-field" style="margin-bottom:10px;">' +
+      '<div class="form-label">Select Lead *</div>' +
+      '<select class="form-select" id="prop-lead" onchange="onProposalLeadChange()">' + leadOpts + '</select>' +
+    '</div>' +
+    '<div id="prop-lead-info" style="' + leadInfoDisplay + '">' +
+      '<div style="background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.15);border-radius:7px;padding:12px 14px;">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">' +
+          '<div><div class="form-label">Name</div><div id="prop-li-name" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.name || '' : '') + '</div></div>' +
+          '<div><div class="form-label">Email</div><div id="prop-li-email" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.email || '' : '') + '</div></div>' +
+          '<div><div class="form-label">Phone</div><div id="prop-li-phone" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.phone || '' : '') + '</div></div>' +
+          '<div><div class="form-label">Venture</div><div id="prop-li-venture" style="font-size:.8rem;color:var(--gold);">' + escHtml(selV.name || (selLead ? selLead.ventureId : '') || '') + '</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div></div>' +
+
+    // ════ SECTION 2: Proposal Details ════════════════════════
+    '<div class="detail-section"><h4>📋 Proposal Content</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field">' +
+        '<div class="form-label">Service / Package *</div>' +
+        '<select class="form-select" id="prop-service" onchange="onProposalServiceChange()">' +
+          '<option value="">Select service…</option>' +
+          ['brand_launch','sales_system','systemization','platform_dev','web3_dev','gata_onboard','venture_build','enterprise_sw'].map(function(s) {
+            return '<option value="' + s + '"' + (selSvc === s ? ' selected' : '') + '>' + serviceLabel(s) + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field">' +
+        '<div class="form-label">Proposal Title</div>' +
+        '<input class="form-input" id="prop-title" value="' + escHtml(p ? p.title || '' : selTmpl.defaultTitle || '') + '" placeholder="e.g. Brand Launch Package">' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
+      '<div class="form-label">Proposal Body</div>' +
+      '<button onclick="autoFillProposalBody()" style="background:rgba(200,155,20,.1);border:1px solid rgba(200,155,20,.25);color:var(--gold);border-radius:5px;padding:4px 12px;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;cursor:pointer;">↺ Auto-Fill from Template</button>' +
+    '</div>' +
+    '<textarea class="form-textarea" id="prop-body" style="min-height:240px;font-family:var(--mono);font-size:.72rem;line-height:1.75;">' + escHtml(p ? p.body || '' : (selTmpl.body || '')) + '</textarea>' +
+    '</div>' +
+
+    // ════ SECTION 3: Financial Terms ═════════════════════════
+    '<div class="detail-section"><h4>💰 Financial Terms</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field">' +
+        '<div class="form-label">Total Amount (₦) *</div>' +
+        '<input class="form-input" id="prop-amount" type="number" min="0" value="' + (p ? p.amount || (selTmpl.defaultAmount || '') : (selTmpl.defaultAmount || '')) + '" oninput="updateInstalmentsBreakdown()">' +
+      '</div>' +
+      '<div class="form-field">' +
+        '<div class="form-label">Payment Structure</div>' +
+        '<select class="form-select" id="prop-duration" onchange="updateInstalmentsBreakdown()">' + durOpts + '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div id="prop-instal-breakdown" style="display:none;background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:6px;padding:10px 14px;margin-bottom:10px;font-size:.8rem;"></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Contract Duration (for retainers)</div><input class="form-input" id="prop-contract-dur" value="' + escHtml(p ? p.contractDuration || '' : '') + '" placeholder="e.g. 3 months · Ongoing"></div>' +
+      '<div class="form-field"><div class="form-label">Proposal Valid Until</div><input class="form-input" id="prop-valid" type="date" value="' + escHtml(p ? p.validUntil || '' : new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]) + '"></div>' +
+    '</div>' +
+    '<div class="form-field"><div class="form-label" style="margin-bottom:8px;">Accepted Payment Methods</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+        methodList.map(function(m) {
+          var checked = storedMethods.indexOf(m[0]) !== -1 ? ' checked' : '';
+          return '<label style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:8px 13px;cursor:pointer;font-size:.8rem;color:var(--dim);">' +
+            '<input type="checkbox" class="prop-method-cb" value="' + m[0] + '"' + checked + ' style="accent-color:var(--gold);width:14px;height:14px;">' +
+            m[1] + '</label>';
+        }).join('') +
+      '</div>' +
+    '</div></div>' +
+
+    // ════ SECTION 4: Payment Details ═════════════════════════
+    '<div class="detail-section"><h4>🔗 Payment Details</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Bank Name</div><input class="form-input" id="prop-bank-name" value="' + escHtml(p ? p.bankName || FW_CONFIG.bankName : FW_CONFIG.bankName) + '" placeholder="e.g. First Bank Nigeria"></div>' +
+      '<div class="form-field"><div class="form-label">Account Number</div><input class="form-input" id="prop-bank-acct" value="' + escHtml(p ? p.bankAccountNumber || FW_CONFIG.accountNumber : FW_CONFIG.accountNumber) + '" placeholder="0123456789"></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Account Name</div><input class="form-input" id="prop-bank-accname" value="' + escHtml(p ? p.bankAccountName || FW_CONFIG.accountName : FW_CONFIG.accountName) + '" placeholder="TEKNNUKU STUDIO LTD"></div>' +
+      '<div class="form-field"><div class="form-label">Flutterwave Payment Link (paste from FW dashboard)</div><input class="form-input" id="prop-fw-link" value="' + escHtml(p ? p.paymentLink || '' : '') + '" placeholder="https://flutterwave.com/pay/..."></div>' +
+    '</div>' +
+    '<div class="form-field"><div class="form-label">Payment Instructions (shown in proposal)</div><textarea class="form-textarea" id="prop-pay-notes" style="min-height:56px;">' + escHtml(p ? p.paymentNotes || '' : 'Please include your full name and invoice number as payment reference. Send payment receipt to ' + FW_CONFIG.companyEmail + '.') + '</textarea></div>' +
+    '</div>' +
+
+    // ════ SECTION 5: Status ═══════════════════════════════════
+    '<div class="detail-section"><h4>📌 Status</h4>' +
+    '<div style="max-width:200px;">' +
+      '<select class="form-select" id="prop-status">' +
+        ['draft','sent','accepted','declined'].map(function(s) {
+          var sel = (p && p.status === s) ? ' selected' : (!p && s === 'draft' ? ' selected' : '');
+          return '<option value="' + s + '"' + sel + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>';
+        }).join('') +
+      '</select>' +
+    '</div></div>' +
+
+    // ════ Action buttons ══════════════════════════════════════
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveProposal()">💾 Save Proposal</button>' +
+      '<button class="btn-secondary" style="border-color:rgba(200,155,20,.3);color:var(--gold);" onclick="saveAndSendProposalEmail()">✉ Save & Send Email</button>' +
+      '<button class="btn-secondary" style="border-color:rgba(34,197,94,.3);color:var(--green);" onclick="saveAndSendProposalWhatsApp()">💬 Save & Send WhatsApp</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+
+  openDrawer(p ? 'Edit Proposal' : 'New Proposal', p ? (p.title || 'Proposal') : 'Create Proposal', html);
+  setTimeout(updateInstalmentsBreakdown, 120);
+}
+
+function saveProposal() {
+  var leadId = (document.getElementById('prop-lead') || {}).value || '';
+  if (!leadId) { toast('Please select a recipient from the CRM Pipeline', 'error'); return; }
+  var title  = (document.getElementById('prop-title') || {}).value || '';
+  var amount = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
+  if (!title)  { toast('Proposal title is required', 'error'); return; }
+  if (!amount) { toast('Amount is required', 'error'); return; }
+
+  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  var methods = [];
+  document.querySelectorAll('.prop-method-cb').forEach(function(cb) {
+    if (cb.checked) methods.push(cb.value);
+  });
+
+  var data = {
+    leadId:            leadId,
+    personName:        lead ? lead.name || '' : '',
+    personEmail:       lead ? lead.email || '' : '',
+    personPhone:       lead ? lead.phone || '' : '',
+    ventureId:         lead ? lead.ventureId || '' : '',
+    title:             title,
+    service:           (document.getElementById('prop-service')       || {}).value || '',
+    amount:            amount,
+    duration:          (document.getElementById('prop-duration')       || {}).value || '',
+    contractDuration:  (document.getElementById('prop-contract-dur')   || {}).value || '',
+    validUntil:        (document.getElementById('prop-valid')          || {}).value || '',
+    body:              (document.getElementById('prop-body')           || {}).value || '',
+    paymentMethods:    methods,
+    bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
+    bankAccountNumber: (document.getElementById('prop-bank-acct')      || {}).value || '',
+    bankAccountName:   (document.getElementById('prop-bank-accname')   || {}).value || '',
+    paymentLink:       (document.getElementById('prop-fw-link')        || {}).value || '',
+    paymentNotes:      (document.getElementById('prop-pay-notes')      || {}).value || '',
+    status:            (document.getElementById('prop-status')         || {}).value || 'draft',
+    sentAt:            new Date().toISOString()
+  };
+
+  var fn = _editingProposalId
+    ? window._updateDoc('proposals', _editingProposalId, data)
+    : window._saveDoc('proposals', data);
+
+  fn.then(function() {
+    toast('Proposal saved ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
 function savePayment(){
   var data={
