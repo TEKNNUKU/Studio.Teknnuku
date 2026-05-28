@@ -2045,7 +2045,27 @@ function _panelSettings() {
           }).join('') +
         '</div>' +
       '</div>' +
-    '</div></div>';
+    '</div></div>' +
+
+// ── Payment & Company Config ──────────────────────────────────
+'<div class="table-wrap" style="margin-top:20px;"><div class="table-toolbar"><div class="table-toolbar-title">Payment & Company Config</div></div>' +
+'<div style="padding:16px;">' +
+  '<div style="font-size:.78rem;color:var(--dim);margin-bottom:14px;">These values auto-populate all new proposals and are included in Email/WhatsApp sends.</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
+    '<div class="form-field"><div class="form-label">Company Name</div><input class="form-input" id="fw-cmpname" value="'+escHtml(FW_CONFIG.companyName)+'" placeholder="TEKNNUKU Studio"></div>' +
+    '<div class="form-field"><div class="form-label">Company Email</div><input class="form-input" id="fw-email" type="email" value="'+escHtml(FW_CONFIG.companyEmail)+'" placeholder="hello@teknnuku.xyz"></div>' +
+  '</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
+    '<div class="form-field"><div class="form-label">Company Phone / WhatsApp</div><input class="form-input" id="fw-phone" value="'+escHtml(FW_CONFIG.companyPhone)+'" placeholder="+234 800 ..."></div>' +
+    '<div class="form-field"><div class="form-label">Flutterwave Public Key</div><input class="form-input" id="fw-pk" value="'+escHtml(FW_CONFIG.publicKey)+'" placeholder="FLWPUBK-..."></div>' +
+  '</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">' +
+    '<div class="form-field"><div class="form-label">Bank Name</div><input class="form-input" id="fw-bank" value="'+escHtml(FW_CONFIG.bankName)+'" placeholder="First Bank Nigeria"></div>' +
+    '<div class="form-field"><div class="form-label">Account Number</div><input class="form-input" id="fw-accno" value="'+escHtml(FW_CONFIG.accountNumber)+'" placeholder="0123456789"></div>' +
+    '<div class="form-field"><div class="form-label">Account Name</div><input class="form-input" id="fw-accnm" value="'+escHtml(FW_CONFIG.accountName)+'" placeholder="TEKNNUKU STUDIO LTD"></div>' +
+  '</div>' +
+  '<button class="btn-primary" onclick="saveFWConfig()">💾 Save Payment Config</button>' +
+'</div></div>';
 }
 </script>
 
