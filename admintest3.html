@@ -4558,39 +4558,91 @@ async function autoCheckWins(list) {
 async function autoWinLead(leadId, paidPayment) {
   if (_autoWinBusy.has(leadId)) return;
   _autoWinBusy.add(leadId);
+
   var l = (window._data.crm_leads || []).find(function(x) { return x.id === leadId; });
   if (!l || l.status === 'won') { _autoWinBusy.delete(leadId); return; }
+
   try {
-    var linkedProp = crmLinkedProposal(leadId);
-    // 1. Move lead to won
+    var linkedProp  = crmLinkedProposal(leadId);
+    var linkedPay   = paidPayment;
+    var v           = V_MAP[l.ventureId] || {};
+
+    // Resolve service details from proposal
+    var propSvcId   = linkedProp ? linkedProp.service || '' : '';
+    var propSvcObj  = TEKNNUKU_SERVICES.find(function(s) { return s.id === propSvcId; });
+    var packageLabel= linkedProp ? (linkedProp.title || (propSvcObj ? propSvcObj.label : '') || '') : '';
+    var packageAmt  = linkedProp ? parseFloat(linkedProp.amount) || 0 : (parseFloat((linkedPay||{}).amount) || 0);
+    var propDuration= linkedProp ? linkedProp.duration || '' : '';
+    var propBody    = linkedProp ? linkedProp.body    || '' : '';
+    var propMethods = linkedProp ? linkedProp.paymentMethods || [] : [];
+
+    // 1. Move lead to Won
     await window._updateDoc('crm_leads', leadId, {
-      status:'won', wonAt:new Date().toISOString(), paymentId:paidPayment.id
+      status:    'won',
+      wonAt:     new Date().toISOString(),
+      paymentId: linkedPay ? linkedPay.id || '' : ''
     });
+
     // 2. Accept proposal
     if (linkedProp) {
-      await window._updateDoc('proposals', linkedProp.id, { status:'accepted' });
+      await window._updateDoc('proposals', linkedProp.id, { status: 'accepted' });
     }
+
     // 3. Create client if none exists
     var existingClient = crmLinkedClient(leadId);
     if (!existingClient) {
       await window._saveDoc('clients', {
-        name:l.name||'', contact:l.phone||l.email||'', email:l.email||'',
-        ventureId:l.ventureId||'',
-        package:linkedProp?(serviceLabel(linkedProp.service)||''):'',
-        monthlyValue:linkedProp?(parseFloat(linkedProp.amount)||0):0,
-        onboardingStatus:'pending', paymentStatus:'paid', status:'active',
-        leadId:leadId, proposalId:linkedProp?linkedProp.id:'',
-        paymentId:paidPayment.id, csManager:'',
-        startDate:new Date().toISOString().split('T')[0],
-        createdAt:new Date().toISOString()
+        // Identity
+        name:             l.name           || '',
+        email:            l.email          || '',
+        contact:          l.phone          || l.email || '',
+        phone:            l.phone          || '',
+        businessName:     l.businessName   || '',
+        // Venture
+        ventureId:        l.ventureId      || '',
+        ventureName:      v.name           || '',
+        // Package — pulled directly from proposal
+        package:          packageLabel,
+        serviceId:        propSvcId,
+        serviceLabel:     propSvcObj ? propSvcObj.label : packageLabel,
+        // Financial
+        monthlyValue:     packageAmt,
+        proposalAmount:   packageAmt,
+        paymentDuration:  propDuration,
+        paymentMethods:   propMethods,
+        proposalScope:    propBody,
+        // Status
+        onboardingStatus: 'pending',
+        paymentStatus:    'paid',
+        status:           'active',
+        // Links
+        leadId:           leadId,
+        proposalId:       linkedProp ? linkedProp.id  : '',
+        paymentId:        linkedPay  ? linkedPay.id || '' : '',
+        // CRM context
+        intakeScore:      l.intakeScore     || 0,
+        intakeTier:       l.intakeTier      || '',
+        sourceType:       l.sourceType      || '',
+        assignedName:     l.assignedName    || '',
+        // Staff
+        csManager:        '',
+        onboardingNotes:  '',
+        // Dates
+        startDate:        new Date().toISOString().split('T')[0],
+        wonAt:            new Date().toISOString(),
+        createdAt:        new Date().toISOString()
       });
     }
-    toast('🎉 Lead won! Proposal accepted + client record created.','success');
+
+    toast('🎉 Lead Won! Proposal accepted · Client record created.', 'success');
     await window._loadAll();
-  } catch(e) { console.error('autoWinLead error:', e); }
+  } catch(e) {
+    console.error('autoWinLead error:', e);
+    toast('Error completing win: ' + (e.message || e), 'error');
+  }
   _autoWinBusy.delete(leadId);
 }
-
+  
 async function markLeadWon(leadId) {
   var paid = (window._data.payments || []).find(function(p) { return p.leadId === leadId && p.status === 'paid'; });
   if (!paid) {
@@ -5087,84 +5139,294 @@ function updateTask(id){
 }
 
 // ── Clients ────────────────────────────────────────────────────
-function renderClients(clients,members){
-  var active=clients.filter(function(c){return c.status!=='churned';}).length;
-  var pending=clients.filter(function(c){return c.onboardingStatus==='pending';}).length;
-  var mrr=clients.filter(function(c){return c.status!=='churned';}).reduce(function(s,c){return s+(parseFloat(c.monthlyValue)||0);},0);
-  var elA=document.getElementById('cl-kpi-active');if(elA)elA.textContent=active;
-  var elP=document.getElementById('cl-kpi-pending');if(elP)elP.textContent=pending;
-  var elM=document.getElementById('cl-kpi-mrr');if(elM)elM.textContent='₦'+mrr.toLocaleString();
-  var tbody=document.getElementById('clients-tbody');if(!tbody)return;
-  var memberMap={};members.forEach(function(m){memberMap[m.id]=m;});
-  if(!clients.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🤝</div>No clients yet. Win a CRM lead to auto-create one.</div></td></tr>';return;}
-  var sorted=clients.slice().sort(function(a,b){return a.onboardingStatus==='pending'?-1:1;});
-  tbody.innerHTML=sorted.map(function(c){
-    var v=V_MAP[c.ventureId]||{};var cs=memberMap[c.csManager];
-    var obColor=c.onboardingStatus==='complete'?'var(--green)':c.onboardingStatus==='in_progress'?'var(--amber)':'var(--red)';
-    return '<tr data-search="'+escHtml((c.name||'').toLowerCase())+'" data-status="'+escHtml(c.status||'')+'"><td>' +
-      '<div style="font-weight:600;">'+escHtml(c.name||'—')+'</div>' +
-      '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(c.contact||'')+'</div></td>' +
-      '<td><span class="venture-tag">'+escHtml(v.name||c.ventureId||'—')+'</span></td>' +
-      '<td><span class="badge badge-dim">'+escHtml(c.package||'—')+'</span></td>' +
-      '<td><span style="font-family:var(--mono);font-size:.65rem;color:'+obColor+';">'+escHtml(c.onboardingStatus||'pending')+'</span></td>' +
-      '<td>'+statusBadge(c.paymentStatus||'pending')+'</td>' +
-      '<td style="font-family:var(--mono);font-weight:700;color:var(--gold);">₦'+Number(c.monthlyValue||0).toLocaleString()+'</td>' +
-      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(cs?cs.name||cs.email:'—')+'</td>' +
-      '<td><div class="row-actions"><button class="action-btn" onclick="openClientDrawer(\''+c.id+'\')">Edit</button></div></td>' +
+// ═══════════════════════════════════════════════════════════════
+//  CLIENTS SYSTEM
+// ═══════════════════════════════════════════════════════════════
+function applyClientFilters() {
+  var fQ  = ((document.getElementById('cl-f-search')    ||{}).value||'').toLowerCase().trim();
+  var fP  = (document.getElementById('cl-f-payment')    ||{}).value||'';
+  var fO  = (document.getElementById('cl-f-onboarding') ||{}).value||'';
+  var fV  = (document.getElementById('cl-f-venture')    ||{}).value||'';
+  var fS  = (document.getElementById('cl-f-status')     ||{}).value||'';
+  var clients = window._data ? window._data.clients || [] : [];
+
+  var filtered = clients.filter(function(c) {
+    if (fS && c.status !== fS) return false;
+    if (fP && c.paymentStatus   !== fP) return false;
+    if (fO && c.onboardingStatus!== fO) return false;
+    if (fV && c.ventureId       !== fV) return false;
+    if (fQ) {
+      var hay = ((c.name||'')+(c.email||'')+(c.businessName||'')+(c.phone||'')+(c.contact||'')).toLowerCase();
+      if (!hay.includes(fQ)) return false;
+    }
+    return true;
+  });
+
+  renderClientsTable(filtered, window._data ? window._data.team_members || [] : []);
+  var lbl = document.getElementById('cl-count-label');
+  if (lbl) lbl.textContent = filtered.length + ' of ' + clients.length + ' client' + (clients.length !== 1 ? 's' : '');
+}
+
+function renderClients(clients, members) {
+  // KPIs
+  var active    = clients.filter(function(c){ return c.status !== 'churned'; }).length;
+  var pending   = clients.filter(function(c){ return c.onboardingStatus === 'pending'; }).length;
+  var onboarded = clients.filter(function(c){ return c.onboardingStatus === 'complete'; }).length;
+  var mrr       = clients.filter(function(c){ return c.status !== 'churned'; })
+                         .reduce(function(s,c){ return s + (parseFloat(c.monthlyValue)||0); }, 0);
+  setText('cl-kpi-active',    active);
+  setText('cl-kpi-pending',   pending);
+  setText('cl-kpi-onboarded', onboarded);
+  setText('cl-kpi-mrr',       '₦' + mrr.toLocaleString());
+
+  var lbl = document.getElementById('cl-count-label');
+  if (lbl) lbl.textContent = clients.length + ' client' + (clients.length !== 1 ? 's' : '');
+
+  renderClientsTable(clients, members);
+}
+
+function renderClientsTable(clients, members) {
+  var tbody = document.getElementById('clients-tbody'); if (!tbody) return;
+
+  if (!clients.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">' +
+      '<div class="empty-icon">🤝</div>' +
+      '<div>No clients yet.</div>' +
+      '<div style="font-size:.7rem;margin-top:6px;color:var(--dimmer);">Clients are created automatically when a CRM lead is marked Won ✅</div>' +
+    '</div></td></tr>';
+    return;
+  }
+
+  var memberMap = {};
+  (members || []).forEach(function(m) { memberMap[m.id] = m; });
+
+  var OB_COLORS = {
+    pending:     'var(--red)',
+    in_progress: 'var(--amber)',
+    complete:    'var(--green)'
+  };
+  var OB_LABELS = {
+    pending:     '⏳ Pending',
+    in_progress: '🔄 In Progress',
+    complete:    '✅ Complete'
+  };
+
+  // Sort: pending onboarding first, then by wonAt desc
+  var sorted = clients.slice().sort(function(a, b) {
+    if (a.onboardingStatus === 'pending' && b.onboardingStatus !== 'pending') return -1;
+    if (b.onboardingStatus === 'pending' && a.onboardingStatus !== 'pending') return  1;
+    return new Date(b.wonAt||b.createdAt||0) - new Date(a.wonAt||a.createdAt||0);
+  });
+
+  tbody.innerHTML = sorted.map(function(c) {
+    var v        = V_MAP[c.ventureId] || {};
+    var cs       = memberMap[c.csManager];
+    var obColor  = OB_COLORS[c.onboardingStatus] || 'var(--dimmer)';
+    var obLabel  = OB_LABELS[c.onboardingStatus] || escHtml(c.onboardingStatus || 'pending');
+    var payBadge = statusBadge(c.paymentStatus || 'pending');
+    var amt      = parseFloat(c.monthlyValue) || parseFloat(c.proposalAmount) || 0;
+
+    return '<tr>' +
+      // Client
+      '<td><div style="font-weight:600;font-size:.82rem;">' + escHtml(c.name || '—') + '</div>' +
+        (c.businessName ? '<div style="font-size:.7rem;color:var(--dimmer);">' + escHtml(c.businessName) + '</div>' : '') +
+        '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(c.email || c.contact || '') + '</div>' +
+      '</td>' +
+      // Package
+      '<td>' +
+        '<div style="font-size:.78rem;color:var(--white);">' + escHtml(c.package || c.serviceLabel || '—') + '</div>' +
+        (c.serviceId ? '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">' + escHtml(c.serviceId) + '</div>' : '') +
+        (c.paymentDuration ? '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">' + escHtml(c.paymentDuration) + '</div>' : '') +
+      '</td>' +
+      // Venture
+      '<td><span class="venture-tag">' + escHtml(v.name || c.ventureId || '—') + '</span></td>' +
+      // Contract value
+      '<td style="font-family:var(--mono);font-weight:700;color:var(--gold);">' + (amt ? '₦' + amt.toLocaleString() : '—') + '</td>' +
+      // Payment
+      '<td>' + payBadge + '</td>' +
+      // Onboarding
+      '<td>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:' + obColor + ';">' + obLabel + '</div>' +
+        '<div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:5px;width:80px;">' +
+          '<div style="width:' + (c.onboardingStatus==='complete'?'100':c.onboardingStatus==='in_progress'?'50':'8') + '%;height:100%;background:' + obColor + ';border-radius:2px;transition:width .5s;"></div>' +
+        '</div>' +
+      '</td>' +
+      // CS Manager
+      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + escHtml(cs ? cs.name || cs.email : '—') + '</td>' +
+      // Won date
+      '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + fmtDate(c.wonAt || c.startDate || c.createdAt) + '</td>' +
+      // Actions
+      '<td><div class="row-actions">' +
+        '<button class="action-btn" onclick="openClientDrawer(\'' + c.id + '\')">Manage</button>' +
+      '</div></td>' +
     '</tr>';
   }).join('');
 }
-function filterClientsByStatus(status){document.querySelectorAll('#clients-tbody tr[data-status]').forEach(function(r){r.style.display=!status||r.dataset.status===status?'':'none';});}
-function openAddClient(){
-  var members=window._data.team_members||[];
-  var html='<div class="drawer-form">' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Client Name</div><input class="form-input" id="cl-name" placeholder="Business or person name"></div>' +
-    '<div class="form-field"><div class="form-label">Phone / WhatsApp</div><input class="form-input" id="cl-contact" placeholder="+234…"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="cl-v"><option value="">Select…</option>' +
-      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
-    '</select></div><div class="form-field"><div class="form-label">Package</div><input class="form-input" id="cl-pkg" placeholder="e.g. Growth, Enterprise"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Monthly Value (₦)</div><input class="form-input" id="cl-val" type="number" min="0" placeholder="0"></div>' +
-    '<div class="form-field"><div class="form-label">Start Date</div><input class="form-input" id="cl-date" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Payment Status</div><select class="form-select" id="cl-pay"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
-    '<div class="form-field"><div class="form-label">Onboarding Status</div><select class="form-select" id="cl-ob"><option value="pending">Pending</option><option value="in_progress">In Progress</option><option value="complete">Complete</option></select></div></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="saveClient(null)">💾 Add Client</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
-  '</div>';
-  openDrawer('Clients','Add Client',html);
+
+// ── Client drawer — management only, no manual creation ───────
+function openClientDrawer(id) {
+  var c = (window._data.clients || []).find(function(x) { return x.id === id; });
+  if (!c) return;
+
+  var v       = V_MAP[c.ventureId] || {};
+  var members = window._data.team_members || [];
+  var lead    = (window._data.crm_leads  || []).find(function(l) { return l.id === c.leadId; });
+  var prop    = (window._data.proposals  || []).find(function(p) { return p.id === c.proposalId; });
+  var pay     = (window._data.payments   || []).find(function(p) { return p.id === c.paymentId || (p.leadId === c.leadId && p.status === 'paid'); });
+  var amt     = parseFloat(c.monthlyValue) || parseFloat(c.proposalAmount) || 0;
+
+  var csOpts = '<option value="">Unassigned</option>' + members.map(function(m) {
+    return '<option value="' + m.id + '"' + (c.csManager === m.id ? ' selected' : '') + '>' + escHtml(m.name || m.email || '') + '</option>';
+  }).join('');
+
+  var OB_STEPS = [
+    {k:'pending',     l:'Pending',     pct:0},
+    {k:'in_progress', l:'In Progress', pct:50},
+    {k:'complete',    l:'Complete',    pct:100}
+  ];
+
+  var html =
+
+    // ── Header ──────────────────────────────────────────────
+    '<div class="detail-section">' +
+      '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
+        '<div class="person-avatar" style="width:48px;height:48px;font-size:18px;flex-shrink:0;">' + initials(c.name || '?') + '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:1.05rem;">' + escHtml(c.name || '—') + '</div>' +
+          (c.businessName ? '<div style="font-size:.78rem;color:var(--dimmer);">' + escHtml(c.businessName) + '</div>' : '') +
+          '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + escHtml(c.email || c.contact || '') + (c.phone ? ' · ' + escHtml(c.phone) : '') + '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+            statusBadge(c.status || 'active') +
+            statusBadge(c.paymentStatus || 'pending') +
+            '<span class="venture-tag">' + escHtml(v.name || c.ventureId || '—') + '</span>' +
+            (c.intakeTier ? tierBadge(c.intakeTier) : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── Package & Contract ───────────────────────────────────
+    '<div class="detail-section"><h4>📦 Package & Contract</h4>' +
+      '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:8px;padding:14px 16px;margin-bottom:12px;">' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--white);margin-bottom:6px;">' + escHtml(c.package || c.serviceLabel || '—') + '</div>' +
+        (c.serviceId ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-bottom:4px;">' + escHtml(c.serviceId) + '</div>' : '') +
+        '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px;">' +
+          '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Contract Value</div><div style="font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--gold);">' + (amt ? '₦' + amt.toLocaleString() : '—') + '</div></div>' +
+          (c.paymentDuration ? '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Payment Terms</div><div style="font-size:.8rem;color:var(--white);">' + escHtml(c.paymentDuration) + '</div></div>' : '') +
+          '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Started</div><div style="font-size:.8rem;color:var(--white);">' + fmtDate(c.wonAt || c.startDate) + '</div></div>' +
+        '</div>' +
+        (c.proposalScope ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(200,155,20,.1);font-size:.76rem;color:var(--dimmer);line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;">' + escHtml(c.proposalScope.substring(0, 400)) + (c.proposalScope.length > 400 ? '…' : '') + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+
+    // ── Onboarding Tracker ───────────────────────────────────
+    '<div class="detail-section"><h4>🚀 Onboarding Status</h4>' +
+      '<div style="display:flex;gap:0;margin-bottom:14px;">' +
+        OB_STEPS.map(function(step, i) {
+          var isCurrent = c.onboardingStatus === step.k;
+          var isDone    = c.onboardingStatus === 'complete' ||
+                         (c.onboardingStatus === 'in_progress' && i === 0);
+          return '<div style="flex:1;padding:10px;border:1px solid rgba(200,155,20,.12);' + (i > 0 ? 'border-left:none;' : '') +
+            (i === 0 ? 'border-radius:6px 0 0 6px;' : i === OB_STEPS.length - 1 ? 'border-radius:0 6px 6px 0;' : '') +
+            (isCurrent ? 'background:rgba(200,155,20,.1);' : 'background:rgba(255,255,255,.02);') + '">' +
+            '<div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:' + (isCurrent ? 'var(--gold)' : 'var(--dimmer)') + ';margin-bottom:4px;">' +
+              (i === 0 ? '01' : i === 1 ? '02' : '03') +
+            '</div>' +
+            '<div style="font-size:.78rem;font-weight:600;color:' + (isCurrent ? 'var(--white)' : 'var(--dimmer)') + ';">' + escHtml(step.l) + '</div>' +
+            (isCurrent ? '<div style="width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:6px;animation:pulse 2s infinite;"></div>' : '') +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      '<div class="form-field" style="margin-bottom:10px;">' +
+        '<div class="form-label">Update Onboarding Status</div>' +
+        '<select class="form-select" id="cl-u-ob">' +
+          OB_STEPS.map(function(step) {
+            return '<option value="' + step.k + '"' + (c.onboardingStatus === step.k ? ' selected' : '') + '>' + step.l + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field" style="margin-bottom:10px;">' +
+        '<div class="form-label">Onboarding Notes</div>' +
+        '<textarea class="form-textarea" id="cl-u-ob-notes" style="min-height:60px;">' + escHtml(c.onboardingNotes || '') + '</textarea>' +
+      '</div>' +
+    '</div>' +
+
+    // ── CS Manager & Payment ─────────────────────────────────
+    '<div class="detail-section"><h4>👤 Assignment & Payment</h4>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+        '<div class="form-field">' +
+          '<div class="form-label">CS Manager</div>' +
+          '<select class="form-select" id="cl-u-cs">' + csOpts + '</select>' +
+        '</div>' +
+        '<div class="form-field">' +
+          '<div class="form-label">Payment Status</div>' +
+          '<select class="form-select" id="cl-u-pay">' +
+            ['paid','pending','partial','overdue'].map(function(s) {
+              return '<option value="' + s + '"' + (c.paymentStatus === s ? ' selected' : '') + '>' + s + '</option>';
+            }).join('') +
+          '</select>' +
+        '</div>' +
+        '<div class="form-field">' +
+          '<div class="form-label">Client Status</div>' +
+          '<select class="form-select" id="cl-u-st">' +
+            ['active','paused','churned'].map(function(s) {
+              return '<option value="' + s + '"' + (c.status === s ? ' selected' : '') + '>' + s + '</option>';
+            }).join('') +
+          '</select>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── Linked Records ───────────────────────────────────────
+    (lead || prop || pay ? '<div class="detail-section"><h4>🔗 Linked Records</h4>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;">' +
+        (lead ? '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;">' +
+          '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;">CRM Lead</div>' +
+          '<div style="font-size:.8rem;color:var(--white);">' + escHtml(lead.name || '—') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Source: ' + escHtml(lead.sourceType || '—') + '</div></div>' +
+          statusBadge(lead.status) + '</div>' : '') +
+        (prop ? '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;">' +
+          '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--cyan);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;">Proposal</div>' +
+          '<div style="font-size:.8rem;color:var(--white);">' + escHtml(prop.title || 'Untitled') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.62rem;color:var(--gold);">₦' + Number(prop.amount||0).toLocaleString() + '</div></div>' +
+          statusBadge(prop.status) + '</div>' : '') +
+        (pay ? '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.15);border-radius:6px;">' +
+          '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;">Payment</div>' +
+          '<div style="font-family:var(--mono);font-weight:700;font-size:.88rem;color:var(--green);">₦' + Number(pay.amount||0).toLocaleString() + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(pay.paymentMethod||'') + ' · ' + fmtDate(pay.paidAt||pay.createdAt) + '</div></div>' +
+          statusBadge(pay.status) + '</div>' : '') +
+      '</div></div>' : '') +
+
+    // ── Actions ──────────────────────────────────────────────
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveClientUpdate(\'' + c.id + '\')">💾 Save Changes</button>' +
+      (c.email ? '<a href="mailto:' + escHtml(c.email) + '" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉ Email</a>' : '') +
+      (c.phone ? '<a href="https://wa.me/' + escHtml((c.phone||'').replace(/\s+/g,'').replace(/[^0-9+]/g,'').replace(/^0/,'+234')) + '" target="_blank" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--green);border-color:rgba(34,197,94,.3);">💬 WhatsApp</a>' : '') +
+    '</div>';
+
+  openDrawer('Client', escHtml(c.name || '—'), html);
 }
-function openClientDrawer(id){
-  var c=(window._data.clients||[]).find(function(x){return x.id===id;});if(!c)return;
-  var members=window._data.team_members||[];
-  var v=V_MAP[c.ventureId]||{};
-  var csOpts='<option value="">None</option>'+members.map(function(m){return'<option value="'+m.id+'"'+(c.csManager===m.id?' selected':'')+'>'+escHtml(m.name||m.email||'')+'</option>';}).join('');
-  var html='<div class="detail-section"><div class="detail-grid">' +
-    '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">'+escHtml(v.name||c.ventureId||'—')+'</div></div>' +
-    '<div class="detail-item"><div class="detail-label">Start Date</div><div class="detail-val">'+fmtDate(c.startDate)+'</div></div>' +
-    '</div></div>' +
-    '<div class="detail-section"><h4>Update Client</h4>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Package</div><input class="form-input" id="cl-u-pkg" value="'+escHtml(c.package||'')+'"></div>' +
-    '<div class="form-field"><div class="form-label">Monthly Value (₦)</div><input class="form-input" id="cl-u-val" type="number" value="'+(c.monthlyValue||0)+'"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Payment Status</div><select class="form-select" id="cl-u-pay">' +
-      ['pending','paid','overdue'].map(function(s){return'<option value="'+s+'"'+(c.paymentStatus===s?' selected':'')+'>'+s+'</option>';}).join('') +
-    '</select></div><div class="form-field"><div class="form-label">Onboarding Status</div><select class="form-select" id="cl-u-ob">' +
-      ['pending','in_progress','complete'].map(function(s){return'<option value="'+s+'"'+(c.onboardingStatus===s?' selected':'')+'>'+s+'</option>';}).join('') +
-    '</select></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Client Status</div><select class="form-select" id="cl-u-st">' +
-      ['active','churned','paused'].map(function(s){return'<option value="'+s+'"'+(c.status===s?' selected':'')+'>'+s+'</option>';}).join('') +
-    '</select></div><div class="form-field"><div class="form-label">CS Manager</div><select class="form-select" id="cl-u-cs">'+csOpts+'</select></div></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="saveClient(\''+c.id+'\')">Update</button>' +
-    '<button class="action-btn danger" onclick="deleteRecord(\'clients\',\''+c.id+'\');closeDrawer();">Delete</button></div></div>';
-  openDrawer('Client',escHtml(c.name||'—'),html);
+
+// ── Client update — status, onboarding, CS manager only ───────
+function saveClientUpdate(id) {
+  var data = {
+    onboardingStatus: (document.getElementById('cl-u-ob')       || {}).value || 'pending',
+    onboardingNotes:  (document.getElementById('cl-u-ob-notes') || {}).value || '',
+    csManager:        (document.getElementById('cl-u-cs')        || {}).value || '',
+    paymentStatus:    (document.getElementById('cl-u-pay')       || {}).value || 'pending',
+    status:           (document.getElementById('cl-u-st')        || {}).value || 'active'
+  };
+  window._updateDoc('clients', id, data).then(function() {
+    toast('Client updated ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e) { toast('Update failed: ' + (e.message || e), 'error'); });
 }
-function saveClient(id){
-  var data;
-  if(id){
-    data={package:document.getElementById('cl-u-pkg').value.trim(),monthlyValue:parseFloat(document.getElementById('cl-u-val').value)||0,paymentStatus:document.getElementById('cl-u-pay').value,onboardingStatus:document.getElementById('cl-u-ob').value,status:document.getElementById('cl-u-st').value,csManager:document.getElementById('cl-u-cs').value};
-    window._updateDoc('clients',id,data).then(function(){toast('Client updated ✓','success');closeDrawer();window._loadAll();});
-  } else {
-    var name=document.getElementById('cl-name').value.trim();if(!name){toast('Name required','error');return;}
-    data={name:name,contact:document.getElementById('cl-contact').value.trim(),ventureId:document.getElementById('cl-v').value,package:document.getElementById('cl-pkg').value.trim(),monthlyValue:parseFloat(document.getElementById('cl-val').value)||0,startDate:document.getElementById('cl-date').value,paymentStatus:document.getElementById('cl-pay').value,onboardingStatus:document.getElementById('cl-ob').value,status:'active',csManager:'',createdAt:new Date().toISOString()};
-    window._saveDoc('clients',data).then(function(){toast('Client added ✓','success');closeDrawer();window._loadAll();});
-  }
+
+// ── filterClientsByStatus kept for backwards compatibility ─────
+function filterClientsByStatus(status) {
+  var fEl = document.getElementById('cl-f-status');
+  if (fEl) { fEl.value = status; applyClientFilters(); }
 }
 
 // ── Finance ────────────────────────────────────────────────────
