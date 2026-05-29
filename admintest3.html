@@ -2271,7 +2271,7 @@ function _panelSettings() {
       '</div>' +
       '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Firebase Collections</div></div>' +
         '<div style="padding:16px;font-family:var(--mono);font-size:.72rem;color:var(--dim);line-height:2;">' +
-          ['intake_leads','service_inquiries','contact_messages','proposals','payments','assignments','applicants','team_members','careers_config','ventures','tasks','crm_leads','clients','financials','daily_reports','weekly_reports'].map(function(c){
+          ['intake_leads','service_inquiries','contact_messages','proposals','payments','assignments','applicants','team_members','careers_config','ventures','tasks','crm_leads','clients','financials','daily_reports','weekly_reports','invoices','receipts'].map(function(c){
             return '<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:5px 0;"><span style="color:var(--cyan);">'+c+'</span><span id="col-count-'+c+'">—</span></div>';
           }).join('') +
         '</div>' +
@@ -3347,429 +3347,6 @@ function renderPaymentsTable(payments) {
     '</tr>';
   }).join('');
 }
-  
-// ═══════════════════════════════════════
-// ASSIGNMENTS
-// ═══════════════════════════════════════
-function renderAssignments(assignments){
-  var tbody=document.getElementById('assignments-tbody');if(!tbody)return;
-  if(!assignments||!assignments.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🗂️</div>No assignments yet</div></td></tr>';return;}
-  tbody.innerHTML=assignments.map(function(a){return'<tr data-search="'+escHtml((a.personName||a.personEmail||'').toLowerCase())+'" data-venture="'+escHtml(a.venture||'')+'"><td><div style="font-weight:600;">'+escHtml(a.personName||'—')+'</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(a.personEmail||'')+'</div></td><td><span class="badge badge-gold">'+escHtml(a.venture||'—')+'</span></td><td>'+escHtml(a.assignedTo||'—')+'</td><td>'+statusBadge(a.status)+'</td><td>'+statusBadge(a.priority)+'</td><td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtDate(a.assignedAt||a.createdAt)+'</td><td><div class="row-actions"><button class="action-btn" onclick="openAssignmentDrawer(window._data.assignments.find(function(x){return x.id===\''+a.id+'\'}))">Edit</button><button class="action-btn danger" onclick="deleteRecord(\'assignments\',\''+a.id+'\')">Del</button></div></td></tr>';}).join('');
-}
-
-// ═══════════════════════════════════════
-// DRAWERS (shared)
-// ═══════════════════════════════════════
-function openDrawer(eyebrow,title,html){document.getElementById('drawer-eyebrow').textContent=eyebrow;document.getElementById('drawer-title').textContent=title;document.getElementById('drawer-body').innerHTML=html;document.getElementById('drawer-overlay').classList.add('open');document.getElementById('main-drawer').classList.add('open');}
-function closeDrawer(){document.getElementById('drawer-overlay').classList.remove('open');document.getElementById('main-drawer').classList.remove('open');}
-
-function openLeadDrawer(l){if(!l)return;var name=(l.firstName||'')+' '+(l.lastName||'');var r=l.responses||{};var html='<div class="detail-section"><h4>Contact Info</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(name)+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(l.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(l.phone||'—')+'</div></div><div class="detail-item"><div class="detail-label">Submitted</div><div class="detail-val">'+fmtTime(l.completedAt||l.createdAt)+'</div></div></div></div><div class="detail-section"><h4>📊 Qualification</h4><div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">'+scoreBadge(l.score)+tierBadge(l.tier)+'<span style="font-family:var(--mono);font-size:.7rem;color:var(--dim);">Route: '+escHtml(l.primaryRoute||'—')+'</span></div></div><div class="detail-section"><h4>📋 Responses</h4><div style="display:flex;flex-direction:column;gap:10px;">'+Object.entries(r).map(function(e){var v=Array.isArray(e[1])?e[1].join(', '):e[1];return'<div><div class="detail-label">'+escHtml(e[0].replace(/_/g,' '))+'</div><div class="detail-val" style="margin-top:2px;">'+escHtml(v||'—')+'</div></div>';}).join('')+'</div></div><div class="btn-row"><button class="btn-primary" onclick="quickProposal(\''+l.id+'\',\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">📄 Propose</button><button class="btn-secondary" onclick="openNewPaymentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">💰 Payment</button><button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">🗂️ Assign</button></div>';openDrawer('Intake Lead',name.trim(),html);}
-
-function openInquiryDrawer(i){if(!i)return;var sd=i.serviceDetails||{};var html='<div class="detail-section"><h4>Contact</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(i.name||'—')+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(i.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(i.phone||'—')+'</div></div><div class="detail-item"><div class="detail-label">Business</div><div class="detail-val">'+escHtml(i.businessName||'—')+'</div></div></div></div><div class="detail-section"><h4>📋 Service Details</h4><div style="margin-bottom:10px;"><span class="badge badge-cyan">'+serviceLabel(i.service)+'</span></div><div style="display:flex;flex-direction:column;gap:10px;">'+Object.entries(sd).map(function(e){return'<div><div class="detail-label">'+escHtml(e[0].replace(/_/g,' '))+'</div><div class="detail-val" style="margin-top:2px;">'+escHtml(e[1]||'—')+'</div></div>';}).join('')+'</div>'+(i.notes?'<div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:6px;font-size:.8rem;color:var(--dim);">'+escHtml(i.notes)+'</div>':'')+'</div><div class="btn-row"><button class="btn-primary" onclick="quickProposal(\''+i.id+'\',\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">📄 Propose</button><button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">🗂️ Assign</button></div>';openDrawer('Service Inquiry',escHtml(i.name||'—'),html);}
-
-function openMessageDrawer(m){if(!m)return;var html='<div class="detail-section"><h4>From</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(m.name||'—')+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(m.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Subject</div><div class="detail-val">'+escHtml(m.subject||'general')+'</div></div><div class="detail-item"><div class="detail-label">Received</div><div class="detail-val">'+fmtTime(m.sentAt||m.createdAt)+'</div></div></div></div><div class="detail-section"><h4>💬 Message</h4><div style="padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;font-size:.84rem;color:var(--white);line-height:1.7;white-space:pre-wrap;">'+escHtml(m.message||'')+'</div></div><div class="btn-row"><a href="mailto:'+escHtml(m.email||'')+'" class="btn-primary" style="display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:6px;text-decoration:none;background:var(--gold);color:#080808;font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;">✉️ Reply</a><button class="btn-secondary" onclick="quickProposal(null,\''+escHtml(m.name||'')+'\',\''+escHtml(m.email||'')+'\')">📄 Propose</button></div>';openDrawer('Contact Message',escHtml(m.name||'—'),html);}
-
-// ═══════════════════════════════════════
-// PROPOSAL, PAYMENT, ASSIGNMENT DRAWERS
-// ═══════════════════════════════════════
-var _editingProposalId = null;
-
-function openNewProposal() {
-  openProposalDrawer(null, '');
-}
-
-function quickProposal(srcId, name, email) {
-  closeDrawer();
-  setTimeout(function() {
-    openProposalDrawer(null, srcId || '');
-    showPanel('proposals', document.querySelector('[data-panel="proposals"]'));
-  }, 200);
-}
-
-function openProposalDrawer(p, prefillLeadId) {
-  _editingProposalId = p ? p.id : null;
-
-  var allLeads = window._data ? (window._data.crm_leads || []) : [];
-  var pLeadId  = p ? (p.leadId || '') : (prefillLeadId || '');
-  var selLead  = pLeadId ? allLeads.find(function(l) { return l.id === pLeadId; }) : null;
-  var selSvc   = p ? (p.service || '') : '';
-  var selTmpl  = PROPOSAL_TEMPLATES[selSvc] || {};
-
-  // Build recipient options — all CRM leads
-  var STATUS_LABELS = {new_lead:'New Lead',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won',lost:'Lost'};
-  var leadOpts = '<option value="">— Select recipient from CRM Pipeline —</option>' +
-    allLeads.map(function(l) {
-      var v   = V_MAP[l.ventureId] || {};
-      var sel = selLead && selLead.id === l.id ? ' selected' : '';
-      return '<option value="' + l.id + '"' + sel + '>' +
-        escHtml(l.name || '—') + ' — ' + escHtml(v.name || l.ventureId || '—') +
-        ' [' + (STATUS_LABELS[l.status] || l.status) + ']' +
-      '</option>';
-    }).join('');
-
-  // Duration options from template
-  var durList = selTmpl.durations || ['One-time payment', '2 instalments (50/50)', '3 milestone payments', 'Monthly retainer', 'Annual contract'];
-  var durOpts = durList.map(function(d) {
-    return '<option value="' + d + '"' + (p && p.duration === d ? ' selected' : '') + '>' + d + '</option>';
-  }).join('');
-
-  // Payment method checkboxes
-  var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
-  var methodList = [
-    ['card',         '💳 Card (Visa/Mastercard)'],
-    ['bank_transfer','🏦 Bank Transfer'],
-    ['ussd',         '📱 USSD'],
-    ['mobile_money', '📲 Mobile Money'],
-    ['crypto',       '₿ Crypto (USDT/ETH)']
-  ];
-
-  var leadInfoDisplay = selLead ? '' : 'display:none;';
-  var selV = selLead ? (V_MAP[selLead.ventureId] || {}) : {};
-
-  var html =
-
-    // ════ SECTION 1: Recipient ═══════════════════════════════
-    '<div class="detail-section"><h4>👤 Recipient (from CRM Pipeline)</h4>' +
-    '<div class="form-field" style="margin-bottom:10px;">' +
-      '<div class="form-label">Select Lead *</div>' +
-      '<select class="form-select" id="prop-lead" onchange="onProposalLeadChange()">' + leadOpts + '</select>' +
-    '</div>' +
-    '<div id="prop-lead-info" style="' + leadInfoDisplay + '">' +
-      '<div style="background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.15);border-radius:7px;padding:12px 14px;">' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">' +
-          '<div><div class="form-label">Name</div><div id="prop-li-name" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.name || '' : '') + '</div></div>' +
-          '<div><div class="form-label">Email</div><div id="prop-li-email" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.email || '' : '') + '</div></div>' +
-          '<div><div class="form-label">Phone</div><div id="prop-li-phone" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.phone || '' : '') + '</div></div>' +
-          '<div><div class="form-label">Venture</div><div id="prop-li-venture" style="font-size:.8rem;color:var(--gold);">' + escHtml(selV.name || (selLead ? selLead.ventureId : '') || '') + '</div></div>' +
-        '</div>' +
-      '</div>' +
-    '</div></div>' +
-
-    // ════ SECTION 2: Proposal Details ════════════════════════
-    '<div class="detail-section"><h4>📋 Proposal Content</h4>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field">' +
-        '<div class="form-label">Service / Package *</div>' +
-        '<select class="form-select" id="prop-service" onchange="onProposalServiceChange()">' +
-          '<option value="">Select service…</option>' +
-          ['brand_launch','sales_system','systemization','platform_dev','web3_dev','gata_onboard','venture_build','enterprise_sw'].map(function(s) {
-            return '<option value="' + s + '"' + (selSvc === s ? ' selected' : '') + '>' + serviceLabel(s) + '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
-      '<div class="form-field">' +
-        '<div class="form-label">Proposal Title</div>' +
-        '<input class="form-input" id="prop-title" value="' + escHtml(p ? p.title || '' : selTmpl.defaultTitle || '') + '" placeholder="e.g. Brand Launch Package">' +
-      '</div>' +
-    '</div>' +
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
-      '<div class="form-label">Proposal Body</div>' +
-      '<button onclick="autoFillProposalBody()" style="background:rgba(200,155,20,.1);border:1px solid rgba(200,155,20,.25);color:var(--gold);border-radius:5px;padding:4px 12px;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;cursor:pointer;">↺ Auto-Fill from Template</button>' +
-    '</div>' +
-    '<textarea class="form-textarea" id="prop-body" style="min-height:240px;font-family:var(--mono);font-size:.72rem;line-height:1.75;">' + escHtml(p ? p.body || '' : (selTmpl.body || '')) + '</textarea>' +
-    '</div>' +
-
-    // ════ SECTION 3: Financial Terms ═════════════════════════
-    '<div class="detail-section"><h4>💰 Financial Terms</h4>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field">' +
-        '<div class="form-label">Total Amount (₦) *</div>' +
-        '<input class="form-input" id="prop-amount" type="number" min="0" value="' + (p ? p.amount || (selTmpl.defaultAmount || '') : (selTmpl.defaultAmount || '')) + '" oninput="updateInstalmentsBreakdown()">' +
-      '</div>' +
-      '<div class="form-field">' +
-        '<div class="form-label">Payment Structure</div>' +
-        '<select class="form-select" id="prop-duration" onchange="updateInstalmentsBreakdown()">' + durOpts + '</select>' +
-      '</div>' +
-    '</div>' +
-    '<div id="prop-instal-breakdown" style="display:none;background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:6px;padding:10px 14px;margin-bottom:10px;font-size:.8rem;"></div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Contract Duration (for retainers)</div><input class="form-input" id="prop-contract-dur" value="' + escHtml(p ? p.contractDuration || '' : '') + '" placeholder="e.g. 3 months · Ongoing"></div>' +
-      '<div class="form-field"><div class="form-label">Proposal Valid Until</div><input class="form-input" id="prop-valid" type="date" value="' + escHtml(p ? p.validUntil || '' : new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]) + '"></div>' +
-    '</div>' +
-    '<div class="form-field"><div class="form-label" style="margin-bottom:8px;">Accepted Payment Methods</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
-        methodList.map(function(m) {
-          var checked = storedMethods.indexOf(m[0]) !== -1 ? ' checked' : '';
-          return '<label style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:8px 13px;cursor:pointer;font-size:.8rem;color:var(--dim);">' +
-            '<input type="checkbox" class="prop-method-cb" value="' + m[0] + '"' + checked + ' style="accent-color:var(--gold);width:14px;height:14px;">' +
-            m[1] + '</label>';
-        }).join('') +
-      '</div>' +
-    '</div></div>' +
-
-    // ════ SECTION 4: Payment Details ═════════════════════════
-    '<div class="detail-section"><h4>🔗 Payment Details</h4>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Bank Name</div><input class="form-input" id="prop-bank-name" value="' + escHtml(p ? p.bankName || FW_CONFIG.bankName : FW_CONFIG.bankName) + '" placeholder="e.g. First Bank Nigeria"></div>' +
-      '<div class="form-field"><div class="form-label">Account Number</div><input class="form-input" id="prop-bank-acct" value="' + escHtml(p ? p.bankAccountNumber || FW_CONFIG.accountNumber : FW_CONFIG.accountNumber) + '" placeholder="0123456789"></div>' +
-    '</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Account Name</div><input class="form-input" id="prop-bank-accname" value="' + escHtml(p ? p.bankAccountName || FW_CONFIG.accountName : FW_CONFIG.accountName) + '" placeholder="TEKNNUKU STUDIO LTD"></div>' +
-      '<div class="form-field"><div class="form-label">Flutterwave Payment Link (paste from FW dashboard)</div><input class="form-input" id="prop-fw-link" value="' + escHtml(p ? p.paymentLink || '' : '') + '" placeholder="https://flutterwave.com/pay/..."></div>' +
-    '</div>' +
-    '<div class="form-field"><div class="form-label">Payment Instructions (shown in proposal)</div><textarea class="form-textarea" id="prop-pay-notes" style="min-height:56px;">' + escHtml(p ? p.paymentNotes || '' : 'Please include your full name and invoice number as payment reference. Send payment receipt to ' + FW_CONFIG.companyEmail + '.') + '</textarea></div>' +
-    '</div>' +
-
-    // ════ SECTION 5: Status ═══════════════════════════════════
-    '<div class="detail-section"><h4>📌 Status</h4>' +
-    '<div style="max-width:200px;">' +
-      '<select class="form-select" id="prop-status">' +
-        ['draft','sent','accepted','declined'].map(function(s) {
-          var sel = (p && p.status === s) ? ' selected' : (!p && s === 'draft' ? ' selected' : '');
-          return '<option value="' + s + '"' + sel + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>';
-        }).join('') +
-      '</select>' +
-    '</div></div>' +
-
-    // ════ Action buttons ══════════════════════════════════════
-    '<div class="btn-row">' +
-      '<button class="btn-primary" onclick="saveProposal()">💾 Save Proposal</button>' +
-      '<button class="btn-secondary" style="border-color:rgba(200,155,20,.3);color:var(--gold);" onclick="saveAndSendProposalEmail()">✉ Save & Send Email</button>' +
-      '<button class="btn-secondary" style="border-color:rgba(34,197,94,.3);color:var(--green);" onclick="saveAndSendProposalWhatsApp()">💬 Save & Send WhatsApp</button>' +
-      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
-    '</div>';
-
-  openDrawer(p ? 'Edit Proposal' : 'New Proposal', p ? (p.title || 'Proposal') : 'Create Proposal', html);
-  setTimeout(updateInstalmentsBreakdown, 120);
-}
-
-function saveProposal() {
-  var leadId = (document.getElementById('prop-lead') || {}).value || '';
-  if (!leadId) { toast('Please select a recipient from the CRM Pipeline', 'error'); return; }
-  var title  = (document.getElementById('prop-title') || {}).value || '';
-  var amount = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
-  if (!title)  { toast('Proposal title is required', 'error'); return; }
-  if (!amount) { toast('Amount is required', 'error'); return; }
-
-  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
-  var methods = [];
-  document.querySelectorAll('.prop-method-cb').forEach(function(cb) {
-    if (cb.checked) methods.push(cb.value);
-  });
-
-  var data = {
-    leadId:            leadId,
-    personName:        lead ? lead.name || '' : '',
-    personEmail:       lead ? lead.email || '' : '',
-    personPhone:       lead ? lead.phone || '' : '',
-    ventureId:         lead ? lead.ventureId || '' : '',
-    title:             title,
-    service:           (document.getElementById('prop-service')       || {}).value || '',
-    amount:            amount,
-    duration:          (document.getElementById('prop-duration')       || {}).value || '',
-    contractDuration:  (document.getElementById('prop-contract-dur')   || {}).value || '',
-    validUntil:        (document.getElementById('prop-valid')          || {}).value || '',
-    body:              (document.getElementById('prop-body')           || {}).value || '',
-    paymentMethods:    methods,
-    bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
-    bankAccountNumber: (document.getElementById('prop-bank-acct')      || {}).value || '',
-    bankAccountName:   (document.getElementById('prop-bank-accname')   || {}).value || '',
-    paymentLink:       (document.getElementById('prop-fw-link')        || {}).value || '',
-    paymentNotes:      (document.getElementById('prop-pay-notes')      || {}).value || '',
-    status:            (document.getElementById('prop-status')         || {}).value || 'draft',
-    sentAt:            new Date().toISOString()
-  };
-
-  var fn = _editingProposalId
-    ? window._updateDoc('proposals', _editingProposalId, data)
-    : window._saveDoc('proposals', data);
-
-  fn.then(function() {
-    toast('Proposal saved ✓', 'success');
-    closeDrawer();
-    window._loadAll();
-  }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
-}
-function savePayment(){
-  var data={
-    personName:document.getElementById('pay-name').value.trim(),
-    personEmail:document.getElementById('pay-email').value.trim(),
-    service:document.getElementById('pay-service').value.trim(),
-    amount:parseFloat(document.getElementById('pay-amount').value)||0,
-    status:document.getElementById('pay-status').value,
-    paidAt:document.getElementById('pay-date').value,
-    invoiceRef:document.getElementById('pay-ref').value.trim(),
-    paymentMethod:document.getElementById('pay-method').value,
-    leadId:(document.getElementById('pay-lead')||{}).value||''
-  };
-  if(!data.personName){toast('Client name required','error');return;}
-  var fn=_editingPaymentId?window._updateDoc('payments',_editingPaymentId,data):window._saveDoc('payments',data);
-  fn.then(function(){
-    toast('Payment saved ✓','success');
-    closeDrawer();
-    window._loadAll().then(function(){
-      if(data.leadId && data.status==='paid'){
-        var lead=(window._data.crm_leads||[]).find(function(l){return l.id===data.leadId;});
-        if(lead && lead.status==='proposal') autoWinLead(data.leadId, Object.assign({id:_editingPaymentId||''},data));
-      }
-    });
-  }).catch(function(e){toast('Save failed: '+(e.message||e),'error');});
-}
-
-var _editingPaymentId=null;
-function openNewPayment() { openPaymentDrawer(null, '', ''); }
-function openNewPaymentFor(name, email, leadId) {
-  closeDrawer();
-  setTimeout(function() {
-    openPaymentDrawer(null, name, email, leadId);
-    showPanel('payments', document.querySelector('[data-panel="payments"]'));
-  }, 200);
-}
-function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
-  _editingPaymentId = p ? p.id : null;
-  var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
-  var currentClientVal = '';
-  if (p && p.clientRef) currentClientVal = p.clientRef;
-  else if (prefillLeadId) currentClientVal = 'crm|' + prefillLeadId;
-
-  var clientOpts   = buildClientOptions(currentClientVal);
-  var serviceOpts  = buildServiceOptions(p ? p.serviceId || '' : '');
-  var methodList   = [
-    ['card',         '💳 Card'],
-    ['bank_transfer','🏦 Bank Transfer'],
-    ['ussd',         '📱 USSD'],
-    ['cash',         '💵 Cash'],
-    ['crypto',       '₿ Crypto']
-  ];
-
-  var proposalOpts = '<option value="">— Not linked to a proposal —</option>';
-  if (p && p.proposalId) {
-    var lProp = window._data ? (window._data.proposals||[]).find(function(pr){ return pr.id === p.proposalId; }) : null;
-    if (lProp) proposalOpts = '<option value="' + lProp.id + '" selected>' + escHtml(lProp.title||'Untitled') + ' · ₦' + Number(lProp.amount||0).toLocaleString() + '</option>';
-  }
-
-  var clientInfo = p ? resolvePayClient(p.clientRef || '') : {};
-
-  var html =
-    // ── Section 1: Client ──────────────────────────────────
-    '<div class="detail-section"><h4>👤 Client / Lead</h4>' +
-    '<div class="form-field" style="margin-bottom:8px;"><div class="form-label">Select Client *</div>' +
-      '<select class="form-select" id="pay-client-sel" onchange="onPayClientChange()">' + clientOpts + '</select>' +
-    '</div>' +
-    '<div id="pay-cinfo" style="' + (currentClientVal ? '' : 'display:none;') + '">' +
-      '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">' +
-        '<div><div class="form-label">Name</div><div id="pay-ci-name" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.name||'') + '</div></div>' +
-        '<div><div class="form-label">Email</div><div id="pay-ci-email" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.email||'') + '</div></div>' +
-        '<div><div class="form-label">Phone</div><div id="pay-ci-phone" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.phone||'') + '</div></div>' +
-        '<div><div class="form-label">Business</div><div id="pay-ci-biz" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.biz||'') + '</div></div>' +
-      '</div>' +
-    '</div></div>' +
-
-    // ── Section 2: Service & Venture ───────────────────────
-    '<div class="detail-section"><h4>📦 Service & Venture</h4>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Service / Package *</div>' +
-        '<select class="form-select" id="pay-service-sel" onchange="onPayServiceChange()">' + serviceOpts + '</select>' +
-      '</div>' +
-      '<div class="form-field"><div class="form-label">Venture Receiving Payment</div>' +
-        '<select class="form-select" id="pay-venture"><option value="">Select…</option>' +
-          VENTURES_SEED.map(function(v){ return '<option value="' + v.id + '"' + (p && p.ventureId===v.id?' selected':'') + '>' + v.name + '</option>'; }).join('') +
-        '</select>' +
-      '</div>' +
-    '</div>' +
-    '<div class="form-field"><div class="form-label">Linked Proposal (optional)</div>' +
-      '<select class="form-select" id="pay-proposal-link" onchange="onPayProposalChange()">' + proposalOpts + '</select>' +
-    '</div></div>' +
-
-    // ── Section 3: Financial ───────────────────────────────
-    '<div class="detail-section"><h4>💰 Financial Details</h4>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="pay-amount" type="number" min="0" value="' + (p ? p.amount || '' : '') + '"></div>' +
-      '<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="pay-status">' +
-        ['pending','partial','paid','overdue'].map(function(s){ return '<option value="' + s + '"' + (p && p.status===s?' selected':(!p&&s==='pending'?' selected':'')) + '>' + s + '</option>'; }).join('') +
-      '</select></div>' +
-      '<div class="form-field"><div class="form-label">Payment Date</div><input class="form-input" id="pay-date" type="date" value="' + escHtml(p ? p.paidAt || '' : '') + '"></div>' +
-    '</div>' +
-    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label" style="margin-bottom:7px;">Payment Method</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:7px;">' +
-        methodList.map(function(m) {
-          var chk = storedMethods.indexOf(m[0]) !== -1 ? ' checked' : '';
-          return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:5px;padding:7px 12px;cursor:pointer;font-size:.78rem;color:var(--dim);">' +
-            '<input type="checkbox" class="pay-method-cb" value="' + m[0] + '"' + chk + ' style="accent-color:var(--gold);width:13px;height:13px;">' + m[1] + '</label>';
-        }).join('') +
-      '</div>' +
-    '</div>' +
-    '</div>' +
-
-    // ── Section 4: References ──────────────────────────────
-    '<div class="detail-section"><h4>🔖 References</h4>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-      '<div class="form-field"><div class="form-label">Invoice Ref (auto-generated on save)</div><input class="form-input" id="pay-ref" value="' + escHtml(p ? p.invoiceRef || '' : '') + '" placeholder="INV-2026-0001 (auto)"></div>' +
-      '<div class="form-field"><div class="form-label">Flutterwave Transaction ID (if applicable)</div><input class="form-input" id="pay-fw-ref" value="' + escHtml(p ? p.fwRef || '' : '') + '" placeholder="FLW-TX-..."></div>' +
-    '</div></div>' +
-
-    // ── Section 5: Notes ───────────────────────────────────
-    '<div class="detail-section"><h4>📝 Notes</h4>' +
-    '<textarea class="form-textarea" id="pay-notes" style="min-height:60px;">' + escHtml(p ? p.notes || '' : '') + '</textarea></div>' +
-
-    '<div class="btn-row">' +
-      '<button class="btn-primary" onclick="savePayment()">💾 Save Payment</button>' +
-      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
-    '</div>';
-
-  openDrawer(p ? 'Edit Payment' : 'Log Payment', p ? (p.personName || 'Payment') : 'New Payment Log', html);
-
-  // Trigger client info display if pre-populated
-  if (currentClientVal) setTimeout(onPayClientChange, 80);
-}
-function savePayment() {
-  var clientVal = (document.getElementById('pay-client-sel') || {}).value || '';
-  if (!clientVal) { toast('Please select a client or lead', 'error'); return; }
-  var amount = parseFloat((document.getElementById('pay-amount') || {}).value) || 0;
-  if (!amount) { toast('Amount is required', 'error'); return; }
-
-  var clientInfo = resolvePayClient(clientVal);
-  var methods    = [];
-  document.querySelectorAll('.pay-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
-
-  var invRef = (document.getElementById('pay-ref')    || {}).value || '';
-  var status = (document.getElementById('pay-status') || {}).value || 'pending';
-  if (!invRef && status === 'paid') {
-    invRef = generateDocNumber('INV', window._data ? window._data.invoices || [] : []);
-  }
-
-  var data = {
-    clientRef:     clientVal,
-    personName:    clientInfo.name  || '',
-    personEmail:   clientInfo.email || '',
-    personPhone:   clientInfo.phone || '',
-    businessName:  clientInfo.biz   || '',
-    leadId:        clientInfo.leadId || '',
-    ventureId:     (document.getElementById('pay-venture')       || {}).value || clientInfo.ventureId || '',
-    serviceId:     (document.getElementById('pay-service-sel')   || {}).value || '',
-    service:       (function(){ var s=TEKNNUKU_SERVICES.find(function(x){return x.id===((document.getElementById('pay-service-sel')||{}).value||'');}); return s?s.label:''; })(),
-    proposalId:    (document.getElementById('pay-proposal-link') || {}).value || '',
-    amount:        amount,
-    status:        status,
-    paidAt:        (document.getElementById('pay-date')    || {}).value || '',
-    paymentMethods: methods,
-    paymentMethod:  methods[0] || '',
-    invoiceRef:     invRef,
-    fwRef:          (document.getElementById('pay-fw-ref') || {}).value || '',
-    notes:          (document.getElementById('pay-notes')  || {}).value || ''
-  };
-
-  var isNew = !_editingPaymentId;
-  var fn = _editingPaymentId
-    ? window._updateDoc('payments', _editingPaymentId, data)
-    : window._saveDoc('payments', data);
-
-  fn.then(function(newId) {
-    var payId = _editingPaymentId || newId;
-    toast('Payment saved ✓', 'success');
-    closeDrawer();
-    window._loadAll().then(function() {
-      var pay = (window._data.payments||[]).find(function(p){ return p.id === payId; });
-      if (pay && pay.status === 'paid') {
-        reconcilePaymentWithFinance(pay, payId);
-        if (pay.proposalId) autoAcceptProposal(pay);
-        if (pay.leadId)     autoWinLead(pay.leadId, pay);
-        if (isNew) createAndSaveInvoice(pay, payId);
-        if (isNew) createAndSaveReceipt(pay, payId);
-      }
-    });
-  }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
-}
 
 function markPaid(id) {
   var invRef = generateDocNumber('INV', window._data ? window._data.invoices || [] : []);
@@ -4393,6 +3970,429 @@ function confirmFWPayment() {
       }
     });
   });
+}
+  
+// ═══════════════════════════════════════
+// ASSIGNMENTS
+// ═══════════════════════════════════════
+function renderAssignments(assignments){
+  var tbody=document.getElementById('assignments-tbody');if(!tbody)return;
+  if(!assignments||!assignments.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🗂️</div>No assignments yet</div></td></tr>';return;}
+  tbody.innerHTML=assignments.map(function(a){return'<tr data-search="'+escHtml((a.personName||a.personEmail||'').toLowerCase())+'" data-venture="'+escHtml(a.venture||'')+'"><td><div style="font-weight:600;">'+escHtml(a.personName||'—')+'</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(a.personEmail||'')+'</div></td><td><span class="badge badge-gold">'+escHtml(a.venture||'—')+'</span></td><td>'+escHtml(a.assignedTo||'—')+'</td><td>'+statusBadge(a.status)+'</td><td>'+statusBadge(a.priority)+'</td><td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtDate(a.assignedAt||a.createdAt)+'</td><td><div class="row-actions"><button class="action-btn" onclick="openAssignmentDrawer(window._data.assignments.find(function(x){return x.id===\''+a.id+'\'}))">Edit</button><button class="action-btn danger" onclick="deleteRecord(\'assignments\',\''+a.id+'\')">Del</button></div></td></tr>';}).join('');
+}
+
+// ═══════════════════════════════════════
+// DRAWERS (shared)
+// ═══════════════════════════════════════
+function openDrawer(eyebrow,title,html){document.getElementById('drawer-eyebrow').textContent=eyebrow;document.getElementById('drawer-title').textContent=title;document.getElementById('drawer-body').innerHTML=html;document.getElementById('drawer-overlay').classList.add('open');document.getElementById('main-drawer').classList.add('open');}
+function closeDrawer(){document.getElementById('drawer-overlay').classList.remove('open');document.getElementById('main-drawer').classList.remove('open');}
+
+function openLeadDrawer(l){if(!l)return;var name=(l.firstName||'')+' '+(l.lastName||'');var r=l.responses||{};var html='<div class="detail-section"><h4>Contact Info</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(name)+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(l.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(l.phone||'—')+'</div></div><div class="detail-item"><div class="detail-label">Submitted</div><div class="detail-val">'+fmtTime(l.completedAt||l.createdAt)+'</div></div></div></div><div class="detail-section"><h4>📊 Qualification</h4><div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">'+scoreBadge(l.score)+tierBadge(l.tier)+'<span style="font-family:var(--mono);font-size:.7rem;color:var(--dim);">Route: '+escHtml(l.primaryRoute||'—')+'</span></div></div><div class="detail-section"><h4>📋 Responses</h4><div style="display:flex;flex-direction:column;gap:10px;">'+Object.entries(r).map(function(e){var v=Array.isArray(e[1])?e[1].join(', '):e[1];return'<div><div class="detail-label">'+escHtml(e[0].replace(/_/g,' '))+'</div><div class="detail-val" style="margin-top:2px;">'+escHtml(v||'—')+'</div></div>';}).join('')+'</div></div><div class="btn-row"><button class="btn-primary" onclick="quickProposal(\''+l.id+'\',\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">📄 Propose</button><button class="btn-secondary" onclick="openNewPaymentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">💰 Payment</button><button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">🗂️ Assign</button></div>';openDrawer('Intake Lead',name.trim(),html);}
+
+function openInquiryDrawer(i){if(!i)return;var sd=i.serviceDetails||{};var html='<div class="detail-section"><h4>Contact</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(i.name||'—')+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(i.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(i.phone||'—')+'</div></div><div class="detail-item"><div class="detail-label">Business</div><div class="detail-val">'+escHtml(i.businessName||'—')+'</div></div></div></div><div class="detail-section"><h4>📋 Service Details</h4><div style="margin-bottom:10px;"><span class="badge badge-cyan">'+serviceLabel(i.service)+'</span></div><div style="display:flex;flex-direction:column;gap:10px;">'+Object.entries(sd).map(function(e){return'<div><div class="detail-label">'+escHtml(e[0].replace(/_/g,' '))+'</div><div class="detail-val" style="margin-top:2px;">'+escHtml(e[1]||'—')+'</div></div>';}).join('')+'</div>'+(i.notes?'<div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:6px;font-size:.8rem;color:var(--dim);">'+escHtml(i.notes)+'</div>':'')+'</div><div class="btn-row"><button class="btn-primary" onclick="quickProposal(\''+i.id+'\',\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">📄 Propose</button><button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">🗂️ Assign</button></div>';openDrawer('Service Inquiry',escHtml(i.name||'—'),html);}
+
+function openMessageDrawer(m){if(!m)return;var html='<div class="detail-section"><h4>From</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(m.name||'—')+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(m.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Subject</div><div class="detail-val">'+escHtml(m.subject||'general')+'</div></div><div class="detail-item"><div class="detail-label">Received</div><div class="detail-val">'+fmtTime(m.sentAt||m.createdAt)+'</div></div></div></div><div class="detail-section"><h4>💬 Message</h4><div style="padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;font-size:.84rem;color:var(--white);line-height:1.7;white-space:pre-wrap;">'+escHtml(m.message||'')+'</div></div><div class="btn-row"><a href="mailto:'+escHtml(m.email||'')+'" class="btn-primary" style="display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:6px;text-decoration:none;background:var(--gold);color:#080808;font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;">✉️ Reply</a><button class="btn-secondary" onclick="quickProposal(null,\''+escHtml(m.name||'')+'\',\''+escHtml(m.email||'')+'\')">📄 Propose</button></div>';openDrawer('Contact Message',escHtml(m.name||'—'),html);}
+
+// ═══════════════════════════════════════
+// PROPOSAL, PAYMENT, ASSIGNMENT DRAWERS
+// ═══════════════════════════════════════
+var _editingProposalId = null;
+
+function openNewProposal() {
+  openProposalDrawer(null, '');
+}
+
+function quickProposal(srcId, name, email) {
+  closeDrawer();
+  setTimeout(function() {
+    openProposalDrawer(null, srcId || '');
+    showPanel('proposals', document.querySelector('[data-panel="proposals"]'));
+  }, 200);
+}
+
+function openProposalDrawer(p, prefillLeadId) {
+  _editingProposalId = p ? p.id : null;
+
+  var allLeads = window._data ? (window._data.crm_leads || []) : [];
+  var pLeadId  = p ? (p.leadId || '') : (prefillLeadId || '');
+  var selLead  = pLeadId ? allLeads.find(function(l) { return l.id === pLeadId; }) : null;
+  var selSvc   = p ? (p.service || '') : '';
+  var selTmpl  = PROPOSAL_TEMPLATES[selSvc] || {};
+
+  // Build recipient options — all CRM leads
+  var STATUS_LABELS = {new_lead:'New Lead',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won',lost:'Lost'};
+  var leadOpts = '<option value="">— Select recipient from CRM Pipeline —</option>' +
+    allLeads.map(function(l) {
+      var v   = V_MAP[l.ventureId] || {};
+      var sel = selLead && selLead.id === l.id ? ' selected' : '';
+      return '<option value="' + l.id + '"' + sel + '>' +
+        escHtml(l.name || '—') + ' — ' + escHtml(v.name || l.ventureId || '—') +
+        ' [' + (STATUS_LABELS[l.status] || l.status) + ']' +
+      '</option>';
+    }).join('');
+
+  // Duration options from template
+  var durList = selTmpl.durations || ['One-time payment', '2 instalments (50/50)', '3 milestone payments', 'Monthly retainer', 'Annual contract'];
+  var durOpts = durList.map(function(d) {
+    return '<option value="' + d + '"' + (p && p.duration === d ? ' selected' : '') + '>' + d + '</option>';
+  }).join('');
+
+  // Payment method checkboxes
+  var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
+  var methodList = [
+    ['card',         '💳 Card (Visa/Mastercard)'],
+    ['bank_transfer','🏦 Bank Transfer'],
+    ['ussd',         '📱 USSD'],
+    ['mobile_money', '📲 Mobile Money'],
+    ['crypto',       '₿ Crypto (USDT/ETH)']
+  ];
+
+  var leadInfoDisplay = selLead ? '' : 'display:none;';
+  var selV = selLead ? (V_MAP[selLead.ventureId] || {}) : {};
+
+  var html =
+
+    // ════ SECTION 1: Recipient ═══════════════════════════════
+    '<div class="detail-section"><h4>👤 Recipient (from CRM Pipeline)</h4>' +
+    '<div class="form-field" style="margin-bottom:10px;">' +
+      '<div class="form-label">Select Lead *</div>' +
+      '<select class="form-select" id="prop-lead" onchange="onProposalLeadChange()">' + leadOpts + '</select>' +
+    '</div>' +
+    '<div id="prop-lead-info" style="' + leadInfoDisplay + '">' +
+      '<div style="background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.15);border-radius:7px;padding:12px 14px;">' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">' +
+          '<div><div class="form-label">Name</div><div id="prop-li-name" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.name || '' : '') + '</div></div>' +
+          '<div><div class="form-label">Email</div><div id="prop-li-email" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.email || '' : '') + '</div></div>' +
+          '<div><div class="form-label">Phone</div><div id="prop-li-phone" style="font-size:.8rem;color:var(--white);">' + escHtml(selLead ? selLead.phone || '' : '') + '</div></div>' +
+          '<div><div class="form-label">Venture</div><div id="prop-li-venture" style="font-size:.8rem;color:var(--gold);">' + escHtml(selV.name || (selLead ? selLead.ventureId : '') || '') + '</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div></div>' +
+
+    // ════ SECTION 2: Proposal Details ════════════════════════
+    '<div class="detail-section"><h4>📋 Proposal Content</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field">' +
+        '<div class="form-label">Service / Package *</div>' +
+        '<select class="form-select" id="prop-service" onchange="onProposalServiceChange()">' +
+          '<option value="">Select service…</option>' +
+          ['brand_launch','sales_system','systemization','platform_dev','web3_dev','gata_onboard','venture_build','enterprise_sw'].map(function(s) {
+            return '<option value="' + s + '"' + (selSvc === s ? ' selected' : '') + '>' + serviceLabel(s) + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field">' +
+        '<div class="form-label">Proposal Title</div>' +
+        '<input class="form-input" id="prop-title" value="' + escHtml(p ? p.title || '' : selTmpl.defaultTitle || '') + '" placeholder="e.g. Brand Launch Package">' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
+      '<div class="form-label">Proposal Body</div>' +
+      '<button onclick="autoFillProposalBody()" style="background:rgba(200,155,20,.1);border:1px solid rgba(200,155,20,.25);color:var(--gold);border-radius:5px;padding:4px 12px;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;cursor:pointer;">↺ Auto-Fill from Template</button>' +
+    '</div>' +
+    '<textarea class="form-textarea" id="prop-body" style="min-height:240px;font-family:var(--mono);font-size:.72rem;line-height:1.75;">' + escHtml(p ? p.body || '' : (selTmpl.body || '')) + '</textarea>' +
+    '</div>' +
+
+    // ════ SECTION 3: Financial Terms ═════════════════════════
+    '<div class="detail-section"><h4>💰 Financial Terms</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field">' +
+        '<div class="form-label">Total Amount (₦) *</div>' +
+        '<input class="form-input" id="prop-amount" type="number" min="0" value="' + (p ? p.amount || (selTmpl.defaultAmount || '') : (selTmpl.defaultAmount || '')) + '" oninput="updateInstalmentsBreakdown()">' +
+      '</div>' +
+      '<div class="form-field">' +
+        '<div class="form-label">Payment Structure</div>' +
+        '<select class="form-select" id="prop-duration" onchange="updateInstalmentsBreakdown()">' + durOpts + '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div id="prop-instal-breakdown" style="display:none;background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:6px;padding:10px 14px;margin-bottom:10px;font-size:.8rem;"></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Contract Duration (for retainers)</div><input class="form-input" id="prop-contract-dur" value="' + escHtml(p ? p.contractDuration || '' : '') + '" placeholder="e.g. 3 months · Ongoing"></div>' +
+      '<div class="form-field"><div class="form-label">Proposal Valid Until</div><input class="form-input" id="prop-valid" type="date" value="' + escHtml(p ? p.validUntil || '' : new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]) + '"></div>' +
+    '</div>' +
+    '<div class="form-field"><div class="form-label" style="margin-bottom:8px;">Accepted Payment Methods</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+        methodList.map(function(m) {
+          var checked = storedMethods.indexOf(m[0]) !== -1 ? ' checked' : '';
+          return '<label style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:8px 13px;cursor:pointer;font-size:.8rem;color:var(--dim);">' +
+            '<input type="checkbox" class="prop-method-cb" value="' + m[0] + '"' + checked + ' style="accent-color:var(--gold);width:14px;height:14px;">' +
+            m[1] + '</label>';
+        }).join('') +
+      '</div>' +
+    '</div></div>' +
+
+    // ════ SECTION 4: Payment Details ═════════════════════════
+    '<div class="detail-section"><h4>🔗 Payment Details</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Bank Name</div><input class="form-input" id="prop-bank-name" value="' + escHtml(p ? p.bankName || FW_CONFIG.bankName : FW_CONFIG.bankName) + '" placeholder="e.g. First Bank Nigeria"></div>' +
+      '<div class="form-field"><div class="form-label">Account Number</div><input class="form-input" id="prop-bank-acct" value="' + escHtml(p ? p.bankAccountNumber || FW_CONFIG.accountNumber : FW_CONFIG.accountNumber) + '" placeholder="0123456789"></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Account Name</div><input class="form-input" id="prop-bank-accname" value="' + escHtml(p ? p.bankAccountName || FW_CONFIG.accountName : FW_CONFIG.accountName) + '" placeholder="TEKNNUKU STUDIO LTD"></div>' +
+      '<div class="form-field"><div class="form-label">Flutterwave Payment Link (paste from FW dashboard)</div><input class="form-input" id="prop-fw-link" value="' + escHtml(p ? p.paymentLink || '' : '') + '" placeholder="https://flutterwave.com/pay/..."></div>' +
+    '</div>' +
+    '<div class="form-field"><div class="form-label">Payment Instructions (shown in proposal)</div><textarea class="form-textarea" id="prop-pay-notes" style="min-height:56px;">' + escHtml(p ? p.paymentNotes || '' : 'Please include your full name and invoice number as payment reference. Send payment receipt to ' + FW_CONFIG.companyEmail + '.') + '</textarea></div>' +
+    '</div>' +
+
+    // ════ SECTION 5: Status ═══════════════════════════════════
+    '<div class="detail-section"><h4>📌 Status</h4>' +
+    '<div style="max-width:200px;">' +
+      '<select class="form-select" id="prop-status">' +
+        ['draft','sent','accepted','declined'].map(function(s) {
+          var sel = (p && p.status === s) ? ' selected' : (!p && s === 'draft' ? ' selected' : '');
+          return '<option value="' + s + '"' + sel + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>';
+        }).join('') +
+      '</select>' +
+    '</div></div>' +
+
+    // ════ Action buttons ══════════════════════════════════════
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveProposal()">💾 Save Proposal</button>' +
+      '<button class="btn-secondary" style="border-color:rgba(200,155,20,.3);color:var(--gold);" onclick="saveAndSendProposalEmail()">✉ Save & Send Email</button>' +
+      '<button class="btn-secondary" style="border-color:rgba(34,197,94,.3);color:var(--green);" onclick="saveAndSendProposalWhatsApp()">💬 Save & Send WhatsApp</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+
+  openDrawer(p ? 'Edit Proposal' : 'New Proposal', p ? (p.title || 'Proposal') : 'Create Proposal', html);
+  setTimeout(updateInstalmentsBreakdown, 120);
+}
+
+function saveProposal() {
+  var leadId = (document.getElementById('prop-lead') || {}).value || '';
+  if (!leadId) { toast('Please select a recipient from the CRM Pipeline', 'error'); return; }
+  var title  = (document.getElementById('prop-title') || {}).value || '';
+  var amount = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
+  if (!title)  { toast('Proposal title is required', 'error'); return; }
+  if (!amount) { toast('Amount is required', 'error'); return; }
+
+  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  var methods = [];
+  document.querySelectorAll('.prop-method-cb').forEach(function(cb) {
+    if (cb.checked) methods.push(cb.value);
+  });
+
+  var data = {
+    leadId:            leadId,
+    personName:        lead ? lead.name || '' : '',
+    personEmail:       lead ? lead.email || '' : '',
+    personPhone:       lead ? lead.phone || '' : '',
+    ventureId:         lead ? lead.ventureId || '' : '',
+    title:             title,
+    service:           (document.getElementById('prop-service')       || {}).value || '',
+    amount:            amount,
+    duration:          (document.getElementById('prop-duration')       || {}).value || '',
+    contractDuration:  (document.getElementById('prop-contract-dur')   || {}).value || '',
+    validUntil:        (document.getElementById('prop-valid')          || {}).value || '',
+    body:              (document.getElementById('prop-body')           || {}).value || '',
+    paymentMethods:    methods,
+    bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
+    bankAccountNumber: (document.getElementById('prop-bank-acct')      || {}).value || '',
+    bankAccountName:   (document.getElementById('prop-bank-accname')   || {}).value || '',
+    paymentLink:       (document.getElementById('prop-fw-link')        || {}).value || '',
+    paymentNotes:      (document.getElementById('prop-pay-notes')      || {}).value || '',
+    status:            (document.getElementById('prop-status')         || {}).value || 'draft',
+    sentAt:            new Date().toISOString()
+  };
+
+  var fn = _editingProposalId
+    ? window._updateDoc('proposals', _editingProposalId, data)
+    : window._saveDoc('proposals', data);
+
+  fn.then(function() {
+    toast('Proposal saved ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
+}
+function savePayment(){
+  var data={
+    personName:document.getElementById('pay-name').value.trim(),
+    personEmail:document.getElementById('pay-email').value.trim(),
+    service:document.getElementById('pay-service').value.trim(),
+    amount:parseFloat(document.getElementById('pay-amount').value)||0,
+    status:document.getElementById('pay-status').value,
+    paidAt:document.getElementById('pay-date').value,
+    invoiceRef:document.getElementById('pay-ref').value.trim(),
+    paymentMethod:document.getElementById('pay-method').value,
+    leadId:(document.getElementById('pay-lead')||{}).value||''
+  };
+  if(!data.personName){toast('Client name required','error');return;}
+  var fn=_editingPaymentId?window._updateDoc('payments',_editingPaymentId,data):window._saveDoc('payments',data);
+  fn.then(function(){
+    toast('Payment saved ✓','success');
+    closeDrawer();
+    window._loadAll().then(function(){
+      if(data.leadId && data.status==='paid'){
+        var lead=(window._data.crm_leads||[]).find(function(l){return l.id===data.leadId;});
+        if(lead && lead.status==='proposal') autoWinLead(data.leadId, Object.assign({id:_editingPaymentId||''},data));
+      }
+    });
+  }).catch(function(e){toast('Save failed: '+(e.message||e),'error');});
+}
+
+var _editingPaymentId=null;
+function openNewPayment() { openPaymentDrawer(null, '', ''); }
+function openNewPaymentFor(name, email, leadId) {
+  closeDrawer();
+  setTimeout(function() {
+    openPaymentDrawer(null, name, email, leadId);
+    showPanel('payments', document.querySelector('[data-panel="payments"]'));
+  }, 200);
+}
+function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
+  _editingPaymentId = p ? p.id : null;
+  var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
+  var currentClientVal = '';
+  if (p && p.clientRef) currentClientVal = p.clientRef;
+  else if (prefillLeadId) currentClientVal = 'crm|' + prefillLeadId;
+
+  var clientOpts   = buildClientOptions(currentClientVal);
+  var serviceOpts  = buildServiceOptions(p ? p.serviceId || '' : '');
+  var methodList   = [
+    ['card',         '💳 Card'],
+    ['bank_transfer','🏦 Bank Transfer'],
+    ['ussd',         '📱 USSD'],
+    ['cash',         '💵 Cash'],
+    ['crypto',       '₿ Crypto']
+  ];
+
+  var proposalOpts = '<option value="">— Not linked to a proposal —</option>';
+  if (p && p.proposalId) {
+    var lProp = window._data ? (window._data.proposals||[]).find(function(pr){ return pr.id === p.proposalId; }) : null;
+    if (lProp) proposalOpts = '<option value="' + lProp.id + '" selected>' + escHtml(lProp.title||'Untitled') + ' · ₦' + Number(lProp.amount||0).toLocaleString() + '</option>';
+  }
+
+  var clientInfo = p ? resolvePayClient(p.clientRef || '') : {};
+
+  var html =
+    // ── Section 1: Client ──────────────────────────────────
+    '<div class="detail-section"><h4>👤 Client / Lead</h4>' +
+    '<div class="form-field" style="margin-bottom:8px;"><div class="form-label">Select Client *</div>' +
+      '<select class="form-select" id="pay-client-sel" onchange="onPayClientChange()">' + clientOpts + '</select>' +
+    '</div>' +
+    '<div id="pay-cinfo" style="' + (currentClientVal ? '' : 'display:none;') + '">' +
+      '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">' +
+        '<div><div class="form-label">Name</div><div id="pay-ci-name" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.name||'') + '</div></div>' +
+        '<div><div class="form-label">Email</div><div id="pay-ci-email" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.email||'') + '</div></div>' +
+        '<div><div class="form-label">Phone</div><div id="pay-ci-phone" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.phone||'') + '</div></div>' +
+        '<div><div class="form-label">Business</div><div id="pay-ci-biz" style="font-size:.8rem;color:var(--white);">' + escHtml(clientInfo.biz||'') + '</div></div>' +
+      '</div>' +
+    '</div></div>' +
+
+    // ── Section 2: Service & Venture ───────────────────────
+    '<div class="detail-section"><h4>📦 Service & Venture</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Service / Package *</div>' +
+        '<select class="form-select" id="pay-service-sel" onchange="onPayServiceChange()">' + serviceOpts + '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Venture Receiving Payment</div>' +
+        '<select class="form-select" id="pay-venture"><option value="">Select…</option>' +
+          VENTURES_SEED.map(function(v){ return '<option value="' + v.id + '"' + (p && p.ventureId===v.id?' selected':'') + '>' + v.name + '</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-field"><div class="form-label">Linked Proposal (optional)</div>' +
+      '<select class="form-select" id="pay-proposal-link" onchange="onPayProposalChange()">' + proposalOpts + '</select>' +
+    '</div></div>' +
+
+    // ── Section 3: Financial ───────────────────────────────
+    '<div class="detail-section"><h4>💰 Financial Details</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="pay-amount" type="number" min="0" value="' + (p ? p.amount || '' : '') + '"></div>' +
+      '<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="pay-status">' +
+        ['pending','partial','paid','overdue'].map(function(s){ return '<option value="' + s + '"' + (p && p.status===s?' selected':(!p&&s==='pending'?' selected':'')) + '>' + s + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="form-field"><div class="form-label">Payment Date</div><input class="form-input" id="pay-date" type="date" value="' + escHtml(p ? p.paidAt || '' : '') + '"></div>' +
+    '</div>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label" style="margin-bottom:7px;">Payment Method</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:7px;">' +
+        methodList.map(function(m) {
+          var chk = storedMethods.indexOf(m[0]) !== -1 ? ' checked' : '';
+          return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:5px;padding:7px 12px;cursor:pointer;font-size:.78rem;color:var(--dim);">' +
+            '<input type="checkbox" class="pay-method-cb" value="' + m[0] + '"' + chk + ' style="accent-color:var(--gold);width:13px;height:13px;">' + m[1] + '</label>';
+        }).join('') +
+      '</div>' +
+    '</div>' +
+    '</div>' +
+
+    // ── Section 4: References ──────────────────────────────
+    '<div class="detail-section"><h4>🔖 References</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-field"><div class="form-label">Invoice Ref (auto-generated on save)</div><input class="form-input" id="pay-ref" value="' + escHtml(p ? p.invoiceRef || '' : '') + '" placeholder="INV-2026-0001 (auto)"></div>' +
+      '<div class="form-field"><div class="form-label">Flutterwave Transaction ID (if applicable)</div><input class="form-input" id="pay-fw-ref" value="' + escHtml(p ? p.fwRef || '' : '') + '" placeholder="FLW-TX-..."></div>' +
+    '</div></div>' +
+
+    // ── Section 5: Notes ───────────────────────────────────
+    '<div class="detail-section"><h4>📝 Notes</h4>' +
+    '<textarea class="form-textarea" id="pay-notes" style="min-height:60px;">' + escHtml(p ? p.notes || '' : '') + '</textarea></div>' +
+
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="savePayment()">💾 Save Payment</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+
+  openDrawer(p ? 'Edit Payment' : 'Log Payment', p ? (p.personName || 'Payment') : 'New Payment Log', html);
+
+  // Trigger client info display if pre-populated
+  if (currentClientVal) setTimeout(onPayClientChange, 80);
+}
+function savePayment() {
+  var clientVal = (document.getElementById('pay-client-sel') || {}).value || '';
+  if (!clientVal) { toast('Please select a client or lead', 'error'); return; }
+  var amount = parseFloat((document.getElementById('pay-amount') || {}).value) || 0;
+  if (!amount) { toast('Amount is required', 'error'); return; }
+
+  var clientInfo = resolvePayClient(clientVal);
+  var methods    = [];
+  document.querySelectorAll('.pay-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
+
+  var invRef = (document.getElementById('pay-ref')    || {}).value || '';
+  var status = (document.getElementById('pay-status') || {}).value || 'pending';
+  if (!invRef && status === 'paid') {
+    invRef = generateDocNumber('INV', window._data ? window._data.invoices || [] : []);
+  }
+
+  var data = {
+    clientRef:     clientVal,
+    personName:    clientInfo.name  || '',
+    personEmail:   clientInfo.email || '',
+    personPhone:   clientInfo.phone || '',
+    businessName:  clientInfo.biz   || '',
+    leadId:        clientInfo.leadId || '',
+    ventureId:     (document.getElementById('pay-venture')       || {}).value || clientInfo.ventureId || '',
+    serviceId:     (document.getElementById('pay-service-sel')   || {}).value || '',
+    service:       (function(){ var s=TEKNNUKU_SERVICES.find(function(x){return x.id===((document.getElementById('pay-service-sel')||{}).value||'');}); return s?s.label:''; })(),
+    proposalId:    (document.getElementById('pay-proposal-link') || {}).value || '',
+    amount:        amount,
+    status:        status,
+    paidAt:        (document.getElementById('pay-date')    || {}).value || '',
+    paymentMethods: methods,
+    paymentMethod:  methods[0] || '',
+    invoiceRef:     invRef,
+    fwRef:          (document.getElementById('pay-fw-ref') || {}).value || '',
+    notes:          (document.getElementById('pay-notes')  || {}).value || ''
+  };
+
+  var isNew = !_editingPaymentId;
+  var fn = _editingPaymentId
+    ? window._updateDoc('payments', _editingPaymentId, data)
+    : window._saveDoc('payments', data);
+
+  fn.then(function(newId) {
+    var payId = _editingPaymentId || newId;
+    toast('Payment saved ✓', 'success');
+    closeDrawer();
+    window._loadAll().then(function() {
+      var pay = (window._data.payments||[]).find(function(p){ return p.id === payId; });
+      if (pay && pay.status === 'paid') {
+        reconcilePaymentWithFinance(pay, payId);
+        if (pay.proposalId) autoAcceptProposal(pay);
+        if (pay.leadId)     autoWinLead(pay.leadId, pay);
+        if (isNew) createAndSaveInvoice(pay, payId);
+        if (isNew) createAndSaveReceipt(pay, payId);
+      }
+    });
+  }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
   
 var _editingAssignmentId=null;
