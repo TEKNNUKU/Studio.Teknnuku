@@ -2155,19 +2155,58 @@ function _panelTasks() {
 function _panelClients() {
   return '<div class="panel" id="panel-clients">' +
     '<div class="eyebrow">Onboarding & Retention</div>' +
-    '<div class="panel-header"><div class="panel-title">Clients</div>' +
-    '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddClient()">+ Add Client</button>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Clients</div>' +
+      '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--borderS);border-radius:5px;">Clients are added automatically when a CRM lead is moved to Won ✅</div>' +
     '</div>' +
-    '<div class="kpi-grid" style="margin-bottom:20px;">' +
-      '<div class="kpi-card teal" style="--teal:#00BCD4;"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="cl-kpi-active">—</div><div class="kpi-meta">on platform</div></div>' +
-      '<div class="kpi-card amber"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending Onboarding</div><div class="kpi-value" id="cl-kpi-pending">—</div><div class="kpi-meta">need setup</div></div>' +
-      '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Monthly MRR</div><div class="kpi-value" id="cl-kpi-mrr">—</div><div class="kpi-meta">recurring</div></div>' +
+
+    // ── KPIs ────────────────────────────────────────────────
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));margin-bottom:16px;">' +
+      '<div class="kpi-card cyan"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="cl-kpi-active">—</div><div class="kpi-meta">status: active</div></div>' +
+      '<div class="kpi-card amber"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending Onboarding</div><div class="kpi-value" id="cl-kpi-pending">—</div><div class="kpi-meta">not yet started</div></div>' +
+      '<div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-label">Fully Onboarded</div><div class="kpi-value" id="cl-kpi-onboarded">—</div><div class="kpi-meta">setup complete</div></div>' +
+      '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Total MRR / Value</div><div class="kpi-value" id="cl-kpi-mrr">—</div><div class="kpi-meta">from paid contracts</div></div>' +
     '</div>' +
-    '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">clients</div>' +
-      '<input class="tbl-search" placeholder="Search client…" oninput="filterTable(\'clients-tbody\',this.value)">' +
-      '<select class="tbl-filter" onchange="filterClientsByStatus(this.value)"><option value="">All Status</option><option value="active">Active</option><option value="pending">Pending</option><option value="churned">Churned</option></select>' +
-    '</div><div class="table-scroll"><table><thead><tr><th>Client</th><th>Venture</th><th>Package</th><th>Onboarding</th><th>Payment</th><th>MRR</th><th>CS Manager</th><th>Actions</th></tr></thead>' +
-    '<tbody id="clients-tbody"><tr><td colspan="8" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div>' +
+
+    // ── Filters ──────────────────────────────────────────────
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">' +
+      '<input class="tbl-search" id="cl-f-search" style="width:200px;" placeholder="Search client name, email, business…" oninput="applyClientFilters()">' +
+      '<select class="tbl-filter" id="cl-f-payment" onchange="applyClientFilters()">' +
+        '<option value="">All Payment Status</option>' +
+        '<option value="paid">Paid</option>' +
+        '<option value="pending">Pending</option>' +
+        '<option value="partial">Partial</option>' +
+        '<option value="overdue">Overdue</option>' +
+      '</select>' +
+      '<select class="tbl-filter" id="cl-f-onboarding" onchange="applyClientFilters()">' +
+        '<option value="">All Onboarding Status</option>' +
+        '<option value="pending">Pending</option>' +
+        '<option value="in_progress">In Progress</option>' +
+        '<option value="complete">Complete</option>' +
+      '</select>' +
+      '<select class="tbl-filter" id="cl-f-venture" onchange="applyClientFilters()">' +
+        '<option value="">All Ventures</option>' +
+        VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+      '</select>' +
+      '<select class="tbl-filter" id="cl-f-status" onchange="applyClientFilters()">' +
+        '<option value="">All Status</option>' +
+        '<option value="active">Active</option>' +
+        '<option value="churned">Churned</option>' +
+        '<option value="paused">Paused</option>' +
+      '</select>' +
+    '</div>' +
+
+    // ── Table ────────────────────────────────────────────────
+    '<div class="table-wrap"><div class="table-toolbar">' +
+      '<div class="table-toolbar-title">clients</div>' +
+      '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);" id="cl-count-label">—</div>' +
+    '</div>' +
+    '<div class="table-scroll"><table><thead><tr>' +
+      '<th>Client</th><th>Package / Service</th><th>Venture</th><th>Contract Value</th>' +
+      '<th>Payment</th><th>Onboarding</th><th>CS Manager</th><th>Won</th><th>Actions</th>' +
+    '</tr></thead>' +
+    '<tbody id="clients-tbody"><tr><td colspan="9" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
+    '</table></div></div>' +
   '</div>';
 }
 
@@ -2407,7 +2446,7 @@ window._renderAll = function(){
   if(!_crmSynced){_crmSynced=true;syncLeadsToCRM();}
   if(canAccess('ventures'))renderVentures(d.ventures||[],d.tasks||[],d.crm_leads||[],d.clients||[],d.financials||[]);
   if(canAccess('tasks'))renderTasks(d.tasks||[],d.team_members||[]);
-  if(canAccess('clients'))renderClients(d.clients||[],d.team_members||[]);
+  if(canAccess('clients')){renderClients(d.clients||[],d.team_members||[]);}
   if(canAccess('finance'))renderFinance(d.financials||[],d.clients||[]);
   if(canAccess('reports'))renderReports(d.daily_reports||[]);
 };
