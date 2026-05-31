@@ -2291,8 +2291,7 @@ function toggleVenturePL() {
 
 function _panelFinance() {
   var canAdd = window._userRole==='founder'||window._userRole==='ops_lead'||window._userRole==='admin_finance_officer'||canAccess('settings');
-  var METHODS = ['bank_transfer','card','cash','ussd','mobile_money','crypto','flutterwave','paystack'];
-
+  
   return '<div class="panel" id="panel-finance">' +
 
     // ── STICKY STATS BAR ─────────────────────────────────────
@@ -3377,26 +3376,29 @@ function saveAndSendProposalEmail() {
   var amount = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
   if (!title || !amount) { toast('Title and amount are required', 'error'); return; }
 
-  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  var lead    = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
   var methods = [];
   document.querySelectorAll('.prop-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
-
-  var data = buildProposalData(leadId, lead, title, amount, methods);
+  var data    = buildProposalData(leadId, lead, title, amount, methods);
   data.status = 'sent';
 
-  var fn = _editingProposalId
-    ? window._updateDoc('proposals', _editingProposalId, data)
+  // Capture editing ID before it's cleared
+  var capturedEditId = _editingProposalId;
+  var fn = capturedEditId
+    ? window._updateDoc('proposals', capturedEditId, data)
     : window._saveDoc('proposals', data);
 
   fn.then(function(newId) {
+    _editingProposalId = null;
     closeDrawer();
     window._loadAll().then(function() {
-      var pid = _editingProposalId || newId;
-      var saved = (window._data.proposals || []).find(function(p) { return p.id === pid || (p.leadId === leadId && p.title === title); });
+      var pid   = capturedEditId || newId;
+      var saved = (window._data.proposals || []).find(function(p) {
+        return p.id === pid || (p.leadId === leadId && p.title === title);
+      });
       if (saved) sendProposalEmail(saved.id);
     });
-    _editingProposalId = null;
-  });
+  }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
 
 function saveAndSendProposalWhatsApp() {
@@ -3406,28 +3408,29 @@ function saveAndSendProposalWhatsApp() {
   var amount = parseFloat((document.getElementById('prop-amount') || {}).value) || 0;
   if (!title || !amount) { toast('Title and amount are required', 'error'); return; }
 
-  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  var lead    = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
   var methods = [];
   document.querySelectorAll('.prop-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
-
-  var data = buildProposalData(leadId, lead, title, amount, methods);
+  var data    = buildProposalData(leadId, lead, title, amount, methods);
   data.status = 'sent';
 
-  var fn = _editingProposalId
-    ? window._updateDoc('proposals', _editingProposalId, data)
+  var capturedEditId = _editingProposalId;
+  var fn = capturedEditId
+    ? window._updateDoc('proposals', capturedEditId, data)
     : window._saveDoc('proposals', data);
 
   fn.then(function(newId) {
+    _editingProposalId = null;
     closeDrawer();
     window._loadAll().then(function() {
-      var pid = _editingProposalId || newId;
-      var saved = (window._data.proposals || []).find(function(p) { return p.id === pid || (p.leadId === leadId && p.title === title); });
+      var pid   = capturedEditId || newId;
+      var saved = (window._data.proposals || []).find(function(p) {
+        return p.id === pid || (p.leadId === leadId && p.title === title);
+      });
       if (saved) sendProposalWhatsApp(saved.id);
     });
-    _editingProposalId = null;
-  });
+  }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
-
 // ── Shared data builder ───────────────────────────────────────
 function buildProposalData(leadId, lead, title, amount, methods) {
   return {
@@ -5743,94 +5746,109 @@ function openTransactionDrawer(f) {
   _editingTxId = f ? f.id : null;
   var type   = f ? f.type || 'income' : 'income';
   var today  = new Date().toISOString().split('T')[0];
-  var METHODS= ['bank_transfer','card','cash','ussd','mobile_money','crypto','flutterwave','paystack'];
+  var METHODS = ['bank_transfer','card','cash','ussd','mobile_money','crypto','flutterwave','paystack'];
 
   var html =
 
-    // ── Auto badge ───────────────────────────────────────────
-    (f && (f.autoCreated||f.paymentId) ?
-      '<div style="background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.2);border-radius:6px;padding:9px 13px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);">⚡ Auto-reconciled from verified payment — editing live finance data</div>' : '') +
+    (f && (f.autoCreated || f.paymentId)
+      ? '<div style="background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.2);border-radius:6px;padding:9px 13px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);">⚡ Auto-reconciled from verified payment — editing live finance data</div>'
+      : '') +
 
-    // ── Section 1: Core details ──────────────────────────────
     '<div class="detail-section"><h4>📋 Transaction Details</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Type *</div>' +
         '<select class="form-select" id="tx-type" onchange="onFinTypeChange()">' +
-          '<option value="income"'+(type==='income'?' selected':'')+'>Income</option>' +
-          '<option value="expense"'+(type==='expense'?' selected':'')+'>Expense</option>' +
+          '<option value="income"'  + (type==='income'  ? ' selected' : '') + '>Income</option>'  +
+          '<option value="expense"' + (type==='expense' ? ' selected' : '') + '>Expense</option>' +
         '</select>' +
       '</div>' +
       '<div class="form-field"><div class="form-label">Venture *</div>' +
         '<select class="form-select" id="tx-v"><option value="">Select…</option>' +
-          VENTURES_SEED.map(function(v){return'<option value="'+v.id+'"'+(f&&f.ventureId===v.id?' selected':'')+'>'+v.name+'</option>';}).join('') +
+          VENTURES_SEED.map(function(v) {
+            return '<option value="' + v.id + '"' + (f && f.ventureId === v.id ? ' selected' : '') + '>' + v.name + '</option>';
+          }).join('') +
         '</select>' +
       '</div>' +
     '</div>' +
+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Category *</div>' +
-        '<select class="form-select" id="tx-cat">' + buildCatOpts(type, f?f.category||'':'') + '</select>' +
+        '<select class="form-select" id="tx-cat">' + buildCatOpts(type, f ? f.category || '' : '') + '</select>' +
       '</div>' +
       '<div class="form-field"><div class="form-label">Amount (₦) *</div>' +
-        '<input class="form-input" id="tx-amt" type="number" min="0" value="'+(f?f.amount||'':'')+'" placeholder="0">' +
+        '<input class="form-input" id="tx-amt" type="number" min="0" value="' + (f ? f.amount || '' : '') + '" placeholder="0">' +
       '</div>' +
     '</div>' +
+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Date *</div>' +
-        '<input class="form-input" id="tx-date" type="date" value="'+(f?f.date||today:today)+'">' +
+        '<input class="form-input" id="tx-date" type="date" value="' + (f ? f.date || today : today) + '">' +
       '</div>' +
       '<div class="form-field"><div class="form-label">Payment Method</div>' +
         '<select class="form-select" id="tx-method"><option value="">Select…</option>' +
-          METHODS.map(function(m){return'<option value="'+m+'"'+(f&&f.paymentMethod===m?' selected':'')+'>'+m.replace(/_/g,' ')+'</option>';}).join('') +
+          METHODS.map(function(m) {
+            return '<option value="' + m + '"' + (f && f.paymentMethod === m ? ' selected' : '') + '>' + m.replace(/_/g, ' ') + '</option>';
+          }).join('') +
         '</select>' +
       '</div>' +
     '</div>' +
+
     '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Description / Title</div>' +
-      '<input class="form-input" id="tx-desc" value="'+escHtml(f?f.description||':'')+'" placeholder="Describe this transaction…">' +
+      '<input class="form-input" id="tx-desc" value="' + escHtml(f ? f.description || '' : '') + '" placeholder="Describe this transaction…">' +
     '</div>' +
+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
       '<div class="form-field"><div class="form-label">Invoice / Reference Number</div>' +
-        '<input class="form-input" id="tx-ref" value="'+escHtml(f?f.invoiceRef||'':'')+'" placeholder="INV-2026-0001">' +
+        '<input class="form-input" id="tx-ref" value="' + escHtml(f ? f.invoiceRef || '' : '') + '" placeholder="INV-2026-0001">' +
       '</div>' +
       '<div class="form-field"><div class="form-label">External Link (Drive, Dropbox…)</div>' +
-        '<input class="form-input" id="tx-link" type="url" value="'+escHtml(f?f.externalLink||'':'')+'" placeholder="https://…">' +
+        '<input class="form-input" id="tx-link" type="url" value="' + escHtml(f ? f.externalLink || '' : '') + '" placeholder="https://…">' +
       '</div>' +
     '</div></div>' +
 
-    // ── Section 2: Attachments ───────────────────────────────
     '<div class="detail-section"><h4>📎 Attachments</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
 
-      // Invoice column
       '<div style="border:1px solid rgba(200,155,20,.15);border-radius:8px;padding:14px;">' +
         '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">📄 Invoice</div>' +
-        (f&&f.invoiceFile ? '<div id="tx-inv-existing" style="font-size:.72rem;color:var(--green);margin-bottom:8px;">✅ '+escHtml(f.invoiceFileName||'File attached')+'</div>' +
-          '<input type="hidden" id="tx-inv-keep" value="1"><div style="display:none;"><input id="tx-inv-file-data" value="'+escHtml(f.invoiceFile)+'"><input id="tx-inv-file-name" value="'+escHtml(f.invoiceFileName||'')+'"></div>' : '') +
+        (f && f.invoiceFile
+          ? '<div style="font-size:.72rem;color:var(--green);margin-bottom:8px;">✅ ' + escHtml(f.invoiceFileName || 'File attached') + '</div>' +
+            '<input type="hidden" id="tx-inv-keep" value="1">' +
+            '<div style="display:none;">' +
+              '<input id="tx-inv-file-data" value="' + escHtml(f.invoiceFile) + '">' +
+              '<input id="tx-inv-file-name" value="' + escHtml(f.invoiceFileName || '') + '">' +
+            '</div>'
+          : '') +
         '<div class="form-field"><div class="form-label">Upload file (PDF/JPG, max 200KB)</div>' +
           '<input type="file" id="tx-inv-file" accept=".pdf,.jpg,.jpeg,.png" style="color:var(--dim);font-size:.75rem;width:100%;">' +
         '</div>' +
         '<div class="form-field" style="margin-top:8px;"><div class="form-label">— or — Link</div>' +
-          '<input class="form-input" id="tx-inv-url" type="url" value="'+escHtml(f?f.invoiceUrl||'':'')+'" placeholder="https://drive.google.com/…">' +
+          '<input class="form-input" id="tx-inv-url" type="url" value="' + escHtml(f ? f.invoiceUrl || '' : '') + '" placeholder="https://drive.google.com/…">' +
         '</div>' +
       '</div>' +
 
-      // Receipt column
       '<div style="border:1px solid rgba(34,197,94,.12);border-radius:8px;padding:14px;">' +
         '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px;">🧾 Receipt</div>' +
-        (f&&f.receiptFile ? '<div id="tx-rct-existing" style="font-size:.72rem;color:var(--green);margin-bottom:8px;">✅ '+escHtml(f.receiptFileName||'File attached')+'</div>' +
-          '<input type="hidden" id="tx-rct-keep" value="1"><div style="display:none;"><input id="tx-rct-file-data" value="'+escHtml(f.receiptFile)+'"><input id="tx-rct-file-name" value="'+escHtml(f.receiptFileName||'')+'"></div>' : '') +
+        (f && f.receiptFile
+          ? '<div style="font-size:.72rem;color:var(--green);margin-bottom:8px;">✅ ' + escHtml(f.receiptFileName || 'File attached') + '</div>' +
+            '<input type="hidden" id="tx-rct-keep" value="1">' +
+            '<div style="display:none;">' +
+              '<input id="tx-rct-file-data" value="' + escHtml(f.receiptFile) + '">' +
+              '<input id="tx-rct-file-name" value="' + escHtml(f.receiptFileName || '') + '">' +
+            '</div>'
+          : '') +
         '<div class="form-field"><div class="form-label">Upload file (PDF/JPG, max 200KB)</div>' +
           '<input type="file" id="tx-rct-file" accept=".pdf,.jpg,.jpeg,.png" style="color:var(--dim);font-size:.75rem;width:100%;">' +
         '</div>' +
         '<div class="form-field" style="margin-top:8px;"><div class="form-label">— or — Link</div>' +
-          '<input class="form-input" id="tx-rct-url" type="url" value="'+escHtml(f?f.receiptUrl||'':'')+'" placeholder="https://drive.google.com/…">' +
+          '<input class="form-input" id="tx-rct-url" type="url" value="' + escHtml(f ? f.receiptUrl || '' : '') + '" placeholder="https://drive.google.com/…">' +
         '</div>' +
       '</div>' +
 
     '</div></div>' +
 
-    // ── Section 3: Notes ─────────────────────────────────────
     '<div class="detail-section"><h4>📝 Notes & Details</h4>' +
-    '<textarea class="form-textarea" id="tx-notes" style="min-height:70px;">' + escHtml(f?f.notes||'':'') + '</textarea>' +
+      '<textarea class="form-textarea" id="tx-notes" style="min-height:70px;">' + escHtml(f ? f.notes || '' : '') + '</textarea>' +
     '</div>' +
 
     '<div class="btn-row">' +
@@ -5838,8 +5856,11 @@ function openTransactionDrawer(f) {
       '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
     '</div>';
 
-  openDrawer(_editingTxId ? 'Edit Transaction' : 'Record Transaction',
-             _editingTxId ? 'Update Entry' : 'New Entry', html);
+  openDrawer(
+    _editingTxId ? 'Edit Transaction'  : 'Record Transaction',
+    _editingTxId ? 'Update Entry'      : 'New Entry',
+    html
+  );
 }
 
 async function saveTransaction() {
