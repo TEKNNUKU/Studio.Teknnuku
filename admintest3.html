@@ -2210,20 +2210,159 @@ function _panelClients() {
   '</div>';
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  FINANCE SYSTEM — CONSTANTS + HELPERS
+// ═══════════════════════════════════════════════════════════════
+var INCOME_CATEGORIES = [
+  'Client Payment','Consulting Fee','Subscription Revenue','Product Sale',
+  'Platform Commission','Licensing Revenue','Referral Fee','Grant / Funding',
+  'Investment / Capital','Refund Received','Interest Income','Other Income'
+];
+var EXPENSE_CATEGORIES = [
+  'Salary / Payroll','Freelancer / Contractor','Software & Tools',
+  'Cloud / Hosting','Marketing & Ads','Office Supplies','Equipment & Hardware',
+  'Legal & Compliance','Accounting & Finance','Travel & Transport',
+  'Utilities & Internet','Insurance','Tax & Levies','R&D / Product Dev',
+  'Customer Refund','Bank Charges','Miscellaneous'
+];
+var _finFilters = { type:'', venture:'', category:'', from:'', to:'', search:'' };
+var _vplCollapsed = false;
+var _editingTxId  = null;
+
+function buildCatOpts(type, sel) {
+  var list = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  return '<option value="">Select category…</option>' +
+    list.map(function(c){return'<option value="'+c+'"'+(c===sel?' selected':'')+'>'+c+'</option>';}).join('');
+}
+
+function onFinTypeChange() {
+  var type = (document.getElementById('tx-type')||{}).value||'income';
+  var el   = document.getElementById('tx-cat');
+  if (el) el.innerHTML = buildCatOpts(type, '');
+}
+
+async function readFileAsBase64(file) {
+  return new Promise(function(resolve, reject) {
+    if (file.size > 204800) { resolve({ tooBig:true, name:file.name }); return; }
+    var r = new FileReader();
+    r.onload  = function() { resolve({ data:r.result, name:file.name }); };
+    r.onerror = function() { reject(new Error('File read failed')); };
+    r.readAsDataURL(file);
+  });
+}
+
+function applyFinDateQuick(val) {
+  if (!val) return;
+  var now = new Date(), fmt = function(d){return d.toISOString().split('T')[0];};
+  var from = '', to = fmt(now);
+  if (val==='today')     { from = to; }
+  else if (val==='week') { var m=new Date(now);m.setDate(now.getDate()-(now.getDay()===0?6:now.getDay()-1));from=fmt(m); }
+  else if (val==='month')     { from = fmt(new Date(now.getFullYear(),now.getMonth(),1)); }
+  else if (val==='lastmonth') { from=fmt(new Date(now.getFullYear(),now.getMonth()-1,1));to=fmt(new Date(now.getFullYear(),now.getMonth(),0)); }
+  else if (val==='3months')   { var d=new Date(now);d.setMonth(d.getMonth()-3);from=fmt(d); }
+  else if (val==='year')      { from=fmt(new Date(now.getFullYear(),0,1)); }
+  var fEl=document.getElementById('fin-f-from'), tEl=document.getElementById('fin-f-to');
+  if (fEl) fEl.value=from; if (tEl) tEl.value=to;
+  applyFinFilters();
+}
+
+function applyFinFilters() {
+  _finFilters.type     = (document.getElementById('fin-f-type')    ||{}).value||'';
+  _finFilters.venture  = (document.getElementById('fin-f-venture') ||{}).value||'';
+  _finFilters.category = (document.getElementById('fin-f-cat')     ||{}).value||'';
+  _finFilters.from     = (document.getElementById('fin-f-from')    ||{}).value||'';
+  _finFilters.to       = (document.getElementById('fin-f-to')      ||{}).value||'';
+  _finFilters.search   = ((document.getElementById('fin-f-search') ||{}).value||'').toLowerCase().trim();
+  renderFinance(window._data?window._data.financials||[]:[], window._data?window._data.clients||[]:[]);
+}
+
+function filterTransactions(type) {
+  var el = document.getElementById('fin-f-type'); if (el) el.value = type;
+  applyFinFilters();
+}
+
+function toggleVenturePL() {
+  _vplCollapsed = !_vplCollapsed;
+  var el  = document.getElementById('fin-venture-pl');
+  var btn = document.getElementById('vpl-toggle');
+  if (el)  el.style.display  = _vplCollapsed ? 'none' : '';
+  if (btn) btn.textContent   = _vplCollapsed ? '▼ Expand' : '▲ Collapse';
+}
+
 function _panelFinance() {
+  var canAdd = window._userRole==='founder'||window._userRole==='ops_lead'||window._userRole==='admin_finance_officer'||canAccess('settings');
+  var METHODS = ['bank_transfer','card','cash','ussd','mobile_money','crypto','flutterwave','paystack'];
+
   return '<div class="panel" id="panel-finance">' +
-    '<div class="eyebrow">P&L Intelligence</div>' +
-    '<div class="panel-header"><div class="panel-title">Finance</div>' +
-    (canAccess('settings') || window._userRole === 'founder' || window._userRole === 'ops_lead' ? '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddTransaction()">+ Record Transaction</button>' : '') +
+
+    // ── STICKY STATS BAR ─────────────────────────────────────
+    '<div style="position:sticky;top:0;z-index:10;background:var(--bg);padding-bottom:14px;margin-bottom:4px;border-bottom:1px solid var(--border);">' +
+      '<div class="eyebrow" style="margin-bottom:10px;">P&amp;L Intelligence</div>' +
+      '<div class="panel-header" style="margin-bottom:12px;">' +
+        '<div class="panel-title">Finance</div>' +
+        '<div style="display:flex;gap:8px;">' +
+          (canAdd ? '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddTransaction()">+ Record Transaction</button>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">' +
+        '<div class="kpi-card gold" style="margin-bottom:0;"><div class="kpi-icon">📈</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="fin-stat-rev">—</div><div class="kpi-meta" id="fin-stat-rev-meta">all income</div></div>' +
+        '<div class="kpi-card red"  style="margin-bottom:0;"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="fin-stat-exp">—</div><div class="kpi-meta" id="fin-stat-exp-meta">all outgoings</div></div>' +
+        '<div class="kpi-card green" id="fin-profit-card" style="margin-bottom:0;"><div class="kpi-icon">💰</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="fin-stat-profit">—</div><div class="kpi-meta" id="fin-stat-margin">net margin</div></div>' +
+        '<div class="kpi-card amber" style="margin-bottom:0;"><div class="kpi-icon">⚠️</div><div class="kpi-label">Outstanding / Liability</div><div class="kpi-value" id="fin-stat-liability">—</div><div class="kpi-meta" id="fin-stat-liability-meta">uncollected</div></div>' +
+      '</div>' +
     '</div>' +
-    '<div class="fin-summary-grid" id="fin-summary"><div class="loading-row"><div class="spinner"></div></div></div>' +
-    '<div class="two-col">' +
-      '<div id="fin-venture-pl"><div class="loading-row"><div class="spinner"></div></div></div>' +
-      '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Transactions</div>' +
-        '<select class="tbl-filter" onchange="filterTransactions(this.value)"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>' +
-      '</div><div class="table-scroll"><table><thead><tr><th>Date</th><th>Venture</th><th>Type</th><th>Category</th><th>Amount</th><th>Actions</th></tr></thead>' +
-      '<tbody id="finance-tbody"><tr><td colspan="6" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div>' +
+
+    // ── FILTER BAR ────────────────────────────────────────────
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">' +
+        '<select class="tbl-filter" style="min-width:120px;" onchange="applyFinDateQuick(this.value);this.value=\'\'">'+
+          '<option value="">Quick date…</option>' +
+          '<option value="today">Today</option><option value="week">This Week</option>' +
+          '<option value="month">This Month</option><option value="lastmonth">Last Month</option>' +
+          '<option value="3months">Last 3 Months</option><option value="year">This Year</option>' +
+        '</select>' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
+        '<input type="date" class="tbl-filter" id="fin-f-from" style="min-width:130px;" onchange="applyFinFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+        '<input type="date" class="tbl-filter" id="fin-f-to"   style="min-width:130px;" onchange="applyFinFilters()">' +
+        '<button onclick="document.getElementById(\'fin-f-from\').value=\'\';document.getElementById(\'fin-f-to\').value=\'\';applyFinFilters();" '+
+          'style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+        '<select class="tbl-filter" id="fin-f-type" onchange="applyFinFilters()"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>' +
+        '<select class="tbl-filter" id="fin-f-venture" onchange="applyFinFilters()"><option value="">All Ventures</option>' +
+          VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+        '</select>' +
+        '<select class="tbl-filter" id="fin-f-cat" onchange="applyFinFilters()">' +
+          '<option value="">All Categories</option>' +
+          '<optgroup label="── Income ──">' + INCOME_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
+          '<optgroup label="── Expense ──">' + EXPENSE_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
+        '</select>' +
+        '<input class="tbl-search" id="fin-f-search" style="width:180px;" placeholder="Search description, ref…" oninput="applyFinFilters()">' +
+      '</div>' +
     '</div>' +
+
+    // ── PER-VENTURE P&L ───────────────────────────────────────
+    '<div class="table-wrap" style="margin-bottom:16px;">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">Per-Venture P&amp;L</div>' +
+        '<button id="vpl-toggle" onclick="toggleVenturePL()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:4px 12px;font-family:var(--mono);font-size:.6rem;cursor:pointer;">▲ Collapse</button>' +
+      '</div>' +
+      '<div id="fin-venture-pl" style="padding:14px;"><div class="loading-row"><div class="spinner"></div></div></div>' +
+    '</div>' +
+
+    // ── TRANSACTIONS TABLE ────────────────────────────────────
+    '<div class="table-wrap">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">Transactions</div>' +
+        '<span id="fin-tx-count" style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">—</span>' +
+      '</div>' +
+      '<div class="table-scroll"><table><thead><tr>' +
+        '<th>Date</th><th>Venture</th><th>Type</th><th>Category</th>' +
+        '<th>Description</th><th>Amount</th><th>Method</th><th>Ref</th><th>Docs</th><th>Actions</th>' +
+      '</tr></thead>' +
+      '<tbody id="finance-tbody"><tr><td colspan="10" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
+      '</table></div>' +
+    '</div>' +
+
   '</div>';
 }
 
@@ -3927,7 +4066,7 @@ function filterReceiptRepo() {
 function renderReceiptRepoList(receipts) {
   if (!receipts.length) return '<div class="empty-state"><div class="empty-icon">🧾</div>No receipts yet</div>';
   return '<div class="table-scroll"><table><thead><tr><th>Receipt #</th><th>Client</th><th>Service</th><th>Amount</th><th>Date</th><th>Method</th><th></th></tr></thead><tbody>' +
-    receipts.slice().sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); }).map(function(r) {
+    receipts.slice().nsort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); }).map(function(r) {
       return '<tr>' +
         '<td style="font-family:var(--mono);font-size:.65rem;color:var(--cyan);">' + escHtml(r.receiptNumber||'—') + '</td>' +
         '<td><div style="font-size:.8rem;font-weight:600;">' + escHtml(r.clientName||'—') + '</div></td>' +
@@ -5471,62 +5610,350 @@ function filterClientsByStatus(status) {
 // ── Finance ────────────────────────────────────────────────────
 var _finTxFilter='';
 function filterTransactions(type){_finTxFilter=type;renderFinance(window._data.financials||[],window._data.clients||[]);}
-function renderFinance(financials,clients){
-  var ti=0,te=0;financials.forEach(function(f){if(f.type==='income')ti+=f.amount;else te+=f.amount;});
-  var mrr=clients.filter(function(c){return c.status!=='churned';}).reduce(function(s,c){return s+(parseFloat(c.monthlyValue)||0);},0);
-  var profit=ti-te;var margin=ti>0?Math.round(profit/ti*100):0;
-  var sumEl=document.getElementById('fin-summary');
-  if(sumEl)sumEl.innerHTML=
-    '<div class="fin-sum-card"><div class="fin-sum-label">Total Revenue</div><div class="fin-sum-val" style="color:var(--green);">₦'+ti.toLocaleString()+'</div></div>' +
-    '<div class="fin-sum-card"><div class="fin-sum-label">Total Expenses</div><div class="fin-sum-val" style="color:var(--red);">₦'+te.toLocaleString()+'</div></div>' +
-    '<div class="fin-sum-card"><div class="fin-sum-label">Net Profit</div><div class="fin-sum-val" style="color:'+(profit>=0?'var(--gold)':'var(--red)')+';">₦'+Math.abs(profit).toLocaleString()+'</div></div>';
-  var plEl=document.getElementById('fin-venture-pl');
-  if(plEl){
-    var vdata={};VENTURES_SEED.forEach(function(v){vdata[v.id]={name:v.name,i:0,e:0};});
-    financials.forEach(function(f){if(!vdata[f.ventureId])vdata[f.ventureId]={name:f.ventureId||'Other',i:0,e:0};if(f.type==='income')vdata[f.ventureId].i+=f.amount;else vdata[f.ventureId].e+=f.amount;});
-    var plData=Object.values(vdata).filter(function(v){return v.i||v.e;});
-    plEl.innerHTML='<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Per-Venture P&L</div></div><div style="padding:14px;">' +
-      (plData.length ? plData.map(function(v){var p=v.i-v.e;return'<div style="margin-bottom:14px;"><div style="font-family:var(--display);font-weight:700;font-size:.88rem;margin-bottom:6px;">'+escHtml(v.name)+'</div>' +
-        '<div class="fin-row"><span class="fin-row-label">Revenue</span><span class="fin-income">₦'+v.i.toLocaleString()+'</span></div>' +
-        '<div class="fin-row"><span class="fin-row-label">Expenses</span><span class="fin-expense">₦'+v.e.toLocaleString()+'</span></div>' +
-        '<div class="fin-row"><span class="fin-row-label">Net</span><span class="fin-profit" style="color:'+(p>=0?'var(--gold)':'var(--red)')+';">₦'+Math.abs(p).toLocaleString()+'</span></div>' +
-      '</div>';}).join('') : '<div class="empty-state"><div class="empty-icon">📊</div>No financial records yet</div>') +
-    '</div></div>';
+function renderFinance(financials, clients) {
+  // ── All-time stats (always full dataset, never filtered) ───
+  var allFin = window._data ? window._data.financials || [] : [];
+  var allPay = window._data ? window._data.payments   || [] : [];
+  var totRev = 0, totExp = 0;
+  allFin.forEach(function(f){ var a=parseFloat(f.amount)||0; if(f.type==='income')totRev+=a; else totExp+=a; });
+  var net    = totRev - totExp;
+  var margin = totRev > 0 ? Math.round((net/totRev)*100) : 0;
+  var pendAmt= 0, overdAmt= 0;
+  allPay.forEach(function(p){ var a=parseFloat(p.amount)||0; if(p.status==='pending')pendAmt+=a; if(p.status==='overdue')overdAmt+=a; });
+
+  setText('fin-stat-rev',      '₦' + totRev.toLocaleString());
+  setText('fin-stat-exp',      '₦' + totExp.toLocaleString());
+  setText('fin-stat-profit',   (net<0?'−':'') + '₦' + Math.abs(net).toLocaleString());
+  setText('fin-stat-margin',   margin + '% net margin');
+  setText('fin-stat-liability','₦' + (pendAmt + overdAmt).toLocaleString());
+  setText('fin-stat-liability-meta', '₦'+pendAmt.toLocaleString()+' pending · ₦'+overdAmt.toLocaleString()+' overdue');
+  var pc = document.getElementById('fin-profit-card');
+  if (pc) pc.className = 'kpi-card ' + (net >= 0 ? 'green' : 'red');
+
+  // ── Per-venture P&L ───────────────────────────────────────
+  if (!_vplCollapsed) {
+    var vd = {};
+    VENTURES_SEED.forEach(function(v){ vd[v.id]={name:v.name,i:0,e:0}; });
+    allFin.forEach(function(f){
+      if (!vd[f.ventureId]) vd[f.ventureId]={name:f.ventureId||'Other',i:0,e:0};
+      if (f.type==='income') vd[f.ventureId].i+=parseFloat(f.amount)||0;
+      else vd[f.ventureId].e+=parseFloat(f.amount)||0;
+    });
+    var plEl = document.getElementById('fin-venture-pl');
+    var plData = Object.values(vd).filter(function(v){return v.i||v.e;});
+    if (plEl) {
+      if (!plData.length) {
+        plEl.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-icon">📊</div>No financial records yet</div>';
+      } else {
+        plEl.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;">' +
+          plData.map(function(v) {
+            var np = v.i - v.e, col = np>=0?'var(--green)':'var(--red)';
+            var share = totRev>0?Math.min(Math.round(v.i/totRev*100),100):0;
+            return '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;">' +
+              '<div style="font-family:var(--display);font-weight:700;font-size:.84rem;margin-bottom:10px;">' + escHtml(v.name) + '</div>' +
+              '<div class="fin-row"><span class="fin-row-label">Revenue</span><span class="fin-income">₦'+v.i.toLocaleString()+'</span></div>' +
+              '<div class="fin-row"><span class="fin-row-label">Expenses</span><span class="fin-expense">₦'+v.e.toLocaleString()+'</span></div>' +
+              '<div class="fin-row" style="border-top:1px solid rgba(200,155,20,.08);margin-top:5px;padding-top:7px;">' +
+                '<span style="font-weight:600;color:var(--white);font-size:.82rem;">Net</span>' +
+                '<span style="font-family:var(--mono);font-weight:700;color:'+col+';">'+(np<0?'−':'')+'₦'+Math.abs(np).toLocaleString()+'</span>' +
+              '</div>' +
+              '<div style="height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:10px;">' +
+                '<div style="width:'+share+'%;height:100%;background:var(--gold);border-radius:2px;"></div>' +
+              '</div>' +
+              '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);margin-top:3px;">'+share+'% of total revenue</div>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      }
+    }
   }
-  var tbody=document.getElementById('finance-tbody');if(!tbody)return;
-  var filtered=_finTxFilter?financials.filter(function(f){return f.type===_finTxFilter;}):financials;
-  if(!filtered.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💰</div>No transactions yet</div></td></tr>';return;}
-  tbody.innerHTML=filtered.map(function(f){
-    var v=V_MAP[f.ventureId]||{name:f.ventureId||'—'};
-    return '<tr data-search="'+escHtml((f.description||'').toLowerCase())+'">' +
-      '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtDate(f.date||f.createdAt)+'</td>' +
-      '<td><span class="venture-tag">'+escHtml(v.name)+'</span></td>' +
-      '<td><span class="badge '+(f.type==='income'?'badge-green':'badge-red')+'">'+escHtml((f.type||'').toUpperCase())+'</span></td>' +
-      '<td style="font-size:.78rem;color:var(--dim);">'+escHtml(f.category||'—')+'</td>' +
-      '<td style="font-family:var(--mono);font-weight:700;color:'+(f.type==='income'?'var(--green)':'var(--red)')+';">'+(f.type==='income'?'+':'−')+'₦'+Number(f.amount||0).toLocaleString()+'</td>' +
-      '<td><button class="action-btn danger" onclick="deleteRecord(\'financials\',\''+f.id+'\')">Del</button></td>' +
+
+  // ── Apply filters to transactions ─────────────────────────
+  var filtered = allFin.filter(function(f) {
+    if (_finFilters.type     && f.type       !== _finFilters.type)     return false;
+    if (_finFilters.venture  && f.ventureId  !== _finFilters.venture)  return false;
+    if (_finFilters.category && f.category   !== _finFilters.category) return false;
+    if (_finFilters.search) {
+      var hay = ((f.description||'')+(f.category||'')+(f.invoiceRef||'')+(f.notes||'')).toLowerCase();
+      if (!hay.includes(_finFilters.search)) return false;
+    }
+    if (_finFilters.from) {
+      var fd = (f.date || f.createdAt || '').substring(0,10);
+      if (fd && fd < _finFilters.from) return false;
+    }
+    if (_finFilters.to) {
+      var td = (f.date || f.createdAt || '').substring(0,10);
+      if (td && td > _finFilters.to) return false;
+    }
+    return true;
+  });
+
+  filtered.sort(function(a,b){
+    return ((b.date||b.createdAt||'').substring(0,10)).localeCompare((a.date||a.createdAt||'').substring(0,10));
+  });
+
+  var countEl = document.getElementById('fin-tx-count');
+  if (countEl) countEl.textContent = filtered.length + ' transaction' + (filtered.length!==1?'s':'');
+
+  var tbody = document.getElementById('finance-tbody'); if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">💰</div>No transactions match your filters</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(function(f) {
+    var v       = V_MAP[f.ventureId] || {name: f.ventureId||'—'};
+    var isInc   = f.type === 'income';
+    var amt     = parseFloat(f.amount)||0;
+    var isAuto  = f.autoCreated || f.paymentId;
+    var hasDoc  = f.invoiceFile||f.invoiceUrl||f.receiptFile||f.receiptUrl||f.externalLink;
+    return '<tr>' +
+      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);white-space:nowrap;">' + fmtDate(f.date||f.createdAt) + '</td>' +
+      '<td><span class="venture-tag">' + escHtml(v.name) + '</span></td>' +
+      '<td><span class="badge '+(isInc?'badge-green':'badge-red')+'">' + escHtml((f.type||'').toUpperCase()) + '</span></td>' +
+      '<td style="font-size:.74rem;color:var(--dim);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(f.category||'—') + '</td>' +
+      '<td style="font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(f.description||'—') + '</td>' +
+      '<td style="font-family:var(--mono);font-weight:700;color:'+(isInc?'var(--green)':'var(--red)')+';white-space:nowrap;">' + (isInc?'+':'−') + '₦' + amt.toLocaleString() + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + escHtml((f.paymentMethod||'').replace(/_/g,' ')||'—') + '</td>' +
+      '<td>' +
+        (f.invoiceRef?'<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">'+escHtml(f.invoiceRef)+'</div>':'') +
+        (isAuto?'<span class="badge badge-cyan" style="font-size:.5rem;">⚡ Auto</span>':'') +
+      '</td>' +
+      '<td>' +
+        (hasDoc?'<button class="action-btn" style="font-size:.58rem;" onclick="viewTxAttachments(\''+f.id+'\')">📎 Docs</button>':'<span style="color:var(--dimmer);font-size:.7rem;">—</span>') +
+      '</td>' +
+      '<td><div class="row-actions">' +
+        '<button class="action-btn" onclick="openEditTransaction(\''+f.id+'\')">Edit</button>' +
+        '<button class="action-btn danger" onclick="deleteRecord(\'financials\',\''+f.id+'\')">Del</button>' +
+      '</div></td>' +
     '</tr>';
   }).join('');
 }
-function openAddTransaction(){
-  var html='<div class="drawer-form">' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Type</div><select class="form-select" id="tx-type"><option value="income">Income</option><option value="expense">Expense</option></select></div>' +
-    '<div class="form-field"><div class="form-label">Amount (₦)</div><input class="form-input" id="tx-amt" type="number" min="0" placeholder="0"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="tx-v"><option value="">Select…</option>' +
-      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
-    '</select></div><div class="form-field"><div class="form-label">Date</div><input class="form-input" id="tx-date" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Category</div><input class="form-input" id="tx-cat" placeholder="e.g. Client Payment, Salary, Ads"></div>' +
-    '<div class="form-field"><div class="form-label">Description</div><input class="form-input" id="tx-desc" placeholder="Short note"></div></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="saveTransaction()">💾 Record</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
-  '</div>';
-  openDrawer('Finance','Record Transaction',html);
-}
-function saveTransaction(){
-  var amt=parseFloat(document.getElementById('tx-amt').value);if(!amt||amt<=0){toast('Valid amount required','error');return;}
-  window._saveDoc('financials',{type:document.getElementById('tx-type').value,ventureId:document.getElementById('tx-v').value,amount:amt,category:document.getElementById('tx-cat').value.trim(),description:document.getElementById('tx-desc').value.trim(),date:document.getElementById('tx-date').value,createdAt:new Date().toISOString()})
-    .then(function(){toast('Transaction recorded ✓','success');closeDrawer();window._loadAll();});
+  
+function openAddTransaction() {
+  openTransactionDrawer(null);
 }
 
+function openEditTransaction(id) {
+  var f = (window._data?window._data.financials||[]:[] ).find(function(x){return x.id===id;});
+  if (f) openTransactionDrawer(f); else toast('Record not found','error');
+}
+
+function openTransactionDrawer(f) {
+  _editingTxId = f ? f.id : null;
+  var type   = f ? f.type || 'income' : 'income';
+  var today  = new Date().toISOString().split('T')[0];
+  var METHODS= ['bank_transfer','card','cash','ussd','mobile_money','crypto','flutterwave','paystack'];
+
+  var html =
+
+    // ── Auto badge ───────────────────────────────────────────
+    (f && (f.autoCreated||f.paymentId) ?
+      '<div style="background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.2);border-radius:6px;padding:9px 13px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);">⚡ Auto-reconciled from verified payment — editing live finance data</div>' : '') +
+
+    // ── Section 1: Core details ──────────────────────────────
+    '<div class="detail-section"><h4>📋 Transaction Details</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Type *</div>' +
+        '<select class="form-select" id="tx-type" onchange="onFinTypeChange()">' +
+          '<option value="income"'+(type==='income'?' selected':'')+'>Income</option>' +
+          '<option value="expense"'+(type==='expense'?' selected':'')+'>Expense</option>' +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Venture *</div>' +
+        '<select class="form-select" id="tx-v"><option value="">Select…</option>' +
+          VENTURES_SEED.map(function(v){return'<option value="'+v.id+'"'+(f&&f.ventureId===v.id?' selected':'')+'>'+v.name+'</option>';}).join('') +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Category *</div>' +
+        '<select class="form-select" id="tx-cat">' + buildCatOpts(type, f?f.category||'':'') + '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Amount (₦) *</div>' +
+        '<input class="form-input" id="tx-amt" type="number" min="0" value="'+(f?f.amount||'':'')+'" placeholder="0">' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Date *</div>' +
+        '<input class="form-input" id="tx-date" type="date" value="'+(f?f.date||today:today)+'">' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Payment Method</div>' +
+        '<select class="form-select" id="tx-method"><option value="">Select…</option>' +
+          METHODS.map(function(m){return'<option value="'+m+'"'+(f&&f.paymentMethod===m?' selected':'')+'>'+m.replace(/_/g,' ')+'</option>';}).join('') +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Description / Title</div>' +
+      '<input class="form-input" id="tx-desc" value="'+escHtml(f?f.description||':'')+'" placeholder="Describe this transaction…">' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-field"><div class="form-label">Invoice / Reference Number</div>' +
+        '<input class="form-input" id="tx-ref" value="'+escHtml(f?f.invoiceRef||'':'')+'" placeholder="INV-2026-0001">' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">External Link (Drive, Dropbox…)</div>' +
+        '<input class="form-input" id="tx-link" type="url" value="'+escHtml(f?f.externalLink||'':'')+'" placeholder="https://…">' +
+      '</div>' +
+    '</div></div>' +
+
+    // ── Section 2: Attachments ───────────────────────────────
+    '<div class="detail-section"><h4>📎 Attachments</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+
+      // Invoice column
+      '<div style="border:1px solid rgba(200,155,20,.15);border-radius:8px;padding:14px;">' +
+        '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">📄 Invoice</div>' +
+        (f&&f.invoiceFile ? '<div id="tx-inv-existing" style="font-size:.72rem;color:var(--green);margin-bottom:8px;">✅ '+escHtml(f.invoiceFileName||'File attached')+'</div>' +
+          '<input type="hidden" id="tx-inv-keep" value="1"><div style="display:none;"><input id="tx-inv-file-data" value="'+escHtml(f.invoiceFile)+'"><input id="tx-inv-file-name" value="'+escHtml(f.invoiceFileName||'')+'"></div>' : '') +
+        '<div class="form-field"><div class="form-label">Upload file (PDF/JPG, max 200KB)</div>' +
+          '<input type="file" id="tx-inv-file" accept=".pdf,.jpg,.jpeg,.png" style="color:var(--dim);font-size:.75rem;width:100%;">' +
+        '</div>' +
+        '<div class="form-field" style="margin-top:8px;"><div class="form-label">— or — Link</div>' +
+          '<input class="form-input" id="tx-inv-url" type="url" value="'+escHtml(f?f.invoiceUrl||'':'')+'" placeholder="https://drive.google.com/…">' +
+        '</div>' +
+      '</div>' +
+
+      // Receipt column
+      '<div style="border:1px solid rgba(34,197,94,.12);border-radius:8px;padding:14px;">' +
+        '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px;">🧾 Receipt</div>' +
+        (f&&f.receiptFile ? '<div id="tx-rct-existing" style="font-size:.72rem;color:var(--green);margin-bottom:8px;">✅ '+escHtml(f.receiptFileName||'File attached')+'</div>' +
+          '<input type="hidden" id="tx-rct-keep" value="1"><div style="display:none;"><input id="tx-rct-file-data" value="'+escHtml(f.receiptFile)+'"><input id="tx-rct-file-name" value="'+escHtml(f.receiptFileName||'')+'"></div>' : '') +
+        '<div class="form-field"><div class="form-label">Upload file (PDF/JPG, max 200KB)</div>' +
+          '<input type="file" id="tx-rct-file" accept=".pdf,.jpg,.jpeg,.png" style="color:var(--dim);font-size:.75rem;width:100%;">' +
+        '</div>' +
+        '<div class="form-field" style="margin-top:8px;"><div class="form-label">— or — Link</div>' +
+          '<input class="form-input" id="tx-rct-url" type="url" value="'+escHtml(f?f.receiptUrl||'':'')+'" placeholder="https://drive.google.com/…">' +
+        '</div>' +
+      '</div>' +
+
+    '</div></div>' +
+
+    // ── Section 3: Notes ─────────────────────────────────────
+    '<div class="detail-section"><h4>📝 Notes & Details</h4>' +
+    '<textarea class="form-textarea" id="tx-notes" style="min-height:70px;">' + escHtml(f?f.notes||'':'') + '</textarea>' +
+    '</div>' +
+
+    '<div class="btn-row">' +
+      '<button class="btn-primary" id="tx-save-btn" onclick="saveTransaction()">💾 Save Transaction</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+
+  openDrawer(_editingTxId ? 'Edit Transaction' : 'Record Transaction',
+             _editingTxId ? 'Update Entry' : 'New Entry', html);
+}
+
+async function saveTransaction() {
+  var type  = (document.getElementById('tx-type') ||{}).value||'';
+  var vId   = (document.getElementById('tx-v')    ||{}).value||'';
+  var amt   = parseFloat((document.getElementById('tx-amt')||{}).value)||0;
+  var date  = (document.getElementById('tx-date') ||{}).value||'';
+  if (!type||!vId||!amt||!date) { toast('Type, venture, amount and date are required','error'); return; }
+
+  var data = {
+    type:          type,
+    ventureId:     vId,
+    category:      (document.getElementById('tx-cat')   ||{}).value||'',
+    amount:        amt,
+    date:          date,
+    paymentMethod: (document.getElementById('tx-method')||{}).value||'',
+    description:   (document.getElementById('tx-desc')  ||{}).value||'',
+    invoiceRef:    (document.getElementById('tx-ref')   ||{}).value||'',
+    externalLink:  (document.getElementById('tx-link')  ||{}).value||'',
+    invoiceUrl:    (document.getElementById('tx-inv-url')||{}).value||'',
+    receiptUrl:    (document.getElementById('tx-rct-url')||{}).value||'',
+    notes:         (document.getElementById('tx-notes') ||{}).value||''
+  };
+
+  // Preserve existing stored file if not replaced
+  var keepInv = document.getElementById('tx-inv-keep');
+  var keepRct = document.getElementById('tx-rct-keep');
+  if (keepInv && keepInv.value==='1') {
+    var fd=document.getElementById('tx-inv-file-data'), fn=document.getElementById('tx-inv-file-name');
+    if (fd&&fd.value) { data.invoiceFile=fd.value; data.invoiceFileName=fn?fn.value:''; }
+  }
+  if (keepRct && keepRct.value==='1') {
+    var rd=document.getElementById('tx-rct-file-data'), rn=document.getElementById('tx-rct-file-name');
+    if (rd&&rd.value) { data.receiptFile=rd.value; data.receiptFileName=rn?rn.value:''; }
+  }
+
+  // Invoice file upload
+  var invInput = document.getElementById('tx-inv-file');
+  if (invInput && invInput.files && invInput.files[0]) {
+    var invRes = await readFileAsBase64(invInput.files[0]);
+    if (invRes.tooBig) { toast('Invoice file too large (max 200KB) — paste a link instead','error'); return; }
+    data.invoiceFile = invRes.data; data.invoiceFileName = invRes.name;
+    delete data.invoiceUrl;
+  }
+
+  // Receipt file upload
+  var rctInput = document.getElementById('tx-rct-file');
+  if (rctInput && rctInput.files && rctInput.files[0]) {
+    var rctRes = await readFileAsBase64(rctInput.files[0]);
+    if (rctRes.tooBig) { toast('Receipt file too large (max 200KB) — paste a link instead','error'); return; }
+    data.receiptFile = rctRes.data; data.receiptFileName = rctRes.name;
+    delete data.receiptUrl;
+  }
+
+  var btn = document.getElementById('tx-save-btn');
+  if (btn) { btn.textContent='Saving…'; btn.disabled=true; }
+
+  var fn = _editingTxId
+    ? window._updateDoc('financials', _editingTxId, data)
+    : window._saveDoc('financials', data);
+
+  fn.then(function() {
+    toast('Transaction saved ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e) {
+    toast('Save failed: '+(e.message||e), 'error');
+    if (btn) { btn.textContent='💾 Save Transaction'; btn.disabled=false; }
+  });
+}
+
+function viewTxAttachments(txId) {
+  var f = (window._data?window._data.financials||[]:[] ).find(function(x){return x.id===txId;});
+  if (!f) return;
+  var html = '<div style="display:flex;flex-direction:column;gap:14px;">';
+  var none = true;
+
+  if (f.invoiceFile) {
+    none = false;
+    var isImg = f.invoiceFile.startsWith('data:image');
+    html += '<div><div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:7px;">📄 Invoice File</div>' +
+      (isImg
+        ? '<img src="'+f.invoiceFile+'" style="max-width:100%;border-radius:6px;border:1px solid var(--border);">'
+        : '<a href="'+f.invoiceFile+'" download="'+(f.invoiceFileName||'invoice')+'" style="display:inline-flex;align-items:center;gap:6px;background:rgba(200,155,20,.08);border:1px solid rgba(200,155,20,.2);color:var(--gold);padding:9px 16px;border-radius:6px;text-decoration:none;font-family:var(--mono);font-size:.68rem;">⬇ Download '+escHtml(f.invoiceFileName||'Invoice')+'</a>') +
+    '</div>';
+  }
+  if (f.invoiceUrl) {
+    none = false;
+    html += '<div><div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:7px;">🔗 Invoice Link</div>' +
+      '<a href="'+escHtml(f.invoiceUrl)+'" target="_blank" style="font-family:var(--mono);font-size:.7rem;color:var(--cyan);word-break:break-all;">'+escHtml(f.invoiceUrl)+'</a></div>';
+  }
+  if (f.receiptFile) {
+    none = false;
+    var isImg2 = f.receiptFile.startsWith('data:image');
+    html += '<div><div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:7px;">🧾 Receipt File</div>' +
+      (isImg2
+        ? '<img src="'+f.receiptFile+'" style="max-width:100%;border-radius:6px;border:1px solid var(--border);">'
+        : '<a href="'+f.receiptFile+'" download="'+(f.receiptFileName||'receipt')+'" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:var(--green);padding:9px 16px;border-radius:6px;text-decoration:none;font-family:var(--mono);font-size:.68rem;">⬇ Download '+escHtml(f.receiptFileName||'Receipt')+'</a>') +
+    '</div>';
+  }
+  if (f.receiptUrl) {
+    none = false;
+    html += '<div><div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:7px;">🔗 Receipt Link</div>' +
+      '<a href="'+escHtml(f.receiptUrl)+'" target="_blank" style="font-family:var(--mono);font-size:.7rem;color:var(--cyan);word-break:break-all;">'+escHtml(f.receiptUrl)+'</a></div>';
+  }
+  if (f.externalLink) {
+    none = false;
+    html += '<div><div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.1em;color:var(--cyan);margin-bottom:7px;">🔗 External Link</div>' +
+      '<a href="'+escHtml(f.externalLink)+'" target="_blank" style="font-family:var(--mono);font-size:.7rem;color:var(--cyan);word-break:break-all;">'+escHtml(f.externalLink)+'</a></div>';
+  }
+  if (none) html += '<div class="empty-state" style="padding:20px;"><div class="empty-icon">📎</div>No attachments on this record</div>';
+  html += '</div>';
+  openDrawer('Attachments', escHtml(f.description||'Transaction'), html);
+}
 // ── Daily Reports ─────────────────────────────────────────────
 function submitDailyReport(){
   var role=window._userRole||'developer';
