@@ -2946,6 +2946,72 @@ function renderInquiries(inquiries){
   tbody.innerHTML=inquiries.map(function(i){return'<tr data-search="'+escHtml((i.name+' '+i.email).toLowerCase())+'" data-service="'+escHtml(i.service||'')+'"><td><div style="font-weight:600;">'+escHtml(i.name||'—')+'</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(i.email||'')+'</div></td><td><span class="badge badge-cyan">'+escHtml(serviceLabel(i.service))+'</span></td><td>'+escHtml(i.businessName||'—')+'</td><td style="font-family:var(--mono);font-size:.72rem;">'+escHtml(i.phone||'—')+'</td><td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtTime(i.submittedAt||i.createdAt)+'</td><td><div class="row-actions"><button class="action-btn" onclick="openInquiryDrawer(window._data.inquiries.find(function(x){return x.id===\''+i.id+'\'}))">View</button><button class="action-btn success" onclick="quickProposal(\''+i.id+'\',\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">Propose</button></div></td></tr>';}).join('');
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  MESSAGES — FILTER STATE + HELPERS
+// ═══════════════════════════════════════════════════════════════
+var _msgFilters = { search:'', subject:'', sender:'', status:'' };
+
+function applyMsgFilters() {
+  _msgFilters.search  = ((document.getElementById('mf-search')  ||{}).value||'').toLowerCase().trim();
+  _msgFilters.subject = ((document.getElementById('mf-subject') ||{}).value||'').toLowerCase().trim();
+  _msgFilters.sender  = ((document.getElementById('mf-sender')  ||{}).value||'').toLowerCase().trim();
+  _msgFilters.status  = (document.getElementById('mf-status')   ||{}).value||'';
+  renderMessages(window._data ? window._data.messages || [] : []);
+}
+
+function clearMsgFilters() {
+  ['mf-search','mf-subject','mf-sender','mf-status'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_msgFilters).forEach(function(k){ _msgFilters[k] = ''; });
+  renderMessages(window._data ? window._data.messages || [] : []);
+}
+
+// Compute per-message reply status from linked data
+function getMsgStatus(m) {
+  var d = window._data || {};
+  // Won — linked to a CRM lead that's won
+  var crmLead = (d.crm_leads || []).find(function(l) {
+    return l.sourceId === m.id || (m.email && (l.email||'').toLowerCase() === m.email.toLowerCase());
+  });
+  if (crmLead) {
+    if (crmLead.status === 'won')      return 'won';
+    if (crmLead.status === 'proposal') return 'proposal';
+    if (crmLead.status === 'qualified')return 'qualified';
+    if (crmLead.status === 'contacted')return 'contacted';
+    return 'in_crm';
+  }
+  if (m.replied === true || m.status === 'replied') return 'replied';
+  if (m.status === 'archived')                       return 'archived';
+  return 'unread';
+}
+
+function buildMsgSubjectOptions(messages) {
+  var subjects = {};
+  messages.forEach(function(m) { if (m.subject) subjects[m.subject.toLowerCase()] = m.subject; });
+  var el = document.getElementById('mf-subject'); if (!el) return;
+  var cur = el.value;
+  el.innerHTML = '<option value="">All Subjects</option>' +
+    Object.values(subjects).sort().map(function(s) {
+      return '<option value="' + escHtml(s.toLowerCase()) + '"' + (cur === s.toLowerCase() ? ' selected' : '') + '>' + escHtml(s) + '</option>';
+    }).join('');
+  if (cur) el.value = cur;
+}
+
+function buildMsgSenderOptions(messages) {
+  var senders = {};
+  messages.forEach(function(m) {
+    if (m.name && m.email) senders[m.email.toLowerCase()] = m.name;
+  });
+  var el = document.getElementById('mf-sender'); if (!el) return;
+  var cur = el.value;
+  el.innerHTML = '<option value="">All Senders</option>' +
+    Object.entries(senders).sort(function(a,b){ return a[1].localeCompare(b[1]); }).map(function(e) {
+      return '<option value="' + escHtml(e[0]) + '"' + (cur === e[0] ? ' selected' : '') + '>' + escHtml(e[1]) + '</option>';
+    }).join('');
+  if (cur) el.value = cur;
+}
+  
 // ═══════════════════════════════════════
 // MESSAGES
 // ═══════════════════════════════════════
