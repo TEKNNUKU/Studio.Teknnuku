@@ -6621,6 +6621,19 @@ function filterInquiryByService(svc){document.querySelectorAll('#inquiries-tbody
 function filterPaymentsByStatus(status){document.querySelectorAll('#payments-tbody tr[data-status]').forEach(function(row){row.style.display=!status||row.dataset.status===status?'':'none';});}
 function filterAssignmentsByVenture(venture){document.querySelectorAll('#assignments-tbody tr[data-venture]').forEach(function(row){row.style.display=!venture||row.dataset.venture===venture?'':'none';});}
 function globalSearch(q){if(!q)return;var ql=q.toLowerCase();var people=window._peopleCache||[];var match=people.find(function(p){return p.email.toLowerCase().includes(ql)||p.name.toLowerCase().includes(ql);});if(match){showPanel('people',document.querySelector('[data-panel="people"]'));filterPeople(q);}}
+function replyToMessage(email, name, subject) {
+  var subj = encodeURIComponent('Re: ' + (subject || 'Your Message') + ' — ' + (FW_CONFIG.companyName || 'TEKNNUKU Studio'));
+  var body = encodeURIComponent('Hi ' + (name || 'there') + ',\n\nThank you for reaching out.\n\n');
+  window.open('mailto:' + encodeURIComponent(email) + '?subject=' + subj + '&body=' + body, '_blank');
+  toast('Opening email client…', 'success');
+}
+
+function markMessageReplied(id) {
+  window._updateDoc('contact_messages', id, { status:'replied', repliedAt:new Date().toISOString() }).then(function() {
+    toast('Marked as replied ✓', 'success');
+    window._loadAll();
+  }).catch(function(e) { toast('Update failed: ' + (e.message||e), 'error'); });
+}
 function deleteRecord(col,id){if(!confirm('Delete this record? This cannot be undone.'))return;window._deleteDoc(col,id).then(function(){toast('Deleted ✓','success');window._loadAll();}).catch(function(){toast('Delete failed','error');});}
 
 function _bindKeydown(){
