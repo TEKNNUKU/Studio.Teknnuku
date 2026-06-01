@@ -3015,10 +3015,141 @@ function buildMsgSenderOptions(messages) {
 // ═══════════════════════════════════════
 // MESSAGES
 // ═══════════════════════════════════════
-function renderMessages(messages){
-  var tbody=document.getElementById('messages-tbody');if(!tbody)return;
-  if(!messages||!messages.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">💬</div>No messages yet</div></td></tr>';return;}
-  tbody.innerHTML=messages.map(function(m){var preview=(m.message||'').substring(0,60)+(m.message&&m.message.length>60?'…':'');return'<tr data-search="'+escHtml((m.name+' '+m.email+' '+(m.subject||'')).toLowerCase())+'"><td><div style="font-weight:600;">'+escHtml(m.name||'—')+'</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(m.email||'')+'</div></td><td><span class="badge badge-purple">'+escHtml(m.subject||'general')+'</span></td><td style="color:var(--dim);font-size:.78rem;">'+escHtml(preview)+'</td><td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtTime(m.sentAt||m.createdAt)+'</td><td><div class="row-actions"><button class="action-btn" onclick="openMessageDrawer(window._data.messages.find(function(x){return x.id===\''+m.id+'\'}))">Read</button></div></td></tr>';}).join('');
+function renderMessages(messages) {
+  // Build dynamic dropdowns
+  buildMsgSubjectOptions(messages);
+  buildMsgSenderOptions(messages);
+
+  // KPIs — always computed from full list
+  var total   = messages.length;
+  var unread  = 0, replied = 0, inCrm = 0;
+  messages.forEach(function(m) {
+    var s = getMsgStatus(m);
+    if (s === 'unread')                                           unread++;
+    else if (s === 'replied')                                     replied++;
+    if (['in_crm','contacted','qualified','proposal','won'].indexOf(s) !== -1) inCrm++;
+  });
+  setText('msg-kpi-total',  total);
+  setText('msg-kpi-unread', unread);
+  setText('msg-kpi-replied',replied);
+  setText('msg-kpi-crm',    inCrm);
+
+  // Apply filters
+  var f = _msgFilters;
+  var filtered = messages.filter(function(m) {
+    var pipeStatus = getMsgStatus(m);
+    var body       = (m.message || '').toLowerCase();
+    var senderEmail = (m.email  || '').toLowerCase();
+    var senderName  = (m.name   || '').toLowerCase();
+    var subjectLc   = (m.subject || '').toLowerCase();
+
+    if (f.search  && !( senderName.includes(f.search) || senderEmail.includes(f.search) || body.includes(f.search) || subjectLc.includes(f.search) )) return false;
+    if (f.subject && subjectLc  !== f.subject)  return false;
+    if (f.sender  && senderEmail !== f.sender)   return false;
+    if (f.status  && pipeStatus  !== f.status)   return false;
+    return true;
+  });
+
+  // Count label
+  var lbl = document.getElementById('msg-count-label');
+  if (lbl) lbl.textContent = filtered.length + ' of ' + total + ' message' + (total !== 1 ? 's' : '');
+
+  var tbody = document.getElementById('messages-tbody');
+  if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">' +
+      '<div class="empty-icon">💬</div>' +
+      '<div>No messages match your filters</div>' +
+      '<div style="margin-top:8px;"><button class="action-btn" onclick="clearMsgFilters()">Clear Filters</button></div>' +
+    '</div></td></tr>';
+    return;
+  }
+
+  var STATUS_LABEL = {
+    unread:'Unread', replied:'Replied', archived:'Archived',
+    in_crm:'In CRM', contacted:'Contacted', qualified:'Qualified',
+    proposal:'Proposal', won:'Won ✅'
+  };
+  var STATUS_BADGE = {
+    unread:'badge-red', replied:'badge-green', archived:'badge-dim',
+    in_crm:'badge-cyan', contacted:'badge-purple', qualified:'badge-amber',
+    proposal:'badge-gold', won:'badge-green'
+  };
+  var STATUS_DOT = {
+    unread:'var(--red)', replied:'var(--green)', archived:'var(--dimmer)',
+    in_crm:'var(--cyan)', contacted:'var(--purple)', qualified:'var(--amber)',
+    proposal:'var(--gold)', won:'var(--green)'
+  };
+
+  var SUBJECT_BADGE = {
+    general:'badge-dim', support:'badge-cyan', partnership:'badge-purple',
+    inquiry:'badge-gold', pricing:'badge-amber', complaint:'badge-red',
+    feedback:'badge-green', other:'badge-dim'
+  };
+
+  tbody.innerHTML = filtered.map(function(m) {
+    var pipeStatus = getMsgStatus(m);
+    var preview    = (m.message || '').replace(/\s+/g, ' ').substring(0, 70) + ((m.message||'').length > 70 ? '…' : '');
+    var subLc      = (m.subject || 'general').toLowerCase();
+    var isUnread   = pipeStatus === 'unread';
+    var dot        = STATUS_DOT[pipeStatus] || 'var(--dimmer)';
+
+    return '<tr style="' + (isUnread ? 'background:rgba(168,85,247,.03);' : '') + '">' +
+
+      // Sender
+      '<td>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<div style="position:relative;flex-shrink:0;">' +
+            '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:12px;color:#080808;">' +
+              escHtml(initials(m.name || m.email || '?')) +
+            '</div>' +
+            (isUnread ? '<div style="position:absolute;top:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid var(--card);"></div>' : '') +
+          '</div>' +
+          '<div>' +
+            '<div style="font-weight:' + (isUnread ? '700' : '600') + ';font-size:.82rem;color:var(--white);">' + escHtml(m.name || '—') + '</div>' +
+            '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(m.email || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</td>' +
+
+      // Subject
+      '<td>' +
+        '<span class="badge ' + (SUBJECT_BADGE[subLc] || 'badge-dim') + '">' +
+          escHtml(m.subject || 'general') +
+        '</span>' +
+      '</td>' +
+
+      // Preview
+      '<td style="color:var(--dim);font-size:.78rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+        (isUnread ? '<strong style="color:var(--white);">' + escHtml(preview) + '</strong>' : escHtml(preview)) +
+      '</td>' +
+
+      // Status
+      '<td>' +
+        '<div style="display:flex;align-items:center;gap:5px;">' +
+          '<div style="width:6px;height:6px;border-radius:50%;background:' + dot + ';flex-shrink:0;"></div>' +
+          '<span class="badge ' + (STATUS_BADGE[pipeStatus] || 'badge-dim') + '" style="font-size:.54rem;">' +
+            escHtml(STATUS_LABEL[pipeStatus] || pipeStatus) +
+          '</span>' +
+        '</div>' +
+      '</td>' +
+
+      // Received
+      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);white-space:nowrap;">' +
+        fmtTime(m.sentAt || m.createdAt) +
+      '</td>' +
+
+      // Actions
+      '<td><div class="row-actions">' +
+        '<button class="action-btn" onclick="openMessageDrawer(window._data.messages.find(function(x){return x.id===\'' + m.id + '\'}))">Read</button>' +
+        (m.email ? '<button class="action-btn success" onclick="replyToMessage(\'' + escHtml(m.email) + '\',\'' + escHtml(m.name||'') + '\',\'' + escHtml(m.subject||'') + '\')" style="color:var(--green);">✉ Reply</button>' : '') +
+        '<button class="action-btn" onclick="quickProposal(null,\'' + escHtml(m.name||'') + '\',\'' + escHtml(m.email||'') + '\')" style="color:var(--gold);border-color:rgba(200,155,20,.3);">Propose</button>' +
+        (pipeStatus === 'unread' ? '<button class="action-btn" onclick="markMessageReplied(\'' + m.id + '\')" style="color:var(--dimmer);">✓ Mark Replied</button>' : '') +
+      '</div></td>' +
+
+    '</tr>';
+  }).join('');
 }
 
 // ═══════════════════════════════════════
