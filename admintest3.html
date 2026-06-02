@@ -1377,9 +1377,49 @@ function _panelApplicants() {
 
 function _panelPeople() {
   return '<div class="panel" id="panel-people">' +
-    '<div class="eyebrow">Unified Profiles</div><div class="panel-header"><div class="panel-title">People</div><div class="panel-sub">Merged by email</div></div>' +
-    '<input class="tbl-search" style="width:100%;margin-bottom:16px;padding:10px 14px;" placeholder="Search by name or email…" oninput="filterPeople(this.value)">' +
-    '<div id="people-list"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+    '<div class="eyebrow">Unified Profiles</div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">People</div>' +
+      '<div id="people-count-label" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;">— people</div>' +
+    '</div>' +
+
+    // ── STICKY FILTER BAR ─────────────────────────────────────
+    '<div id="people-filter-bar" style="position:sticky;top:0;z-index:8;background:var(--bg);padding-bottom:12px;margin-bottom:4px;">' +
+      '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;">' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+
+          '<input class="tbl-search" id="pf-search" style="flex:1;min-width:200px;" placeholder="Search name, email, phone…" oninput="applyPeopleFilters()">' +
+
+          '<select class="tbl-filter" id="pf-cat" onchange="applyPeopleFilters()">' +
+            '<option value="">All Categories</option>' +
+            '<option value="lead">📥 Leads</option>' +
+            '<option value="prospect">🔍 Prospects</option>' +
+            '<option value="client">🤝 Clients</option>' +
+            (canSeeApplicants() ? '<option value="applicant">🎯 Applicants</option>' : '') +
+            '<option value="team">👤 Team</option>' +
+            '<option value="contact">💬 Contacts</option>' +
+          '</select>' +
+
+          '<select class="tbl-filter" id="pf-venture" onchange="applyPeopleFilters()">' +
+            '<option value="">All Ventures</option>' +
+            VENTURES_SEED.map(function(v){
+              return '<option value="' + v.id + '">' + v.name + '</option>';
+            }).join('') +
+          '</select>' +
+
+          '<button onclick="clearPeopleFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+
+        '</div>' +
+      '</div>' +
+
+      // ── Category tab strip ──────────────────────────────────
+      '<div id="people-cat-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>' +
+
+    '</div>' +
+
+    '<div id="people-list"><div class="loading-row"><div class="spinner"></div></div></div>' +
+
+  '</div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2697,6 +2737,8 @@ window._renderAll = function(){
   if(canAccess('messages'))renderMessages(d.messages);
   if(canAccess('applicants'))renderApplicants(d.applicants||[]);
   if(canAccess('people'))renderPeople(d);
+  // Rebuild people cat tabs on every refresh in case counts changed
+  if(canAccess('people')&&window._peopleCache&&window._peopleCache.length)buildPeopleCatTabs(window._peopleCache);
   if(canAccess('proposals'))renderProposals(d.proposals);
   if(canAccess('payments'))renderPayments(d.payments);
   if(canAccess('assignments'))renderAssignments(d.assignments);
@@ -3586,49 +3628,520 @@ function updateVacancyStatus(select){
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  PEOPLE PAGE — FILTER STATE + CATEGORY LOGIC
+// ═══════════════════════════════════════════════════════════════
+var _peopleFilters = { search:'', category:'', venture:'' };
+
+// Who can see applicant records
+function canSeeApplicants() {
+  return window._userRole === 'founder' || window._userRole === 'ops_lead';
+}
+
+// Derive all category tags for a person
+function getPersonCategories(p) {
+  var cats = [];
+  var types = p.records.map(function(r){ return r.type; });
+  var unique = [];
+  types.forEach(function(t){ if (unique.indexOf(t) === -1) unique.push(t); });
+
+  if (unique.indexOf('lead')       !== -1) cats.push('lead');
+  if (unique.indexOf('inquiry')    !== -1) cats.push('prospect');
+  if (unique.indexOf('message')    !== -1 && cats.indexOf('prospect') === -1) cats.push('prospect');
+  if (unique.indexOf('applicant')  !== -1) cats.push('applicant');
+  if (unique.indexOf('payment')    !== -1 || unique.indexOf('proposal') !== -1) cats.push('client');
+
+  // Check if they're an active client
+  var d = window._data || {};
+  var isClient = (d.clients || []).some(function(c){
+    return (c.email || '').toLowerCase() === p.email.toLowerCase() ||
+           (c.contact || '').toLowerCase() === p.email.toLowerCase();
+  });
+  if (isClient && cats.indexOf('client') === -1) cats.push('client');
+
+  // Check if they're a team member
+  var isTeam = (d.team_members || []).some(function(m){
+    return (m.email || '').toLowerCase() === p.email.toLowerCase();
+  });
+  if (isTeam) cats.push('team');
+
+  if (cats.length === 0) cats.push('contact');
+  return cats;
+}
+
+// Primary badge colour per category
+function getCatStyle(cat) {
+  var map = {
+    lead:      { badge:'badge-gold',   label:'Lead',      icon:'📥' },
+    prospect:  { badge:'badge-cyan',   label:'Prospect',  icon:'🔍' },
+    applicant: { badge:'badge-orange', label:'Applicant', icon:'🎯' },
+    client:    { badge:'badge-green',  label:'Client',    icon:'🤝' },
+    team:      { badge:'badge-purple', label:'Team',      icon:'👤' },
+    contact:   { badge:'badge-dim',    label:'Contact',   icon:'💬' }
+  };
+  return map[cat] || { badge:'badge-dim', label:cat, icon:'⬡' };
+}
+
+// Get CRM pipeline status for person
+function getPersonPipelineStatus(email) {
+  var d = window._data || {};
+  var crm = (d.crm_leads || []).find(function(l){
+    return (l.email||'').toLowerCase() === email.toLowerCase();
+  });
+  if (!crm) return null;
+  return crm;
+}
+
+function applyPeopleFilters() {
+  _peopleFilters.search   = ((document.getElementById('pf-search')   ||{}).value||'').toLowerCase().trim();
+  _peopleFilters.category = (document.getElementById('pf-cat')       ||{}).value||'';
+  _peopleFilters.venture  = (document.getElementById('pf-venture')   ||{}).value||'';
+  displayPeople(window._peopleCache || []);
+}
+
+function clearPeopleFilters() {
+  ['pf-search','pf-cat','pf-venture'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_peopleFilters).forEach(function(k){ _peopleFilters[k] = ''; });
+  displayPeople(window._peopleCache || []);
+}
+  
 // ═══════════════════════════════════════
 // PEOPLE
 // ═══════════════════════════════════════
-function buildPeopleMap(d){
-  var map={};
-  function addP(email,name,rec,type){if(!email)return;var k=email.toLowerCase();if(!map[k])map[k]={email:email,name:name||email,records:[]};if(name&&name.length>map[k].name.length)map[k].name=name;map[k].records.push({type:type,data:rec});}
-  (d.leads||[]).forEach(function(l){addP(l.email,(l.firstName||'')+' '+(l.lastName||''),l,'lead');});
-  (d.inquiries||[]).forEach(function(i){addP(i.email,i.name,i,'inquiry');});
-  (d.messages||[]).forEach(function(m){addP(m.email,m.name,m,'message');});
-  (d.proposals||[]).forEach(function(p){addP(p.personEmail,p.personName,p,'proposal');});
-  (d.payments||[]).forEach(function(py){addP(py.personEmail,py.personName,py,'payment');});
-  (d.assignments||[]).forEach(function(a){addP(a.personEmail,a.personName,a,'assignment');});
-  (d.applicants||[]).forEach(function(a){var info=a.personalInfo||{};addP(info.email||a.email,info.name||a.name,a,'applicant');});
+function buildPeopleMap(d) {
+  var map = {};
+  function addP(email, name, rec, type) {
+    if (!email) return;
+    var k = email.toLowerCase();
+    if (!map[k]) map[k] = { email:email, name:name||email, records:[] };
+    if (name && name.length > map[k].name.length) map[k].name = name;
+    map[k].records.push({ type:type, data:rec });
+  }
+  (d.leads      ||[]).forEach(function(l){ addP(l.email,(l.firstName||'')+' '+(l.lastName||''),l,'lead'); });
+  (d.inquiries  ||[]).forEach(function(i){ addP(i.email,i.name,i,'inquiry'); });
+  (d.messages   ||[]).forEach(function(m){ addP(m.email,m.name,m,'message'); });
+  (d.proposals  ||[]).forEach(function(p){ addP(p.personEmail,p.personName,p,'proposal'); });
+  (d.payments   ||[]).forEach(function(py){ addP(py.personEmail,py.personName,py,'payment'); });
+  (d.assignments||[]).forEach(function(a){ addP(a.personEmail,a.personName,a,'assignment'); });
+
+  // Only add applicants if this user can see them
+  if (canSeeApplicants()) {
+    (d.applicants||[]).forEach(function(a){
+      var info = a.personalInfo||{};
+      addP(info.email||a.email, info.name||a.name, a, 'applicant');
+    });
+  }
   return Object.values(map);
 }
-window._peopleCache=[];
-function renderPeople(d){window._peopleCache=buildPeopleMap(d);displayPeople(window._peopleCache);}
-function displayPeople(people){
-  var el=document.getElementById('people-list');if(!el)return;
-  if(!people||!people.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div>No people yet</div>';return;}
-  el.innerHTML=people.map(function(p){
-    var types=p.records.map(function(r){return r.type;});
-    var badges=[...new Set(types)].map(function(t){var map={lead:'badge-gold',inquiry:'badge-cyan',message:'badge-purple',proposal:'badge-green',payment:'badge-green',assignment:'badge-blue',applicant:'badge-orange'};return'<span class="badge '+(map[t]||'badge-dim')+'">'+t+'</span>';}).join(' ');
-    var lead=p.records.find(function(r){return r.type==='lead';});
-    var score=lead?scoreBadge(lead.data.score):'';
-    return'<div class="person-card" onclick="openPersonDrawer(\''+escHtml(p.email)+'\')">' +
-      '<div class="person-avatar">'+initials(p.name)+'</div>' +
-      '<div class="person-info"><div class="person-name">'+escHtml(p.name.trim()||p.email)+'</div><div class="person-email">'+escHtml(p.email)+'</div><div class="person-tags" style="margin-top:6px;">'+badges+'</div></div>' +
-      '<div class="person-meta">'+score+'<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-top:4px;">'+p.records.length+' record'+(p.records.length!==1?'s':'')+'</div></div>' +
-    '</div>';
+
+function renderPeople(d) {
+  window._peopleCache = buildPeopleMap(d);
+  buildPeopleCatTabs(window._peopleCache);
+  displayPeople(window._peopleCache);
+}
+
+function buildPeopleCatTabs(people) {
+  var tabsEl = document.getElementById('people-cat-tabs'); if (!tabsEl) return;
+  var counts  = { all:people.length, lead:0, prospect:0, client:0, applicant:0, team:0, contact:0 };
+  people.forEach(function(p) {
+    var cats = getPersonCategories(p);
+    cats.forEach(function(c){ if (counts[c] !== undefined) counts[c]++; });
+  });
+
+  var TABS = [
+    { key:'',          label:'All',        icon:'⬡' },
+    { key:'lead',      label:'Leads',      icon:'📥' },
+    { key:'prospect',  label:'Prospects',  icon:'🔍' },
+    { key:'client',    label:'Clients',    icon:'🤝' },
+    { key:'team',      label:'Team',       icon:'👤' },
+    { key:'contact',   label:'Contacts',   icon:'💬' }
+  ];
+  if (canSeeApplicants()) TABS.splice(4, 0, { key:'applicant', label:'Applicants', icon:'🎯' });
+
+  var cur = _peopleFilters.category;
+  tabsEl.innerHTML = TABS.map(function(t) {
+    var cnt   = t.key === '' ? counts.all : (counts[t.key] || 0);
+    var isAct = t.key === cur;
+    return '<button onclick="setPeopleCatTab(\'' + t.key + '\')" style="' +
+      'display:flex;align-items:center;gap:5px;' +
+      'padding:5px 12px;border-radius:20px;font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;' +
+      'cursor:pointer;transition:all .15s;white-space:nowrap;' +
+      (isAct
+        ? 'background:rgba(200,155,20,.15);border:1px solid rgba(200,155,20,.3);color:var(--gold);'
+        : 'background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);color:var(--dimmer);') +
+      '">' +
+      t.icon + ' ' + t.label +
+      '<span style="background:rgba(255,255,255,.08);border-radius:10px;padding:1px 7px;font-size:.52rem;margin-left:3px;">' + cnt + '</span>' +
+    '</button>';
   }).join('');
 }
-function filterPeople(q){var ql=q.toLowerCase();displayPeople(window._peopleCache.filter(function(p){return p.email.toLowerCase().includes(ql)||p.name.toLowerCase().includes(ql);}));}
-function openPersonDrawer(email){
-  var p=window._peopleCache.find(function(x){return x.email.toLowerCase()===email.toLowerCase();});if(!p)return;
-  var d=window._data;
-  var lead=(d.leads||[]).find(function(l){return(l.email||'').toLowerCase()===email.toLowerCase();});
-  var html='<div class="detail-section"><div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;"><div class="person-avatar" style="width:52px;height:52px;font-size:20px;">'+initials(p.name)+'</div><div><div style="font-family:var(--display);font-weight:700;font-size:1.1rem;">'+escHtml(p.name)+'</div><div style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+escHtml(p.email)+'</div></div></div></div>';
-  if(lead)html+='<div class="detail-section"><h4>📥 Diagnostic Lead</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Score</div><div class="detail-val gold">'+(lead.score||0)+'/100</div></div><div class="detail-item"><div class="detail-label">Tier</div><div class="detail-val">'+tierBadge(lead.tier)+'</div></div></div></div>';
-  var myApp=(d.applicants||[]).filter(function(a){var info=a.personalInfo||{};return(info.email||a.email||'').toLowerCase()===email.toLowerCase();});
-  if(myApp.length)html+='<div class="detail-section"><h4>🎯 Applications ('+myApp.length+')</h4>'+myApp.map(function(a){return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="badge badge-orange">'+escHtml(ROLE_LABELS[a.positionApplied]||'—')+'</span>'+phaseBadge(a)+'<span style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">'+fmtDate(a.submittedAt)+'</span></div>';}).join('')+'</div>';
-  html+='<div class="btn-row"><button class="btn-primary" onclick="quickProposal(null,\''+escHtml(p.name)+'\',\''+escHtml(p.email)+'\')">📄 New Proposal</button><button class="btn-secondary" onclick="openNewPaymentFor(\''+escHtml(p.name)+'\',\''+escHtml(p.email)+'\')">💰 Log Payment</button><button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(p.name)+'\',\''+escHtml(p.email)+'\')">🗂️ Assign</button><a href="mailto:'+escHtml(p.email)+'" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉️ Email</a></div>';
-  openDrawer('Person Profile',escHtml(p.name),html);
+
+function setPeopleCatTab(cat) {
+  _peopleFilters.category = cat;
+  var sel = document.getElementById('pf-cat'); if (sel) sel.value = cat;
+  buildPeopleCatTabs(window._peopleCache || []);
+  displayPeople(window._peopleCache || []);
+}
+
+function displayPeople(people) {
+  var el = document.getElementById('people-list'); if (!el) return;
+  var f  = _peopleFilters;
+  var d  = window._data || {};
+
+  // Apply filters
+  var filtered = people.filter(function(p) {
+    var cats = getPersonCategories(p);
+
+    // Category filter
+    if (f.category && cats.indexOf(f.category) === -1) return false;
+
+    // Venture filter — match against CRM lead or client ventureId
+    if (f.venture) {
+      var crm    = (d.crm_leads||[]).find(function(l){ return (l.email||'').toLowerCase() === p.email.toLowerCase(); });
+      var client = (d.clients  ||[]).find(function(c){ return (c.email||c.contact||'').toLowerCase() === p.email.toLowerCase(); });
+      var vId    = (crm && crm.ventureId) || (client && client.ventureId) || '';
+      if (vId !== f.venture) return false;
+    }
+
+    // Search
+    if (f.search) {
+      var hay = (p.name + ' ' + p.email + ' ' + p.records.map(function(r){
+        var data = r.data || {};
+        return (data.phone||'') + ' ' + (data.businessName||'') + ' ' + ((data.personalInfo||{}).phone||'');
+      }).join(' ')).toLowerCase();
+      if (!hay.includes(f.search)) return false;
+    }
+
+    return true;
+  });
+
+  // Count label
+  var lbl = document.getElementById('people-count-label');
+  if (lbl) lbl.textContent = filtered.length + ' of ' + people.length + ' people';
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>' +
+      '<div>No people match your filters</div>' +
+      '<div style="margin-top:8px;"><button class="action-btn" onclick="clearPeopleFilters()">Clear Filters</button></div>' +
+    '</div>';
+    return;
+  }
+
+  // Group by primary category
+  var CAT_ORDER = ['client','lead','prospect','team','applicant','contact'];
+  if (!canSeeApplicants()) CAT_ORDER = CAT_ORDER.filter(function(c){ return c !== 'applicant'; });
+
+  var groups = {};
+  CAT_ORDER.forEach(function(c){ groups[c] = []; });
+
+  filtered.forEach(function(p) {
+    var cats = getPersonCategories(p);
+    var primary = CAT_ORDER.find(function(c){ return cats.indexOf(c) !== -1; }) || 'contact';
+    groups[primary].push(p);
+  });
+
+  // If a specific category is filtered, show flat list with no group headers
+  var showGroups = !f.category;
+
+  var html = '';
+
+  CAT_ORDER.forEach(function(cat) {
+    var group = groups[cat]; if (!group || !group.length) return;
+    var cs    = getCatStyle(cat);
+
+    if (showGroups) {
+      var tc = { lead:'#C89B14', prospect:'#00BCD4', client:'#22c55e', applicant:'#f97316', team:'#a855f7', contact:'rgba(242,237,228,.28)' };
+      html += '<div style="display:flex;align-items:center;gap:8px;margin:20px 0 10px;">' +
+        '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:' + (tc[cat]||'var(--dimmer)') + ';">' +
+          cs.icon + ' ' + cs.label + 's' +
+        '</div>' +
+        '<div style="flex:1;height:1px;background:rgba(200,155,20,.08);"></div>' +
+        '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);">' + group.length + '</div>' +
+      '</div>';
+    }
+
+    group.forEach(function(p) {
+      html += buildPersonCard(p, cat, d);
+    });
+  });
+
+  el.innerHTML = html;
+}
+
+function buildPersonCard(p, primaryCat, d) {
+  var cats    = getPersonCategories(p);
+  var cs      = getCatStyle(primaryCat);
+  var crmLead = (d.crm_leads||[]).find(function(l){ return (l.email||'').toLowerCase() === p.email.toLowerCase(); });
+  var client  = (d.clients  ||[]).find(function(c){ return (c.email||c.contact||'').toLowerCase() === p.email.toLowerCase(); });
+  var teamMbr = (d.team_members||[]).find(function(m){ return (m.email||'').toLowerCase() === p.email.toLowerCase(); });
+  var leadRec = p.records.find(function(r){ return r.type === 'lead'; });
+  var appRec  = p.records.find(function(r){ return r.type === 'applicant'; });
+
+  // Avatar gradient by category
+  var GRAD = {
+    client:'linear-gradient(135deg,#22c55e,#006633)', lead:'linear-gradient(135deg,#C89B14,#daa820)',
+    prospect:'linear-gradient(135deg,#00BCD4,#006688)', applicant:'linear-gradient(135deg,#f97316,#aa4400)',
+    team:'linear-gradient(135deg,#a855f7,#3d2080)', contact:'linear-gradient(135deg,var(--gold),var(--cyan))'
+  };
+
+  // CRM status badge
+  var crmBadge = '';
+  if (crmLead) {
+    var SL = {new_lead:'New Lead',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won ✅',lost:'Lost'};
+    var SB = {new_lead:'badge-dim',contacted:'badge-purple',qualified:'badge-amber',proposal:'badge-gold',won:'badge-green',lost:'badge-red'};
+    crmBadge = '<span class="badge ' + (SB[crmLead.status]||'badge-dim') + '" style="font-size:.5rem;">' + (SL[crmLead.status]||crmLead.status) + '</span>';
+  }
+
+  // Score badge if they're a lead
+  var scorePart = leadRec ? '<div style="text-align:right;">' + scoreBadge(leadRec.data.score) + '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);margin-top:3px;">Intake Score</div></div>' : '';
+
+  // All category badges
+  var catBadges = cats.map(function(c) {
+    if (c === 'applicant' && !canSeeApplicants()) return '';
+    var s = getCatStyle(c);
+    return '<span class="badge ' + s.badge + '" style="font-size:.52rem;">' + s.icon + ' ' + s.label + '</span>';
+  }).filter(Boolean).join(' ');
+
+  // Record count (excluding applicant for non-privileged)
+  var visibleRecs = p.records.filter(function(r) {
+    return r.type !== 'applicant' || canSeeApplicants();
+  }).length;
+
+  return '<div class="person-card" onclick="openPersonDrawer(\'' + escHtml(p.email) + '\')" style="position:relative;">' +
+    // Primary category accent strip
+    '<div style="position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:10px 0 0 10px;background:' + (GRAD[primaryCat]||'var(--gold)') + ';"></div>' +
+
+    '<div style="display:flex;align-items:flex-start;gap:14px;width:100%;">' +
+
+      // Avatar
+      '<div style="width:42px;height:42px;border-radius:50%;background:' + (GRAD[primaryCat]||'var(--gold)') + ';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:#080808;flex-shrink:0;">' +
+        escHtml(initials(p.name)) +
+      '</div>' +
+
+      // Info
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">' +
+          '<div class="person-name">' + escHtml((p.name||'').trim() || p.email) + '</div>' +
+          crmBadge +
+        '</div>' +
+        '<div class="person-email">' + escHtml(p.email) + '</div>' +
+        '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">' +
+          catBadges +
+        '</div>' +
+        (teamMbr ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--purple);margin-top:4px;">' + escHtml(ROLE_LABELS[teamMbr.role]||teamMbr.role||'') + ' · ' + escHtml(teamMbr.team||'') + '</div>' : '') +
+        (client  ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--green);margin-top:3px;">Active Client · ' + escHtml((V_MAP[client.ventureId]||{}).name||'') + '</div>' : '') +
+      '</div>' +
+
+      // Right side
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">' +
+        scorePart +
+        '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">' + visibleRecs + ' record' + (visibleRecs !== 1 ? 's' : '') + '</div>' +
+      '</div>' +
+
+    '</div>' +
+  '</div>';
+}
+
+function filterPeople(q) {
+  _peopleFilters.search = (q||'').toLowerCase().trim();
+  var searchEl = document.getElementById('pf-search');
+  if (searchEl) searchEl.value = q || '';
+  displayPeople(window._peopleCache || []);
+}
+
+function openPersonDrawer(email) {
+  var p = (window._peopleCache||[]).find(function(x){ return x.email.toLowerCase() === email.toLowerCase(); });
+  if (!p) return;
+  var d = window._data || {};
+
+  var leadRec  = p.records.find(function(r){ return r.type === 'lead'; });
+  var appRec   = canSeeApplicants() ? p.records.find(function(r){ return r.type === 'applicant'; }) : null;
+  var propRecs = p.records.filter(function(r){ return r.type === 'proposal'; });
+  var payRecs  = p.records.filter(function(r){ return r.type === 'payment'; });
+  var msgRecs  = p.records.filter(function(r){ return r.type === 'message'; });
+  var inqRecs  = p.records.filter(function(r){ return r.type === 'inquiry'; });
+
+  var crmLead  = (d.crm_leads   ||[]).find(function(l){ return (l.email||'').toLowerCase()===email.toLowerCase(); });
+  var client   = (d.clients     ||[]).find(function(c){ return (c.email||c.contact||'').toLowerCase()===email.toLowerCase(); });
+  var teamMbr  = (d.team_members||[]).find(function(m){ return (m.email||'').toLowerCase()===email.toLowerCase(); });
+
+  var cats = getPersonCategories(p);
+  var isLead      = cats.indexOf('lead')      !== -1;
+  var isApplicant = cats.indexOf('applicant') !== -1 && canSeeApplicants();
+  var isBoth      = isLead && isApplicant;
+
+  var html = '';
+
+  // ── Header ────────────────────────────────────────────────
+  html += '<div class="detail-section">' +
+    '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
+      '<div class="person-avatar" style="width:52px;height:52px;font-size:20px;">' + initials(p.name) + '</div>' +
+      '<div style="flex:1;">' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:1.1rem;">' + escHtml(p.name) + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">' + escHtml(p.email) + '</div>' +
+        (teamMbr ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--purple);margin-top:3px;">' + escHtml(ROLE_LABELS[teamMbr.role]||teamMbr.role||'') + ' · ' + escHtml(teamMbr.team||'') + '</div>' : '') +
+        (client  ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--green);margin-top:3px;">✅ Active Client · ' + escHtml((V_MAP[client.ventureId]||{}).name||'') + '</div>' : '') +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">' +
+          cats.filter(function(c){ return c !== 'applicant' || canSeeApplicants(); }).map(function(c){
+            var s = getCatStyle(c); return '<span class="badge ' + s.badge + '">' + s.icon + ' ' + s.label + '</span>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  // ── CRM Pipeline card ─────────────────────────────────────
+  if (crmLead) {
+    var v = V_MAP[crmLead.ventureId] || {};
+    var SL = {new_lead:'New Lead',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won ✅',lost:'Lost ❌'};
+    html += '<div class="detail-section"><h4>🔄 CRM Pipeline</h4>' +
+      '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:8px;padding:12px 14px;">' +
+        '<div class="detail-grid">' +
+          '<div class="detail-item"><div class="detail-label">Status</div><div class="detail-val">' + statusBadge(crmLead.status) + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">' + escHtml(v.name||crmLead.ventureId||'—') + '</div></div>' +
+          (crmLead.dealValue ? '<div class="detail-item"><div class="detail-label">Deal Value</div><div class="detail-val gold">₦' + Number(crmLead.dealValue).toLocaleString() + '</div></div>' : '') +
+          '<div class="detail-item"><div class="detail-label">Assigned</div><div class="detail-val">' + escHtml(crmLead.assignedName||'Unassigned') + '</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── Intake Lead data ──────────────────────────────────────
+  if (isLead && leadRec) {
+    var l = leadRec.data;
+    html += '<div class="detail-section"><h4>📥 Intake Diagnostic</h4>' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+        scoreBadge(l.score) + tierBadge(l.tier) +
+        '<span style="font-family:var(--mono);font-size:.68rem;color:var(--dim);">Route: ' + escHtml(l.primaryRoute||'—') + '</span>' +
+      '</div>';
+    if (l.responses) {
+      var r = l.responses;
+      html += '<div class="detail-grid">' +
+        (r.q6_budget&&r.q6_budget[0]  ? '<div class="detail-item"><div class="detail-label">Budget</div><div class="detail-val">' + escHtml(r.q6_budget[0].replace(/_/g,' ')) + '</div></div>' : '') +
+        (r.q2_stage &&r.q2_stage[0]   ? '<div class="detail-item"><div class="detail-label">Stage</div><div class="detail-val">' + escHtml(r.q2_stage[0].replace(/_/g,' ')) + '</div></div>' : '') +
+      '</div>';
+    }
+    html += '</div>';
+  }
+
+  // ── Applicant data (privileged only) ──────────────────────
+  if (isApplicant && appRec) {
+    var a    = appRec.data;
+    var info = a.personalInfo || {};
+    html += '<div class="detail-section"><h4>🎯 Applicant Record</h4>' +
+      '<div style="background:rgba(249,115,22,.05);border:1px solid rgba(249,115,22,.15);border-radius:8px;padding:12px 14px;">' +
+        '<div class="detail-grid">' +
+          '<div class="detail-item"><div class="detail-label">Applied For</div><div class="detail-val">' + escHtml(ROLE_LABELS[a.positionApplied]||a.positionTitle||'—') + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Status</div><div class="detail-val">' + phaseBadge(a) + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Score</div><div class="detail-val gold">' + (a.score||0) + '/100</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Applied</div><div class="detail-val">' + fmtDate(a.submittedAt||a.createdAt) + '</div></div>' +
+        '</div>' +
+        (isBoth ? '<div style="margin-top:10px;padding:7px 10px;background:rgba(255,255,255,.03);border-radius:5px;font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">⬡ This person is both a Lead and an Applicant.</div>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── Client record ─────────────────────────────────────────
+  if (client) {
+    html += '<div class="detail-section"><h4>🤝 Client Record</h4>' +
+      '<div style="background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:12px 14px;">' +
+        '<div class="detail-grid">' +
+          '<div class="detail-item"><div class="detail-label">Package</div><div class="detail-val">' + escHtml(client.package||'—') + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Onboarding</div><div class="detail-val">' + escHtml(client.onboardingStatus||'—') + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Contract Value</div><div class="detail-val gold">₦' + Number(client.monthlyValue||0).toLocaleString() + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Payment</div><div class="detail-val">' + statusBadge(client.paymentStatus||'pending') + '</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── Proposals ─────────────────────────────────────────────
+  if (propRecs.length) {
+    html += '<div class="detail-section"><h4>📄 Proposals (' + propRecs.length + ')</h4>' +
+      propRecs.map(function(r) {
+        var pr = r.data;
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;">' +
+          '<div><div style="font-size:.8rem;color:var(--white);">' + escHtml(pr.title||'Untitled') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.6rem;color:var(--gold);">₦' + Number(pr.amount||0).toLocaleString() + '</div></div>' +
+          statusBadge(pr.status||'draft') +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  // ── Inquiries ─────────────────────────────────────────────
+  if (inqRecs.length) {
+    html += '<div class="detail-section"><h4>📋 Inquiries (' + inqRecs.length + ')</h4>' +
+      inqRecs.map(function(r) {
+        var inq = r.data;
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(200,155,20,.05);">' +
+          '<span class="badge badge-cyan">' + escHtml(serviceLabel(inq.service)) + '</span>' +
+          '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + fmtDate(inq.submittedAt||inq.createdAt) + '</span>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  // ── Messages ─────────────────────────────────────────────
+  if (msgRecs.length) {
+    html += '<div class="detail-section"><h4>💬 Messages (' + msgRecs.length + ')</h4>' +
+      msgRecs.map(function(r) {
+        var m = r.data;
+        return '<div style="padding:7px 0;border-bottom:1px solid rgba(200,155,20,.05);">' +
+          '<div style="font-size:.78rem;color:var(--white);">' + escHtml(m.subject||'general') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-top:2px;">' + escHtml((m.message||'').substring(0,60)) + (m.message&&m.message.length>60?'…':'') + '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  // ── Action buttons — split by context ────────────────────
+  var leadActions = '';
+  if (isLead || crmLead || inqRecs.length) {
+    leadActions =
+      '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">' +
+        '<div style="font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:2px;">Lead Actions</div>' +
+        '<div class="btn-row" style="margin-top:0;">' +
+          '<button class="btn-primary" style="font-size:.72rem;padding:7px 14px;" onclick="quickProposal(null,\'' + escHtml(p.name) + '\',\'' + escHtml(p.email) + '\')">📄 New Proposal</button>' +
+          '<button class="btn-secondary" style="font-size:.72rem;padding:7px 12px;" onclick="openNewPaymentFor(\'' + escHtml(p.name) + '\',\'' + escHtml(p.email) + '\')">💰 Log Payment</button>' +
+          '<button class="btn-secondary" style="font-size:.72rem;padding:7px 12px;" onclick="openNewAssignmentFor(\'' + escHtml(p.name) + '\',\'' + escHtml(p.email) + '\')">🗂️ Assign</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  var appActions = '';
+  if (isApplicant && appRec) {
+    var a = appRec.data;
+    appActions =
+      '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">' +
+        '<div style="font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--orange);margin-bottom:2px;">Applicant Actions</div>' +
+        '<div class="btn-row" style="margin-top:0;">' +
+          (a.status==='pending'   ? '<button class="btn-success" style="font-size:.72rem;padding:7px 12px;" onclick="updateApplicantStatus(\'' + a.id + '\',\'interview\');closeDrawer();">✓ Shortlist</button>' : '') +
+          (a.status==='interview' ? '<button class="btn-primary" style="font-size:.72rem;padding:7px 12px;" onclick="startProbation(\'' + a.id + '\');closeDrawer();">🚀 Start Phase 1</button>' : '') +
+          (['phase1','phase2','phase3'].indexOf(a.status)>-1 ? '<button class="btn-success" style="font-size:.72rem;padding:7px 12px;" onclick="advancePhase(\'' + a.id + '\',\'' + a.status + '\');closeDrawer();">Advance →</button>' : '') +
+          (a.status!=='rejected'&&a.status!=='hired'&&a.status!=='employed' ? '<button class="btn-secondary" style="font-size:.72rem;padding:7px 12px;border-color:rgba(239,68,68,.3);color:var(--red);" onclick="updateApplicantStatus(\'' + a.id + '\',\'rejected\');closeDrawer();">✕ Reject</button>' : '') +
+          '<button class="action-btn" style="font-size:.68rem;" onclick="openApplicantDrawer(window._data.applicants.find(function(x){return x.id===\'' + a.id + '\'}))">Full Profile →</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  var sharedActions =
+    '<div class="btn-row" style="margin-top:4px;">' +
+      (p.email ? '<a href="mailto:' + escHtml(p.email) + '" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.72rem;padding:7px 12px;">✉️ Email</a>' : '') +
+    '</div>';
+
+  if (leadActions || appActions) {
+    html += '<div class="detail-section"><h4>⚡ Actions</h4>' +
+      (isBoth ? '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:10px;font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">⬡ Dual record — lead and applicant actions are shown separately below.</div>' : '') +
+      leadActions + appActions + sharedActions +
+    '</div>';
+  } else {
+    html += '<div class="btn-row">' + sharedActions + '</div>';
+  }
+
+  openDrawer('Person Profile', escHtml(p.name), html);
 }
 
 // ═══════════════════════════════════════
