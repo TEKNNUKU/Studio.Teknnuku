@@ -2107,11 +2107,78 @@ function _panelPayments() {
 
 function _panelAssignments() {
   return '<div class="panel" id="panel-assignments">' +
-    '<div class="eyebrow">Routing & Assignment</div><div class="panel-header"><div class="panel-title">Assignments</div><button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openNewAssignment()">+ New Assignment</button></div>' +
-    '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">assignments</div>' +
-    '<input class="tbl-search" placeholder="Search…" oninput="filterTable(\'assignments-tbody\',this.value)">' +
-    '<select class="tbl-filter" onchange="filterAssignmentsByVenture(this.value)"><option value="">All Ventures</option><option value="TEKNNUKU Studio">TEKNNUKU Studio</option><option value="Jobletters.xyz">Jobletters.xyz</option><option value="Poverty2Prosperity">Poverty2Prosperity</option><option value="GATA Ecosystem">GATA Ecosystem</option><option value="Pawa+9ja">Pawa+9ja</option><option value="TEK1SECURITY">TEK1SECURITY</option><option value="AutoDexTrader">AutoDexTrader</option></select>' +
-    '</div><div class="table-scroll"><table><thead><tr><th>Person</th><th>Venture</th><th>Assigned To</th><th>Status</th><th>Priority</th><th>Assigned</th><th>Actions</th></tr></thead><tbody id="assignments-tbody"><tr><td colspan="7" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div></div>';
+    '<div class="eyebrow">Routing & Assignment</div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Assignments</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<div id="asn-count-label" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;">— assignments</div>' +
+        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openNewAssignment()">+ New Assignment</button>' +
+      '</div>' +
+    '</div>' +
+
+    // ── KPIs ────────────────────────────────────────────────
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px;">' +
+      '<div class="kpi-card cyan"  ><div class="kpi-icon">🗂️</div><div class="kpi-label">Total</div><div class="kpi-value" id="asn-kpi-total">—</div><div class="kpi-meta">all assignments</div></div>' +
+      '<div class="kpi-card gold"  ><div class="kpi-icon">🔄</div><div class="kpi-label">Active</div><div class="kpi-value" id="asn-kpi-active">—</div><div class="kpi-meta">in progress</div></div>' +
+      '<div class="kpi-card red"   ><div class="kpi-icon">🔥</div><div class="kpi-label">High Priority</div><div class="kpi-value" id="asn-kpi-high">—</div><div class="kpi-meta">urgent</div></div>' +
+      '<div class="kpi-card green" ><div class="kpi-icon">✅</div><div class="kpi-label">Completed</div><div class="kpi-value" id="asn-kpi-done">—</div><div class="kpi-meta">finished</div></div>' +
+    '</div>' +
+
+    // ── Filter bar ───────────────────────────────────────────
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+
+        '<input class="tbl-search" id="asf-search" style="width:200px;" placeholder="Search name, email, venture…" oninput="applyAsnFilters()">' +
+
+        '<select class="tbl-filter" id="asf-assignedto" onchange="applyAsnFilters()">' +
+          '<option value="">All Assigned</option>' +
+        '</select>' +
+
+        '<select class="tbl-filter" id="asf-status" onchange="applyAsnFilters()">' +
+          '<option value="">All Status</option>' +
+          '<option value="active">Active</option>' +
+          '<option value="in-progress">In Progress</option>' +
+          '<option value="on-hold">On Hold</option>' +
+          '<option value="completed">Completed</option>' +
+          '<option value="cancelled">Cancelled</option>' +
+        '</select>' +
+
+        '<select class="tbl-filter" id="asf-priority" onchange="applyAsnFilters()">' +
+          '<option value="">All Priorities</option>' +
+          '<option value="high">🔥 High</option>' +
+          '<option value="medium">🟡 Medium</option>' +
+          '<option value="low">⚪ Low</option>' +
+        '</select>' +
+
+        '<select class="tbl-filter" id="asf-venture" onchange="applyAsnFilters()">' +
+          '<option value="">All Ventures</option>' +
+          VENTURES_SEED.map(function(v){ return '<option value="' + v.id + '">' + v.name + '</option>'; }).join('') +
+        '</select>' +
+
+        '<button onclick="clearAsnFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+
+      '</div>' +
+    '</div>' +
+
+    // ── Table ────────────────────────────────────────────────
+    '<div class="table-wrap"><div class="table-toolbar">' +
+      '<div class="table-toolbar-title">assignments</div>' +
+    '</div>' +
+    '<div class="table-scroll"><table><thead><tr>' +
+      '<th>Person / Lead</th>' +
+      '<th>Venture</th>' +
+      '<th>Assigned To</th>' +
+      '<th>Status</th>' +
+      '<th>Priority</th>' +
+      '<th>Target Date</th>' +
+      '<th>Assigned</th>' +
+      '<th>Actions</th>' +
+    '</tr></thead>' +
+    '<tbody id="assignments-tbody">' +
+      '<tr><td colspan="8" class="loading-row"><div class="spinner"></div></td></tr>' +
+    '</tbody></table></div></div>' +
+
+  '</div>';
 }
 
 function _panelTeam() {
@@ -5239,14 +5306,292 @@ function confirmFWPayment() {
     });
   });
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  ASSIGNMENTS — FILTER STATE + HELPERS
+// ═══════════════════════════════════════════════════════════════
+var _asnFilters = { search:'', assignedTo:'', status:'', priority:'', venture:'' };
+
+function applyAsnFilters() {
+  _asnFilters.search     = ((document.getElementById('asf-search')     ||{}).value||'').toLowerCase().trim();
+  _asnFilters.assignedTo = (document.getElementById('asf-assignedto')  ||{}).value||'';
+  _asnFilters.status     = (document.getElementById('asf-status')       ||{}).value||'';
+  _asnFilters.priority   = (document.getElementById('asf-priority')     ||{}).value||'';
+  _asnFilters.venture    = (document.getElementById('asf-venture')      ||{}).value||'';
+  renderAssignments(window._data ? window._data.assignments || [] : []);
+}
+
+function clearAsnFilters() {
+  ['asf-search','asf-assignedto','asf-status','asf-priority','asf-venture'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_asnFilters).forEach(function(k){ _asnFilters[k] = ''; });
+  renderAssignments(window._data ? window._data.assignments || [] : []);
+}
+
+function buildAsnTeamOptions(currentId) {
+  var members = window._data ? window._data.team_members || [] : [];
+  return '<option value="">— Unassigned —</option>' +
+    members.map(function(m) {
+      return '<option value="' + m.id + '"'+ (currentId === m.id ? ' selected' : '') +
+        ' data-email="' + escHtml(m.email||'') + '">' +
+        escHtml(m.name || m.email || '—') + ' · ' + escHtml(ROLE_LABELS[m.role]||m.role||'') +
+      '</option>';
+    }).join('');
+}
+
+function buildAsnTeamFilterOptions(currentId) {
+  var members = window._data ? window._data.team_members || [] : [];
+  return '<option value="">All Assigned</option>' +
+    '<option value="__unassigned__"' + (currentId==='__unassigned__'?' selected':'') + '>Unassigned</option>' +
+    members.map(function(m) {
+      return '<option value="' + m.id + '"' + (currentId === m.id ? ' selected' : '') + '>' +
+        escHtml(m.name || m.email || '—') +
+      '</option>';
+    }).join('');
+}
+
+function buildAsnSubjectOptions(currentVal) {
+  var d = window._data || {};
+  var html = '<option value="">— Select person / client —</option>';
+
+  // CRM pipeline leads
+  var crm = d.crm_leads || [];
+  if (crm.length) {
+    html += '<optgroup label="── CRM Pipeline ──">';
+    crm.forEach(function(l) {
+      var v   = V_MAP[l.ventureId] || {};
+      var SL  = {new_lead:'New Lead',contacted:'Contacted',qualified:'Qualified',proposal:'Proposal',won:'Won ✅',lost:'Lost'};
+      var val = 'crm|' + l.id;
+      html += '<option value="' + val + '"' + (currentVal === val ? ' selected' : '') + '>' +
+        escHtml(l.name||'—') + ' — ' + escHtml(v.name||l.ventureId||'—') +
+        ' [' + (SL[l.status]||l.status) + ']' +
+      '</option>';
+    });
+    html += '</optgroup>';
+  }
+
+  // Active clients
+  var clients = d.clients || [];
+  if (clients.length) {
+    html += '<optgroup label="── Clients ──">';
+    clients.forEach(function(c) {
+      var v   = V_MAP[c.ventureId] || {};
+      var val = 'client|' + c.id;
+      html += '<option value="' + val + '"' + (currentVal === val ? ' selected' : '') + '>' +
+        escHtml(c.name||'—') + ' — ' + escHtml(v.name||'—') +
+      '</option>';
+    });
+    html += '</optgroup>';
+  }
+
+  // Intake leads not yet in CRM
+  var crmSrcIds = new Set(crm.map(function(l){ return l.sourceId; }).filter(Boolean));
+  var intakes   = (d.leads||[]).filter(function(l){ return !crmSrcIds.has(l.id); });
+  if (intakes.length) {
+    html += '<optgroup label="── Intake Leads ──">';
+    intakes.forEach(function(l) {
+      var nm  = ((l.firstName||'')+' '+(l.lastName||'')).trim() || l.email || '—';
+      var val = 'intake|' + l.id;
+      html += '<option value="' + val + '"' + (currentVal === val ? ' selected' : '') + '>' +
+        escHtml(nm) + ' — ' + escHtml(l.email||'') +
+      '</option>';
+    });
+    html += '</optgroup>';
+  }
+
+  // Inquiries not yet in CRM
+  var inquiries = (d.inquiries||[]).filter(function(i){ return !crmSrcIds.has(i.id); });
+  if (inquiries.length) {
+    html += '<optgroup label="── Service Inquiries ──">';
+    inquiries.forEach(function(i) {
+      var val = 'inquiry|' + i.id;
+      html += '<option value="' + val + '"' + (currentVal === val ? ' selected' : '') + '>' +
+        escHtml(i.name||'—') + ' — ' + escHtml(serviceLabel(i.service)) +
+      '</option>';
+    });
+    html += '</optgroup>';
+  }
+
+  return html;
+}
+
+function resolveAsnSubject(val) {
+  if (!val) return {};
+  var parts = val.split('|'), type = parts[0], id = parts[1];
+  var d = window._data || {};
+  if (type === 'crm') {
+    var l = (d.crm_leads||[]).find(function(x){ return x.id === id; });
+    if (!l) return {};
+    var v = V_MAP[l.ventureId] || {};
+    return { name:l.name||'', email:l.email||'', phone:l.phone||'', business:l.businessName||'', venture:v.name||l.ventureId||'', ventureId:l.ventureId||'' };
+  }
+  if (type === 'client') {
+    var c = (d.clients||[]).find(function(x){ return x.id === id; });
+    if (!c) return {};
+    var v = V_MAP[c.ventureId] || {};
+    return { name:c.name||'', email:c.email||c.contact||'', phone:c.phone||'', business:c.businessName||'', venture:v.name||'', ventureId:c.ventureId||'' };
+  }
+  if (type === 'intake') {
+    var l = (d.leads||[]).find(function(x){ return x.id === id; });
+    if (!l) return {};
+    return { name:((l.firstName||'')+' '+(l.lastName||'')).trim(), email:l.email||'', phone:l.phone||'', business:'', venture:'TEKNNUKU Studio', ventureId:'studio' };
+  }
+  if (type === 'inquiry') {
+    var i = (d.inquiries||[]).find(function(x){ return x.id === id; });
+    if (!i) return {};
+    var vm={brand_launch:'studio',sales_system:'studio',systemization:'studio',platform_dev:'studio',web3_dev:'gata',gata_onboard:'gata',venture_build:'studio',enterprise_sw:'studio'};
+    var vId = vm[i.service] || 'studio';
+    return { name:i.name||'', email:i.email||'', phone:i.phone||'', business:i.businessName||'', venture:(V_MAP[vId]||{}).name||'', ventureId:vId };
+  }
+  return {};
+}
+
+function onAsnSubjectChange() {
+  var val  = (document.getElementById('asn-subject')||{}).value || '';
+  var info = resolveAsnSubject(val);
+  var div  = document.getElementById('asn-subject-info');
+  if (!val || !info.name) { if (div) div.style.display = 'none'; return; }
+  if (div) div.style.display = 'block';
+  setText('asn-si-name',    info.name    || '—');
+  setText('asn-si-email',   info.email   || '—');
+  setText('asn-si-phone',   info.phone   || '—');
+  setText('asn-si-biz',     info.business|| '—');
+  setText('asn-si-venture', info.venture || '—');
+  // Auto-set venture filter in the form
+  var ve = document.getElementById('asn-venture');
+  if (ve && info.ventureId) ve.value = info.ventureId;
+}
+
+function onAsnTeamChange() {
+  var sel = document.getElementById('asn-assigned-to'); if (!sel) return;
+  var opt = sel.options[sel.selectedIndex];
+  var email = opt ? opt.getAttribute('data-email') : '';
+  var emailEl = document.getElementById('asn-assignee-email');
+  if (emailEl) emailEl.textContent = email ? '✉ ' + email : '';
+}
   
 // ═══════════════════════════════════════
 // ASSIGNMENTS
 // ═══════════════════════════════════════
-function renderAssignments(assignments){
-  var tbody=document.getElementById('assignments-tbody');if(!tbody)return;
-  if(!assignments||!assignments.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🗂️</div>No assignments yet</div></td></tr>';return;}
-  tbody.innerHTML=assignments.map(function(a){return'<tr data-search="'+escHtml((a.personName||a.personEmail||'').toLowerCase())+'" data-venture="'+escHtml(a.venture||'')+'"><td><div style="font-weight:600;">'+escHtml(a.personName||'—')+'</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(a.personEmail||'')+'</div></td><td><span class="badge badge-gold">'+escHtml(a.venture||'—')+'</span></td><td>'+escHtml(a.assignedTo||'—')+'</td><td>'+statusBadge(a.status)+'</td><td>'+statusBadge(a.priority)+'</td><td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtDate(a.assignedAt||a.createdAt)+'</td><td><div class="row-actions"><button class="action-btn" onclick="openAssignmentDrawer(window._data.assignments.find(function(x){return x.id===\''+a.id+'\'}))">Edit</button><button class="action-btn danger" onclick="deleteRecord(\'assignments\',\''+a.id+'\')">Del</button></div></td></tr>';}).join('');
+function renderAssignments(assignments) {
+  // Populate assigned-to filter
+  var asnFlt = document.getElementById('asf-assignedto');
+  if (asnFlt) {
+    var cur = asnFlt.value;
+    asnFlt.innerHTML = buildAsnTeamFilterOptions(cur);
+    if (cur) asnFlt.value = cur;
+  }
+
+  // Build member lookup
+  var members = window._data ? window._data.team_members || [] : [];
+  var memberMap = {};
+  members.forEach(function(m){ memberMap[m.id] = m; });
+
+  // KPIs — always from full list
+  var total  = assignments.length;
+  var active = assignments.filter(function(a){ return a.status === 'active' || a.status === 'in-progress'; }).length;
+  var high   = assignments.filter(function(a){ return a.priority === 'high'; }).length;
+  var done   = assignments.filter(function(a){ return a.status === 'completed'; }).length;
+  setText('asn-kpi-total',  total);
+  setText('asn-kpi-active', active);
+  setText('asn-kpi-high',   high);
+  setText('asn-kpi-done',   done);
+
+  // Apply filters
+  var f = _asnFilters;
+  var filtered = assignments.filter(function(a) {
+    if (f.status   && a.status   !== f.status)   return false;
+    if (f.priority && a.priority !== f.priority) return false;
+    if (f.venture  && a.ventureId !== f.venture) return false;
+    if (f.assignedTo === '__unassigned__' && a.assignedTo) return false;
+    if (f.assignedTo && f.assignedTo !== '__unassigned__' && a.assignedTo !== f.assignedTo) return false;
+    if (f.search) {
+      var hay = ((a.personName||'')+(a.personEmail||'')+(a.venture||'')+(a.notes||'')).toLowerCase();
+      if (!hay.includes(f.search)) return false;
+    }
+    return true;
+  });
+
+  // Count label
+  var lbl = document.getElementById('asn-count-label');
+  if (lbl) lbl.textContent = filtered.length + ' of ' + total + ' assignment' + (total !== 1 ? 's' : '');
+
+  var tbody = document.getElementById('assignments-tbody'); if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">' +
+      '<div class="empty-icon">🗂️</div>' +
+      '<div>No assignments match your filters</div>' +
+      '<div style="margin-top:8px;"><button class="action-btn" onclick="clearAsnFilters()">Clear Filters</button></div>' +
+    '</div></td></tr>';
+    return;
+  }
+
+  var PRIORITY_STYLE = {
+    high:   { badge:'badge-red',    icon:'🔥', label:'High'   },
+    medium: { badge:'badge-amber',  icon:'🟡', label:'Medium' },
+    low:    { badge:'badge-dim',    icon:'⚪', label:'Low'    }
+  };
+
+  tbody.innerHTML = filtered.map(function(a) {
+    var assignee = a.assignedTo ? memberMap[a.assignedTo] : null;
+    var v        = V_MAP[a.ventureId] || {};
+    var pri      = PRIORITY_STYLE[a.priority] || PRIORITY_STYLE.low;
+    var isOverdue = a.targetDate && new Date(a.targetDate) < new Date() && a.status !== 'completed';
+
+    return '<tr>' +
+      // Person
+      '<td>' +
+        '<div style="font-weight:600;font-size:.82rem;">' + escHtml(a.personName||'—') + '</div>' +
+        (a.personEmail ? '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(a.personEmail) + '</div>' : '') +
+        (a.businessName ? '<div style="font-size:.68rem;color:var(--dimmer);">' + escHtml(a.businessName) + '</div>' : '') +
+      '</td>' +
+      // Venture
+      '<td><span class="venture-tag">' + escHtml(v.name || a.venture || a.ventureId || '—') + '</span></td>' +
+      // Assigned to
+      '<td>' +
+        (assignee
+          ? '<div style="display:flex;align-items:center;gap:7px;">' +
+              '<div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:9px;color:#080808;flex-shrink:0;">' +
+                escHtml(initials(assignee.name||assignee.email||'?')) +
+              '</div>' +
+              '<div>' +
+                '<div style="font-size:.78rem;font-weight:600;">' + escHtml(assignee.name||assignee.email||'—') + '</div>' +
+                '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">' + escHtml(ROLE_LABELS[assignee.role]||assignee.role||'') + '</div>' +
+              '</div>' +
+            '</div>'
+          : '<span style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">Unassigned</span>'
+        ) +
+      '</td>' +
+      // Status
+      '<td>' + statusBadge(a.status||'active') + '</td>' +
+      // Priority
+      '<td>' +
+        '<span class="badge ' + pri.badge + '" style="font-size:.56rem;">' + pri.icon + ' ' + pri.label + '</span>' +
+      '</td>' +
+      // Target date
+      '<td style="font-family:var(--mono);font-size:.62rem;color:' + (isOverdue ? 'var(--red)' : 'var(--dimmer)') + ';">' +
+        (a.targetDate ? (isOverdue ? '⚠ ' : '') + fmtDate(a.targetDate) : '—') +
+      '</td>' +
+      // Assigned date
+      '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' +
+        fmtDate(a.assignedAt||a.createdAt) +
+      '</td>' +
+      // Actions
+      '<td><div class="row-actions">' +
+        '<button class="action-btn" onclick="openAssignmentDrawer(window._data.assignments.find(function(x){return x.id===\'' + a.id + '\'}))">Edit</button>' +
+        (a.status !== 'completed' ? '<button class="action-btn success" onclick="markAssignmentDone(\'' + a.id + '\')">✓ Done</button>' : '') +
+        '<button class="action-btn danger" onclick="deleteRecord(\'assignments\',\'' + a.id + '\')">Del</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function markAssignmentDone(id) {
+  window._updateDoc('assignments', id, { status:'completed', completedAt:new Date().toISOString() })
+    .then(function(){ toast('Assignment marked complete ✓','success'); window._loadAll(); })
+    .catch(function(e){ toast('Update failed: '+(e.message||e),'error'); });
 }
 
 // ═══════════════════════════════════════
@@ -5663,16 +6008,163 @@ function savePayment() {
   }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
   
-var _editingAssignmentId=null;
-function openNewAssignment(){openAssignmentDrawer(null,'','');}
-function openNewAssignmentFor(name,email){closeDrawer();setTimeout(function(){openAssignmentDrawer(null,name,email);showPanel('assignments',document.querySelector('[data-panel="assignments"]'));},200);}
-function openAssignmentDrawer(a,prefillName,prefillEmail){
-  _editingAssignmentId=a?a.id:null;
-  var ventures=['TEKNNUKU Studio','Jobletters.xyz','Poverty2Prosperity','GATA Ecosystem','Pawa+9ja','TEK1SECURITY','AutoDexTrader','Custom'];
-  var html='<div class="drawer-form"><div class="form-row"><div class="form-field"><div class="form-label">Person Name</div><input class="form-input" id="asn-name" value="'+escHtml(a?a.personName:(prefillName||''))+'"></div><div class="form-field"><div class="form-label">Person Email</div><input class="form-input" id="asn-email" type="email" value="'+escHtml(a?a.personEmail:(prefillEmail||''))+'"></div></div><div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="asn-venture">'+ventures.map(function(v){return'<option value="'+v+'"'+(a&&a.venture===v?' selected':'')+'>'+v+'</option>';}).join('')+'</select></div><div class="form-field"><div class="form-label">Assigned To</div><input class="form-input" id="asn-to" value="'+escHtml(a&&a.assignedTo?a.assignedTo:'')+'" placeholder="Team member name"></div></div><div class="form-row"><div class="form-field"><div class="form-label">Status</div><select class="form-select" id="asn-status"><option value="active"'+((!a||a.status==="active")?" selected":"")+'>Active</option><option value="in-progress"'+(a&&a.status==="in-progress"?" selected":"")+'>In Progress</option><option value="on-hold"'+(a&&a.status==="on-hold"?" selected":"")+'>On Hold</option><option value="completed"'+(a&&a.status==="completed"?" selected":"")+'>Completed</option></select></div><div class="form-field"><div class="form-label">Priority</div><select class="form-select" id="asn-priority"><option value="high">High</option><option value="medium"'+(a&&a.priority==="medium"?" selected":"")+'>Medium</option><option value="low"'+(a&&a.priority==="low"?" selected":"")+'>Low</option></select></div></div><div class="form-field"><div class="form-label">Notes</div><textarea class="form-textarea" id="asn-notes">'+escHtml(a?a.notes||'':'')+'</textarea></div><div class="form-field"><div class="form-label">Target Date</div><input class="form-input" id="asn-date" type="date" value="'+escHtml(a?a.targetDate||'':'')+'" ></div><div class="btn-row"><button class="btn-primary" onclick="saveAssignment()">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div></div>';
-  openDrawer(a?'Edit Assignment':'New Assignment',a?(a.personName||'Assignment'):'New Assignment',html);
+var _editingAssignmentId = null;
+
+function openNewAssignment() { openAssignmentDrawer(null, '', ''); }
+
+function openNewAssignmentFor(name, email) {
+  closeDrawer();
+  setTimeout(function() {
+    openAssignmentDrawer(null, name, email);
+    showPanel('assignments', document.querySelector('[data-panel="assignments"]'));
+  }, 200);
 }
-function saveAssignment(){var data={personName:document.getElementById('asn-name').value.trim(),personEmail:document.getElementById('asn-email').value.trim(),venture:document.getElementById('asn-venture').value,assignedTo:document.getElementById('asn-to').value.trim(),status:document.getElementById('asn-status').value,priority:document.getElementById('asn-priority').value,notes:document.getElementById('asn-notes').value.trim(),targetDate:document.getElementById('asn-date').value,assignedAt:new Date().toISOString()};if(!data.personName||!data.venture){toast('Name and venture required','error');return;}var fn=_editingAssignmentId?window._updateDoc('assignments',_editingAssignmentId,data):window._saveDoc('assignments',data);fn.then(function(){toast('Assignment saved ✓','success');closeDrawer();window._loadAll();}).catch(function(e){toast('Save failed: '+(e.message||e),'error');});}
+
+function openAssignmentDrawer(a, prefillName, prefillEmail) {
+  _editingAssignmentId = a ? a.id : null;
+
+  // Resolve pre-fill client ref from email
+  var prefillSubjectVal = '';
+  if (!a && prefillEmail) {
+    var d = window._data || {};
+    var crmMatch = (d.crm_leads||[]).find(function(l){ return (l.email||'').toLowerCase() === prefillEmail.toLowerCase(); });
+    if (crmMatch) prefillSubjectVal = 'crm|' + crmMatch.id;
+    else {
+      var clientMatch = (d.clients||[]).find(function(c){ return (c.email||c.contact||'').toLowerCase() === prefillEmail.toLowerCase(); });
+      if (clientMatch) prefillSubjectVal = 'client|' + clientMatch.id;
+    }
+  }
+
+  var currentSubjectVal = a ? (a.subjectRef || '') : prefillSubjectVal;
+  var subjectInfo = currentSubjectVal ? resolveAsnSubject(currentSubjectVal) : (prefillName ? { name:prefillName, email:prefillEmail||'' } : {});
+  var showInfo    = !!subjectInfo.name;
+
+  var html =
+    // ── Section 1: Who is this for? ──────────────────────────
+    '<div class="detail-section"><h4>👤 Assign To Person / Lead</h4>' +
+    '<div class="form-field" style="margin-bottom:8px;">' +
+      '<div class="form-label">Select Lead / Client *</div>' +
+      '<select class="form-select" id="asn-subject" onchange="onAsnSubjectChange()">' +
+        buildAsnSubjectOptions(currentSubjectVal) +
+      '</select>' +
+    '</div>' +
+
+    // Auto-fill info panel
+    '<div id="asn-subject-info" style="' + (showInfo ? '' : 'display:none;') + '">' +
+      '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;">' +
+        '<div><div class="form-label">Name</div><div id="asn-si-name" style="font-size:.78rem;color:var(--white);">' + escHtml(subjectInfo.name||'') + '</div></div>' +
+        '<div><div class="form-label">Email</div><div id="asn-si-email" style="font-size:.78rem;color:var(--white);">' + escHtml(subjectInfo.email||'') + '</div></div>' +
+        '<div><div class="form-label">Phone</div><div id="asn-si-phone" style="font-size:.78rem;color:var(--white);">' + escHtml(subjectInfo.phone||'') + '</div></div>' +
+        '<div><div class="form-label">Business</div><div id="asn-si-biz" style="font-size:.78rem;color:var(--white);">' + escHtml(subjectInfo.business||'') + '</div></div>' +
+        '<div><div class="form-label">Venture</div><div id="asn-si-venture" style="font-size:.78rem;color:var(--gold);">' + escHtml(subjectInfo.venture||'') + '</div></div>' +
+      '</div>' +
+    '</div></div>' +
+
+    // ── Section 2: Assigned Team Member ──────────────────────
+    '<div class="detail-section"><h4>👥 Assigned Team Member</h4>' +
+    '<div class="form-field">' +
+      '<div class="form-label">Select Team Member *</div>' +
+      '<select class="form-select" id="asn-assigned-to" onchange="onAsnTeamChange()">' +
+        buildAsnTeamOptions(a ? a.assignedTo || '' : '') +
+      '</select>' +
+    '</div>' +
+    '<div id="asn-assignee-email" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-top:5px;"></div>' +
+    '</div>' +
+
+    // ── Section 3: Assignment Details ────────────────────────
+    '<div class="detail-section"><h4>📋 Assignment Details</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Venture</div>' +
+        '<select class="form-select" id="asn-venture"><option value="">Select…</option>' +
+          VENTURES_SEED.map(function(v) {
+            return '<option value="' + v.id + '"' + (a && a.ventureId===v.id ? ' selected' : '') + '>' + v.name + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Target Date</div>' +
+        '<input class="form-input" id="asn-date" type="date" value="' + escHtml(a ? a.targetDate||'' : '') + '">' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Status</div>' +
+        '<select class="form-select" id="asn-status">' +
+          ['active','in-progress','on-hold','completed','cancelled'].map(function(s) {
+            return '<option value="' + s + '"' + (a && a.status===s ? ' selected' : (!a && s==='active' ? ' selected' : '')) + '>' + s + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Priority</div>' +
+        '<select class="form-select" id="asn-priority">' +
+          ['high','medium','low'].map(function(p) {
+            return '<option value="' + p + '"' + (a && a.priority===p ? ' selected' : (!a && p==='medium' ? ' selected' : '')) + '>' +
+              (p==='high'?'🔥 High':p==='medium'?'🟡 Medium':'⚪ Low') +
+            '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-field"><div class="form-label">Notes / Instructions</div>' +
+      '<textarea class="form-textarea" id="asn-notes" style="min-height:80px;" placeholder="What needs to be done? Any specific instructions…">' + escHtml(a ? a.notes||'' : '') + '</textarea>' +
+    '</div></div>' +
+
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveAssignment()">💾 ' + (a ? 'Update' : 'Create') + ' Assignment</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+
+  openDrawer(
+    a ? 'Edit Assignment' : 'New Assignment',
+    a ? (a.personName || 'Assignment') : 'Create Assignment',
+    html
+  );
+
+  // Trigger info display if pre-filled
+  if (currentSubjectVal) setTimeout(onAsnSubjectChange, 80);
+}
+
+function saveAssignment() {
+  var subjectVal  = (document.getElementById('asn-subject')     ||{}).value || '';
+  var assignedTo  = (document.getElementById('asn-assigned-to') ||{}).value || '';
+  var ventureId   = (document.getElementById('asn-venture')     ||{}).value || '';
+  var status      = (document.getElementById('asn-status')      ||{}).value || 'active';
+  var priority    = (document.getElementById('asn-priority')    ||{}).value || 'medium';
+  var targetDate  = (document.getElementById('asn-date')        ||{}).value || '';
+  var notes       = (document.getElementById('asn-notes')       ||{}).value || '';
+
+  if (!subjectVal) { toast('Please select a lead or client', 'error'); return; }
+
+  var subjectInfo = resolveAsnSubject(subjectVal);
+  var members     = window._data ? window._data.team_members || [] : [];
+  var assignee    = members.find(function(m){ return m.id === assignedTo; });
+  var v           = V_MAP[ventureId] || {};
+
+  var data = {
+    subjectRef:   subjectVal,
+    personName:   subjectInfo.name    || '',
+    personEmail:  subjectInfo.email   || '',
+    businessName: subjectInfo.business|| '',
+    ventureId:    ventureId || subjectInfo.ventureId || '',
+    venture:      v.name    || subjectInfo.venture   || '',
+    assignedTo:   assignedTo,
+    assignedName: assignee ? (assignee.name||assignee.email||'') : 'Unassigned',
+    assignedRole: assignee ? (ROLE_LABELS[assignee.role]||assignee.role||'') : '',
+    status:       status,
+    priority:     priority,
+    targetDate:   targetDate,
+    notes:        notes,
+    assignedAt:   new Date().toISOString()
+  };
+
+  var fn = _editingAssignmentId
+    ? window._updateDoc('assignments', _editingAssignmentId, data)
+    : window._saveDoc('assignments', data);
+
+  fn.then(function() {
+    toast('Assignment saved ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e) { toast('Save failed: ' + (e.message||e), 'error'); });
+}
 
 // ═══════════════════════════════════════════════════════════════
 // OS RENDER FUNCTIONS
