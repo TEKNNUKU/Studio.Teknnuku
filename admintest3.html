@@ -2351,6 +2351,89 @@ function _panelCRM() {
   '</div>';
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  VENTURES — HELPERS
+// ═══════════════════════════════════════════════════════════════
+function isSeedVenture(id) {
+  return VENTURES_SEED.some(function(v){ return v.id === id; });
+}
+
+// Stage radio button visual preview update
+function updateVentureStagePreview() {
+  var STAGE_CFG = {
+    Idea:     { bg:'rgba(242,237,228,.12)', border:'rgba(242,237,228,.28)', text:'var(--white)'  },
+    Building: { bg:'rgba(245,158,11,.14)',  border:'rgba(245,158,11,.35)',  text:'var(--amber)'  },
+    Revenue:  { bg:'rgba(34,197,94,.14)',   border:'rgba(34,197,94,.35)',   text:'var(--green)'  },
+    Scaling:  { bg:'rgba(0,188,212,.14)',   border:'rgba(0,188,212,.35)',   text:'var(--cyan)'   }
+  };
+  ['Idea','Building','Revenue','Scaling'].forEach(function(s) {
+    var radio = document.querySelector('input[name="ven-stage-r"][value="' + s + '"]');
+    var btn   = document.getElementById('vsb-' + s);
+    if (!btn) return;
+    var cfg   = STAGE_CFG[s] || {};
+    var on    = radio && radio.checked;
+    btn.style.background  = on ? cfg.bg     : 'rgba(255,255,255,.02)';
+    btn.style.borderColor = on ? cfg.border : 'rgba(242,237,228,.07)';
+    btn.style.color       = on ? cfg.text   : 'var(--dimmer)';
+    btn.style.fontWeight  = on ? '700'      : '400';
+  });
+}
+
+// Build stage radio UI (shared between add + edit drawers)
+function buildStageRadios(currentStage) {
+  var STAGES = [
+    { key:'Idea',     icon:'💡', desc:'Concept phase'     },
+    { key:'Building', icon:'🔨', desc:'Active development' },
+    { key:'Revenue',  icon:'📈', desc:'Generating revenue' },
+    { key:'Scaling',  icon:'🚀', desc:'Growth phase'       }
+  ];
+  var html = '<div class="form-label" style="margin-bottom:10px;">Venture Stage *</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">';
+  var STAGE_CFG = {
+    Idea:     { bg:'rgba(242,237,228,.12)', border:'rgba(242,237,228,.28)', text:'var(--white)'  },
+    Building: { bg:'rgba(245,158,11,.14)',  border:'rgba(245,158,11,.35)',  text:'var(--amber)'  },
+    Revenue:  { bg:'rgba(34,197,94,.14)',   border:'rgba(34,197,94,.35)',   text:'var(--green)'  },
+    Scaling:  { bg:'rgba(0,188,212,.14)',   border:'rgba(0,188,212,.35)',   text:'var(--cyan)'   }
+  };
+  STAGES.forEach(function(s) {
+    var isActive = (currentStage || 'Idea') === s.key;
+    var cfg      = STAGE_CFG[s.key];
+    html += '<label style="cursor:pointer;display:block;">' +
+      '<input type="radio" name="ven-stage-r" value="' + s.key + '"' + (isActive?' checked':'') +
+        ' style="display:none;" onchange="updateVentureStagePreview()">' +
+      '<div id="vsb-' + s.key + '" onclick="document.querySelector(\'input[name=ven-stage-r][value=' + s.key + ']\').checked=true;updateVentureStagePreview();" style="' +
+        'text-align:center;padding:14px 6px;border-radius:8px;cursor:pointer;transition:all .15s;' +
+        'border:1.5px solid ' + (isActive ? cfg.border : 'rgba(242,237,228,.07)') + ';' +
+        'background:' + (isActive ? cfg.bg : 'rgba(255,255,255,.02)') + ';' +
+        'color:' + (isActive ? cfg.text : 'var(--dimmer)') + ';' +
+        'font-weight:' + (isActive ? '700' : '400') + ';">' +
+        '<div style="font-size:1.2rem;margin-bottom:5px;">' + s.icon + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;">' + s.key + '</div>' +
+        '<div style="font-size:.58rem;color:inherit;opacity:.7;margin-top:2px;">' + s.desc + '</div>' +
+      '</div></label>';
+  });
+  html += '</div>';
+  return html;
+}
+
+async function deleteVenture(id) {
+  if (!confirm('Remove this venture from the portfolio? This cannot be undone.')) return;
+  var seed = isSeedVenture(id);
+  var dbV  = (window._data ? window._data.ventures || [] : []).find(function(v){ return v.id === id; });
+  try {
+    if (seed) {
+      // Seed ventures are hardcoded — mark as deleted in Firestore so they're suppressed
+      var sv = VENTURES_SEED.find(function(v){ return v.id === id; });
+      await window._setDoc('ventures', id, { name:(sv||{}).name||id, deleted:true });
+    } else if (dbV) {
+      await window._deleteDoc('ventures', id);
+    }
+    toast('Venture removed from portfolio ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  } catch(e) { toast('Delete failed: ' + (e.message||e), 'error'); }
+}
+  
 function _panelVentures() {
   return '<div class="panel" id="panel-ventures">' +
     '<div class="eyebrow">Portfolio</div>' +
@@ -6745,73 +6828,228 @@ async function submitProposalAndMoveLead(leadId) {
 }
 
 // ── Ventures ──────────────────────────────────────────────────
-function renderVentures(dbVentures,tasks,crm_leads,clients,financials){
-  var elT=document.getElementById('ven-kpi-total');
-  var allV=[...VENTURES_SEED.filter(function(v){return!dbVentures.find(function(dv){return dv.id===v.id;});}),...dbVentures];
-  if(elT)elT.textContent=allV.length;
-  var elR=document.getElementById('ven-kpi-revenue');if(elR)elR.textContent=allV.filter(function(v){return(v.stage||'').toLowerCase()==='revenue';}).length;
-  var elB=document.getElementById('ven-kpi-building');if(elB)elB.textContent=allV.filter(function(v){return(v.stage||'').toLowerCase()==='building';}).length;
-  var grid=document.getElementById('ventures-grid');if(!grid)return;
-  var finMap={},taskMap={},leadMap={},clientMap={};
-  financials.forEach(function(f){if(!finMap[f.ventureId])finMap[f.ventureId]={i:0,e:0};if(f.type==='income')finMap[f.ventureId].i+=f.amount;else finMap[f.ventureId].e+=f.amount;});
-  tasks.forEach(function(t){if(!taskMap[t.ventureId])taskMap[t.ventureId]={tot:0,done:0};taskMap[t.ventureId].tot++;if(t.status==='done')taskMap[t.ventureId].done++;});
-  crm_leads.forEach(function(l){leadMap[l.ventureId]=(leadMap[l.ventureId]||0)+1;});
-  clients.forEach(function(c){clientMap[c.ventureId]=(clientMap[c.ventureId]||0)+1;});
-  grid.innerHTML = allV.map(function(v){
-    var f=finMap[v.id]||{i:0,e:0},tm=taskMap[v.id]||{tot:0,done:0};
-    var profit=f.i-f.e,h=tm.tot>0?Math.round(tm.done/tm.tot*100):(v.health||0);
-    var hc=h>=70?'hf-green':h>=40?'hf-yellow':'hf-red';
-    var sc=(v.stage||'idea').toLowerCase();
-    var stageColors={idea:'badge-dim',building:'badge-amber',revenue:'badge-green',scaling:'badge-cyan'};
-    return '<div class="venture-card">' +
-      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
-        '<div style="width:38px;height:38px;border-radius:8px;background:'+escHtml(v.color||'var(--gold)')+';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:#080808;flex-shrink:0;">'+escHtml((v.name||'?')[0])+'</div>' +
-        '<div style="flex:1;"><div style="font-family:var(--display);font-weight:700;font-size:.95rem;">'+escHtml(v.name)+'</div>' +
-        '<div style="font-size:.72rem;color:var(--dimmer);">'+escHtml(v.focus||'')+'</div></div>' +
-        '<span class="badge '+(stageColors[sc]||'badge-dim')+'">'+escHtml(v.stage||'Idea')+'</span>' +
+function renderVentures(dbVentures, tasks, crm_leads, clients, financials) {
+  // Suppress seed ventures that have been deleted via Firestore tombstone
+  var deletedIds = new Set(
+    dbVentures.filter(function(v){ return v.deleted; }).map(function(v){ return v.id; })
+  );
+
+  // Merged list: seed ventures not overridden/deleted + all non-deleted DB ventures
+  var allV = [
+    ...VENTURES_SEED.filter(function(v){
+      return !dbVentures.find(function(dv){ return dv.id === v.id; }) && !deletedIds.has(v.id);
+    }),
+    ...dbVentures.filter(function(v){ return !v.deleted; })
+  ];
+
+  // KPIs
+  var elT = document.getElementById('ven-kpi-total');    if(elT) elT.textContent = allV.length;
+  var elR = document.getElementById('ven-kpi-revenue');  if(elR) elR.textContent = allV.filter(function(v){ return (v.stage||'').toLowerCase()==='revenue'; }).length;
+  var elB = document.getElementById('ven-kpi-building'); if(elB) elB.textContent = allV.filter(function(v){ return (v.stage||'').toLowerCase()==='building'; }).length;
+
+  var grid = document.getElementById('ventures-grid'); if (!grid) return;
+
+  // Build stat maps
+  var finMap = {}, taskMap = {}, leadMap = {}, clientMap = {};
+  financials.forEach(function(f) {
+    if (!finMap[f.ventureId]) finMap[f.ventureId] = {i:0, e:0};
+    if (f.type==='income') finMap[f.ventureId].i += parseFloat(f.amount)||0;
+    else                   finMap[f.ventureId].e += parseFloat(f.amount)||0;
+  });
+  tasks.forEach(function(t) {
+    if (!taskMap[t.ventureId]) taskMap[t.ventureId] = {tot:0, done:0};
+    taskMap[t.ventureId].tot++;
+    if (t.status==='done') taskMap[t.ventureId].done++;
+  });
+  crm_leads.forEach(function(l){ leadMap[l.ventureId]   = (leadMap[l.ventureId]||0)   + 1; });
+  clients.forEach(function(c){   clientMap[c.ventureId] = (clientMap[c.ventureId]||0) + 1; });
+
+  if (!allV.length) {
+    grid.innerHTML = '<div class="empty-state" style="padding:48px;"><div class="empty-icon">🏢</div>No ventures in portfolio</div>';
+    return;
+  }
+
+  var canEdit = canAccess('settings') || window._userRole === 'founder' || window._userRole === 'ops_lead';
+
+  var STAGE_COLORS = {
+    idea:'badge-dim', building:'badge-amber', revenue:'badge-green', scaling:'badge-cyan'
+  };
+  var STAGE_BORDER = {
+    idea:'rgba(242,237,228,.1)', building:'rgba(245,158,11,.2)',
+    revenue:'rgba(34,197,94,.2)', scaling:'rgba(0,188,212,.2)'
+  };
+
+  grid.innerHTML = allV.map(function(v) {
+    var f      = finMap[v.id]  || {i:0, e:0};
+    var tm     = taskMap[v.id] || {tot:0, done:0};
+    var profit = f.i - f.e;
+    var h      = tm.tot > 0 ? Math.round((tm.done / tm.tot) * 100) : (v.health || 0);
+    var hc     = h >= 70 ? 'hf-green' : h >= 40 ? 'hf-yellow' : 'hf-red';
+    var sc     = (v.stage||'idea').toLowerCase();
+    var isDbV  = !!dbVentures.find(function(dv){ return dv.id === v.id && !dv.deleted; });
+    var isSeed = isSeedVenture(v.id);
+
+    return '<div class="venture-card" style="border-color:' + (STAGE_BORDER[sc]||'rgba(200,155,20,.12)') + ';">' +
+
+      // ── Header ─────────────────────────────────────────────
+      '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">' +
+        '<div style="width:40px;height:40px;border-radius:9px;background:' + escHtml(v.color||'var(--gold)') + ';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:17px;color:#080808;flex-shrink:0;">' +
+          escHtml((v.name||'?')[0]) +
+        '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--white);">' + escHtml(v.name) + '</div>' +
+          '<div style="font-size:.72rem;color:var(--dimmer);margin-top:2px;">' + escHtml(v.focus||'') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">' +
+          '<span class="badge ' + (STAGE_COLORS[sc]||'badge-dim') + '">' + escHtml(v.stage||'Idea') + '</span>' +
+          (isSeed ? '<span style="font-family:var(--mono);font-size:.48rem;color:var(--dimmer);letter-spacing:.08em;">SEED</span>' : '') +
+        '</div>' +
       '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;text-align:center;">' +
-        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Leads</div><div style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--gold);">'+(leadMap[v.id]||0)+'</div></div>' +
-        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Clients</div><div style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--cyan);">'+(clientMap[v.id]||0)+'</div></div>' +
-        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Revenue</div><div style="font-family:var(--display);font-weight:700;font-size:.85rem;color:var(--green);">₦'+f.i.toLocaleString()+'</div></div>' +
-        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;">Net</div><div style="font-family:var(--display);font-weight:700;font-size:.85rem;color:'+(profit>=0?'var(--green)':'var(--red)')+';">₦'+Math.abs(profit).toLocaleString()+'</div></div>' +
+
+      // ── Stats grid ──────────────────────────────────────────
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;text-align:center;">' +
+        '<div style="background:rgba(255,255,255,.03);border-radius:6px;padding:8px 4px;">' +
+          '<div style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Leads</div>' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--gold);">' + (leadMap[v.id]||0) + '</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,.03);border-radius:6px;padding:8px 4px;">' +
+          '<div style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Clients</div>' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--cyan);">' + (clientMap[v.id]||0) + '</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,.03);border-radius:6px;padding:8px 4px;">' +
+          '<div style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Revenue</div>' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:.82rem;color:var(--green);">₦' + (f.i >= 1000000 ? (f.i/1000000).toFixed(1)+'M' : f.i >= 1000 ? Math.round(f.i/1000)+'k' : f.i.toLocaleString()) + '</div>' +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,.03);border-radius:6px;padding:8px 4px;">' +
+          '<div style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Net</div>' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:.82rem;color:' + (profit>=0?'var(--gold)':'var(--red)') + ';">' + (profit<0?'−':'') + '₦' + (Math.abs(profit) >= 1000000 ? (Math.abs(profit)/1000000).toFixed(1)+'M' : Math.abs(profit) >= 1000 ? Math.round(Math.abs(profit)/1000)+'k' : Math.abs(profit).toLocaleString()) + '</div>' +
+        '</div>' +
       '</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<div class="health-bar" style="flex:1;margin-top:0;"><div class="health-fill '+hc+'" style="width:'+h+'%;"></div></div>' +
-        '<span style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+h+'%</span>' +
+
+      // ── Health bar ──────────────────────────────────────────
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:' + (canEdit ? '12' : '0') + 'px;">' +
+        '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);width:52px;">Health</div>' +
+        '<div class="health-bar" style="flex:1;margin:0;"><div class="health-fill ' + hc + '" style="width:' + h + '%;"></div></div>' +
+        '<span style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);min-width:30px;text-align:right;">' + h + '%</span>' +
       '</div>' +
-      (canAccess('settings')&&dbVentures.find(function(dv){return dv.id===v.id;}) ?
-        '<div class="btn-row" style="margin-top:10px;"><button class="action-btn" onclick="openEditVenture(\''+v.id+'\')">Edit</button><button class="action-btn danger" onclick="deleteRecord(\'ventures\',\''+v.id+'\')">Delete</button></div>' : '') +
+
+      // ── Edit / Delete ───────────────────────────────────────
+      (canEdit ?
+        '<div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid rgba(200,155,20,.08);">' +
+          '<button class="action-btn" style="flex:1;justify-content:center;" onclick="openEditVenture(\'' + v.id + '\')">' +
+            '✏ Edit' + (isSeed && !isDbV ? ' Stage' : '') +
+          '</button>' +
+          '<button class="action-btn danger" style="flex:1;justify-content:center;" onclick="deleteVenture(\'' + v.id + '\')">' +
+            '🗑 Remove' +
+          '</button>' +
+        '</div>'
+        : '') +
+
     '</div>';
   }).join('');
 }
 
-function openAddVenture(){
-  var html='<div class="drawer-form">' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Venture Name</div><input class="form-input" id="ven-name" placeholder="e.g. TEKNNUKU Logistics"></div>' +
-    '<div class="form-field"><div class="form-label">Stage</div><select class="form-select" id="ven-stage"><option>Idea</option><option>Building</option><option>Revenue</option><option>Scaling</option></select></div></div>' +
-    '<div class="form-field"><div class="form-label">Current Focus</div><input class="form-input" id="ven-focus" placeholder="What is this venture doing right now?"></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="saveVenture(null)">💾 Add Venture</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
-  '</div>';
-  openDrawer('Ventures','Add Venture',html);
+function openAddVenture() {
+  var html =
+    '<div class="detail-section"><h4>📋 Venture Details</h4>' +
+    '<div style="margin-bottom:16px;">' + buildStageRadios('Building') + '</div>' +
+    '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Venture Name *</div>' +
+      '<input class="form-input" id="ven-name" placeholder="e.g. TEKNNUKU Logistics"></div>' +
+    '<div class="form-field"><div class="form-label">Focus / Description</div>' +
+      '<input class="form-input" id="ven-focus" placeholder="What is this venture doing right now?"></div>' +
+    '</div>' +
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveVenture(null)">💾 Add Venture</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+  openDrawer('Add Venture', 'New Venture', html);
 }
-function openEditVenture(id){
-  var dbV=(window._data.ventures||[]).find(function(v){return v.id===id;});if(!dbV)return;
-  var html='<div class="drawer-form">' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Name</div><input class="form-input" id="ven-name" value="'+escHtml(dbV.name||'')+'"></div>' +
-    '<div class="form-field"><div class="form-label">Stage</div><select class="form-select" id="ven-stage">' +
-      ['Idea','Building','Revenue','Scaling'].map(function(s){return'<option'+(dbV.stage===s?' selected':'')+'>'+s+'</option>';}).join('') +
-    '</select></div></div>' +
-    '<div class="form-field"><div class="form-label">Focus</div><input class="form-input" id="ven-focus" value="'+escHtml(dbV.focus||'')+'"></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="saveVenture(\''+id+'\')">Update</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
-  '</div>';
-  openDrawer('Ventures',escHtml(dbV.name||'—'),html);
+
+function openEditVenture(id) {
+  // Prefer DB version, fall back to seed
+  var dbV  = (window._data ? window._data.ventures || [] : []).find(function(v){ return v.id === id && !v.deleted; });
+  var seedV = VENTURES_SEED.find(function(v){ return v.id === id; });
+  var v    = dbV || seedV;
+  if (!v) { toast('Venture not found', 'error'); return; }
+
+  var seed = isSeedVenture(id);
+
+  var html =
+    // Stage selector — most prominent
+    '<div class="detail-section"><h4>⚡ Venture Stage</h4>' +
+    '<div style="margin-bottom:4px;">' + buildStageRadios(v.stage || 'Idea') + '</div>' +
+    '</div>' +
+
+    // Details
+    '<div class="detail-section"><h4>📋 Details</h4>' +
+    '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Venture Name</div>' +
+      '<input class="form-input" id="ven-name" value="' + escHtml(v.name||'') + '"></div>' +
+    '<div class="form-field"><div class="form-label">Focus / Description</div>' +
+      '<input class="form-input" id="ven-focus" value="' + escHtml(v.focus||'') + '" placeholder="What is this venture doing right now?"></div>' +
+    '</div>' +
+
+    // Context banner for seed ventures
+    (seed && !dbV
+      ? '<div style="background:rgba(0,188,212,.06);border:1px solid rgba(0,188,212,.18);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-family:var(--mono);font-size:.58rem;color:var(--cyan);line-height:1.6;">' +
+          '⬡ This is a seed venture. Editing will save your changes to Firestore. Stage and focus are fully editable.' +
+        '</div>'
+      : '') +
+
+    // Current state summary
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;text-align:center;">' +
+      '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Source</div>' +
+        '<div style="font-size:.78rem;color:var(--white);">' + (seed ? 'Seed Venture' : 'Custom Venture') + '</div></div>' +
+      '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Segment</div>' +
+        '<div style="font-size:.78rem;color:var(--white);">' + escHtml(v.segment||'—') + '</div></div>' +
+      '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Current Stage</div>' +
+        '<div style="font-size:.78rem;color:var(--gold);">' + escHtml(v.stage||'Idea') + '</div></div>' +
+    '</div>' +
+
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveVenture(\'' + id + '\')">💾 Save Changes</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+      '<button class="action-btn danger" style="margin-left:auto;" onclick="deleteVenture(\'' + id + '\')">🗑 Remove Venture</button>' +
+    '</div>';
+
+  openDrawer('Edit Venture', escHtml(v.name||'—'), html);
 }
-function saveVenture(id){
-  var name=document.getElementById('ven-name').value.trim();if(!name){toast('Name required','error');return;}
-  var data={name:name,focus:document.getElementById('ven-focus').value.trim(),stage:document.getElementById('ven-stage').value};
-  var fn=id?window._updateDoc('ventures',id,data):window._saveDoc('ventures',data);
-  fn.then(function(){toast('Venture saved ✓','success');closeDrawer();window._loadAll();});
+
+function saveVenture(id) {
+  var name    = (document.getElementById('ven-name')  ||{}).value||'';
+  var focus   = (document.getElementById('ven-focus') ||{}).value||'';
+  var stageEl = document.querySelector('input[name="ven-stage-r"]:checked');
+  var stage   = stageEl ? stageEl.value : 'Idea';
+
+  if (!name.trim()) { toast('Venture name is required', 'error'); return; }
+
+  var isNew  = !id;
+  var seed   = id ? isSeedVenture(id) : false;
+  var dbV    = id ? (window._data ? window._data.ventures||[] : []).find(function(v){ return v.id===id && !v.deleted; }) : null;
+
+  // Preserve colour and segment from seed definition when saving to Firestore
+  var seedV  = seed ? VENTURES_SEED.find(function(v){ return v.id === id; }) : null;
+  var data   = {
+    name:    name.trim(),
+    focus:   focus.trim(),
+    stage:   stage,
+    color:   (dbV && dbV.color)   || (seedV && seedV.color)   || 'linear-gradient(135deg,var(--gold),var(--goldL))',
+    segment: (dbV && dbV.segment) || (seedV && seedV.segment) || 'type1'
+  };
+
+  var fn;
+  if (isNew) {
+    // Brand-new venture → auto-generated Firestore ID
+    fn = window._saveDoc('ventures', data);
+  } else {
+    // Seed venture (first save) or existing DB venture with known ID → setDoc preserves/creates the doc
+    fn = window._setDoc('ventures', id, data);
+  }
+
+  fn.then(function() {
+    toast('Venture saved ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e) { toast('Save failed: ' + (e.message||e), 'error'); });
 }
 
 // ── Task Board ─────────────────────────────────────────────────
