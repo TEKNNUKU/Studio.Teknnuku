@@ -2452,22 +2452,57 @@ function _panelVentures() {
 function _panelTasks() {
   return '<div class="panel" id="panel-tasks">' +
     '<div class="eyebrow">Delivery</div>' +
-    '<div class="panel-header"><div class="panel-title">Task Board</div>' +
-    '<div style="display:flex;gap:8px;">' +
-      '<select class="tbl-filter" id="task-vfilter" onchange="filterTasks()"><option value="">All Ventures</option>' +
-      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
-      '</select>' +
-      '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddTask()">+ Add Task</button>' +
-    '</div></div>' +
-    '<div class="kpi-grid" style="margin-bottom:20px;">' +
-      '<div class="kpi-card cyan"><div class="kpi-icon">📋</div><div class="kpi-label">Total Tasks</div><div class="kpi-value" id="task-kpi-total">—</div><div class="kpi-meta">all board</div></div>' +
-      '<div class="kpi-card gold"><div class="kpi-icon">🔄</div><div class="kpi-label">In Progress</div><div class="kpi-value" id="task-kpi-wip">—</div><div class="kpi-meta">active</div></div>' +
-      '<div class="kpi-card red"><div class="kpi-icon">⏰</div><div class="kpi-label">Overdue</div><div class="kpi-value" id="task-kpi-overdue">—</div><div class="kpi-meta">past deadline</div></div>' +
-      '<div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-label">Done</div><div class="kpi-value" id="task-kpi-done">—</div><div class="kpi-meta">completed</div></div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Task Board</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<div id="task-count-label" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;">— tasks</div>' +
+        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddTask()">+ Add Task</button>' +
+      '</div>' +
     '</div>' +
+
+    // ── KPIs ─────────────────────────────────────────────────
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px;">' +
+      '<div class="kpi-card cyan"  ><div class="kpi-icon">📋</div><div class="kpi-label">Total</div><div class="kpi-value" id="task-kpi-total">—</div><div class="kpi-meta">all tasks</div></div>' +
+      '<div class="kpi-card gold"  ><div class="kpi-icon">🔄</div><div class="kpi-label">In Progress</div><div class="kpi-value" id="task-kpi-wip">—</div><div class="kpi-meta">active</div></div>' +
+      '<div class="kpi-card red"   ><div class="kpi-icon">⏰</div><div class="kpi-label">Overdue</div><div class="kpi-value" id="task-kpi-overdue">—</div><div class="kpi-meta">past deadline</div></div>' +
+      '<div class="kpi-card green" ><div class="kpi-icon">✅</div><div class="kpi-label">Done</div><div class="kpi-value" id="task-kpi-done">—</div><div class="kpi-meta">completed</div></div>' +
+    '</div>' +
+
+    // ── Filter bar ────────────────────────────────────────────
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+
+        '<input class="tbl-search" id="tf-search" style="width:190px;" placeholder="Search task title…" oninput="applyTaskFilters()">' +
+
+        '<select class="tbl-filter" id="tf-venture" onchange="applyTaskFilters()">' +
+          '<option value="">All Ventures</option>' +
+          VENTURES_SEED.map(function(v){
+            return '<option value="' + v.id + '">' + v.name + '</option>';
+          }).join('') +
+        '</select>' +
+
+        '<select class="tbl-filter" id="tf-status" onchange="applyTaskFilters()">' +
+          '<option value="">All Statuses</option>' +
+          '<option value="todo">To Do</option>' +
+          '<option value="in_progress">In Progress</option>' +
+          '<option value="review">Review</option>' +
+          '<option value="done">Done</option>' +
+        '</select>' +
+
+        '<select class="tbl-filter" id="tf-member" onchange="applyTaskFilters()">' +
+          '<option value="">All Members</option>' +
+        '</select>' +
+
+        '<button onclick="clearTaskFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+
+      '</div>' +
+    '</div>' +
+
+    // ── Board ─────────────────────────────────────────────────
     '<div id="tasks-board" class="kanban-board" style="grid-template-columns:repeat(4,1fr);">' +
-      '<div class="loading-row"><div class="spinner"></div>' +
-    '</div></div>' +
+      '<div class="loading-row"><div class="spinner"></div></div>' +
+    '</div>' +
+
   '</div>';
 }
 
@@ -7052,41 +7087,221 @@ function saveVenture(id) {
   }).catch(function(e) { toast('Save failed: ' + (e.message||e), 'error'); });
 }
 
-// ── Task Board ─────────────────────────────────────────────────
-var _taskVFilter='';
-function filterTasks(){_taskVFilter=document.getElementById('task-vfilter')?document.getElementById('task-vfilter').value:'';renderTasks(window._data.tasks||[],window._data.team_members||[]);}
-function renderTasks(tasks,members){
-  var filtered=_taskVFilter?tasks.filter(function(t){return t.ventureId===_taskVFilter;}):tasks;
-  var total=filtered.length,wip=filtered.filter(function(t){return t.status==='in_progress';}).length;
-  var today=new Date();
-  var overdue=filtered.filter(function(t){return t.status!=='done'&&t.deadline&&new Date(t.deadline)<today;}).length;
-  var done=filtered.filter(function(t){return t.status==='done';}).length;
-  var elT=document.getElementById('task-kpi-total');if(elT)elT.textContent=total;
-  var elW=document.getElementById('task-kpi-wip');if(elW)elW.textContent=wip;
-  var elO=document.getElementById('task-kpi-overdue');if(elO)elO.textContent=overdue;
-  var elD=document.getElementById('task-kpi-done');if(elD)elD.textContent=done;
-  var board=document.getElementById('tasks-board');if(!board)return;
-  var memberMap={};members.forEach(function(m){memberMap[m.id]=m;});
-  var cols=[{k:'todo',l:'To Do',dot:'var(--dimmer)'},{k:'in_progress',l:'In Progress',dot:'var(--gold)'},{k:'review',l:'Review',dot:'var(--amber)'},{k:'done',l:'Done',dot:'var(--green)'}];
-  board.innerHTML=cols.map(function(col){
-    var ct=filtered.filter(function(t){return t.status===col.k;});
-    return '<div class="kanban-col"><div class="kanban-col-header">' +
-      '<div class="kanban-col-title"><div class="col-dot" style="background:'+col.dot+'"></div>'+col.l+'</div>' +
-      '<div class="col-count">'+ct.length+'</div></div>' +
+// ═══════════════════════════════════════════════════════════════
+//  TASK BOARD — FILTER STATE + ROLE SCOPING
+// ═══════════════════════════════════════════════════════════════
+var _taskFilters = { venture:'', status:'', member:'', search:'' };
+
+function applyTaskFilters() {
+  _taskFilters.venture = (document.getElementById('tf-venture') ||{}).value||'';
+  _taskFilters.status  = (document.getElementById('tf-status')  ||{}).value||'';
+  _taskFilters.member  = (document.getElementById('tf-member')  ||{}).value||'';
+  _taskFilters.search  = ((document.getElementById('tf-search') ||{}).value||'').toLowerCase().trim();
+  renderTasks(window._data ? window._data.tasks||[] : [], window._data ? window._data.team_members||[] : []);
+}
+
+function clearTaskFilters() {
+  ['tf-venture','tf-status','tf-member','tf-search'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_taskFilters).forEach(function(k){ _taskFilters[k] = ''; });
+  renderTasks(window._data ? window._data.tasks||[] : [], window._data ? window._data.team_members||[] : []);
+}
+
+// Legacy shim — still called from venture filter select in old HTML if any
+function filterTasks() { applyTaskFilters(); }
+
+// Determine whether the current user can see a given task
+// Non-privileged roles only see tasks assigned to them or unassigned tasks
+// on ventures relevant to their role
+function taskVisibleToUser(task) {
+  var role = window._userRole;
+  // Founder and ops lead see everything
+  if (role === 'founder' || role === 'ops_lead') return true;
+
+  var cu = window._currentUser;
+  if (!cu) return false;
+
+  var d  = window._data || {};
+  var me = (d.team_members||[]).find(function(m){
+    return (m.email||'').toLowerCase() === (cu.email||'').toLowerCase();
+  });
+
+  // Determine which ventures this role is responsible for
+  // Use the TEAM_FOR_ROLE map — Delivery team sees all ventures by default
+  var deliveryRoles = ['tech_product_lead','developer','onboarding_specialist'];
+  var salesRoles    = ['sales_manager','inbound_closer','outbound_closer'];
+  var contentRoles  = ['content_lead','content_creator','outreach_lead_gen'];
+
+  // If task is assigned to me specifically — always visible
+  if (me && task.assignedTo === me.id) return true;
+
+  // Unassigned tasks visible to Delivery roles on any venture
+  if (!task.assignedTo && deliveryRoles.indexOf(role) !== -1) return true;
+
+  // Sales roles see tasks on ventures they're assigned to (no venture restriction)
+  if (salesRoles.indexOf(role) !== -1) return true;
+
+  // Content roles see tasks on any venture
+  if (contentRoles.indexOf(role) !== -1) return true;
+
+  // CS Manager: sees tasks on their assigned clients' ventures
+  if (role === 'customer_success_manager') {
+    var myClients = (d.clients||[]).filter(function(c){ return c.csManager === (me && me.id); });
+    var myVentures = new Set(myClients.map(function(c){ return c.ventureId; }));
+    if (myVentures.has(task.ventureId)) return true;
+  }
+
+  // Admin/Finance: no task visibility beyond assigned
+  return false;
+}
+
+function buildTaskMemberOptions(currentId) {
+  var members = window._data ? window._data.team_members || [] : [];
+  var opts = '<option value="">All Members</option>' +
+    '<option value="__unassigned__"' + (currentId==='__unassigned__'?' selected':'') + '>Unassigned</option>';
+  members.forEach(function(m) {
+    opts += '<option value="' + m.id + '"' + (currentId===m.id?' selected':'') + '>' +
+      escHtml(m.name||m.email||'—') + ' · ' + escHtml(ROLE_LABELS[m.role]||m.role||'') +
+    '</option>';
+  });
+  return opts;
+}
+  
+function renderTasks(tasks, members) {
+  // Rebuild member filter dropdown
+  var mfEl = document.getElementById('tf-member');
+  if (mfEl) {
+    var cur = mfEl.value;
+    mfEl.innerHTML = buildTaskMemberOptions(cur);
+    if (cur) mfEl.value = cur;
+  }
+
+  var memberMap = {};
+  members.forEach(function(m){ memberMap[m.id] = m; });
+
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  // Step 1: apply role-based visibility
+  var visible = tasks.filter(function(t){ return taskVisibleToUser(t); });
+
+  // Step 2: apply active filters
+  var f = _taskFilters;
+  var filtered = visible.filter(function(t) {
+    if (f.venture && t.ventureId !== f.venture) return false;
+    if (f.status  && t.status    !== f.status)  return false;
+    if (f.member === '__unassigned__' && t.assignedTo) return false;
+    if (f.member && f.member !== '__unassigned__' && t.assignedTo !== f.member) return false;
+    if (f.search && !(t.title||'').toLowerCase().includes(f.search)) return false;
+    return true;
+  });
+
+  // KPIs — from role-scoped visible set (not filtered)
+  var total   = visible.length;
+  var wip     = visible.filter(function(t){ return t.status==='in_progress'; }).length;
+  var overdue = visible.filter(function(t){ return t.status!=='done' && t.deadline && new Date(t.deadline) < today; }).length;
+  var done    = visible.filter(function(t){ return t.status==='done'; }).length;
+  setText('task-kpi-total',   total);
+  setText('task-kpi-wip',     wip);
+  setText('task-kpi-overdue', overdue);
+  setText('task-kpi-done',    done);
+
+  // Count label reflects filtered set
+  var lbl = document.getElementById('task-count-label');
+  if (lbl) lbl.textContent = filtered.length + ' of ' + total + ' task' + (total!==1?'s':'');
+
+  var board = document.getElementById('tasks-board'); if (!board) return;
+
+  var COLS = [
+    { k:'todo',        l:'To Do',       dot:'var(--dimmer)', accent:'rgba(242,237,228,.06)' },
+    { k:'in_progress', l:'In Progress', dot:'var(--gold)',   accent:'rgba(200,155,20,.06)'  },
+    { k:'review',      l:'Review',      dot:'var(--amber)',  accent:'rgba(245,158,11,.06)'  },
+    { k:'done',        l:'Done ✅',     dot:'var(--green)',  accent:'rgba(34,197,94,.06)'   }
+  ];
+
+  // If a specific status is filtered, show only that column
+  var colsToShow = f.status ? COLS.filter(function(c){ return c.k === f.status; }) : COLS;
+  var colStyle   = f.status
+    ? 'grid-template-columns:1fr;max-width:420px;'
+    : 'grid-template-columns:repeat(4,1fr);';
+  board.style.cssText = 'display:grid;gap:12px;' + colStyle + 'overflow-x:auto;padding-bottom:8px;';
+
+  board.innerHTML = colsToShow.map(function(col) {
+    var ct = filtered.filter(function(t){ return t.status === col.k; });
+
+    return '<div class="kanban-col">' +
+      '<div class="kanban-col-header" style="background:' + col.accent + ';">' +
+        '<div class="kanban-col-title">' +
+          '<div class="col-dot" style="background:' + col.dot + '"></div>' + col.l +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+          (ct.length ? '<span style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);">' +
+            ct.reduce(function(s,t){ return s + (t.priority==='high'?1:0); },0) + ' 🔥' +
+          '</span>' : '') +
+          '<div class="col-count">' + ct.length + '</div>' +
+        '</div>' +
+      '</div>' +
       '<div class="kanban-col-body">' +
-      (ct.length?ct.map(function(t){
-        var v=V_MAP[t.ventureId]||{};var od=t.deadline&&new Date(t.deadline)<today&&t.status!=='done';
-        var m=t.assignedTo&&memberMap[t.assignedTo];
-        return '<div class="kanban-item" onclick="openTaskDrawer(\''+t.id+'\')">' +
-          '<div class="kanban-item-title">'+escHtml(t.title)+'</div>' +
-          '<div style="display:flex;flex-wrap:wrap;gap:5px;">' +
-            (t.ventureId?'<span class="venture-tag">'+escHtml(v.name||t.ventureId)+'</span>':'') +
-            statusBadge(t.priority||'low') +
-          '</div>' +
-          (t.deadline?'<div style="font-size:.62rem;color:'+(od?'var(--red)':'var(--dimmer)')+'margin-top:4px;">'+(od?'⚠️ ':'📅 ')+fmtDate(t.deadline)+(od?' OVERDUE':'')+'</div>':'') +
-          (m?'<div style="font-size:.62rem;color:var(--dimmer);margin-top:3px;">👤 '+escHtml(m.name||m.email||'')+'</div>':'') +
-        '</div>';
-      }).join(''):'<div class="empty-state" style="padding:14px;"><div class="empty-icon" style="font-size:1.3rem;">📋</div></div>') +
+      (ct.length
+        ? ct.map(function(t) {
+            var v        = V_MAP[t.ventureId] || {};
+            var od       = t.deadline && new Date(t.deadline) < today && t.status !== 'done';
+            var assignee = t.assignedTo ? memberMap[t.assignedTo] : null;
+            var PRI_STYLE = {
+              high:   'color:var(--red);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);',
+              medium: 'color:var(--amber);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);',
+              low:    'color:var(--dimmer);background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.06);'
+            };
+            var priStyle = PRI_STYLE[t.priority||'low'];
+
+            return '<div class="kanban-item" onclick="openTaskDrawer(\'' + t.id + '\')" style="' +
+              (od ? 'border-color:rgba(239,68,68,.3);' : '') + '">' +
+
+              // Priority pill
+              '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">' +
+                '<span style="font-family:var(--mono);font-size:.5rem;letter-spacing:.06em;padding:2px 7px;border-radius:3px;' + priStyle + '">' +
+                  (t.priority==='high'?'🔥 HIGH':t.priority==='medium'?'🟡 MED':'⚪ LOW') +
+                '</span>' +
+                (od ? '<span style="font-family:var(--mono);font-size:.5rem;color:var(--red);">OVERDUE</span>' : '') +
+              '</div>' +
+
+              // Title
+              '<div class="kanban-item-title" style="margin-bottom:7px;">' + escHtml(t.title||'—') + '</div>' +
+
+              // Tags
+              (t.ventureId
+                ? '<div style="margin-bottom:7px;"><span class="venture-tag">' + escHtml(v.name||t.ventureId) + '</span></div>'
+                : '') +
+
+              // Deadline
+              (t.deadline
+                ? '<div style="display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.58rem;color:' + (od?'var(--red)':'var(--dimmer)') + ';margin-bottom:6px;">' +
+                    (od ? '⚠' : '📅') + ' ' + fmtDate(t.deadline) +
+                  '</div>'
+                : '') +
+
+              // Assignee footer
+              '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(200,155,20,.06);">' +
+                (assignee
+                  ? '<div style="display:flex;align-items:center;gap:5px;">' +
+                      '<div style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:7px;color:#080808;flex-shrink:0;">' +
+                        escHtml(initials(assignee.name||assignee.email||'?')) +
+                      '</div>' +
+                      '<span style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+                        escHtml((assignee.name||assignee.email||'').split(' ')[0]) +
+                      '</span>' +
+                    '</div>'
+                  : '<span style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);">Unassigned</span>'
+                ) +
+                '<span style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);">' + timeAgo(t.createdAt) + '</span>' +
+              '</div>' +
+
+            '</div>';
+          }).join('')
+        : '<div class="empty-state" style="padding:18px;font-size:.62rem;">' +
+            '<div style="font-size:1.1rem;margin-bottom:4px;">📋</div>Empty' +
+          '</div>'
+      ) +
       '</div></div>';
   }).join('');
 }
