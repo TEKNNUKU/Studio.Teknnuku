@@ -2181,16 +2181,129 @@ function _panelAssignments() {
   '</div>';
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  TEAM MEMBERS — EMPLOYMENT PHASES + VENTURE ACCESS
+// ═══════════════════════════════════════════════════════════════
+var TEKNNUKU_EMPLOYMENT_PHASES = [
+  { key:'onboarding', label:'Onboarding',            icon:'🎯', color:'#00BCD4', desc:'Week 1 · Setup & orientation'       },
+  { key:'phase1',     label:'Phase 1 · Activation',  icon:'🟡', color:'#f59e0b', desc:'Days 1–14 · Performance activation' },
+  { key:'phase2',     label:'Phase 2 · Proof',        icon:'🔵', color:'#3b82f6', desc:'Days 15–30 · Demonstrating results' },
+  { key:'phase3',     label:'Phase 3 · Transition',   icon:'🟢', color:'#22c55e', desc:'Days 30–60 · Pre-confirmation'      },
+  { key:'employed',   label:'Confirmed Employee',     icon:'✅', color:'#22c55e', desc:'Full-time confirmed'                },
+  { key:'promoted',   label:'Promoted',               icon:'⬆️', color:'#a855f7', desc:'Role or level advancement'          },
+  { key:'on_leave',   label:'On Leave',               icon:'🌴', color:'#f97316', desc:'Temporary leave of absence'         },
+  { key:'suspended',  label:'Suspended',              icon:'⏸️', color:'#ef4444', desc:'Employment under review'            },
+  { key:'terminated', label:'Terminated',             icon:'🚫', color:'#ef4444', desc:'Employment ended'                   }
+];
+
+function getPhaseConfig(key) {
+  return TEKNNUKU_EMPLOYMENT_PHASES.find(function(p){ return p.key === key; }) ||
+    { key:key, label:key||'Unknown', icon:'⬡', color:'var(--dimmer)', desc:'' };
+}
+
+// ── Venture Access Control ────────────────────────────────────
+function getMyVentures() {
+  if (!window._data || !window._currentUser) return null;
+  var role = window._userRole;
+  if (role === 'founder' || role === 'ops_lead') return null; // see all
+  var me = (window._data.team_members||[]).find(function(m){
+    return (m.email||'').toLowerCase() === (window._currentUser.email||'').toLowerCase();
+  });
+  if (!me || !me.ventures || !me.ventures.length) return null; // no restriction set
+  return me.ventures;
+}
+
+function canAccessVentureData(ventureId) {
+  var myV = getMyVentures();
+  if (myV === null) return true;          // unrestricted
+  if (!ventureId) return true;            // no venture tag — visible to all
+  return myV.indexOf(ventureId) !== -1;
+}
+
+// ── Venture Checkbox Builder ──────────────────────────────────
+function buildVentureCheckboxes(selectedIds) {
+  var sel = selectedIds || [];
+  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+    VENTURES_SEED.map(function(v) {
+      var checked = sel.indexOf(v.id) !== -1;
+      var STAGE_COLORS = { Idea:'var(--dimmer)', Building:'var(--amber)', Revenue:'var(--green)', Scaling:'var(--cyan)' };
+      return '<label style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid ' +
+        (checked ? 'rgba(200,155,20,.3)' : 'rgba(242,237,228,.07)') +
+        ';border-radius:7px;cursor:pointer;transition:border-color .15s;">' +
+        '<input type="checkbox" class="tm-venture-cb" value="' + v.id + '"' + (checked?' checked':'') +
+          ' style="accent-color:var(--gold);width:14px;height:14px;" onchange="this.closest(\'label\').style.borderColor=this.checked?\'rgba(200,155,20,.3)\':\'rgba(242,237,228,.07)\'">' +
+        '<div style="min-width:0;">' +
+          '<div style="font-size:.76rem;color:var(--white);font-weight:600;">' + escHtml(v.name) + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.52rem;color:' + (STAGE_COLORS[v.stage]||'var(--dimmer)') + ';">' + escHtml(v.stage||'') + '</div>' +
+        '</div>' +
+      '</label>';
+    }).join('') +
+  '</div>';
+}
+
+function getSelectedVentures() {
+  var cbs = document.querySelectorAll('.tm-venture-cb:checked');
+  var ids = [];
+  cbs.forEach(function(cb){ ids.push(cb.value); });
+  return ids;
+}
+
+// ── Phase Timeline Builder ─────────────────────────────────────
+function buildPhaseTimeline(phaseHistory, currentPhase) {
+  var history = (phaseHistory || []).slice();
+  if (!history.length && currentPhase) {
+    history = [{ phase:currentPhase, startedAt:new Date().toISOString(), note:'' }];
+  }
+  if (!history.length) {
+    return '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);padding:8px 0;">No phase history recorded yet.</div>';
+  }
+  return '<div style="display:flex;flex-direction:column;gap:0;">' +
+    history.slice().reverse().map(function(entry, i, arr) {
+      var cfg     = getPhaseConfig(entry.phase);
+      var isLast  = i === arr.length - 1;
+      var isCurr  = i === 0;
+      return '<div style="display:flex;gap:12px;padding-bottom:' + (isLast?'0':'18') + 'px;position:relative;">' +
+        (!isLast ? '<div style="position:absolute;left:11px;top:24px;bottom:0;width:1px;background:var(--border);"></div>' : '') +
+        '<div style="width:23px;height:23px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;border:1.5px solid ' + cfg.color + ';background:' + (isCurr?'rgba(255,255,255,.08)':'var(--bg)') + ';position:relative;z-index:1;">' +
+          cfg.icon +
+        '</div>' +
+        '<div style="flex:1;padding-top:1px;">' +
+          '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">' +
+            '<div style="font-family:var(--mono);font-size:.62rem;font-weight:' + (isCurr?'700':'400') + ';color:' + cfg.color + ';">' + escHtml(cfg.label) + '</div>' +
+            (isCurr ? '<span class="badge badge-green" style="font-size:.48rem;">Current</span>' : '') +
+          '</div>' +
+          '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);margin-top:2px;">' + fmtDate(entry.startedAt) + '</div>' +
+          (entry.note ? '<div style="font-size:.74rem;color:var(--dim);margin-top:5px;padding:5px 9px;background:rgba(255,255,255,.03);border-radius:4px;line-height:1.5;">' + escHtml(entry.note) + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+  
 function _panelTeam() {
   return '<div class="panel" id="panel-team">' +
-    '<div class="eyebrow">Active Staff</div><div class="panel-header"><div class="panel-title">Team Members</div><button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openAddTeamMember()">+ Add Member</button></div>' +
-    '<div class="kpi-grid" style="margin-bottom:20px;">' +
-      '<div class="kpi-card green"><div class="kpi-icon">👥</div><div class="kpi-label">Total Active</div><div class="kpi-value" id="team-kpi-total">—</div><div class="kpi-meta">all roles</div></div>' +
-      '<div class="kpi-card gold"><div class="kpi-icon">🔄</div><div class="kpi-label">On Probation</div><div class="kpi-value" id="team-kpi-probation">—</div><div class="kpi-meta">phases 1-3</div></div>' +
-      '<div class="kpi-card cyan"><div class="kpi-icon">✅</div><div class="kpi-label">Confirmed</div><div class="kpi-value" id="team-kpi-confirmed">—</div><div class="kpi-meta">full employees</div></div>' +
+    '<div class="eyebrow">Active Staff</div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Team Members</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<div id="team-count-label" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;">— members</div>' +
+        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddTeamMember()">+ Add Member</button>' +
+      '</div>' +
     '</div>' +
-    '<input class="tbl-search" style="width:100%;margin-bottom:16px;padding:10px 14px;" placeholder="Search by name, role, or email…" oninput="filterTeam(this.value)">' +
-    '<div id="team-list"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+
+    // ── KPIs ─────────────────────────────────────────────────
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px;">' +
+      '<div class="kpi-card green" ><div class="kpi-icon">👥</div><div class="kpi-label">Total Active</div><div class="kpi-value" id="team-kpi-total">—</div><div class="kpi-meta">all roles</div></div>' +
+      '<div class="kpi-card amber" ><div class="kpi-icon">🔄</div><div class="kpi-label">On Probation</div><div class="kpi-value" id="team-kpi-probation">—</div><div class="kpi-meta">phases 1-3</div></div>' +
+      '<div class="kpi-card cyan"  ><div class="kpi-icon">✅</div><div class="kpi-label">Confirmed</div><div class="kpi-value" id="team-kpi-confirmed">—</div><div class="kpi-meta">full employees</div></div>' +
+      '<div class="kpi-card purple"><div class="kpi-icon">🏢</div><div class="kpi-label">Multi-Venture</div><div class="kpi-value" id="team-kpi-multiventure">—</div><div class="kpi-meta">assigned 2+ ventures</div></div>' +
+    '</div>' +
+
+    // ── Search ────────────────────────────────────────────────
+    '<input class="tbl-search" style="width:100%;margin-bottom:16px;padding:10px 14px;" placeholder="Search by name, role, email or venture…" oninput="filterTeam(this.value)">' +
+
+    '<div id="team-list"><div class="loading-row"><div class="spinner"></div></div></div>' +
+  '</div>';
 }
 
 function _panelVacancies() {
@@ -3635,127 +3748,353 @@ function openPhaseNoteModal(id,phase){
 // ═══════════════════════════════════════
 // TEAM MEMBERS
 // ═══════════════════════════════════════
-function renderTeam(members){
-  var total=members.length;
-  var probation=members.filter(function(m){return m.employmentStage==='probation'||['phase1','phase2','phase3'].indexOf(m.status)>-1;}).length;
-  var confirmed=members.filter(function(m){return m.employmentStage==='employed'||m.status==='employed';}).length;
-  var elT=document.getElementById('team-kpi-total');if(elT)elT.textContent=total;
-  var elP=document.getElementById('team-kpi-probation');if(elP)elP.textContent=probation;
-  var elC=document.getElementById('team-kpi-confirmed');if(elC)elC.textContent=confirmed;
-  var el=document.getElementById('team-list');if(!el)return;
-  window._teamCache=members;
+function renderTeam(members) {
+  var total     = members.length;
+  var probation = members.filter(function(m){
+    return ['phase1','phase2','phase3','onboarding'].indexOf(m.employmentPhase||m.status||'') !== -1
+      || (m.employmentStage === 'probation');
+  }).length;
+  var confirmed = members.filter(function(m){
+    return m.employmentPhase === 'employed' || m.employmentPhase === 'promoted'
+      || m.employmentStage === 'employed';
+  }).length;
+  var multiV = members.filter(function(m){
+    return m.ventures && m.ventures.length >= 2;
+  }).length;
+
+  setText('team-kpi-total',        total);
+  setText('team-kpi-probation',    probation);
+  setText('team-kpi-confirmed',    confirmed);
+  setText('team-kpi-multiventure', multiV);
+
+  var lbl = document.getElementById('team-count-label');
+  if (lbl) lbl.textContent = total + ' member' + (total!==1?'s':'');
+
+  window._teamCache = members;
   displayTeam(members);
 }
 
-function displayTeam(members){
-  var el=document.getElementById('team-list');if(!el)return;
-  if(!members.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🏢</div>No team members yet. Hire applicants to add them.</div>';return;}
+function displayTeam(members) {
+  var el = document.getElementById('team-list'); if (!el) return;
+
+  if (!members.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏢</div>' +
+      'No team members yet. Hire applicants to add them.</div>';
+    return;
+  }
+
   // Group by team
-  var teams={};
-  members.forEach(function(m){var t=m.team||'Other';if(!teams[t])teams[t]=[];teams[t].push(m);});
-  var html='';
-  Object.keys(teams).sort().forEach(function(team){
-    var color=TEAM_COLORS[team]||'#C89B14';
-    html+='<div style="margin-bottom:24px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:'+color+';">'+escHtml(team)+'</div><div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div></div>';
-    teams[team].forEach(function(m){
-      var stageLabel=m.employmentStage==='employed'?'Confirmed Employee':m.status==='phase1'?'Phase 1 · Activation':m.status==='phase2'?'Phase 2 · Proof':m.status==='phase3'?'Phase 3 · Transition':'Active';
-      html+='<div class="team-card">' +
-        '<div class="team-avatar">'+initials(m.name||m.email||'?')+'</div>' +
-        '<div class="team-info"><div class="team-name">'+escHtml(m.name||'—')+'</div>' +
-        '<div class="team-role-label">'+escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—')+'</div>' +
-        '<div class="team-email">'+escHtml(m.email||'—')+'</div></div>' +
-        '<div style="text-align:right;">'+statusBadge(m.employmentStage||m.status||'active') +
-        '<div class="team-meta">'+escHtml(stageLabel)+'</div>' +
-        '<div class="team-meta" style="margin-top:2px;">Joined: '+fmtDate(m.joinedAt||m.createdAt)+'</div></div>' +
-        '<div class="row-actions" style="margin-left:10px;"><button class="action-btn" onclick="openTeamMemberDrawer(window._data.team_members.find(function(x){return x.id===\''+m.id+'\'}))">Manage</button></div>' +
+  var teams = {};
+  members.forEach(function(m) {
+    var t = m.team || 'Other';
+    if (!teams[t]) teams[t] = [];
+    teams[t].push(m);
+  });
+
+  var PHASE_BADGE = {
+    onboarding:'badge-cyan',  phase1:'badge-amber', phase2:'badge-blue',
+    phase3:'badge-green',     employed:'badge-green', promoted:'badge-purple',
+    on_leave:'badge-orange',  suspended:'badge-red', terminated:'badge-red'
+  };
+
+  var html = '';
+  Object.keys(teams).sort().forEach(function(team) {
+    var color = TEAM_COLORS[team] || '#C89B14';
+    html += '<div style="margin-bottom:28px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
+        '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:' + color + ';">' + escHtml(team) + '</div>' +
+        '<div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div>' +
+        '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);">' + teams[team].length + '</div>' +
+      '</div>';
+
+    teams[team].forEach(function(m) {
+      var phase     = m.employmentPhase || m.employmentStage || 'phase1';
+      var phaseCfg  = getPhaseConfig(phase);
+      var ventures  = m.ventures || [];
+      var phaseBadge = PHASE_BADGE[phase] || 'badge-dim';
+
+      html += '<div class="team-card">' +
+        // Avatar
+        '<div class="team-avatar">' + initials(m.name||m.email||'?') + '</div>' +
+
+        // Info
+        '<div class="team-info" style="flex:1;">' +
+          '<div class="team-name">' + escHtml(m.name||'—') + '</div>' +
+          '<div class="team-role-label">' + escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—') + '</div>' +
+          '<div class="team-email">' + escHtml(m.email||'—') + '</div>' +
+          // Ventures
+          (ventures.length
+            ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">' +
+                ventures.map(function(vId) {
+                  var v = V_MAP[vId] || {};
+                  return '<span class="venture-tag" style="font-size:.5rem;">' + escHtml(v.name||vId) + '</span>';
+                }).join('') +
+              '</div>'
+            : '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);margin-top:4px;">No ventures assigned</div>') +
+        '</div>' +
+
+        // Right side
+        '<div style="text-align:right;flex-shrink:0;">' +
+          '<span class="badge ' + phaseBadge + '" style="font-size:.52rem;">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span>' +
+          '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);margin-top:5px;">Joined: ' + fmtDate(m.joinedAt||m.createdAt) + '</div>' +
+        '</div>' +
+
+        // Manage button
+        '<div class="row-actions" style="margin-left:12px;">' +
+          '<button class="action-btn" onclick="openTeamMemberDrawer(window._data.team_members.find(function(x){return x.id===\'' + m.id + '\'}))">Manage</button>' +
+        '</div>' +
       '</div>';
     });
-    html+='</div>';
+
+    html += '</div>';
   });
-  el.innerHTML=html;
+
+  el.innerHTML = html;
 }
 
-function filterTeam(q){
-  var ql=q.toLowerCase();
-  var filtered=(window._teamCache||[]).filter(function(m){return(m.name||'').toLowerCase().includes(ql)||(m.email||'').toLowerCase().includes(ql)||(m.roleLabel||'').toLowerCase().includes(ql);});
+function filterTeam(q) {
+  var ql = (q||'').toLowerCase();
+  var filtered = (window._teamCache||[]).filter(function(m) {
+    var vNames = (m.ventures||[]).map(function(vId){ return (V_MAP[vId]||{}).name||''; }).join(' ');
+    return (m.name||'').toLowerCase().includes(ql) ||
+           (m.email||'').toLowerCase().includes(ql) ||
+           (m.roleLabel||'').toLowerCase().includes(ql) ||
+           (m.team||'').toLowerCase().includes(ql) ||
+           vNames.toLowerCase().includes(ql);
+  });
   displayTeam(filtered);
 }
 
-function openTeamMemberDrawer(m){
-  if(!m)return;
-  var comp=COMP_DATA[m.role]||{};
-  var a=m.applicantId?(window._data.applicants||[]).find(function(x){return x.id===m.applicantId;}):null;
-  var html='<div class="detail-section"><div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">' +
-    '<div class="team-avatar" style="width:52px;height:52px;font-size:20px;">'+initials(m.name||'?')+'</div>' +
-    '<div><div style="font-family:var(--display);font-weight:700;font-size:1.1rem;">'+escHtml(m.name||'—')+'</div>' +
-    '<div style="font-family:var(--mono);font-size:.62rem;color:var(--gold);">'+escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—')+'</div>' +
-    '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">'+escHtml(m.team||'—')+' · '+escHtml(m.email||'—')+'</div>' +
-    '</div></div>' +
-    '<div class="detail-grid">' +
-      '<div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(m.phone||'—')+'</div></div>' +
-      '<div class="detail-item"><div class="detail-label">Employment Stage</div><div class="detail-val">'+statusBadge(m.employmentStage||m.status)+'</div></div>' +
-      '<div class="detail-item"><div class="detail-label">Joined</div><div class="detail-val">'+fmtDate(m.joinedAt||m.createdAt)+'</div></div>' +
-      '<div class="detail-item"><div class="detail-label">Login Access</div><div class="detail-val" style="color:var(--green);">'+escHtml(m.email||'—')+'</div></div>' +
-    '</div></div>' +
+function openAddTeamMember() {
+  var html =
 
-    '<div class="detail-section"><h4>💰 Compensation</h4>' +
-    '<div style="display:grid;gap:8px;">' +
-      PROBATION_PHASES.map(function(ph){var pay=comp[ph.key]||'—';return'<div style="background:rgba(0,0,0,.2);border-radius:6px;padding:10px 12px;"><div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.12em;color:'+ph.color+';margin-bottom:3px;">'+escHtml(ph.label)+'</div><div style="font-size:.78rem;color:var(--white);">'+escHtml(pay)+'</div></div>';}).join('') +
-    '</div></div>' +
-
-    '<div class="detail-section"><h4>🔐 Role Permissions</h4>' +
-    '<div style="font-size:.78rem;color:var(--dim);line-height:1.8;">' +
-      'Can access: <span style="color:var(--cyan);">' + (ROLE_PERMISSIONS[m.role]||['overview']).join(', ') + '</span>' +
-    '</div></div>' +
-
-    '<div class="detail-section"><h4>Update Employment Stage</h4>' +
-    '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Employment Stage</div>' +
-    '<select class="form-select" id="tm-stage-'+m.id+'">' +
-      '<option value="probation"'+(m.employmentStage==='probation'?' selected':'')+'>Probation</option>' +
-      '<option value="employed"'+(m.employmentStage==='employed'?' selected':'')+'>Confirmed Employee</option>' +
-      '<option value="suspended"'+(m.employmentStage==='suspended'?' selected':'')+'>Suspended</option>' +
-      '<option value="terminated"'+(m.employmentStage==='terminated'?' selected':'')+'>Terminated</option>' +
-    '</select></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="updateTeamStage(\''+m.id+'\')">Update Stage</button>' +
-    (m.email?'<a href="mailto:'+escHtml(m.email)+'" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉️ Email</a>':'') +
-    '<button class="action-btn danger" onclick="deleteRecord(\'team_members\',\''+m.id+'\');closeDrawer();">🗑 Remove</button>' +
-    '</div></div>';
-
-  openDrawer('Team Member',escHtml(m.name||'—'),html);
-}
-
-function updateTeamStage(id){
-  var stage=document.getElementById('tm-stage-'+id).value;
-  window._updateDoc('team_members',id,{employmentStage:stage}).then(function(){toast('Employment stage updated','success');window._loadAll();closeDrawer();});
-}
-
-function openAddTeamMember(){
-  var html='<div class="drawer-form">' +
-    '<div class="form-row">' +
-      '<div class="form-field"><div class="form-label">Full Name</div><input class="form-input" id="tm-name" placeholder="Team member name"></div>' +
-      '<div class="form-field"><div class="form-label">Email (Login)</div><input class="form-input" id="tm-email" type="email" placeholder="member@teknnuku.xyz"></div>' +
-    '</div>' +
-    '<div class="form-row">' +
-      '<div class="form-field"><div class="form-label">Role</div><select class="form-select" id="tm-role">' +
-        Object.entries(ROLE_LABELS).map(function(e){return'<option value="'+e[0]+'">'+e[1]+'</option>';}).join('') +
-      '</select></div>' +
-      '<div class="form-field"><div class="form-label">Employment Stage</div><select class="form-select" id="tm-estage"><option value="probation">Probation</option><option value="employed">Confirmed Employee</option></select></div>' +
+    // ── Section 1: Personal ──────────────────────────────────
+    '<div class="detail-section"><h4>👤 Personal Information</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Full Name *</div><input class="form-input" id="tm-name" placeholder="Team member name"></div>' +
+      '<div class="form-field"><div class="form-label">Email (Login) *</div><input class="form-input" id="tm-email" type="email" placeholder="member@teknnuku.xyz"></div>' +
     '</div>' +
     '<div class="form-field"><div class="form-label">Phone</div><input class="form-input" id="tm-phone" placeholder="+234 xxx xxx xxxx"></div>' +
-    '<div class="btn-row"><button class="btn-primary" onclick="saveTeamMember()">💾 Add Team Member</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
-  '</div>';
-  openDrawer('Add Team Member','New Team Member',html);
+    '</div>' +
+
+    // ── Section 2: Role ──────────────────────────────────────
+    '<div class="detail-section"><h4>💼 Role & Stage</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-field"><div class="form-label">Role *</div>' +
+        '<select class="form-select" id="tm-role">' +
+          Object.entries(ROLE_LABELS).map(function(e){
+            return '<option value="' + e[0] + '">' + e[1] + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Starting Employment Phase</div>' +
+        '<select class="form-select" id="tm-phase">' +
+          TEKNNUKU_EMPLOYMENT_PHASES.map(function(p){
+            return '<option value="' + p.key + '"' + (p.key==='onboarding'?' selected':'') + '>' + p.icon + ' ' + p.label + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+    '</div></div>' +
+
+    // ── Section 3: Ventures ──────────────────────────────────
+    '<div class="detail-section"><h4>🏢 Venture Assignments</h4>' +
+    '<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:10px;line-height:1.6;">Select which ventures this team member can access. Assigning ventures restricts their data view to only those ventures across CRM, Clients, and Finance panels.</div>' +
+    buildVentureCheckboxes([]) +
+    '</div>' +
+
+    // ── Section 4: Phase Note ────────────────────────────────
+    '<div class="detail-section"><h4>📝 Onboarding Note (optional)</h4>' +
+    '<textarea class="form-textarea" id="tm-phase-note" style="min-height:56px;" placeholder="Any notes for this team member\'s start…"></textarea>' +
+    '</div>' +
+
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveTeamMember()">💾 Add Team Member</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+
+  openDrawer('Add Team Member', 'New Team Member', html);
 }
 
-function saveTeamMember(){
-  var name=document.getElementById('tm-name').value.trim();
-  var email=document.getElementById('tm-email').value.trim();
-  var role=document.getElementById('tm-role').value;
-  var stage=document.getElementById('tm-estage').value;
-  var phone=document.getElementById('tm-phone').value.trim();
-  if(!name||!email||!role){toast('Name, email and role required','error');return;}
-  var data={name:name,email:email,phone:phone,role:role,roleLabel:ROLE_LABELS[role]||role,team:TEAM_FOR_ROLE[role]||'',employmentStage:stage,status:stage,joinedAt:new Date().toISOString()};
-  window._saveDoc('team_members',data).then(function(){toast('Team member added ✓','success');closeDrawer();window._loadAll();}).catch(function(e){toast('Failed: '+(e.message||e),'error');});
+function saveTeamMember() {
+  var name  = (document.getElementById('tm-name')  ||{}).value||'';
+  var email = (document.getElementById('tm-email') ||{}).value||'';
+  var role  = (document.getElementById('tm-role')  ||{}).value||'';
+  var phase = (document.getElementById('tm-phase') ||{}).value||'onboarding';
+  var note  = (document.getElementById('tm-phase-note')||{}).value||'';
+  var phone = (document.getElementById('tm-phone') ||{}).value||'';
+
+  if (!name.trim())  { toast('Name is required', 'error');  return; }
+  if (!email.trim()) { toast('Email is required', 'error'); return; }
+  if (!role)         { toast('Role is required', 'error');  return; }
+
+  var ventures = getSelectedVentures();
+  var phaseCfg = getPhaseConfig(phase);
+  var isConfirmed = phase === 'employed' || phase === 'promoted';
+
+  var data = {
+    name:            name.trim(),
+    email:           email.trim(),
+    phone:           phone.trim(),
+    role:            role,
+    roleLabel:       ROLE_LABELS[role] || role,
+    team:            TEAM_FOR_ROLE[role] || 'Other',
+    employmentPhase: phase,
+    employmentStage: isConfirmed ? 'employed' : 'probation',
+    status:          isConfirmed ? 'employed' : 'probation',
+    ventures:        ventures,
+    phaseHistory:    [{ phase:phase, label:phaseCfg.label, startedAt:new Date().toISOString(), note:note }],
+    joinedAt:        new Date().toISOString()
+  };
+
+  window._saveDoc('team_members', data).then(function() {
+    toast('Team member added ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Failed: ' + (e.message||e), 'error'); });
+}
+
+function openTeamMemberDrawer(m) {
+  if (!m) return;
+  var comp     = COMP_DATA[m.role]  || {};
+  var phase    = m.employmentPhase  || m.employmentStage || 'phase1';
+  var phaseCfg = getPhaseConfig(phase);
+  var ventures = m.ventures || [];
+
+  var html =
+
+    // ── Header ───────────────────────────────────────────────
+    '<div class="detail-section">' +
+      '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
+        '<div class="team-avatar" style="width:52px;height:52px;font-size:20px;">' + initials(m.name||'?') + '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:1.1rem;">' + escHtml(m.name||'—') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.62rem;color:var(--gold);">' + escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(m.team||'—') + ' · ' + escHtml(m.email||'—') + '</div>' +
+          (m.phone ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(m.phone) + '</div>' : '') +
+          '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+            '<span class="badge" style="background:rgba(255,255,255,.06);color:' + phaseCfg.color + ';font-size:.54rem;">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span>' +
+            (m.employmentStage==='employed' || m.employmentPhase==='employed' || m.employmentPhase==='promoted'
+              ? '<span class="badge badge-green" style="font-size:.52rem;">✅ Confirmed</span>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="detail-grid">' +
+        '<div class="detail-item"><div class="detail-label">Joined</div><div class="detail-val">' + fmtDate(m.joinedAt||m.createdAt) + '</div></div>' +
+        '<div class="detail-item"><div class="detail-label">Login Email</div><div class="detail-val" style="color:var(--cyan);">' + escHtml(m.email||'—') + '</div></div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── Venture Assignments ───────────────────────────────────
+    '<div class="detail-section"><h4>🏢 Venture Assignments</h4>' +
+      '<div style="font-size:.74rem;color:var(--dimmer);margin-bottom:10px;line-height:1.6;">Checked ventures determine which records this member can access in CRM, Clients, and Finance. Uncheck all to grant unrestricted access.</div>' +
+      buildVentureCheckboxes(ventures) +
+      '<div class="btn-row" style="margin-top:10px;">' +
+        '<button class="btn-secondary" style="font-size:.68rem;padding:6px 14px;" onclick="updateTeamVentures(\'' + m.id + '\')">💾 Save Venture Access</button>' +
+      '</div>' +
+    '</div>' +
+
+    // ── Employment Phase Timeline ─────────────────────────────
+    '<div class="detail-section"><h4>📅 Employment Phase History</h4>' +
+      buildPhaseTimeline(m.phaseHistory, phase) +
+    '</div>' +
+
+    // ── Update Phase ──────────────────────────────────────────
+    '<div class="detail-section"><h4>⚡ Update Phase</h4>' +
+      '<div class="form-field" style="margin-bottom:10px;">' +
+        '<div class="form-label">New Phase</div>' +
+        '<select class="form-select" id="tm-new-phase">' +
+          TEKNNUKU_EMPLOYMENT_PHASES.map(function(p) {
+            return '<option value="' + p.key + '"' + (p.key===phase?' selected':'') + '>' + p.icon + ' ' + p.label + ' — ' + escHtml(p.desc) + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field" style="margin-bottom:10px;">' +
+        '<div class="form-label">Phase Note (optional)</div>' +
+        '<textarea class="form-textarea" id="tm-phase-note" style="min-height:60px;" placeholder="Performance note, reason for change…"></textarea>' +
+      '</div>' +
+      '<button class="btn-primary" style="font-size:.75rem;padding:9px 18px;" onclick="updateTeamPhase(\'' + m.id + '\')">Update Phase</button>' +
+    '</div>' +
+
+    // ── Compensation ──────────────────────────────────────────
+    '<div class="detail-section"><h4>💰 Compensation by Phase</h4>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;">' +
+        PROBATION_PHASES.map(function(ph) {
+          var pay    = comp[ph.key] || '—';
+          var isCurr = (m.employmentPhase||m.employmentStage) === ph.key;
+          return '<div style="background:' + (isCurr?'rgba(200,155,20,.08)':'rgba(0,0,0,.2)') + ';border:1px solid ' + (isCurr?'rgba(200,155,20,.25)':'transparent') + ';border-radius:6px;padding:10px 12px;">' +
+            '<div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.12em;color:' + ph.color + ';margin-bottom:3px;">' + escHtml(ph.label) + (isCurr?' · CURRENT':'') + '</div>' +
+            '<div style="font-size:.78rem;color:var(--white);">' + escHtml(pay) + '</div>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+    '</div>' +
+
+    // ── Permissions ───────────────────────────────────────────
+    '<div class="detail-section"><h4>🔐 Role Permissions</h4>' +
+      '<div style="font-size:.76rem;color:var(--dim);line-height:1.8;margin-bottom:8px;">' +
+        'Panel access: <span style="color:var(--cyan);">' + (ROLE_PERMISSIONS[m.role]||['overview']).join(', ') + '</span>' +
+      '</div>' +
+      (ventures.length
+        ? '<div style="font-size:.74rem;color:var(--dim);line-height:1.8;">' +
+            'Venture data restricted to: ' +
+            ventures.map(function(vId){ return '<span class="venture-tag" style="font-size:.52rem;">' + escHtml((V_MAP[vId]||{}).name||vId) + '</span>'; }).join(' ') +
+          '</div>'
+        : '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">No venture restriction — full data access</div>') +
+    '</div>' +
+
+    // ── Actions ───────────────────────────────────────────────
+    '<div class="btn-row">' +
+      (m.email ? '<a href="mailto:' + escHtml(m.email) + '" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉ Email</a>' : '') +
+      '<button class="action-btn danger" onclick="deleteRecord(\'team_members\',\'' + m.id + '\');closeDrawer();">🗑 Remove Member</button>' +
+    '</div>';
+
+  openDrawer('Team Member', escHtml(m.name||'—'), html);
+}
+
+function updateTeamStage(id) {
+  // Legacy shim — forwards to new phase system
+  var stage = (document.getElementById('tm-stage-'+id)||{}).value||'';
+  if (!stage) return;
+  var phaseMap = { probation:'phase1', employed:'employed', suspended:'suspended', terminated:'terminated' };
+  var phase = phaseMap[stage] || stage;
+  window._updateDoc('team_members', id, { employmentStage:stage, employmentPhase:phase }).then(function(){
+    toast('Stage updated ✓', 'success'); window._loadAll(); closeDrawer();
+  });
+}
+
+function updateTeamPhase(id) {
+  var phase = (document.getElementById('tm-new-phase')||{}).value||'';
+  var note  = (document.getElementById('tm-phase-note')||{}).value||'';
+  if (!phase) { toast('Please select a phase', 'error'); return; }
+
+  var m = (window._data.team_members||[]).find(function(x){ return x.id===id; });
+  if (!m) return;
+
+  var phaseCfg = getPhaseConfig(phase);
+  var history  = (m.phaseHistory||[]).slice();
+  history.push({ phase:phase, label:phaseCfg.label, startedAt:new Date().toISOString(), note:note });
+
+  var isConfirmed = phase === 'employed' || phase === 'promoted';
+  var stageMap    = { employed:'employed', promoted:'employed', suspended:'suspended', terminated:'terminated' };
+
+  window._updateDoc('team_members', id, {
+    employmentPhase: phase,
+    employmentStage: stageMap[phase] || 'probation',
+    status:          stageMap[phase] || 'probation',
+    phaseHistory:    history
+  }).then(function() {
+    toast(phaseCfg.icon + ' Phase updated: ' + phaseCfg.label, 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Update failed: ' + (e.message||e), 'error'); });
+}
+
+function updateTeamVentures(id) {
+  var ventures = getSelectedVentures();
+  window._updateDoc('team_members', id, { ventures:ventures }).then(function() {
+    toast('Venture access updated ✓ · ' + (ventures.length ? ventures.length + ' venture(s) assigned' : 'Unrestricted access'), 'success');
+    window._loadAll();
+  }).catch(function(e){ toast('Update failed: ' + (e.message||e), 'error'); });
 }
 
 // ═══════════════════════════════════════
