@@ -6664,6 +6664,7 @@ function renderCRM(list) {
     if (_crmFilters.source   && l.sourceType !== _crmFilters.source) return false;
     if (_crmFilters.assigned === '__unassigned__' && l.assignedTo) return false;
     if (_crmFilters.assigned && _crmFilters.assigned !== '__unassigned__' && l.assignedTo !== _crmFilters.assigned) return false;
+    if (!canAccessVentureData(l.ventureId)) return false;
     if (_crmFilters.search) {
       var hay = ((l.name||'')+(l.email||'')+(l.businessName||'')+(l.phone||'')+(l.assignedName||'')).toLowerCase();
       if (!hay.includes(_crmFilters.search)) return false;
