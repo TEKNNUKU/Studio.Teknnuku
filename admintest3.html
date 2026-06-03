@@ -7738,6 +7738,8 @@ function renderClients(clients, members) {
 }
 
 function renderClientsTable(clients, members) {
+ // Venture-based data restriction
+  clients = clients.filter(function(c){ return canAccessVentureData(c.ventureId); });
   var tbody = document.getElementById('clients-tbody'); if (!tbody) return;
 
   if (!clients.length) {
