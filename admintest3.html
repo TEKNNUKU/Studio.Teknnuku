@@ -8047,6 +8047,7 @@ function renderFinance(financials, clients) {
 
   // ── Apply filters to transactions ─────────────────────────
   var filtered = allFin.filter(function(f) {
+    if (!canAccessVentureData(f.ventureId)) return false;
     if (_finFilters.type     && f.type       !== _finFilters.type)     return false;
     if (_finFilters.venture  && f.ventureId  !== _finFilters.venture)  return false;
     if (_finFilters.category && f.category   !== _finFilters.category) return false;
