@@ -2306,10 +2306,148 @@ function _panelTeam() {
   '</div>';
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  VACANCY MANAGEMENT — CONSTANTS + HELPERS
+// ═══════════════════════════════════════════════════════════════
+var VACANCY_TYPES     = ['Full-Time','Part-Time','Contract','Freelance','Internship','Commission-Only'];
+var VACANCY_LOCATIONS = ['Remote','On-Site (Lagos)','Hybrid','Field-Based','Flexible'];
+
+// Seed role definitions — used as defaults when no Firestore vacancy exists
+var SEED_ROLE_DETAILS = {
+  ops_lead: {
+    summary:      'Oversee all TEKNNUKU operations, team performance, and venture delivery.',
+    requirements: ['3+ years operations or management experience','Strong systems thinking and process design skills','Ability to lead cross-functional teams','Proficient with digital tools and CRM systems'],
+    responsibilities: ['Daily standup facilitation','KPI tracking and reporting','Team performance management','SOP enforcement and process improvement'],
+    compensation: COMP_DATA.ops_lead || {}
+  },
+  sales_manager: {
+    summary:      'Lead the sales team, manage the pipeline, and drive revenue growth.',
+    requirements: ['2+ years B2B sales experience','Strong closing and objection handling skills','Experience with CRM and outreach tools','Target-driven with proven track record'],
+    responsibilities: ['Team pipeline management','Deal tier approvals','Sales script training','Weekly performance reviews'],
+    compensation: COMP_DATA.sales_manager || {}
+  },
+  inbound_closer: {
+    summary:      'Convert warm inbound leads into paying clients through calls and WhatsApp.',
+    requirements: ['Excellent verbal and written communication','Experience in sales or customer service','Fast response time and high follow-up discipline','WhatsApp and video call proficiency'],
+    responsibilities: ['Respond to leads within 5 minutes','Book and conduct sales calls','Close Tier 1 deals autonomously','Submit daily performance reports'],
+    compensation: COMP_DATA.inbound_closer || {}
+  },
+  outbound_closer: {
+    summary:      'Proactively reach out to prospects and convert them into TEKNNUKU clients.',
+    requirements: ['Cold outreach experience (DMs, LinkedIn, calls)','100+ daily outreach capacity','Self-motivated with hunter mentality','CRM data entry discipline'],
+    responsibilities: ['50–100 daily outreaches','10–20 replies per day target','5–10 calls booked per day','Hot prospect reporting'],
+    compensation: COMP_DATA.outbound_closer || {}
+  },
+  content_lead: {
+    summary:      'Lead TEKNNUKU\'s content strategy and manage the content creation team.',
+    requirements: ['Strong understanding of social media algorithms','Content strategy and campaign planning experience','Team management skills','Analytics and performance tracking'],
+    responsibilities: ['Content calendar management','Team output review','Lead generation through content','Platform performance reporting'],
+    compensation: COMP_DATA.content_lead || {}
+  },
+  content_creator: {
+    summary:      'Create high-quality videos, posts, and graphics that generate leads.',
+    requirements: ['Video editing and content creation skills','Knowledge of Instagram, TikTok, LinkedIn','Ability to produce 5–10 pieces per week','Personal brand or portfolio required'],
+    responsibilities: ['Video and graphic creation','Platform posting and scheduling','Trend monitoring and execution','Engagement tracking'],
+    compensation: COMP_DATA.content_creator || {}
+  },
+  outreach_lead_gen: {
+    summary:      'Generate qualified leads through outreach campaigns and book appointments.',
+    requirements: ['DM and email outreach experience','Excellent copywriting for cold messaging','Organised and data-driven approach','50+ daily outreaches minimum'],
+    responsibilities: ['WhatsApp, Instagram, LinkedIn outreach','Lead qualification conversations','Appointment booking','Daily outreach log submission'],
+    compensation: COMP_DATA.outreach_lead_gen || {}
+  },
+  tech_product_lead: {
+    summary:      'Lead all technical builds, platform development, and delivery for TEKNNUKU ventures.',
+    requirements: ['Full-stack development experience (3+ years)','Firebase, Vercel, or cloud hosting experience','Ability to manage developers and timelines','Strong technical documentation skills'],
+    responsibilities: ['Platform architecture and development','Developer team management','Code review and delivery QA','Risk and timeline management'],
+    compensation: COMP_DATA.tech_product_lead || {}
+  },
+  developer: {
+    summary:      'Build and maintain digital products and platforms across TEKNNUKU ventures.',
+    requirements: ['Proficiency in HTML, CSS, JavaScript and/or backend stack','Firebase or database experience','Ability to follow technical specifications','Bug-fixing and testing discipline'],
+    responsibilities: ['Feature development from specs','Bug identification and resolution','Daily task reporting','Code documentation'],
+    compensation: COMP_DATA.developer || {}
+  },
+  onboarding_specialist: {
+    summary:      'Onboard new clients, set up their systems, and conduct training sessions.',
+    requirements: ['Strong communication and training skills','Digital systems proficiency','Organised with attention to detail','Customer-facing experience preferred'],
+    responsibilities: ['Client welcome and requirements collection','System setup and configuration','Training session delivery','Onboarding status reporting'],
+    compensation: COMP_DATA.onboarding_specialist || {}
+  },
+  customer_success_manager: {
+    summary:      'Manage client relationships, drive retention, and identify upsell opportunities.',
+    requirements: ['Customer relationship management experience','Upselling and account growth skills','Empathy and problem-solving ability','Knowledge of TEKNNUKU service offerings'],
+    responsibilities: ['Weekly client check-ins','Issue resolution','Upsell identification and execution','Churn risk flagging'],
+    compensation: COMP_DATA.customer_success_manager || {}
+  },
+  admin_finance_officer: {
+    summary:      'Manage financial records, payment tracking, and administrative operations.',
+    requirements: ['Bookkeeping or finance administration experience','High accuracy and attention to detail','Proficiency with spreadsheets and reporting tools','Discretion with confidential financial data'],
+    responsibilities: ['Daily payment logging','Invoice management','Expense tracking','Monthly financial report preparation'],
+    compensation: COMP_DATA.admin_finance_officer || {}
+  }
+};
+
+function getVacancyDetails(roleId, vacancyDoc) {
+  var seed = SEED_ROLE_DETAILS[roleId] || {};
+  return {
+    summary:          (vacancyDoc && vacancyDoc.summary)          || seed.summary          || '',
+    requirements:     (vacancyDoc && vacancyDoc.requirements)     || seed.requirements     || [],
+    responsibilities: (vacancyDoc && vacancyDoc.responsibilities) || seed.responsibilities || [],
+    type:             (vacancyDoc && vacancyDoc.type)             || 'Full-Time',
+    location:         (vacancyDoc && vacancyDoc.location)         || 'Remote',
+    compensation:     seed.compensation || {}
+  };
+}
+
+function buildRequirementsEditor(items, idPrefix) {
+  items = items || [];
+  return '<div id="' + idPrefix + '-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">' +
+    items.map(function(item, i) {
+      return '<div style="display:flex;gap:6px;align-items:center;">' +
+        '<input class="form-input ' + idPrefix + '-item" value="' + escHtml(item) + '" style="flex:1;padding:7px 10px;" placeholder="Item ' + (i+1) + '">' +
+        '<button onclick="this.parentElement.remove()" style="background:none;border:1px solid rgba(239,68,68,.2);color:var(--red);border-radius:4px;padding:5px 10px;font-size:.7rem;cursor:pointer;flex-shrink:0;">✕</button>' +
+      '</div>';
+    }).join('') +
+  '</div>' +
+  '<button onclick="addReqItem(\'' + idPrefix + '\')" style="background:rgba(200,155,20,.08);border:1px solid rgba(200,155,20,.2);color:var(--gold);border-radius:5px;padding:6px 14px;font-family:var(--mono);font-size:.6rem;cursor:pointer;letter-spacing:.08em;">+ Add Item</button>';
+}
+
+window.addReqItem = function(idPrefix) {
+  var list = document.getElementById(idPrefix + '-list');
+  if (!list) return;
+  var div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:6px;align-items:center;';
+  div.innerHTML = '<input class="form-input ' + idPrefix + '-item" style="flex:1;padding:7px 10px;" placeholder="Enter item…">' +
+    '<button onclick="this.parentElement.remove()" style="background:none;border:1px solid rgba(239,68,68,.2);color:var(--red);border-radius:4px;padding:5px 10px;font-size:.7rem;cursor:pointer;flex-shrink:0;">✕</button>';
+  list.appendChild(div);
+  div.querySelector('input').focus();
+};
+
+function getListItems(className) {
+  var items = [];
+  document.querySelectorAll('.' + className).forEach(function(el) {
+    var v = (el.value||'').trim();
+    if (v) items.push(v);
+  });
+  return items;
+}
+
 function _panelVacancies() {
   return '<div class="panel" id="panel-vacancies">' +
-    '<div class="eyebrow">Role Management</div><div class="panel-header"><div class="panel-title">Vacancy Management</div><div class="panel-sub">Control which roles are open on the main site</div></div>' +
-    '<div id="vacancies-list"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+    '<div class="eyebrow">Role Management</div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Vacancy Management</div>' +
+      '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddCustomVacancy()">+ Add New Role</button>' +
+    '</div>' +
+
+    // ── Info strip ────────────────────────────────────────────
+    '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.78rem;color:var(--dim);line-height:1.7;">' +
+      '⬡ Status changes sync to the public careers site. Click any role card to view full details, edit requirements, or manage applicants.' +
+    '</div>' +
+
+    '<div id="vacancies-list"><div class="loading-row"><div class="spinner"></div></div></div>' +
+  '</div>';
 }
 
 </script>
@@ -4100,56 +4238,415 @@ function updateTeamVentures(id) {
 // ═══════════════════════════════════════
 // VACANCIES
 // ═══════════════════════════════════════
-function renderVacancies(config,applicants,teamMembers){
-  var el=document.getElementById('vacancies-list');if(!el)return;
-  // Build vacancy status map from careers_config collection
-  var statusMap={};
-  config.forEach(function(c){if(c.roleId)statusMap[c.roleId]={status:c.status||'open',id:c.id};});
-  var allRoles=[
-    {team:'Operations',roles:['ops_lead']},
-    {team:'Sales',roles:['sales_manager','inbound_closer','outbound_closer']},
-    {team:'Lead Generation',roles:['content_lead','content_creator','outreach_lead_gen']},
-    {team:'Delivery',roles:['tech_product_lead','developer','onboarding_specialist']},
-    {team:'Customer Success',roles:['customer_success_manager']},
-    {team:'Admin & Finance',roles:['admin_finance_officer']}
-  ];
-  var html='<div style="margin-bottom:20px;font-size:.82rem;color:var(--dim);">Changes here update the status badge on each role card in the careers section. Status changes are saved to Firestore and sync to the main site.</div>';
-  allRoles.forEach(function(group){
-    var color=TEAM_COLORS[group.team]||'#C89B14';
-    html+='<div style="margin-bottom:24px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:'+color+';">'+escHtml(group.team)+'</div><div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div></div>';
-    group.roles.forEach(function(roleId){
-      var label=ROLE_LABELS[roleId]||roleId;
-      var slots=ROLE_SLOTS[roleId]||1;
-      var cfg=statusMap[roleId]||{status:'open'};
-      var appCount=applicants.filter(function(a){return a.positionApplied===roleId;}).length;
-      var hiredCount=teamMembers.filter(function(m){return m.role===roleId;}).length;
-      html+='<div class="vacancy-card">' +
-        '<div style="flex:1;">' +
-          '<div class="vacancy-team-label">'+escHtml(group.team)+'</div>' +
-          '<div class="vacancy-title">'+escHtml(label)+'</div>' +
-          '<div class="vacancy-type">'+slots+' slot'+(slots!==1?'s':'')+' · '+appCount+' applicant'+(appCount!==1?'s':'')+' · '+hiredCount+' hired</div>' +
-        '</div>' +
-        statusBadge(cfg.status||'open') +
-        '<select class="vacancy-status-select" data-role="'+roleId+'" data-config-id="'+(cfg.id||'')+'" onchange="updateVacancyStatus(this)">' +
-          '<option value="open"'+(cfg.status==='open'?' selected':'')+'>🟢 Open</option>' +
-          '<option value="trial"'+(cfg.status==='trial'?' selected':'')+'>🟡 Trial</option>' +
-          '<option value="filled"'+(cfg.status==='filled'?' selected':'')+'>🔴 Filled</option>' +
-          '<option value="closed"'+(cfg.status==='closed'?' selected':'')+'>⚫ Closed</option>' +
-        '</select>' +
-      '</div>';
-    });
-    html+='</div>';
+function renderVacancies(config, applicants, teamMembers) {
+  var el = document.getElementById('vacancies-list'); if (!el) return;
+
+  // Build status + doc map keyed by roleId
+  var docMap = {};
+  config.forEach(function(c) { if (c.roleId) docMap[c.roleId] = c; });
+
+  // Separate custom (non-seed) vacancies from seed roles
+  var customVacancies = config.filter(function(c) {
+    return c.custom === true && c.roleId;
   });
-  el.innerHTML=html;
+
+  // ── Standard (seed) roles grouped by team ─────────────────
+  var allRoles = [
+    { team:'Operations',     roles:['ops_lead'] },
+    { team:'Sales',          roles:['sales_manager','inbound_closer','outbound_closer'] },
+    { team:'Lead Generation',roles:['content_lead','content_creator','outreach_lead_gen'] },
+    { team:'Delivery',       roles:['tech_product_lead','developer','onboarding_specialist'] },
+    { team:'Customer Success',roles:['customer_success_manager'] },
+    { team:'Admin & Finance', roles:['admin_finance_officer'] }
+  ];
+
+  var STATUS_ICONS = { open:'🟢', trial:'🟡', filled:'🔴', closed:'⚫' };
+  var STATUS_LBL   = { open:'Open', trial:'On Trial', filled:'Filled', closed:'Closed' };
+  var STATUS_BADGE = { open:'badge-green', trial:'badge-amber', filled:'badge-red', closed:'badge-dim' };
+
+  var html = '';
+
+  allRoles.forEach(function(group) {
+    var color = TEAM_COLORS[group.team] || '#C89B14';
+    html += '<div style="margin-bottom:28px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
+        '<div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:' + color + ';">' + escHtml(group.team) + '</div>' +
+        '<div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div>' +
+      '</div>';
+
+    group.roles.forEach(function(roleId) {
+      var label     = ROLE_LABELS[roleId] || roleId;
+      var slots     = ROLE_SLOTS[roleId]  || 1;
+      var cfg       = docMap[roleId]      || { status:'open' };
+      var status    = cfg.status          || 'open';
+      var appCount  = applicants.filter(function(a){ return a.positionApplied === roleId; }).length;
+      var hiredCount = teamMembers.filter(function(m){ return m.role === roleId; }).length;
+      var details   = getVacancyDetails(roleId, cfg);
+      var slotsLeft = Math.max(0, slots - hiredCount);
+
+      html += buildVacancyCard(roleId, label, cfg, status, slots, slotsLeft, appCount, hiredCount, details, false, STATUS_ICONS, STATUS_LBL, STATUS_BADGE, color);
+    });
+
+    html += '</div>';
+  });
+
+  // ── Custom roles ───────────────────────────────────────────
+  if (customVacancies.length) {
+    html += '<div style="margin-bottom:28px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">' +
+        '<div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--purple);">Custom Roles</div>' +
+        '<div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div>' +
+        '<span class="badge badge-purple" style="font-size:.5rem;">' + customVacancies.length + '</span>' +
+      '</div>';
+
+    customVacancies.forEach(function(cfg) {
+      var roleId    = cfg.roleId;
+      var label     = cfg.title || cfg.roleId || 'Custom Role';
+      var status    = cfg.status || 'open';
+      var slots     = cfg.slots  || 1;
+      var appCount  = applicants.filter(function(a){ return a.positionApplied === roleId; }).length;
+      var hiredCount = teamMembers.filter(function(m){ return m.role === roleId; }).length;
+      var slotsLeft = Math.max(0, slots - hiredCount);
+      var details   = getVacancyDetails(roleId, cfg);
+      html += buildVacancyCard(roleId, label, cfg, status, slots, slotsLeft, appCount, hiredCount, details, true, STATUS_ICONS, STATUS_LBL, STATUS_BADGE, '#a855f7');
+    });
+
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
 }
 
-function updateVacancyStatus(select){
-  var roleId=select.dataset.role;var status=select.value;var configId=select.dataset.configId;
-  if(configId){
-    window._updateDoc('careers_config',configId,{roleId:roleId,status:status}).then(function(){toast('Vacancy updated: '+roleId+' → '+status,'success');window._loadAll();});
-  } else {
-    window._saveDoc('careers_config',{roleId:roleId,status:status}).then(function(){toast('Vacancy created: '+roleId+' → '+status,'success');window._loadAll();});
+function buildVacancyCard(roleId, label, cfg, status, slots, slotsLeft, appCount, hiredCount, details, isCustom, STATUS_ICONS, STATUS_LBL, STATUS_BADGE, accentColor) {
+  var STAGE_BORDER = { open:'rgba(34,197,94,.12)', trial:'rgba(245,158,11,.12)', filled:'rgba(239,68,68,.12)', closed:'rgba(242,237,228,.06)' };
+  var hasReqs = details.requirements && details.requirements.length;
+  var hasResp = details.responsibilities && details.responsibilities.length;
+
+  return '<div style="background:var(--card);border:1px solid ' + (STAGE_BORDER[status]||'var(--border)') + ';border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
+
+    // ── Card header — always visible ──────────────────────────
+    '<div style="padding:14px 18px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;" onclick="toggleVacancyExpand(\'' + roleId + '\')">' +
+
+      // Left: info
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:.92rem;color:var(--white);">' + escHtml(label) + '</div>' +
+          '<span class="badge ' + (STATUS_BADGE[status]||'badge-dim') + '" style="font-size:.52rem;">' + (STATUS_ICONS[status]||'') + ' ' + (STATUS_LBL[status]||status) + '</span>' +
+          (isCustom ? '<span class="badge badge-purple" style="font-size:.48rem;">Custom</span>' : '') +
+        '</div>' +
+        (details.summary ? '<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:6px;line-height:1.5;">' + escHtml(details.summary.substring(0,120)) + (details.summary.length>120?'…':'') + '</div>' : '') +
+        '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
+          '<span style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">📋 ' + slots + ' slot' + (slots!==1?'s':'') + ' · ' + slotsLeft + ' open</span>' +
+          '<span style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">🎯 ' + appCount + ' applicant' + (appCount!==1?'s':'') + '</span>' +
+          '<span style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">✅ ' + hiredCount + ' hired</span>' +
+          '<span style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">🏠 ' + escHtml(details.location||'Remote') + '</span>' +
+          '<span style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">⏱ ' + escHtml(details.type||'Full-Time') + '</span>' +
+        '</div>' +
+      '</div>' +
+
+      // Right: status selector + expand arrow
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">' +
+        '<select class="vacancy-status-select" data-role="' + roleId + '" data-config-id="' + (cfg.id||'') + '" onchange="updateVacancyStatus(this);event.stopPropagation();">' +
+          ['open','trial','filled','closed'].map(function(s){
+            return '<option value="' + s + '"' + (status===s?' selected':'') + '>' + (STATUS_ICONS[s]||'') + ' ' + (STATUS_LBL[s]||s) + '</option>';
+          }).join('') +
+        '</select>' +
+        '<div id="vexpand-arrow-' + roleId + '" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">▼ Details</div>' +
+      '</div>' +
+
+    '</div>' +
+
+    // ── Expandable detail body ────────────────────────────────
+    '<div id="vexpand-' + roleId + '" style="display:none;border-top:1px solid var(--border);">' +
+      '<div style="padding:16px 18px;">' +
+
+        // Tabs
+        '<div class="tab-bar" style="margin-bottom:14px;">' +
+          '<button class="tab-btn active" onclick="switchVacancyTab(\'' + roleId + '\',\'overview\',this)">Overview</button>' +
+          '<button class="tab-btn" onclick="switchVacancyTab(\'' + roleId + '\',\'requirements\',this)">Requirements</button>' +
+          '<button class="tab-btn" onclick="switchVacancyTab(\'' + roleId + '\',\'compensation\',this)">Compensation</button>' +
+          '<button class="tab-btn" onclick="switchVacancyTab(\'' + roleId + '\',\'applicants\',this)">Applicants (' + appCount + ')</button>' +
+          '<button class="tab-btn" onclick="switchVacancyTab(\'' + roleId + '\',\'edit\',this)">✏ Edit</button>' +
+        '</div>' +
+
+        // Tab: Overview
+        '<div id="vtab-' + roleId + '-overview">' +
+          '<div style="font-size:.82rem;color:var(--dim);line-height:1.75;margin-bottom:14px;">' + escHtml(details.summary||'No summary added yet.') + '</div>' +
+          (hasResp ? '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Responsibilities</div>' +
+            '<ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:5px;">' +
+            details.responsibilities.map(function(r){ return '<li style="display:flex;gap:8px;align-items:flex-start;font-size:.78rem;color:var(--dim);"><span style="color:var(--gold);flex-shrink:0;margin-top:2px;">▹</span>' + escHtml(r) + '</li>'; }).join('') +
+            '</ul>' : '') +
+        '</div>' +
+
+        // Tab: Requirements
+        '<div id="vtab-' + roleId + '-requirements" style="display:none;">' +
+          (hasReqs
+            ? '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Requirements</div>' +
+              '<ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;">' +
+              details.requirements.map(function(r){ return '<li style="display:flex;gap:8px;align-items:flex-start;font-size:.78rem;color:var(--dim);"><span style="color:var(--green);flex-shrink:0;margin-top:2px;">✓</span>' + escHtml(r) + '</li>'; }).join('') +
+              '</ul>'
+            : '<div style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);padding:12px 0;">No requirements added yet. Click Edit to add them.</div>') +
+        '</div>' +
+
+        // Tab: Compensation
+        '<div id="vtab-' + roleId + '-compensation" style="display:none;">' +
+          (Object.keys(details.compensation).length
+            ? '<div style="display:grid;gap:8px;">' +
+              PROBATION_PHASES.map(function(ph) {
+                var pay = details.compensation[ph.key] || '—';
+                return '<div style="background:rgba(0,0,0,.2);border-radius:6px;padding:10px 13px;">' +
+                  '<div style="font-family:var(--mono);font-size:.54rem;text-transform:uppercase;letter-spacing:.12em;color:' + ph.color + ';margin-bottom:3px;">' + escHtml(ph.label) + '</div>' +
+                  '<div style="font-size:.78rem;color:var(--white);">' + escHtml(pay) + '</div>' +
+                '</div>';
+              }).join('') +
+            '</div>'
+            : '<div style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);padding:12px 0;">Compensation structure configured from role defaults.</div>') +
+        '</div>' +
+
+        // Tab: Applicants
+        '<div id="vtab-' + roleId + '-applicants" style="display:none;">' +
+          buildVacancyApplicantList(roleId) +
+        '</div>' +
+
+        // Tab: Edit
+        '<div id="vtab-' + roleId + '-edit" style="display:none;">' +
+          buildVacancyEditForm(roleId, label, cfg, details, slots, isCustom) +
+        '</div>' +
+
+      '</div>' +
+    '</div>' +
+
+  '</div>';
+}
+
+function buildVacancyApplicantList(roleId) {
+  var applicants = window._data ? window._data.applicants || [] : [];
+  var role = applicants.filter(function(a){ return a.positionApplied === roleId; });
+  if (!role.length) return '<div class="empty-state" style="padding:18px;"><div class="empty-icon" style="font-size:1.2rem;">🎯</div>No applicants yet for this role.</div>';
+  return '<div class="table-scroll"><table><thead><tr><th>Applicant</th><th>Score</th><th>Phase</th><th>Applied</th><th></th></tr></thead><tbody>' +
+    role.map(function(a) {
+      var info = a.personalInfo || {};
+      return '<tr>' +
+        '<td><div style="font-weight:600;font-size:.8rem;">' + escHtml(info.name||a.name||'—') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(info.email||a.email||'') + '</div></td>' +
+        '<td>' + scoreBadge(a.score) + '</td>' +
+        '<td>' + phaseBadge(a) + '</td>' +
+        '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + fmtDate(a.submittedAt||a.createdAt) + '</td>' +
+        '<td><button class="action-btn" style="font-size:.58rem;" onclick="openApplicantDrawer(window._data.applicants.find(function(x){return x.id===\'' + a.id + '\'}))">View</button></td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table></div>';
+}
+
+function buildVacancyEditForm(roleId, label, cfg, details, slots, isCustom) {
+  return '<div style="display:flex;flex-direction:column;gap:14px;">' +
+
+    // Basic info
+    (isCustom ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-field"><div class="form-label">Role Title *</div><input class="form-input" id="vedit-title-' + roleId + '" value="' + escHtml(label) + '"></div>' +
+      '<div class="form-field"><div class="form-label">Number of Slots</div><input class="form-input" id="vedit-slots-' + roleId + '" type="number" min="1" value="' + slots + '"></div>' +
+    '</div>' : '') +
+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+      '<div class="form-field"><div class="form-label">Employment Type</div>' +
+        '<select class="form-select" id="vedit-type-' + roleId + '">' +
+          VACANCY_TYPES.map(function(t){ return '<option value="' + t + '"' + (t===(details.type||'Full-Time')?' selected':'') + '>' + t + '</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Location</div>' +
+        '<select class="form-select" id="vedit-loc-' + roleId + '">' +
+          VACANCY_LOCATIONS.map(function(l){ return '<option value="' + l + '"' + (l===(details.location||'Remote')?' selected':'') + '>' + l + '</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="form-field"><div class="form-label">Role Summary</div>' +
+      '<textarea class="form-textarea" id="vedit-summary-' + roleId + '" style="min-height:70px;">' + escHtml(details.summary||'') + '</textarea>' +
+    '</div>' +
+
+    '<div class="form-field"><div class="form-label" style="margin-bottom:8px;">Requirements</div>' +
+      buildRequirementsEditor(details.requirements, 'vedit-req-' + roleId) +
+    '</div>' +
+
+    '<div class="form-field"><div class="form-label" style="margin-bottom:8px;">Responsibilities</div>' +
+      buildRequirementsEditor(details.responsibilities, 'vedit-resp-' + roleId) +
+    '</div>' +
+
+    '<div class="btn-row">' +
+      '<button class="btn-primary" style="font-size:.75rem;padding:9px 18px;" onclick="saveVacancyDetails(\'' + roleId + '\',' + (isCustom?'true':'false') + ')">💾 Save Details</button>' +
+      (isCustom ? '<button class="action-btn danger" onclick="deleteCustomVacancy(\'' + (cfg.id||'') + '\')">🗑 Delete Role</button>' : '') +
+    '</div>' +
+
+  '</div>';
+}
+
+function toggleVacancyExpand(roleId) {
+  var body  = document.getElementById('vexpand-' + roleId);
+  var arrow = document.getElementById('vexpand-arrow-' + roleId);
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display  = isOpen ? 'none' : 'block';
+  if (arrow) arrow.textContent = isOpen ? '▼ Details' : '▲ Close';
+}
+
+function switchVacancyTab(roleId, tab, btn) {
+  var prefix = 'vtab-' + roleId + '-';
+  ['overview','requirements','compensation','applicants','edit'].forEach(function(t) {
+    var el = document.getElementById(prefix + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+  });
+  if (btn) {
+    btn.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
   }
+}
+
+function updateVacancyStatus(select) {
+  var roleId   = select.dataset.role;
+  var status   = select.value;
+  var configId = select.dataset.configId;
+  var isCustom = !!(window._data ? window._data.careers_config||[] : []).find(function(c){ return c.id === configId && c.custom; });
+
+  if (configId) {
+    window._updateDoc('careers_config', configId, { status:status }).then(function() {
+      toast('Status → ' + status, 'success');
+      window._loadAll();
+    });
+  } else {
+    window._saveDoc('careers_config', { roleId:roleId, status:status }).then(function() {
+      toast('Vacancy created: ' + roleId + ' → ' + status, 'success');
+      window._loadAll();
+    });
+  }
+}
+
+function saveVacancyDetails(roleId, isCustom) {
+  var summary  = (document.getElementById('vedit-summary-' + roleId) ||{}).value||'';
+  var type     = (document.getElementById('vedit-type-'    + roleId) ||{}).value||'Full-Time';
+  var location = (document.getElementById('vedit-loc-'     + roleId) ||{}).value||'Remote';
+  var reqs     = getListItems('vedit-req-'  + roleId + '-item');
+  var resps    = getListItems('vedit-resp-' + roleId + '-item');
+
+  var d       = window._data || {};
+  var existing = (d.careers_config||[]).find(function(c){ return c.roleId === roleId; });
+  var data     = {
+    roleId:           roleId,
+    status:           (existing && existing.status) || 'open',
+    summary:          summary,
+    type:             type,
+    location:         location,
+    requirements:     reqs,
+    responsibilities: resps
+  };
+
+  // Extra fields for custom roles
+  if (isCustom) {
+    data.title  = (document.getElementById('vedit-title-' + roleId)||{}).value || roleId;
+    data.slots  = parseInt((document.getElementById('vedit-slots-' + roleId)||{}).value)||1;
+    data.custom = true;
+  }
+
+  var fn = existing
+    ? window._updateDoc('careers_config', existing.id, data)
+    : window._saveDoc('careers_config', data);
+
+  fn.then(function() {
+    toast('Role details saved ✓', 'success');
+    window._loadAll();
+  }).catch(function(e){ toast('Save failed: ' + (e.message||e), 'error'); });
+}
+
+function openAddCustomVacancy() {
+  var html =
+    '<div class="detail-section"><h4>📋 New Role Details</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Role Title *</div><input class="form-input" id="newv-title" placeholder="e.g. Brand Designer, Video Editor"></div>' +
+      '<div class="form-field"><div class="form-label">Role ID (no spaces) *</div><input class="form-input" id="newv-id" placeholder="e.g. brand_designer" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,\'_\')"></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Slots Available</div><input class="form-input" id="newv-slots" type="number" min="1" value="1"></div>' +
+      '<div class="form-field"><div class="form-label">Employment Type</div>' +
+        '<select class="form-select" id="newv-type">' + VACANCY_TYPES.map(function(t){ return '<option>' + t + '</option>'; }).join('') + '</select>' +
+      '</div>' +
+      '<div class="form-field"><div class="form-label">Location</div>' +
+        '<select class="form-select" id="newv-loc">' + VACANCY_LOCATIONS.map(function(l){ return '<option>' + l + '</option>'; }).join('') + '</select>' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Role Summary *</div>' +
+      '<textarea class="form-textarea" id="newv-summary" style="min-height:70px;" placeholder="Describe what this role does and why it matters…"></textarea>' +
+    '</div>' +
+    '</div>' +
+
+    '<div class="detail-section"><h4>✅ Requirements</h4>' +
+    buildRequirementsEditor([''], 'newv-req') +
+    '</div>' +
+
+    '<div class="detail-section"><h4>📌 Responsibilities</h4>' +
+    buildRequirementsEditor([''], 'newv-resp') +
+    '</div>' +
+
+    '<div class="detail-section"><h4>📌 Initial Status</h4>' +
+    '<select class="form-select" id="newv-status" style="max-width:200px;">' +
+      '<option value="open">🟢 Open — Accepting Applications</option>' +
+      '<option value="trial">🟡 On Trial</option>' +
+      '<option value="closed">⚫ Closed</option>' +
+    '</select>' +
+    '</div>' +
+
+    '<div class="btn-row">' +
+      '<button class="btn-primary" onclick="saveNewCustomVacancy()">🚀 Publish Role</button>' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+    '</div>';
+
+  openDrawer('Add New Role', 'Custom Vacancy', html);
+}
+
+function saveNewCustomVacancy() {
+  var title   = (document.getElementById('newv-title')  ||{}).value||'';
+  var roleId  = (document.getElementById('newv-id')     ||{}).value||'';
+  var summary = (document.getElementById('newv-summary')||{}).value||'';
+  var slots   = parseInt((document.getElementById('newv-slots') ||{}).value)||1;
+  var type    = (document.getElementById('newv-type')   ||{}).value||'Full-Time';
+  var loc     = (document.getElementById('newv-loc')    ||{}).value||'Remote';
+  var status  = (document.getElementById('newv-status') ||{}).value||'open';
+
+  if (!title.trim())  { toast('Role title is required', 'error');        return; }
+  if (!roleId.trim()) { toast('Role ID is required (no spaces)', 'error'); return; }
+  if (!summary.trim()){ toast('Role summary is required', 'error');      return; }
+
+  var reqs  = getListItems('newv-req-item');
+  var resps = getListItems('newv-resp-item');
+
+  // Check for duplicate ID
+  var exists = (window._data ? window._data.careers_config||[] : []).find(function(c){ return c.roleId === roleId; });
+  if (exists) { toast('A role with this ID already exists', 'error'); return; }
+
+  window._saveDoc('careers_config', {
+    roleId:           roleId,
+    title:            title.trim(),
+    summary:          summary.trim(),
+    slots:            slots,
+    type:             type,
+    location:         loc,
+    status:           status,
+    requirements:     reqs,
+    responsibilities: resps,
+    custom:           true
+  }).then(function() {
+    toast('New role published ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Save failed: ' + (e.message||e), 'error'); });
+}
+
+function deleteCustomVacancy(configId) {
+  if (!configId) { toast('Cannot delete — record not found', 'error'); return; }
+  if (!confirm('Delete this custom role? This cannot be undone.')) return;
+  window._deleteDoc('careers_config', configId).then(function() {
+    toast('Custom role deleted ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Delete failed: ' + (e.message||e), 'error'); });
 }
 
 // ═══════════════════════════════════════════════════════════════
