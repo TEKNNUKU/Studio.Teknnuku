@@ -353,8 +353,205 @@ tbody tr:last-child td{border-bottom:none;}
 .onboard-done{background:rgba(34,197,94,.12);color:var(--green);}
 .onboard-active{background:rgba(200,155,20,.12);color:var(--gold);}
 .onboard-pending{background:rgba(242,237,228,.06);color:var(--dimmer);}
+.content-area{overflow-y:auto!important;-webkit-overflow-scrolling:touch;}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+  table{min-width:600px;}
+  .kanban-board{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)!important;}
+  .fin-summary-grid{grid-template-columns:1fr 1fr!important;}
 @media(max-width:900px){.fin-summary-grid{grid-template-columns:1fr}.kanban-board{grid-template-columns:1fr!important}}
 
+/* ── Scroll isolation — each panel scrolls independently ── */
+.content-area{
+  scroll-behavior:smooth;
+  overscroll-behavior:contain;
+}
+.panel{
+  min-height:100%;
+}
+/* ── Sticky bottom nav always visible ── */
+.bottom-nav{
+  position:fixed!important;
+  bottom:0;left:0;right:0;
+  z-index:900;
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+  background:rgba(15,15,26,.95)!important;
+  border-top:1px solid var(--border);
+}
+/* ── Prevent tables from escaping their scroll containers ── */
+.table-scroll{
+  display:block;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.table-scroll table{
+  width:max-content;
+  min-width:100%;
+}
+/* ── Drawer mobile fix ── */
+@media(max-width:900px){
+  .drawer{
+    top:0!important;
+    bottom:calc(68px + env(safe-area-inset-bottom))!important;
+  }
+}
+
+/* ── Quick Create FAB ── */
+#quick-fab{
+  position:fixed;bottom:84px;right:18px;z-index:890;display:none;
+  flex-direction:column;align-items:flex-end;gap:7px;
+}
+@media(max-width:900px){#quick-fab{bottom:84px;}}
+#fab-main{
+  width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--goldL));
+  border:none;color:#080808;font-size:22px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(200,155,20,.4);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s,box-shadow .2s;
+}
+#fab-main:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(200,155,20,.55);}
+.fab-option{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:24px;padding:8px 16px;
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;
+  color:var(--white);cursor:pointer;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);transition:all .15s;
+  text-decoration:none;
+}
+.fab-option:hover{border-color:var(--gold);color:var(--gold);}
+.fab-option .fab-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+#fab-menu{display:none;flex-direction:column;align-items:flex-end;gap:7px;}
+#fab-menu.open{display:flex;}
+
+/* ══════════════════════════════════════════════
+   GLOBAL RESPONSIVE SYSTEM
+══════════════════════════════════════════════ */
+
+/* ── Kanban board ─────────────────────────── */
+@media(max-width:900px){
+  .kanban-board{
+    grid-template-columns:repeat(2,minmax(160px,1fr))!important;
+    gap:10px!important;
+  }
+  #crm-board{
+    grid-template-columns:repeat(2,minmax(175px,1fr))!important;
+  }
+  #tasks-board{
+    grid-template-columns:repeat(2,1fr)!important;
+  }
+}
+@media(max-width:540px){
+  .kanban-board,#crm-board,#tasks-board{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* ── KPI grids ────────────────────────────── */
+@media(max-width:680px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)!important;}
+}
+@media(max-width:380px){
+  .kpi-grid{grid-template-columns:1fr!important;}
+}
+
+/* ── Tables on mobile ─────────────────────── */
+@media(max-width:900px){
+  th,td{
+    padding:9px 10px!important;
+    font-size:.75rem!important;
+    white-space:normal!important;
+    min-width:80px;
+  }
+  th:last-child,td:last-child{min-width:100px;}
+  .row-actions{flex-wrap:wrap;gap:3px;}
+  .action-btn{font-size:.54rem!important;padding:3px 7px!important;}
+}
+
+/* ── Forms on mobile ──────────────────────── */
+@media(max-width:680px){
+  .form-row{grid-template-columns:1fr!important;}
+  .detail-grid{grid-template-columns:1fr!important;}
+  .drawer{width:100%!important;max-width:100%!important;}
+  .drawer-body{padding:14px!important;}
+  .btn-row{flex-wrap:wrap;gap:6px;}
+  .btn-primary,.btn-secondary{width:100%;justify-content:center;}
+}
+
+/* ── Dashboard two-col ───────────────────── */
+@media(max-width:780px){
+  .two-col,.three-col{grid-template-columns:1fr!important;}
+}
+
+/* ── Finance grid ─────────────────────────── */
+@media(max-width:780px){
+  .fin-summary-grid{grid-template-columns:1fr!important;}
+}
+
+/* ── Venture cards ────────────────────────── */
+@media(max-width:680px){
+  .venture-card-grid{grid-template-columns:1fr!important;}
+}
+
+/* ── People filter sticky bar ─────────────── */
+@media(max-width:900px){
+  #people-filter-bar{top:-1px;}
+}
+
+/* ── Finance sticky stats ─────────────────── */
+@media(max-width:900px){
+  #panel-finance > div[style*="sticky"]{
+    position:relative!important;
+    top:auto!important;
+  }
+}
+
+/* ── Topbar on mobile ─────────────────────── */
+@media(max-width:540px){
+  .topbar{padding:0 10px!important;gap:6px!important;}
+  .topbar-title{font-size:.78rem!important;}
+  .app-switcher{display:none;}
+  .topbar-btn{padding:6px 10px!important;font-size:.56rem!important;}
+}
+
+/* ── Tab bar wraps on small screens ──────── */
+@media(max-width:680px){
+  .tab-bar{flex-wrap:wrap!important;max-width:100%!important;}
+  .tab-btn{font-size:.56rem!important;padding:6px 12px!important;}
+}
+
+/* ── Proposal/payment cards ───────────────── */
+@media(max-width:600px){
+  .proposal-card{padding:12px 14px!important;}
+  .proposal-header{flex-wrap:wrap;gap:8px;}
+  .proposal-footer{flex-direction:column;align-items:flex-start!important;}
+}
+
+/* ── SOP cards ────────────────────────────── */
+@media(max-width:600px){
+  .sop-card{padding:12px 14px!important;}
+}
+
+/* ── Login card ───────────────────────────── */
+@media(max-width:440px){
+  .login-card{width:calc(100vw - 24px)!important;padding:28px 18px!important;}
+}
+
+/* ── Bottom nav scrollable on small phones ─ */
+@media(max-width:400px){
+  .bottom-nav-inner{gap:0!important;}
+  .bnav-item{min-width:48px!important;padding:5px 8px!important;font-size:.52rem!important;}
+}
+
+/* ── Touch-friendly tap targets ───────────── */
+@media(max-width:900px){
+  .nav-item,.bnav-item{min-height:40px;}
+  .action-btn,.btn-primary,.btn-secondary,.btn-success{min-height:36px;}
+  select.tbl-filter,select.form-select{min-height:36px;}
+}
+  
 </style>
 </head>
 <body>
@@ -404,8 +601,8 @@ tbody tr:last-child td{border-bottom:none;}
       <button class="topbar-btn" onclick="refreshAll()">↺ Refresh</button>
       <div class="last-refresh" id="last-refresh">–</div>
       <div class="app-switcher" id="app-switcher-btns">
-        <a id="sw-site-link" class="sw-btn" href="#" target="_blank" title="View live site">← Site</a>
-        <a id="sw-os-link" class="sw-btn sw-primary" href="#" target="_blank" title="Open Command Center OS">🖥️ OS</a>
+       <a id="sw-site-link" class="sw-btn" href="#" target="_blank" title="View live site">← Site</a>
+       <button class="sw-btn sw-primary" onclick="openVentureSwitcher()" title="Switch venture admin">⬡ Switch</button>
       </div>
     </div>
     <div class="content-area" id="content-area">
@@ -718,10 +915,12 @@ window._initRBAC = function(email) {
   (window._onRoleResolved_callbacks||[]).forEach(function(cb){ try{cb(window._userRole);}catch(e){} });
   document.getElementById('user-role-label').textContent = window._userRole === 'founder' ? 'Founder & CEO' : (ROLE_LABELS[window._userRole] || window._userRole);
   _buildNav();
+  updateFABVisibility();
   _buildPanels();
   _buildBottomNav();
   window._renderAll();
   showPanel('overview', document.querySelector('.nav-item[data-panel="overview"]'));
+initHashNav();
 };
 
 function canAccess(panelId) {
@@ -3037,6 +3236,97 @@ function _panelSOPs() {
 
 </script>
 <script>
+// ═══════════════════════════════════════════════════════════════
+//  MULTI-VENTURE ADMIN SWITCHER
+// ═══════════════════════════════════════════════════════════════
+var DEFAULT_VENTURE_LINKS = [
+  { id:'studio',       name:'TEKNNUKU Studio',        url: window.location.href,                                    icon:'T',  color:'#C89B14' },
+  { id:'globalbiz',    name:'Global Biz Hub',          url:'https://globalbizhub.teknnuku.xyz/admin.html',           icon:'G',  color:'#a855f7' },
+  { id:'jobletters',   name:'Jobletters.xyz',          url:'https://jobletters.xyz/admin.html',                      icon:'J',  color:'#3b82f6' },
+  { id:'tek1security', name:'TEK1SECURITY',            url:'https://tek1security.teknnuku.xyz/admin.html',           icon:'S',  color:'#ef4444' },
+  { id:'p2p',          name:'Poverty2Prosperity',      url:'https://p2pmasterclass.teknnuku.xyz/admin.html',         icon:'P',  color:'#f59e0b' },
+  { id:'gata',         name:'GATA Protocol',           url:'https://gata.teknnuku.xyz/admin.html',                   icon:'G',  color:'#00BCD4' }
+];
+
+function getVentureLinks() {
+  try {
+    var saved = localStorage.getItem('tek_venture_links');
+    return saved ? JSON.parse(saved) : DEFAULT_VENTURE_LINKS;
+  } catch(e) { return DEFAULT_VENTURE_LINKS; }
+}
+
+function saveVentureLinks(links) {
+  localStorage.setItem('tek_venture_links', JSON.stringify(links));
+}
+
+function openVentureSwitcher() {
+  var links = getVentureLinks();
+  var isFounder = window._userRole === 'founder';
+  var currentUrl = window.location.href.split('#')[0];
+
+  var html = '<div style="margin-bottom:14px;font-size:.78rem;color:var(--dimmer);line-height:1.7;">Switch instantly between venture admin systems. Opens in a new tab. You remain logged in here.</div>' +
+
+    '<div style="display:grid;gap:8px;margin-bottom:16px;">' +
+      links.map(function(v, i) {
+        var isCurrent = currentUrl === v.url.split('#')[0] || (v.id === 'studio' && currentUrl.includes(window.location.hostname));
+        return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid ' +
+          (isCurrent ? 'rgba(200,155,20,.4)' : 'var(--border)') +
+          ';border-radius:8px;' + (isCurrent ? 'background:rgba(200,155,20,.06);' : '') + '">' +
+          '<div style="width:34px;height:34px;border-radius:8px;background:' + v.color + ';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:16px;color:#080808;flex-shrink:0;">' + escHtml(v.icon) + '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-weight:600;font-size:.84rem;color:var(--white);">' + escHtml(v.name) + '</div>' +
+            '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(v.url) + '</div>' +
+          '</div>' +
+          (isCurrent
+            ? '<span class="badge badge-gold" style="font-size:.5rem;">Current</span>'
+            : '<a href="' + escHtml(v.url) + '" target="_blank" class="btn-secondary" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:.62rem;padding:6px 12px;white-space:nowrap;">Open →</a>'
+          ) +
+          (isFounder ? '<button onclick="removeVentureLink(' + i + ')" style="background:none;border:1px solid rgba(239,68,68,.2);color:var(--red);border-radius:4px;padding:4px 8px;font-size:.6rem;cursor:pointer;margin-left:4px;flex-shrink:0;">✕</button>' : '') +
+        '</div>';
+      }).join('') +
+    '</div>' +
+
+    (isFounder ? '<div class="detail-section"><h4>➕ Add Venture Link</h4>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+        '<div class="form-field"><div class="form-label">Venture Name *</div><input class="form-input" id="vl-name" placeholder="My Venture"></div>' +
+        '<div class="form-field"><div class="form-label">Icon Letter</div><input class="form-input" id="vl-icon" placeholder="M" maxlength="1" style="text-transform:uppercase;"></div>' +
+      '</div>' +
+      '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Admin URL *</div><input class="form-input" id="vl-url" type="url" placeholder="https://venture.teknnuku.xyz/admin.html"></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
+        '<div class="form-field"><div class="form-label">Icon Colour</div><input class="form-input" id="vl-color" type="color" value="#C89B14" style="height:40px;padding:4px;cursor:pointer;"></div>' +
+        '<div class="form-field"><div class="form-label">Venture ID (no spaces)</div><input class="form-input" id="vl-id" placeholder="my_venture" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,\'_\')"></div>' +
+      '</div>' +
+      '<button class="btn-primary" style="font-size:.75rem;padding:9px 18px;" onclick="addVentureLink()">Add Venture</button>' +
+    '</div>' : '');
+
+  openDrawer('Venture Switcher', 'Switch Admin Systems', html);
+}
+
+function addVentureLink() {
+  var name  = (document.getElementById('vl-name') ||{}).value||'';
+  var url   = (document.getElementById('vl-url')  ||{}).value||'';
+  var icon  = (document.getElementById('vl-icon') ||{}).value||'V';
+  var color = (document.getElementById('vl-color')||{}).value||'#C89B14';
+  var id    = (document.getElementById('vl-id')   ||{}).value||('venture_' + Date.now());
+  if (!name.trim() || !url.trim()) { toast('Name and URL are required', 'error'); return; }
+  var links = getVentureLinks();
+  links.push({ id:id, name:name.trim(), url:url.trim(), icon:(icon||name[0]).toUpperCase(), color:color });
+  saveVentureLinks(links);
+  toast('Venture added ✓', 'success');
+  closeDrawer();
+  setTimeout(openVentureSwitcher, 100);
+}
+
+function removeVentureLink(index) {
+  if (!confirm('Remove this venture link?')) return;
+  var links = getVentureLinks();
+  links.splice(index, 1);
+  saveVentureLinks(links);
+  toast('Venture removed ✓', 'success');
+  closeDrawer();
+  setTimeout(openVentureSwitcher, 100);
+}
+  
 function _panelSettings() {
   return '<div class="panel" id="panel-settings">' +
     '<div class="eyebrow">Configuration</div><div class="panel-header"><div class="panel-title">Settings</div></div>' +
@@ -3116,16 +3406,65 @@ function showPanelMob(name,el){showPanel(name,document.querySelector('.nav-item[
 
 var PANEL_TITLES={overview:'Overview → Dashboard',leads:'Intake Leads → Diagnostic Results',inquiries:'Inquiries → Service Forms',messages:'Messages → Contact Inbox',applicants:'Applicants → Careers Portal',crm:'CRM Pipeline → Lead Kanban',people:'People → Unified Profiles',proposals:'Proposals → Quotes & Offers',payments:'Payments → Revenue Tracking',assignments:'Assignments → Routing',ventures:'Ventures → Portfolio',tasks:'Task Board → Kanban',clients:'Clients → Onboarding',finance:'Finance → P&L Intelligence',team:'Team Members → Active Staff',vacancies:'Vacancies → Role Management',reports:'Daily Reports → Accountability',sops:'SOPs → Procedures & Reference',settings:'Settings → Configuration'};
 
-function showPanel(name,el){
-  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  var panel=document.getElementById('panel-'+name);
-  if(panel)panel.classList.add('active');
-  if(el)el.classList.add('active');
-  document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.toggle('active',b.dataset.panel===name);});
-  var title=PANEL_TITLES[name]||name;var parts=title.split(' → ');
-  document.getElementById('panel-title').innerHTML=escHtml(parts[0])+(parts[1]?' <span>→ '+escHtml(parts[1])+'</span>':'');
+function showPanel(name, el) {
+  // Guard — only switch if panel exists
+  var panel = document.getElementById('panel-' + name);
+  if (!panel) return;
+
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  panel.classList.add('active');
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.panel === name);
+  });
+
+  var title = PANEL_TITLES[name] || name;
+  var parts = title.split(' → ');
+  var ptEl  = document.getElementById('panel-title');
+  if (ptEl) ptEl.innerHTML = escHtml(parts[0]) + (parts[1] ? ' <span>→ ' + escHtml(parts[1]) + '</span>' : '');
+
+  // Scroll content area to top
+  var ca = document.getElementById('content-area');
+  if (ca) ca.scrollTop = 0;
+
+  // Push to browser history (avoid duplicate entries)
+  var hash = '#' + name;
+  if (window.location.hash !== hash) {
+    history.pushState({ panel:name }, '', hash);
+  }
+
   closeSidebar();
+}
+
+function showPanelMob(name, el) {
+  showPanel(name, document.querySelector('.nav-item[data-panel="' + name + '"]'));
+  document.querySelectorAll('.bnav-item').forEach(function(b) { b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+}
+
+// Handle browser Back/Forward
+window.addEventListener('popstate', function(e) {
+  var panelName = (e.state && e.state.panel) || 'overview';
+  var navEl = document.querySelector('.nav-item[data-panel="' + panelName + '"]');
+  showPanel(panelName, navEl);
+  // Keep hash in sync without pushing new state
+  if (window.location.hash !== '#' + panelName) {
+    history.replaceState({ panel:panelName }, '', '#' + panelName);
+  }
+});
+
+// On initial load — read hash and navigate to it
+function initHashNav() {
+  var hash = window.location.hash.replace('#', '');
+  if (hash && document.getElementById('panel-' + hash)) {
+    var navEl = document.querySelector('.nav-item[data-panel="' + hash + '"]');
+    showPanel(hash, navEl);
+    // Replace initial history entry with state
+    history.replaceState({ panel:hash }, '', '#' + hash);
+  } else {
+    history.replaceState({ panel:'overview' }, '', '#overview');
+  }
 }
 
 // ═══════════════════════════════════════
@@ -8934,10 +9273,69 @@ function markMessageReplied(id) {
 }
 function deleteRecord(col,id){if(!confirm('Delete this record? This cannot be undone.'))return;window._deleteDoc(col,id).then(function(){toast('Deleted ✓','success');window._loadAll();}).catch(function(){toast('Delete failed','error');});}
 
-function _bindKeydown(){
-  document.addEventListener('keydown',function(e){
-    if(e.key==='Escape')closeDrawer();
-    if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();var gs=document.getElementById('global-search');if(gs)gs.focus();}
+// ═══════════════════════════════════════════════════════════════
+//  QUICK CREATE FAB
+// ═══════════════════════════════════════════════════════════════
+var _fabOpen = false;
+
+function toggleFAB() {
+  _fabOpen = !_fabOpen;
+  var menu = document.getElementById('fab-menu');
+  var btn  = document.getElementById('fab-main');
+  if (menu) menu.classList.toggle('open', _fabOpen);
+  if (btn)  btn.textContent = _fabOpen ? '✕' : '＋';
+}
+
+function closeFAB() {
+  _fabOpen = false;
+  var menu = document.getElementById('fab-menu');
+  var btn  = document.getElementById('fab-main');
+  if (menu) menu.classList.remove('open');
+  if (btn)  btn.textContent = '＋';
+}
+
+function fabCreate(type) {
+  closeFAB();
+  setTimeout(function() {
+    if (type === 'proposal')   { openProposalDrawer(null, ''); }
+    if (type === 'payment')    { openPaymentDrawer(null, '', '', ''); }
+    if (type === 'assignment') { openAssignmentDrawer(null, '', ''); }
+    if (type === 'task')       { openAddTask(); }
+  }, 80);
+}
+
+// Close FAB when drawer opens or clicking elsewhere
+document.addEventListener('click', function(e) {
+  if (_fabOpen && !e.target.closest('#quick-fab')) closeFAB();
+});
+
+// Show FAB after login — hide on login screen
+function updateFABVisibility() {
+  var fab = document.getElementById('quick-fab');
+  if (!fab) return;
+  var canCreate = canAccess('proposals') || canAccess('payments') || canAccess('assignments') || canAccess('tasks');
+  fab.style.display = canCreate ? 'flex' : 'none';
+}
+  
+function _bindKeydown() {
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (_fabOpen) { closeFAB(); return; }
+      closeDrawer();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      var gs = document.getElementById('global-search');
+      if (gs) gs.focus();
+    }
+    // Ctrl/Cmd + Shift + P → quick proposal
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+      e.preventDefault(); fabCreate('proposal');
+    }
+    // Ctrl/Cmd + Shift + M → quick payment
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'M') {
+      e.preventDefault(); fabCreate('payment');
+    }
   });
 }
 
@@ -8958,6 +9356,17 @@ function _bindKeydown(){
 
 document.getElementById('login-email').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('login-pass').focus();});
 document.getElementById('login-pass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+<!-- QUICK CREATE FAB -->
+<div id="quick-fab">
+  <div id="fab-menu">
+    <button class="fab-option" onclick="fabCreate('proposal')"><span class="fab-dot" style="background:var(--gold);"></span>New Proposal</button>
+    <button class="fab-option" onclick="fabCreate('payment')"><span class="fab-dot" style="background:var(--green);"></span>Log Payment</button>
+    <button class="fab-option" onclick="fabCreate('assignment')"><span class="fab-dot" style="background:var(--cyan);"></span>New Assignment</button>
+    <button class="fab-option" onclick="fabCreate('task')"><span class="fab-dot" style="background:var(--purple);"></span>Add Task</button>
+  </div>
+  <button id="fab-main" onclick="toggleFAB()" title="Quick Create">＋</button>
+</div>
 </script>
 </body>
 </html>
