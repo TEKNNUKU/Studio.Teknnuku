@@ -5998,6 +5998,24 @@ function markPaid(id) {
   });
 }
 
+function createAndOpenInvoice(payId) {
+  var pay = (window._data.payments||[]).find(function(p){ return p.id === payId; });
+  if (!pay) { toast('Payment not found', 'error'); return; }
+  toast('Generating invoice…');
+  createAndSaveInvoice(pay, payId).then(function() {
+    window._loadAll().then(function() { openInvoiceFromPayment(payId); });
+  }).catch(function(e){ toast('Failed: '+(e.message||e),'error'); });
+}
+
+function createAndOpenReceipt(payId) {
+  var pay = (window._data.payments||[]).find(function(p){ return p.id === payId; });
+  if (!pay) { toast('Payment not found', 'error'); return; }
+  toast('Generating receipt…');
+  createAndSaveReceipt(pay, payId).then(function() {
+    window._loadAll().then(function() { openReceiptFromPayment(payId); });
+  }).catch(function(e){ toast('Failed: '+(e.message||e),'error'); });
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  RECONCILIATION + AUTO-ACCEPT
 // ═══════════════════════════════════════════════════════════════
@@ -6090,8 +6108,8 @@ function createAndSaveInvoice(pay, payId) {
 
 function generateInvoiceHTML(inv, pay) {
   var cn    = FW_CONFIG.companyName  || 'TEKNNUKU Studio';
-  var ce    = FW_CONFIG.companyEmail || 'hello@teknnuku.xyz';
-  var cp    = FW_CONFIG.companyPhone || '';
+  var ce    = FW_CONFIG.companyEmail || 'studio@teknnuku.xyz';
+  var cp    = FW_CONFIG.companyPhone || '2347052770700';
   var v     = V_MAP[inv.ventureId]   || {};
   var amt   = parseFloat(inv.amount) || 0;
   var isPaid= inv.status === 'paid';
@@ -6348,8 +6366,8 @@ function createAndSaveReceipt(pay, payId) {
 
 function generateReceiptHTML(rct) {
   var cn  = FW_CONFIG.companyName  || 'TEKNNUKU Studio';
-  var ce  = FW_CONFIG.companyEmail || 'hello@teknnuku.xyz';
-  var cp  = FW_CONFIG.companyPhone || '';
+  var ce  = FW_CONFIG.companyEmail || 'studio@teknnuku.xyz';
+  var cp  = FW_CONFIG.companyPhone || '2347052770700';
   var v   = V_MAP[rct.ventureId]   || {};
   var amt = parseFloat(rct.amountPaid) || 0;
 
@@ -6516,7 +6534,7 @@ function filterReceiptRepo() {
 function renderReceiptRepoList(receipts) {
   if (!receipts.length) return '<div class="empty-state"><div class="empty-icon">🧾</div>No receipts yet</div>';
   return '<div class="table-scroll"><table><thead><tr><th>Receipt #</th><th>Client</th><th>Service</th><th>Amount</th><th>Date</th><th>Method</th><th></th></tr></thead><tbody>' +
-    receipts.slice().nsort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); }).map(function(r) {
+    receipts.slice().sort(function(a,b){ return new Date(b.createdAt||0)-new Date(a.createdAt||0); }).map(function(r) {
       return '<tr>' +
         '<td style="font-family:var(--mono);font-size:.65rem;color:var(--cyan);">' + escHtml(r.receiptNumber||'—') + '</td>' +
         '<td><div style="font-size:.8rem;font-weight:600;">' + escHtml(r.clientName||'—') + '</div></td>' +
