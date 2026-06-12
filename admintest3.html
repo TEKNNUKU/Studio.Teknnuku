@@ -659,54 +659,6 @@ tbody tr:last-child td{border-bottom:none;}
     gap:8px;
   }
 }
-/* ── FIXES: mobile drawer overflow + bottom cutoff + table scroll ── */
-@media(max-width:900px){
-  /* Drawer: ensure body scrolls and never gets hidden behind bottom nav */
-  .drawer{
-    bottom: calc(68px + env(safe-area-inset-bottom)) !important;
-    height: auto !important;
-    display: flex;
-    flex-direction: column;
-  }
-  .drawer-body{
-    overflow-y: auto !important;
-    flex: 1 1 auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Force any inline detail-grids / multi-column rows to stack */
-  [style*="grid-template-columns:1fr 1fr 1fr 1fr"],
-  [style*="grid-template-columns: 1fr 1fr 1fr 1fr"],
-  [style*="grid-template-columns:repeat(3"],
-  [style*="grid-template-columns:repeat(4"],
-  [style*="grid-template-columns:repeat(5"]{
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Make sure content area always leaves room for bottom nav */
-  .content-area{
-    padding-bottom: 100px !important;
-  }
-
-  /* Force ALL tables into horizontal scroll containers, even if not wrapped */
-  table{
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-  }
-  table thead, table tbody, table tr{
-    display: table;
-    width: 100%;
-    table-layout: auto;
-  }
-}
-
-/* ── Bottom nav: guarantee it's always pinned and visible ── */
-.bottom-nav{
-  z-index: 950 !important;
-}
 </style>
 </head>
 <body>
