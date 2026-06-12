@@ -1760,11 +1760,61 @@ function _panelLeads() {
 
 function _panelInquiries() {
   return '<div class="panel" id="panel-inquiries">' +
-    '<div class="eyebrow">Service Forms</div><div class="panel-header"><div class="panel-title">Service Inquiries</div></div>' +
-    '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">service_inquiries</div>' +
-    '<input class="tbl-search" placeholder="Search…" oninput="filterTable(\'inquiries-tbody\',this.value)">' +
-    '<select class="tbl-filter" onchange="filterInquiryByService(this.value)"><option value="">All Services</option><option value="brand_launch">01 · Brand Launch</option><option value="sales_system">02 · Sales System</option><option value="systemization">03 · Systemization</option><option value="platform_dev">04 · Platform Dev</option><option value="web3_dev">05 · Web3</option><option value="gata_onboard">06 · GATA</option><option value="venture_build">07 · Venture Build</option><option value="enterprise_sw">08 · Enterprise SW</option></select>' +
-    '</div><div class="table-scroll"><table><thead><tr><th>Person</th><th>Service</th><th>Business</th><th>Phone</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="inquiries-tbody"><tr><td colspan="6" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div></div>';
+    '<div class="eyebrow">Service Forms</div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Service Inquiries</div>' +
+      '<div id="inq-count-label" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;">— inquiries</div>' +
+    '</div>' +
+
+    // ── Filter bar ───────────────────────────────────────────
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">' +
+        '<input class="tbl-search" id="inq-search" style="width:200px;" placeholder="Search name, email, business…" oninput="applyInquiryFilters()">' +
+        '<select class="tbl-filter" id="inq-service" onchange="applyInquiryFilters()">' +
+          '<option value="">All Services</option>' +
+          '<option value="brand_launch">01 · Brand Launch</option>' +
+          '<option value="sales_system">02 · Sales System</option>' +
+          '<option value="systemization">03 · Systemization</option>' +
+          '<option value="platform_dev">04 · Platform Dev</option>' +
+          '<option value="web3_dev">05 · Web3</option>' +
+          '<option value="gata_onboard">06 · GATA</option>' +
+          '<option value="venture_build">07 · Venture Build</option>' +
+          '<option value="enterprise_sw">08 · Enterprise SW</option>' +
+        '</select>' +
+        '<select class="tbl-filter" id="inq-quick" onchange="applyInquiryQuickDate(this.value)">' +
+          '<option value="">Quick date…</option>' +
+          '<option value="today">Today</option>' +
+          '<option value="yesterday">Yesterday</option>' +
+          '<option value="week">This Week</option>' +
+          '<option value="lastweek">Last Week</option>' +
+          '<option value="month">This Month</option>' +
+          '<option value="lastmonth">Last Month</option>' +
+          '<option value="year">This Year</option>' +
+          '<option value="lastyear">Last Year</option>' +
+        '</select>' +
+        '<button onclick="clearInquiryFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
+        '<input type="date" class="tbl-filter" id="inq-from" style="min-width:130px;" onchange="applyInquiryFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+        '<input type="date" class="tbl-filter" id="inq-to" style="min-width:130px;" onchange="applyInquiryFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Time From</span>' +
+        '<input type="time" class="tbl-filter" id="inq-time-from" style="min-width:110px;" onchange="applyInquiryFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Time To</span>' +
+        '<input type="time" class="tbl-filter" id="inq-time-to" style="min-width:110px;" onchange="applyInquiryFilters()">' +
+        '<select class="tbl-filter" id="inq-dow" onchange="applyInquiryFilters()">' +
+          '<option value="">All Days</option>' +
+          '<option value="0">Sunday</option><option value="1">Monday</option>' +
+          '<option value="2">Tuesday</option><option value="3">Wednesday</option>' +
+          '<option value="4">Thursday</option><option value="5">Friday</option>' +
+          '<option value="6">Saturday</option>' +
+        '</select>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">service_inquiries</div></div>' +
+    '<div class="table-scroll"><table><thead><tr><th>Person</th><th>Service</th><th>Business</th><th>Phone</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="inquiries-tbody"><tr><td colspan="6" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div></div>';
 }
 
 function _panelMessages() {
@@ -4098,13 +4148,123 @@ function renderLeads(leads) {
   }).join('');
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  INQUIRIES — FILTER STATE + HELPERS
+// ═══════════════════════════════════════════════════════════════
+var _inqFilters = { search:'', service:'', from:'', to:'', timeFrom:'', timeTo:'', dow:'' };
+
+function applyInquiryQuickDate(val) {
+  if (!val) return;
+  var now = new Date(), fmt = function(d){ return d.toISOString().split('T')[0]; };
+  var from = '', to = fmt(now);
+  if (val === 'today') {
+    from = to;
+  } else if (val === 'yesterday') {
+    var y = new Date(now); y.setDate(now.getDate()-1);
+    from = to = fmt(y);
+  } else if (val === 'week') {
+    var m = new Date(now); m.setDate(now.getDate() - (now.getDay()===0?6:now.getDay()-1));
+    from = fmt(m);
+  } else if (val === 'lastweek') {
+    var thisMon = new Date(now); thisMon.setDate(now.getDate() - (now.getDay()===0?6:now.getDay()-1));
+    var lastMon = new Date(thisMon); lastMon.setDate(thisMon.getDate()-7);
+    var lastSun = new Date(thisMon); lastSun.setDate(thisMon.getDate()-1);
+    from = fmt(lastMon); to = fmt(lastSun);
+  } else if (val === 'month') {
+    from = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
+  } else if (val === 'lastmonth') {
+    from = fmt(new Date(now.getFullYear(), now.getMonth()-1, 1));
+    to   = fmt(new Date(now.getFullYear(), now.getMonth(), 0));
+  } else if (val === 'year') {
+    from = fmt(new Date(now.getFullYear(), 0, 1));
+  } else if (val === 'lastyear') {
+    from = fmt(new Date(now.getFullYear()-1, 0, 1));
+    to   = fmt(new Date(now.getFullYear()-1, 11, 31));
+  }
+  var fEl = document.getElementById('inq-from'), tEl = document.getElementById('inq-to');
+  if (fEl) fEl.value = from;
+  if (tEl) tEl.value = to;
+  applyInquiryFilters();
+}
+
+function applyInquiryFilters() {
+  _inqFilters.search   = ((document.getElementById('inq-search')    ||{}).value||'').toLowerCase().trim();
+  _inqFilters.service  = (document.getElementById('inq-service')    ||{}).value||'';
+  _inqFilters.from     = (document.getElementById('inq-from')       ||{}).value||'';
+  _inqFilters.to       = (document.getElementById('inq-to')         ||{}).value||'';
+  _inqFilters.timeFrom = (document.getElementById('inq-time-from')  ||{}).value||'';
+  _inqFilters.timeTo   = (document.getElementById('inq-time-to')    ||{}).value||'';
+  _inqFilters.dow      = (document.getElementById('inq-dow')        ||{}).value||'';
+  renderInquiries(window._data ? window._data.inquiries || [] : []);
+}
+
+function clearInquiryFilters() {
+  ['inq-search','inq-service','inq-quick','inq-from','inq-to','inq-time-from','inq-time-to','inq-dow'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_inqFilters).forEach(function(k){ _inqFilters[k] = ''; });
+  renderInquiries(window._data ? window._data.inquiries || [] : []);
+}
+
 // ═══════════════════════════════════════
 // INQUIRIES
 // ═══════════════════════════════════════
-function renderInquiries(inquiries){
-  var tbody=document.getElementById('inquiries-tbody');if(!tbody)return;
-  if(!inquiries||!inquiries.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📋</div>No inquiries yet</div></td></tr>';return;}
-  tbody.innerHTML=inquiries.map(function(i){return'<tr data-search="'+escHtml((i.name+' '+i.email).toLowerCase())+'" data-service="'+escHtml(i.service||'')+'"><td><div style="font-weight:600;">'+escHtml(i.name||'—')+'</div><div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(i.email||'')+'</div></td><td><span class="badge badge-cyan">'+escHtml(serviceLabel(i.service))+'</span></td><td>'+escHtml(i.businessName||'—')+'</td><td style="font-family:var(--mono);font-size:.72rem;">'+escHtml(i.phone||'—')+'</td><td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtTime(i.submittedAt||i.createdAt)+'</td><td><div class="row-actions"><button class="action-btn" onclick="openInquiryDrawer(window._data.inquiries.find(function(x){return x.id===\''+i.id+'\'}))">View</button><button class="action-btn success" onclick="quickProposal(\''+i.id+'\',\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">Propose</button></div></td></tr>';}).join('');
+function renderInquiries(inquiries) {
+  var f = _inqFilters;
+
+  var filtered = (inquiries||[]).filter(function(i) {
+    var d = tsToDate(i.submittedAt || i.createdAt);
+    var dateStr = isNaN(d) ? '' : d.toISOString().split('T')[0];
+    var timeStr = isNaN(d) ? '' : d.toTimeString().substring(0,5); // HH:MM
+    var dow     = isNaN(d) ? '' : String(d.getDay());
+
+    if (f.service && i.service !== f.service) return false;
+
+    if (f.search) {
+      var hay = ((i.name||'')+(i.email||'')+(i.businessName||'')).toLowerCase();
+      if (!hay.includes(f.search)) return false;
+    }
+
+    if (f.from && dateStr && dateStr < f.from) return false;
+    if (f.to   && dateStr && dateStr > f.to)   return false;
+
+    if (f.timeFrom && timeStr && timeStr < f.timeFrom) return false;
+    if (f.timeTo   && timeStr && timeStr > f.timeTo)   return false;
+
+    if (f.dow !== '' && dow !== f.dow) return false;
+
+    return true;
+  });
+
+  // Count label
+  var lbl = document.getElementById('inq-count-label');
+  if (lbl) lbl.textContent = filtered.length + ' of ' + (inquiries||[]).length + ' inquir' + ((inquiries||[]).length !== 1 ? 'ies' : 'y');
+
+  var tbody = document.getElementById('inquiries-tbody'); if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">' +
+      '<div class="empty-icon">📋</div>' +
+      '<div>No inquiries match your filters</div>' +
+      '<div style="margin-top:8px;"><button class="action-btn" onclick="clearInquiryFilters()">Clear Filters</button></div>' +
+    '</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(function(i) {
+    return '<tr>' +
+      '<td><div style="font-weight:600;">' + escHtml(i.name||'—') + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + escHtml(i.email||'') + '</div></td>' +
+      '<td><span class="badge badge-cyan">' + escHtml(serviceLabel(i.service)) + '</span></td>' +
+      '<td>' + escHtml(i.businessName||'—') + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.72rem;">' + escHtml(i.phone||'—') + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">' + fmtTime(i.submittedAt||i.createdAt) + '</td>' +
+      '<td><div class="row-actions">' +
+        '<button class="action-btn" onclick="openInquiryDrawer(window._data.inquiries.find(function(x){return x.id===\'' + i.id + '\'}))">View</button>' +
+        '<button class="action-btn success" onclick="quickProposal(\'' + i.id + '\',\'' + escHtml(i.name||'') + '\',\'' + escHtml(i.email||'') + '\')">Propose</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════
