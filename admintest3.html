@@ -355,10 +355,12 @@ tbody tr:last-child td{border-bottom:none;}
 .onboard-pending{background:rgba(242,237,228,.06);color:var(--dimmer);}
 .content-area{overflow-y:auto!important;-webkit-overflow-scrolling:touch;}
   .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
-  table{min-width:600px;}
   .kanban-board{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px;}
+   @media(max-width:900px){
+  table{min-width:600px;}
   .kpi-grid{grid-template-columns:repeat(2,1fr)!important;}
   .fin-summary-grid{grid-template-columns:1fr 1fr!important;}
+}
 @media(max-width:900px){.fin-summary-grid{grid-template-columns:1fr}.kanban-board{grid-template-columns:1fr!important}}
 
 /* ── Scroll isolation — each panel scrolls independently ── */
@@ -594,7 +596,8 @@ tbody tr:last-child td{border-bottom:none;}
 /* Small mobile — also hide Top Metric + Date */
 @media(max-width:480px){
   .ov-rpt-col-date,
-  .ov-rpt-col-metric{ display:none!important; }
+  .ov-rpt-col-metric,
+  .ov-rpt-col-submitted{ display:none!important; }   /* ← add this */
   .ov-rpt-ago-inline{ display:block!important; }
 }
 /* Default: inline fallbacks hidden on desktop */
@@ -1658,7 +1661,7 @@ function ovLatestReports(reports) {
       '</td>' +
  
       // Submitted — always visible on desktop, replaced by inline on very small screens
-      '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);white-space:nowrap;">' +
+      '<td class="ov-rpt-col-submitted" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);white-space:nowrap;">' +
         escHtml(agoStr) +
       '</td>' +
  
@@ -7403,31 +7406,6 @@ function saveProposal() {
     closeDrawer();
     window._loadAll();
   }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
-}
-function savePayment(){
-  var data={
-    personName:document.getElementById('pay-name').value.trim(),
-    personEmail:document.getElementById('pay-email').value.trim(),
-    service:document.getElementById('pay-service').value.trim(),
-    amount:parseFloat(document.getElementById('pay-amount').value)||0,
-    status:document.getElementById('pay-status').value,
-    paidAt:document.getElementById('pay-date').value,
-    invoiceRef:document.getElementById('pay-ref').value.trim(),
-    paymentMethod:document.getElementById('pay-method').value,
-    leadId:(document.getElementById('pay-lead')||{}).value||''
-  };
-  if(!data.personName){toast('Client name required','error');return;}
-  var fn=_editingPaymentId?window._updateDoc('payments',_editingPaymentId,data):window._saveDoc('payments',data);
-  fn.then(function(){
-    toast('Payment saved ✓','success');
-    closeDrawer();
-    window._loadAll().then(function(){
-      if(data.leadId && data.status==='paid'){
-        var lead=(window._data.crm_leads||[]).find(function(l){return l.id===data.leadId;});
-        if(lead && lead.status==='proposal') autoWinLead(data.leadId, Object.assign({id:_editingPaymentId||''},data));
-      }
-    });
-  }).catch(function(e){toast('Save failed: '+(e.message||e),'error');});
 }
 
 var _editingPaymentId=null;
