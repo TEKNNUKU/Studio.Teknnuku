@@ -1899,8 +1899,19 @@ function _panelApplicants() {
     '<option value="">All Roles</option>' +
     Object.entries(ROLE_LABELS).map(function(e){ return '<option value="'+e[0]+'">'+e[1]+'</option>'; }).join('') +
     '</select>' +
-    '<select class="tbl-filter" onchange="filterApplicantsByStatus(this.value)"><option value="">All Status</option><option value="pending">Pending</option><option value="interview">Interview</option><option value="phase1">Phase 1</option><option value="phase2">Phase 2</option><option value="phase3">Phase 3</option><option value="hired">Hired</option><option value="rejected">Rejected</option></select>' +
-    '</div><div class="table-scroll"><table><thead><tr><th>Applicant</th><th>Role</th><th>Score</th><th>Tier</th><th>Phase</th><th>Exp</th><th>Status</th><th>Applied</th><th>Actions</th></tr></thead><tbody id="applicants-tbody"><tr><td colspan="9" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div></div>';
+    '<select class="tbl-filter" onchange="filterApplicantsByStatus(this.value)"><option value="">All Status</option><option value="pending">Pending</option><option value="interview">Interview</option><option value="phase1">Phase 1</option><option value="phase2">Phase 2</option><option value="phase3">Phase 3</option><option value="hired">Hired</option></select>' +
+    '</div><div class="table-scroll"><table><thead><tr><th>Applicant</th><th>Role</th><th>Score</th><th>Tier</th><th>Phase</th><th>Exp</th><th>Status</th><th>Applied</th><th>Actions</th></tr></thead><tbody id="applicants-tbody"><tr><td colspan="9" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div>' +
+
+    // ── RECYCLE BIN ──────────────────────────────────────────
+    '<div class="table-wrap" style="margin-top:24px;">' +
+      '<div class="table-toolbar">' +
+        '<div class="table-toolbar-title">🗑 Recycle Bin</div>' +
+        '<span style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">Rejected applicants are kept for 50 days, then permanently deleted</span>' +
+      '</div>' +
+      '<div class="table-scroll"><table><thead><tr><th>Applicant</th><th>Role</th><th>Score</th><th>Rejected</th><th>Days Left</th><th>Actions</th></tr></thead>' +
+      '<tbody id="recycle-bin-tbody"><tr><td colspan="6" class="empty-state" style="padding:24px;">No rejected applicants</td></tr></tbody></table></div>' +
+    '</div>' +
+  '</div>';
 }
 
 function _panelPeople() {
@@ -3839,7 +3850,7 @@ window._renderAll = function(){
   if(canAccess('leads'))renderLeads(d.leads);
   if(canAccess('inquiries'))renderInquiries(d.inquiries);
   if(canAccess('messages'))renderMessages(d.messages);
-  if(canAccess('applicants'))renderApplicants(d.applicants||[]);
+  if(canAccess('applicants')){autoPurgeRecycleBin(d.applicants||[]);renderApplicants(d.applicants||[]);}
   if(canAccess('people'))renderPeople(d);
   // Rebuild people cat tabs on every refresh in case counts changed
   if(canAccess('people')&&window._peopleCache&&window._peopleCache.length)buildPeopleCatTabs(window._peopleCache);
@@ -4476,7 +4487,10 @@ function renderMessages(messages) {
 // ═══════════════════════════════════════
 // APPLICANTS — Enhanced with Phase Tracking
 // ═══════════════════════════════════════
-function renderApplicants(list){
+function renderApplicants(allList){
+  var list = (allList||[]).filter(function(a){ return a.status !== 'rejected'; });
+  var recycled = (allList||[]).filter(function(a){ return a.status === 'rejected'; });
+  renderRecycleBin(recycled);
   var tierA=list.filter(function(a){return(parseInt(a.score)||0)>=70;}).length;
   var interview=list.filter(function(a){return a.status==='interview';}).length;
   var probation=list.filter(function(a){return['phase1','phase2','phase3'].indexOf(a.status)>-1;}).length;
@@ -4487,7 +4501,11 @@ function renderApplicants(list){
   var elP=document.getElementById('app-kpi-probation');if(elP)elP.textContent=probation;
   var elH=document.getElementById('app-kpi-hired');if(elH)elH.textContent=hired;
   var tbody=document.getElementById('applicants-tbody');if(!tbody)return;
-  if(!list.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🎯</div>No applicants yet</div></td></tr>';return;}
+ var active = list.filter(function(a){ return a.status !== 'rejected'; });
+ var recycled = list.filter(function(a){ return a.status === 'rejected'; });
+ renderRecycleBin(recycled);
+ list = active;
+ if(!list.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🎯</div>No applicants yet</div></td></tr>';return;}
   tbody.innerHTML=list.map(function(a){
     var info=a.personalInfo||{};
     var name=escHtml(info.name||a.name||'—');
@@ -4507,13 +4525,23 @@ function renderApplicants(list){
       '<td style="font-family:var(--mono);font-size:.72rem;color:var(--dim);">'+escHtml(exp)+'</td>' +
       '<td>'+statusBadge(a.status||'pending')+'</td>' +
       '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">'+fmtTime(a.submittedAt||a.createdAt)+'</td>' +
-      '<td><div class="row-actions">' +
-        '<button class="action-btn" onclick="openApplicantDrawer(window._data.applicants.find(function(x){return x.id===&quot;'+a.id+'&quot;}))">View</button>' +
-        (a.status==='pending'?'<button class="action-btn success" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;interview&quot;)">Shortlist</button>':'') +
-        (a.status==='interview'?'<button class="action-btn success" onclick="startProbation(&quot;'+a.id+'&quot;)">Start Phase 1</button>':'') +
-        (['phase1','phase2','phase3'].indexOf(a.status)>-1?'<button class="action-btn success" onclick="advancePhase(&quot;'+a.id+'&quot;,&quot;'+a.status+'&quot;)">Advance →</button>':'') +
-        (a.status!=='rejected'&&a.status!=='hired'&&a.status!=='employed'?'<button class="action-btn danger" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;rejected&quot;)">Reject</button>':'') +
-      '</div></td>' +
+      '<td><div class="row-actions" style="flex-wrap:wrap;gap:3px;">' +
+  '<button class="action-btn" onclick="openApplicantDrawer(window._data.applicants.find(function(x){return x.id===&quot;'+a.id+'&quot;}))">View</button>' +
+  (a.status==='pending'?'<button class="action-btn success" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;interview&quot;)">Shortlist</button>':'') +
+  (a.status==='interview'?'<button class="action-btn success" onclick="startProbation(&quot;'+a.id+'&quot;)">Start Phase 1</button>':'') +
+  (a.status==='interview'?'<button class="action-btn" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;pending&quot;)">↺ Unshortlist</button>':'') +
+  (['phase1','phase2','phase3'].indexOf(a.status)>-1?'<button class="action-btn success" onclick="advancePhase(&quot;'+a.id+'&quot;,&quot;'+a.status+'&quot;)">Advance →</button>':'') +
+  '<select class="vacancy-status-select" style="font-size:.58rem;padding:3px 6px;" onchange="if(this.value)moveApplicantStage(&quot;'+a.id+'&quot;,this.value);this.value=&quot;&quot;;">' +
+    '<option value="">Move to…</option>' +
+    '<option value="pending">Pending</option>' +
+    '<option value="interview">Interview</option>' +
+    '<option value="phase1">Phase 1</option>' +
+    '<option value="phase2">Phase 2</option>' +
+    '<option value="phase3">Phase 3</option>' +
+    '<option value="employed">Employed</option>' +
+  '</select>' +
+  (a.status!=='rejected'&&a.status!=='hired'&&a.status!=='employed'?'<button class="action-btn danger" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;rejected&quot;)">Reject</button>':'') +
+'</div></td>' +
     '</tr>';
   }).join('');
 }
@@ -4522,8 +4550,69 @@ function filterApplicantsByRole(role){document.querySelectorAll('#applicants-tbo
 function filterApplicantsByStatus(status){document.querySelectorAll('#applicants-tbody tr[data-status]').forEach(function(r){r.style.display=!status||r.dataset.status===status?'':'none';});}
 
 function updateApplicantStatus(id,status){
-  var labels={interview:'Shortlisted for interview',hired:'Marked as hired',rejected:'Application rejected',phase1:'Probation Phase 1 started',phase2:'Advanced to Phase 2',phase3:'Advanced to Phase 3',employed:'Confirmed as employee'};
-  window._updateDoc('applicants',id,{status:status}).then(function(){toast(labels[status]||'Status updated','success');window._loadAll();}).catch(function(e){toast('Update failed: '+(e.message||e),'error');});
+  var labels={interview:'Shortlisted for interview',hired:'Marked as hired',rejected:'Moved to recycle bin',pending:'Moved back to pending',phase1:'Probation Phase 1 started',phase2:'Advanced to Phase 2',phase3:'Advanced to Phase 3',employed:'Confirmed as employee'};
+  var data = { status: status };
+  if (status === 'rejected') {
+    var a = (window._data.applicants||[]).find(function(x){ return x.id === id; });
+    data.rejectedAt = new Date().toISOString();
+    data.prevStatus = a ? (a.status||'pending') : 'pending';
+  }
+  window._updateDoc('applicants',id,data).then(function(){toast(labels[status]||'Status updated','success');window._loadAll();}).catch(function(e){toast('Update failed: '+(e.message||e),'error');});
+}
+
+function moveApplicantStage(id, newStage) {
+  var a = (window._data.applicants||[]).find(function(x){ return x.id === id; });
+  if (!a) return;
+  if (['phase1','phase2','phase3','employed'].indexOf(newStage) !== -1) {
+    var phases = (a.phases||[]).slice();
+    phases.push({phase:newStage,label:PROBATION_PHASES.find(function(p){return p.key===newStage;})?PROBATION_PHASES.find(function(p){return p.key===newStage;}).label:newStage,startedAt:new Date().toISOString(),note:'Manually moved by admin'});
+    window._updateDoc('applicants',id,{status:newStage,phases:phases}).then(function(){
+      toast('Moved to '+newStage,'success');
+      if(newStage==='employed') promoteToTeamMember(a);
+      window._loadAll();
+    });
+  } else {
+    updateApplicantStatus(id, newStage);
+  }
+}
+
+// ── RECYCLE BIN ──────────────────────────────────────────────
+var RECYCLE_RETENTION_DAYS = 50;
+
+function restoreApplicant(id) {
+  var a = (window._data.applicants||[]).find(function(x){ return x.id === id; });
+  if (!a) return;
+  var restoreTo = a.prevStatus || 'pending';
+  window._updateDoc('applicants', id, { status: restoreTo, rejectedAt: null, prevStatus: null })
+    .then(function(){ toast('Applicant restored ✓','success'); window._loadAll(); closeDrawer(); })
+    .catch(function(e){ toast('Restore failed: '+(e.message||e),'error'); });
+}
+
+function permanentlyDeleteApplicant(id) {
+  if (!confirm('Permanently delete this applicant? This cannot be undone.')) return;
+  window._deleteDoc('applicants', id).then(function(){ toast('Permanently deleted','success'); window._loadAll(); closeDrawer(); });
+}
+
+// Auto-purge applicants rejected more than RECYCLE_RETENTION_DAYS ago
+function autoPurgeRecycleBin(applicants) {
+  var now = Date.now();
+  (applicants||[]).forEach(function(a) {
+    if (a.status !== 'rejected' || !a.rejectedAt) return;
+    var rejDate = new Date(a.rejectedAt).getTime();
+    if (isNaN(rejDate)) return;
+    var daysAgo = (now - rejDate) / 86400000;
+    if (daysAgo >= RECYCLE_RETENTION_DAYS) {
+      window._deleteDoc('applicants', a.id);
+    }
+  });
+}
+
+function daysUntilPurge(rejectedAt) {
+  if (!rejectedAt) return RECYCLE_RETENTION_DAYS;
+  var rejDate = new Date(rejectedAt).getTime();
+  if (isNaN(rejDate)) return RECYCLE_RETENTION_DAYS;
+  var daysAgo = (Date.now() - rejDate) / 86400000;
+  return Math.max(0, Math.ceil(RECYCLE_RETENTION_DAYS - daysAgo));
 }
 
 function startProbation(id){
@@ -4649,12 +4738,14 @@ function openApplicantDrawer(a){
     (a.coverLetter?'<div class="detail-section"><h4>✍️ Cover Letter</h4><div style="padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;font-size:.82rem;color:var(--dim);line-height:1.7;white-space:pre-wrap;">'+escHtml(a.coverLetter)+'</div></div>':'') +
 
     '<div class="btn-row">' +
-      (a.status==='pending'?'<button class="btn-success" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;interview&quot;);closeDrawer();">✓ Shortlist</button>':'') +
-      (a.status==='interview'?'<button class="btn-primary" onclick="startProbation(&quot;'+a.id+'&quot;);closeDrawer();">🚀 Start Phase 1</button>':'') +
-      (a.status!=='rejected'&&a.status!=='hired'&&a.status!=='employed'?'<button class="btn-secondary" style="border-color:rgba(239,68,68,.3);color:var(--red);" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;rejected&quot;);closeDrawer();">✕ Reject</button>':'') +
-      (email?'<a href="mailto:'+escHtml(email)+'" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉️ Email</a>':'') +
-      '<button class="action-btn danger" onclick="deleteRecord(\'applicants\',\''+a.id+'\')">🗑 Delete</button>' +
-    '</div>';
+  (a.status==='rejected' ? '<button class="btn-success" onclick="restoreApplicant(\''+a.id+'\')">↺ Restore from Recycle Bin</button><div style="font-family:var(--mono);font-size:.6rem;color:var(--amber);align-self:center;">Auto-deletes in '+daysUntilPurge(a.rejectedAt)+' day(s)</div>' : '') +
+  (a.status==='pending'?'<button class="btn-success" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;interview&quot;);closeDrawer();">✓ Shortlist</button>':'') +
+  (a.status==='interview'?'<button class="btn-primary" onclick="startProbation(&quot;'+a.id+'&quot;);closeDrawer();">🚀 Start Phase 1</button>':'') +
+  (a.status==='interview'?'<button class="btn-secondary" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;pending&quot;);closeDrawer();">↺ Unshortlist</button>':'') +
+  (a.status!=='rejected'&&a.status!=='hired'&&a.status!=='employed'?'<button class="btn-secondary" style="border-color:rgba(239,68,68,.3);color:var(--red);" onclick="updateApplicantStatus(&quot;'+a.id+'&quot;,&quot;rejected&quot;);closeDrawer();">✕ Reject</button>':'') +
+  (email?'<a href="mailto:'+escHtml(email)+'" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉️ Email</a>':'') +
+  (a.status==='rejected' ? '<button class="action-btn danger" onclick="permanentlyDeleteApplicant(\''+a.id+'\')">🗑 Delete Permanently</button>' : '<button class="action-btn danger" onclick="deleteRecord(\'applicants\',\''+a.id+'\')">🗑 Delete</button>') +
+'</div>';
 
   openDrawer('Applicant Profile',escHtml(name),html);
 }
@@ -4664,6 +4755,33 @@ function openPhaseNoteModal(id,phase){
   var a=window._data.applicants.find(function(x){return x.id===id;});if(!a)return;
   var phases=(a.phases||[]).map(function(p){if(p.phase===phase){p.note=note;p.noteAddedAt=new Date().toISOString();}return p;});
   window._updateDoc('applicants',id,{phases:phases}).then(function(){toast('Note added','success');window._loadAll();});
+}
+
+function renderRecycleBin(recycled) {
+  var tbody = document.getElementById('recycle-bin-tbody');
+  if (!tbody) return;
+  if (!recycled.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🗑</div>Recycle bin is empty</div></td></tr>';
+    return;
+  }
+  recycled.sort(function(a,b){ return new Date(b.rejectedAt||0)-new Date(a.rejectedAt||0); });
+  tbody.innerHTML = recycled.map(function(a) {
+    var info = a.personalInfo||{};
+    var daysLeft = daysUntilPurge(a.rejectedAt);
+    var urgent = daysLeft <= 7;
+    return '<tr style="'+(urgent?'background:rgba(239,68,68,.04);':'')+'">' +
+      '<td><div style="font-weight:600;">'+escHtml(info.name||a.name||'—')+'</div>' +
+        '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">'+escHtml(info.email||a.email||'')+'</div></td>' +
+      '<td>'+escHtml(ROLE_LABELS[a.positionApplied]||a.positionApplied||'—')+'</td>' +
+      '<td>'+scoreBadge(a.score)+'</td>' +
+      '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+fmtDate(a.rejectedAt)+'</td>' +
+      '<td><span class="badge '+(urgent?'badge-red':'badge-amber')+'">'+daysLeft+' day'+(daysLeft!==1?'s':'')+'</span></td>' +
+      '<td><div class="row-actions">' +
+        '<button class="action-btn success" onclick="restoreApplicant(\''+a.id+'\')">↺ Restore</button>' +
+        '<button class="action-btn danger" onclick="permanentlyDeleteApplicant(\''+a.id+'\')">🗑 Delete Now</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
 }
 </script>
 
