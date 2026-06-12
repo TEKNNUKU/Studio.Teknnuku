@@ -3800,7 +3800,14 @@ window._renderAll = function(){
   if(canAccess('vacancies'))renderVacancies(d.careers_config||[],d.applicants||[],d.team_members||[]);
   // OS panels
   var ovCRM=document.getElementById('kpi-crm');if(ovCRM)ovCRM.textContent=(d.crm_leads||[]).length;
-  var ovVen=document.getElementById('kpi-ventures');if(ovVen)ovVen.textContent=(d.ventures||[]).length+VENTURES_SEED.length;
+  var ovVen = document.getElementById('kpi-ventures');
+if (ovVen) {
+  var deletedVenIds = new Set((d.ventures||[]).filter(function(v){return v.deleted;}).map(function(v){return v.id;}));
+  var mergedVenCount = VENTURES_SEED.filter(function(v){
+    return !(d.ventures||[]).find(function(dv){return dv.id===v.id;}) && !deletedVenIds.has(v.id);
+  }).length + (d.ventures||[]).filter(function(v){return !v.deleted;}).length;
+  ovVen.textContent = mergedVenCount;
+}
   var ovTsk=document.getElementById('kpi-tasks');if(ovTsk)ovTsk.textContent=(d.tasks||[]).filter(function(t){return t.status!=='done';}).length;
   var ovCl=document.getElementById('kpi-clients');if(ovCl)ovCl.textContent=(d.clients||[]).filter(function(c){return c.status!=='churned';}).length;
   var nbCRM=document.getElementById('nb-crm');if(nbCRM)nbCRM.textContent=(d.crm_leads||[]).filter(function(l){return l.status==='new_lead';}).length;
