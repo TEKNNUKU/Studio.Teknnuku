@@ -6271,18 +6271,18 @@ function markPaid(id) {
   }).then(function() {
     toast('Payment marked as paid ✓', 'success');
     window._loadAll().then(function() {
-      var pay = (window._data.payments || []).find(function(p) { return p.id === id; });
-      if (!pay) return;
-      reconcilePaymentWithFinance(pay, id);
-      if (pay.proposalId) autoAcceptProposal(pay);
-      if (pay.leadId)     autoWinLead(pay.leadId, pay);
-      var hasInv = (window._data.invoices||[]).some(function(i){ return i.paymentId === id; });
-      var hasRct = (window._data.receipts||[]).some(function(r){ return r.paymentId === id; });
-      if (!hasInv) createAndSaveInvoice(pay, id);
-      if (!hasRct) createAndSaveReceipt(pay, id);
+      var pay = (window._data.payments||[]).find(function(p){ return p.id === id; });
+      if (pay) {
+        reconcilePaymentWithFinance(pay, id);
+        if (pay.proposalId) autoAcceptProposal(pay);
+        if (pay.leadId)     autoWinLead(pay.leadId, pay);
+        var hasInv = (window._data.invoices||[]).some(function(i){ return i.paymentId === id; });
+        var hasRct = (window._data.receipts||[]).some(function(r){ return r.paymentId === id; });
+        if (!hasInv) createAndSaveInvoice(pay, id);
+        if (!hasRct) createAndSaveReceipt(pay, id);
+      }
     });
-  });
-}
+  }).catch(function(e){ toast('Failed to mark paid: '+(e.message||e),'error'); });
 
 function createAndOpenInvoice(payId) {
   var pay = (window._data.payments||[]).find(function(p){ return p.id === payId; });
