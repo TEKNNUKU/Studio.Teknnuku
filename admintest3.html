@@ -767,16 +767,16 @@ window._deleteDoc = async (col, id) => { await deleteDoc(doc(db,col,id)); };
 
 window._loadAll = async function() {
   const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
-       ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts] = await Promise.all([
+       ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log] = await Promise.all([
   getCol('intake_leads'), getCol('service_inquiries'), getCol('contact_messages'),
   getCol('proposals'), getCol('payments'), getCol('assignments'),
   getCol('applicants'), getCol('team_members'), getCol('careers_config'),
   getCol('ventures'), getCol('tasks'), getCol('crm_leads'),
   getCol('clients'), getCol('financials'), getCol('daily_reports'), getCol('weekly_reports'),
-  getCol('invoices'), getCol('receipts')
+  getCol('invoices'), getCol('receipts'), getCol('comm_log')
 ]);
 window._data = { leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
-                 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts };
+                 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log };
   document.getElementById('last-refresh').textContent = 'Updated '+new Date().toLocaleTimeString();
   window._renderAll();
 };
@@ -3098,34 +3098,61 @@ function _panelCRM() {
     '</div>' +
 
     // ── Filter bar ───────────────────────────────────────────
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;align-items:center;">' +
-      '<select class="tbl-filter" id="crm-sf-status" onchange="applyCRMFilters()">' +
-        '<option value="">All Stages</option>' +
-        '<option value="new_lead">New Lead</option>' +
-        '<option value="contacted">Contacted</option>' +
-        '<option value="qualified">Qualified</option>' +
-        '<option value="proposal">Proposal</option>' +
-        '<option value="won">Won</option>' +
-        '<option value="lost">Lost</option>' +
-      '</select>' +
-      '<select class="tbl-filter" id="crm-sf-venture" onchange="applyCRMFilters()">' +
-        '<option value="">All Ventures</option>' +
-        VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
-      '</select>' +
-      '<select class="tbl-filter" id="crm-sf-assigned" onchange="applyCRMFilters()">' +
-        '<option value="">All Assigned</option>' +
-        '<option value="__unassigned__">Unassigned</option>' +
-      '</select>' +
-      '<select class="tbl-filter" id="crm-sf-source" onchange="applyCRMFilters()">' +
-        '<option value="">All Sources</option>' +
-        '<option value="intake">Intake Form</option>' +
-        '<option value="inquiry">Service Inquiry</option>' +
-        '<option value="message">Contact Message</option>' +
-        '<option value="direct">Direct / Self-Sourced</option>' +
-      '</select>' +
-      '<input class="tbl-search" id="crm-sf-search" style="width:160px;" placeholder="Search leads…" oninput="applyCRMFilters()">' +
-    '</div>' +
-
+    '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">' +
+  '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+    '<select class="tbl-filter" id="crm-sf-status" onchange="applyCRMFilters()">' +
+      '<option value="">All Stages</option>' +
+      '<option value="new_lead">New Lead</option>' +
+      '<option value="contacted">Contacted</option>' +
+      '<option value="qualified">Qualified</option>' +
+      '<option value="proposal">Proposal</option>' +
+      '<option value="won">Won</option>' +
+      '<option value="lost">Lost</option>' +
+    '</select>' +
+    '<select class="tbl-filter" id="crm-sf-venture" onchange="applyCRMFilters()">' +
+      '<option value="">All Ventures</option>' +
+      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '</select>' +
+    '<select class="tbl-filter" id="crm-sf-assigned" onchange="applyCRMFilters()">' +
+      '<option value="">All Assigned</option>' +
+      '<option value="__unassigned__">Unassigned</option>' +
+    '</select>' +
+    '<select class="tbl-filter" id="crm-sf-source" onchange="applyCRMFilters()">' +
+      '<option value="">All Sources</option>' +
+      '<option value="intake">Intake Form</option>' +
+      '<option value="inquiry">Service Inquiry</option>' +
+      '<option value="message">Contact Message</option>' +
+      '<option value="direct">Direct / Self-Sourced</option>' +
+    '</select>' +
+    '<input class="tbl-search" id="crm-sf-search" style="width:160px;" placeholder="Search leads…" oninput="applyCRMFilters()">' +
+  '</div>' +
+  '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+    '<select class="tbl-filter" id="crm-sf-quick" onchange="applyCRMQuickDate(this.value)">' +
+      '<option value="">Quick date…</option>' +
+      '<option value="today">Today</option>' +
+      '<option value="yesterday">Yesterday</option>' +
+      '<option value="week">This Week</option>' +
+      '<option value="lastweek">Last Week</option>' +
+      '<option value="month">This Month</option>' +
+      '<option value="lastmonth">Last Month</option>' +
+      '<option value="year">This Year</option>' +
+      '<option value="lastyear">Last Year</option>' +
+    '</select>' +
+    '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
+    '<input type="date" class="tbl-filter" id="crm-sf-from" style="min-width:130px;" onchange="applyCRMFilters()">' +
+    '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+    '<input type="date" class="tbl-filter" id="crm-sf-to" style="min-width:130px;" onchange="applyCRMFilters()">' +
+    '<select class="tbl-filter" id="crm-sf-dow" onchange="applyCRMFilters()">' +
+      '<option value="">All Days</option>' +
+      '<option value="0">Sunday</option><option value="1">Monday</option>' +
+      '<option value="2">Tuesday</option><option value="3">Wednesday</option>' +
+      '<option value="4">Thursday</option><option value="5">Friday</option>' +
+      '<option value="6">Saturday</option>' +
+    '</select>' +
+    '<button onclick="clearCRMFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+  '</div>' +
+'</div>' +
+    
     // ── KPIs ────────────────────────────────────────────────
     '<div class="kpi-grid" style="margin-bottom:20px;">' +
       '<div class="kpi-card purple"><div class="kpi-icon">📥</div><div class="kpi-label">New Leads</div><div class="kpi-value" id="crm-kpi-new">—</div><div class="kpi-meta">uncontacted</div></div>' +
@@ -8022,7 +8049,32 @@ function saveAssignment() {
 // ═══════════════════════════════════════════════════════════════
 
 // ── CRM Pipeline ──────────────────────────────────────────────
-var _crmFilters = { status:'', venture:'', assigned:'', source:'', search:'' };
+var _crmFilters = { status:'', venture:'', assigned:'', source:'', search:'', from:'', to:'', dow:'' };
+
+function applyCRMQuickDate(val) {
+  if (!val) return;
+  var now = new Date(), fmt = function(d){ return d.toISOString().split('T')[0]; };
+  var from = '', to = fmt(now);
+  if (val==='today') { from = to; }
+  else if (val==='yesterday') { var y=new Date(now); y.setDate(now.getDate()-1); from=to=fmt(y); }
+  else if (val==='week') { var m=new Date(now); m.setDate(now.getDate()-(now.getDay()===0?6:now.getDay()-1)); from=fmt(m); }
+  else if (val==='lastweek') { var tm=new Date(now); tm.setDate(now.getDate()-(now.getDay()===0?6:now.getDay()-1)); var lm=new Date(tm); lm.setDate(tm.getDate()-7); var ls=new Date(tm); ls.setDate(tm.getDate()-1); from=fmt(lm); to=fmt(ls); }
+  else if (val==='month') { from=fmt(new Date(now.getFullYear(),now.getMonth(),1)); }
+  else if (val==='lastmonth') { from=fmt(new Date(now.getFullYear(),now.getMonth()-1,1)); to=fmt(new Date(now.getFullYear(),now.getMonth(),0)); }
+  else if (val==='year') { from=fmt(new Date(now.getFullYear(),0,1)); }
+  else if (val==='lastyear') { from=fmt(new Date(now.getFullYear()-1,0,1)); to=fmt(new Date(now.getFullYear()-1,11,31)); }
+  var fEl=document.getElementById('crm-sf-from'), tEl=document.getElementById('crm-sf-to');
+  if (fEl) fEl.value=from; if (tEl) tEl.value=to;
+  applyCRMFilters();
+}
+
+function clearCRMFilters() {
+  ['crm-sf-status','crm-sf-venture','crm-sf-assigned','crm-sf-source','crm-sf-search','crm-sf-quick','crm-sf-from','crm-sf-to','crm-sf-dow'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  Object.keys(_crmFilters).forEach(function(k){ _crmFilters[k]=''; });
+  renderCRM(window._data ? window._data.crm_leads || [] : []);
+}
 var _crmSynced  = false;
 var _autoWinBusy = new Set();
 
@@ -8032,6 +8084,9 @@ function applyCRMFilters() {
   _crmFilters.assigned = (document.getElementById('crm-sf-assigned') || {}).value || '';
   _crmFilters.source   = (document.getElementById('crm-sf-source')   || {}).value || '';
   _crmFilters.search   = ((document.getElementById('crm-sf-search')  || {}).value || '').toLowerCase().trim();
+  _crmFilters.from     = (document.getElementById('crm-sf-from')     || {}).value || '';
+  _crmFilters.to       = (document.getElementById('crm-sf-to')       || {}).value || '';
+  _crmFilters.dow      = (document.getElementById('crm-sf-dow')      || {}).value || '';
   renderCRM(window._data ? window._data.crm_leads || [] : []);
 }
 
@@ -8053,18 +8108,26 @@ function renderCRM(list) {
 
   // Apply filters
   var filtered = list.filter(function(l) {
-    if (_crmFilters.status   && l.status !== _crmFilters.status) return false;
-    if (_crmFilters.venture  && l.ventureId !== _crmFilters.venture) return false;
-    if (_crmFilters.source   && l.sourceType !== _crmFilters.source) return false;
-    if (_crmFilters.assigned === '__unassigned__' && l.assignedTo) return false;
-    if (_crmFilters.assigned && _crmFilters.assigned !== '__unassigned__' && l.assignedTo !== _crmFilters.assigned) return false;
-    if (!canAccessVentureData(l.ventureId)) return false;
-    if (_crmFilters.search) {
-      var hay = ((l.name||'')+(l.email||'')+(l.businessName||'')+(l.phone||'')+(l.assignedName||'')).toLowerCase();
-      if (!hay.includes(_crmFilters.search)) return false;
-    }
-    return true;
-  });
+  if (_crmFilters.status   && l.status !== _crmFilters.status) return false;
+  if (_crmFilters.venture  && l.ventureId !== _crmFilters.venture) return false;
+  if (_crmFilters.source   && l.sourceType !== _crmFilters.source) return false;
+  if (_crmFilters.assigned === '__unassigned__' && l.assignedTo) return false;
+  if (_crmFilters.assigned && _crmFilters.assigned !== '__unassigned__' && l.assignedTo !== _crmFilters.assigned) return false;
+  if (!canAccessVentureData(l.ventureId)) return false;
+
+  var d = tsToDate(l.createdAt);
+  var dateStr = isNaN(d) ? '' : d.toISOString().split('T')[0];
+  var dow     = isNaN(d) ? '' : String(d.getDay());
+  if (_crmFilters.from && dateStr && dateStr < _crmFilters.from) return false;
+  if (_crmFilters.to   && dateStr && dateStr > _crmFilters.to)   return false;
+  if (_crmFilters.dow !== '' && dow !== _crmFilters.dow) return false;
+
+  if (_crmFilters.search) {
+    var hay = ((l.name||'')+(l.email||'')+(l.businessName||'')+(l.phone||'')+(l.assignedName||'')).toLowerCase();
+    if (!hay.includes(_crmFilters.search)) return false;
+  }
+  return true;
+});
 
   // KPIs
   var newC = filtered.filter(function(l){return l.status==='new_lead';}).length;
@@ -8156,9 +8219,13 @@ function crmLinkedClient(leadId) {
 // ── Auto-win check (runs after render, non-blocking) ──────────
 async function autoCheckWins(list) {
   var payments = window._data.payments || [];
+  var proposals = window._data.proposals || [];
   var toWin = list.filter(function(l) {
-    if (l.status !== 'proposal') return false;
-    return payments.some(function(p) { return p.leadId === l.id && p.status === 'paid'; });
+    if (l.status === 'won') return false;
+    var hasPaid = payments.some(function(p) { return p.leadId === l.id && p.status === 'paid'; });
+    if (!hasPaid) return false;
+    var prop = proposals.find(function(p){ return p.leadId === l.id; });
+    return prop && prop.status === 'accepted';
   });
   for (var i = 0; i < toWin.length; i++) {
     var l = toWin[i];
@@ -8166,7 +8233,7 @@ async function autoCheckWins(list) {
     if (paid) await autoWinLead(l.id, paid);
   }
 }
-
+  
 async function autoWinLead(leadId, paidPayment) {
   if (_autoWinBusy.has(leadId)) return;
   _autoWinBusy.add(leadId);
@@ -8277,6 +8344,22 @@ function moveCRMStatus(id, newStatus) {
   });
 }
 
+function logFollowUp(leadId) {
+  closeDrawer();
+  setTimeout(function(){ openCommLogDrawer('crm_leads', leadId, 'followup'); }, 150);
+}
+
+function reopenProposal(leadId, propId) {
+  Promise.all([
+    window._updateDoc('proposals', propId, { status:'sent' }),
+    window._updateDoc('crm_leads', leadId, { status:'proposal', lostAt:null, reopenedAt:new Date().toISOString() })
+  ]).then(function(){
+    toast('Proposal reopened — lead moved back to Proposal stage','success');
+    closeDrawer();
+    window._loadAll();
+  });
+}
+  
 // ── Edit form (shown for new_lead / contacted / qualified) ────
 function crmLeadEditForm(l) {
   var members = window._data.team_members || [];
@@ -8379,6 +8462,23 @@ function openCRMLeadDrawer(id) {
   if (l.status!=='won' && l.status!=='lost') {
     flow += '<button class="btn-secondary" style="font-size:.72rem;padding:7px 12px;border-color:rgba(239,68,68,.3);color:var(--red);" onclick="moveCRMStatus(\''+id+'\',\'lost\')">✕ Mark Lost</button>';
   }
+  if (l.status==='lost') {
+  flow += '<button class="btn-secondary" style="font-size:.72rem;padding:7px 12px;color:var(--cyan);border-color:rgba(0,188,212,.3);" onclick="logFollowUp(\''+id+'\')">📞 Log Follow-Up</button>';
+  flow += '<button class="btn-primary" style="font-size:.72rem;padding:7px 14px;" onclick="moveCRMStatus(\''+id+'\',\'contacted\')">↺ Re-engage → Contacted</button>';
+  if (prop) {
+    flow += '<button class="btn-secondary" style="font-size:.72rem;padding:7px 12px;color:var(--gold);border-color:rgba(200,155,20,.3);" onclick="reopenProposal(\''+id+'\',\''+prop.id+'\')">📄 Reopen Proposal</button>';
+  }
+  if (hasP) {
+    flow += '<button class="btn-success" style="font-size:.72rem;padding:7px 14px;" onclick="markLeadWon(\''+id+'\')">💰 Move to Won</button>';
+  }
+  flow += '<select class="vacancy-status-select" style="font-size:.62rem;" onchange="if(this.value)moveCRMStatus(\''+id+'\',this.value);this.value=&quot;&quot;;">' +
+    '<option value="">Move to stage…</option>' +
+    '<option value="new_lead">New Lead</option>' +
+    '<option value="contacted">Contacted</option>' +
+    '<option value="qualified">Qualified</option>' +
+    '<option value="proposal">Proposal</option>' +
+  '</select>';
+}
 
   var html =
     // Header
@@ -8411,6 +8511,10 @@ function openCRMLeadDrawer(id) {
 
     // Pipeline flow
     '<div class="detail-section"><h4>⚡ Pipeline Actions</h4><div class="btn-row" style="flex-wrap:wrap;">'+flow+'</div></div>' +
+
+    '<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'crm_leads\',\''+id+'\',\'note\')">+ Add Entry</button></h4>' +
+  renderCommTimeline('crm_leads', id) +
+'</div>' +
 
     // Linked proposal
     (prop ? '<div class="detail-section"><h4>📄 Linked Proposal</h4>' +
@@ -8594,6 +8698,135 @@ async function submitProposalAndMoveLead(leadId) {
     closeDrawer();
     await window._loadAll();
   } catch(e) { toast('Error: '+(e.message||e),'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  COMMUNICATION TIMELINE
+// ═══════════════════════════════════════════════════════════════
+var COMM_TYPES = {
+  note:     {icon:'📝', label:'Note',      color:'var(--dimmer)'},
+  message:  {icon:'💬', label:'Message',   color:'var(--cyan)'},
+  followup: {icon:'📞', label:'Follow-Up', color:'var(--amber)'},
+  call:     {icon:'☎️', label:'Call',      color:'var(--green)'},
+  meeting:  {icon:'📅', label:'Meeting',   color:'var(--purple)'}
+};
+
+function getCommLogs(entityType, entityId) {
+  return (window._data ? window._data.comm_log||[] : [])
+    .filter(function(c){ return c.entityType===entityType && c.entityId===entityId; })
+    .sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+}
+
+function openCommLogDrawer(entityType, entityId, presetType) {
+  var members = window._data.team_members || [];
+  var cu = window._currentUser;
+  var me = members.find(function(m){ return cu && (m.email||'').toLowerCase()===(cu.email||'').toLowerCase(); });
+  var html =
+    '<div class="detail-section"><h4>📋 New Entry</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Type</div><select class="form-select" id="cl-type">' +
+        Object.entries(COMM_TYPES).map(function(e){ return '<option value="'+e[0]+'"'+(presetType===e[0]?' selected':'')+'>'+e[1].icon+' '+e[1].label+'</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="form-field"><div class="form-label">CRM Stage at Time of Entry</div><select class="form-select" id="cl-stage">' +
+        ['new_lead','contacted','qualified','proposal','won','lost'].map(function(s){ return '<option value="'+s+'">'+s.replace(/_/g,' ')+'</option>'; }).join('') +
+      '</select></div>' +
+    '</div>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Details</div><textarea class="form-textarea" id="cl-body" style="min-height:90px;" placeholder="What happened? What was discussed?"></textarea></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Link (optional)</div><input class="form-input" id="cl-link" type="url" placeholder="https://…"></div>' +
+      '<div class="form-field"><div class="form-label">Attach File (audio/video/image/doc, max 200KB)</div><input type="file" id="cl-file" accept="audio/*,video/*,image/*,.pdf,.doc,.docx,.txt" style="color:var(--dim);font-size:.75rem;width:100%;"></div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveCommLog(\''+entityType+'\',\''+entityId+'\')">💾 Save Entry</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+    '</div>' +
+    '<div class="detail-section"><h4>🕐 Timeline</h4><div id="comm-timeline-list">' + renderCommTimeline(entityType, entityId) + '</div></div>';
+
+  openDrawer('Communication Log', 'Add Entry', html);
+}
+
+async function saveCommLog(entityType, entityId) {
+  var type  = (document.getElementById('cl-type')  ||{}).value || 'note';
+  var stage = (document.getElementById('cl-stage') ||{}).value || '';
+  var body  = (document.getElementById('cl-body')  ||{}).value || '';
+  var link  = (document.getElementById('cl-link')  ||{}).value || '';
+  if (!body.trim() && !link.trim() && !((document.getElementById('cl-file')||{}).files||[]).length) {
+    toast('Add a note, link, or file', 'error'); return;
+  }
+
+  var cu = window._currentUser;
+  var members = window._data.team_members || [];
+  var me = members.find(function(m){ return cu && (m.email||'').toLowerCase()===(cu.email||'').toLowerCase(); });
+
+  var data = {
+    entityType: entityType,
+    entityId:   entityId,
+    type:       type,
+    stage:      stage,
+    body:       body,
+    link:       link,
+    teamMemberId:   me ? me.id : '',
+    teamMemberName: me ? (me.name||me.email||'') : (cu ? cu.email : 'Unknown'),
+    createdAt:  new Date().toISOString()
+  };
+
+  var fileInput = document.getElementById('cl-file');
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    var res = await readFileAsBase64(fileInput.files[0]);
+    if (res.tooBig) { toast('File too large (max 200KB) — use a link instead', 'error'); return; }
+    data.fileData = res.data;
+    data.fileName = res.name;
+    data.fileType = fileInput.files[0].type;
+  }
+
+  window._saveDoc('comm_log', data).then(function(){
+    toast('Entry logged ✓','success');
+    window._loadAll().then(function(){
+      var listEl = document.getElementById('comm-timeline-list');
+      if (listEl) listEl.innerHTML = renderCommTimeline(entityType, entityId);
+      ['cl-body','cl-link'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+      var fEl = document.getElementById('cl-file'); if (fEl) fEl.value='';
+    });
+  }).catch(function(e){ toast('Save failed: '+(e.message||e),'error'); });
+}
+
+function renderCommTimeline(entityType, entityId) {
+  var logs = getCommLogs(entityType, entityId);
+  if (!logs.length) return '<div class="empty-state" style="padding:20px;"><div class="empty-icon">🕐</div>No communication history yet</div>';
+
+  return '<div style="display:flex;flex-direction:column;gap:0;">' +
+    logs.map(function(c, i) {
+      var cfg = COMM_TYPES[c.type] || COMM_TYPES.note;
+      var d = tsToDate(c.createdAt);
+      var dateStr = isNaN(d) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      var timeStr = isNaN(d) ? '' : d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      var isLast = i === logs.length-1;
+
+      var attach = '';
+      if (c.fileData) {
+        var isImg = (c.fileType||'').startsWith('image');
+        var isAud = (c.fileType||'').startsWith('audio');
+        var isVid = (c.fileType||'').startsWith('video');
+        if (isImg) attach = '<img src="'+c.fileData+'" style="max-width:100%;border-radius:6px;margin-top:8px;border:1px solid var(--border);">';
+        else if (isAud) attach = '<audio controls src="'+c.fileData+'" style="width:100%;margin-top:8px;"></audio>';
+        else if (isVid) attach = '<video controls src="'+c.fileData+'" style="width:100%;max-height:200px;border-radius:6px;margin-top:8px;"></video>';
+        else attach = '<a href="'+c.fileData+'" download="'+(c.fileName||'file')+'" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(200,155,20,.08);border:1px solid rgba(200,155,20,.2);color:var(--gold);padding:6px 12px;border-radius:5px;text-decoration:none;font-family:var(--mono);font-size:.62rem;">📎 '+escHtml(c.fileName||'Download')+'</a>';
+      }
+      if (c.link) attach += '<div style="margin-top:8px;"><a href="'+escHtml(c.link)+'" target="_blank" style="font-family:var(--mono);font-size:.62rem;color:var(--cyan);word-break:break-all;">🔗 '+escHtml(c.link)+'</a></div>';
+
+      return '<div style="display:flex;gap:12px;padding-bottom:'+(isLast?'0':'16')+'px;position:relative;">' +
+        (!isLast ? '<div style="position:absolute;left:13px;top:28px;bottom:0;width:1px;background:var(--border);"></div>' : '') +
+        '<div style="width:27px;height:27px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;border:1.5px solid '+cfg.color+';background:var(--bg);position:relative;z-index:1;">'+cfg.icon+'</div>' +
+        '<div style="flex:1;">' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">' +
+            '<span style="font-family:var(--display);font-weight:700;font-size:.8rem;color:'+cfg.color+';">'+cfg.label+'</span>' +
+            (c.stage ? '<span class="badge badge-dim" style="font-size:.5rem;">'+escHtml(c.stage.replace(/_/g,' '))+'</span>' : '') +
+          '</div>' +
+          '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-bottom:5px;">'+escHtml(c.teamMemberName||'—')+' · '+dateStr+' · '+timeStr+'</div>' +
+          (c.body ? '<div style="font-size:.8rem;color:var(--dim);line-height:1.6;white-space:pre-wrap;">'+escHtml(c.body)+'</div>' : '') +
+          attach +
+        '</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
 }
 
 // ── Ventures ──────────────────────────────────────────────────
@@ -9345,6 +9578,11 @@ function openClientDrawer(id) {
           '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(pay.paymentMethod||'') + ' · ' + fmtDate(pay.paidAt||pay.createdAt) + '</div></div>' +
           statusBadge(pay.status) + '</div>' : '') +
       '</div></div>' : '') +
+
+    // ── Communication Timeline ───────────────────────────────────────
+    '<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'clients\',\''+c.id+'\',\'note\')">+ Add Entry</button></h4>' +
+  renderCommTimeline('clients', c.id) +
+'</div>' +
 
     // ── Actions ──────────────────────────────────────────────
     '<div class="btn-row">' +
