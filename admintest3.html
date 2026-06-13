@@ -853,6 +853,124 @@ var DEAL_TIERS = [
   {id:3,label:'Tier 3',range:'₦1M+',approver:'Ops Lead',color:'var(--red)'}
 ];
 
+// ═══════════════════════════════════════════════════════════════
+//  PAIN POINT ANALYZER — CONFIG
+// ═══════════════════════════════════════════════════════════════
+var QUALIFIER_DIMENSIONS = [
+  { key:'pain',      label:'Pain Points',     max:25, icon:'🔥',
+    question:'What is the severity of their current business problem?',
+    levels:[
+      {min:0,  max:5,  label:'No clear problem',          tag:'low_pain'},
+      {min:6,  max:12, label:'Some inefficiency',         tag:'moderate_pain'},
+      {min:13, max:18, label:'Clear bottleneck',          tag:'clear_bottleneck'},
+      {min:19, max:25, label:'Revenue-threatening issue', tag:'critical_pain'}
+    ]},
+  { key:'outcome',   label:'Desired Outcome', max:25, icon:'🎯',
+    question:'How clear and ambitious is their desired outcome?',
+    levels:[
+      {min:0,  max:5,  label:'Vague goals',                       tag:'vague_goals'},
+      {min:6,  max:12, label:'Some direction',                    tag:'some_direction'},
+      {min:13, max:18, label:'Clear business goal',               tag:'clear_goal'},
+      {min:19, max:25, label:'Revenue/system transformation',     tag:'transformation_goal'}
+    ]},
+  { key:'budget',    label:'Budget Readiness', max:25, icon:'💰',
+    question:'What is their spending capacity?',
+    levels:[
+      {min:0,  max:5,  label:'No budget',              tag:'no_budget'},
+      {min:6,  max:12, label:'Low budget',             tag:'low_budget'},
+      {min:13, max:18, label:'Mid budget',             tag:'mid_budget'},
+      {min:19, max:25, label:'High / ready to invest', tag:'high_budget'}
+    ]},
+  { key:'readiness', label:'Purchase Readiness', max:15, icon:'⚡',
+    question:'How soon are they ready to start / decide?',
+    levels:[
+      {min:0,  max:5,  label:'Just browsing',     tag:'browsing'},
+      {min:6,  max:10, label:'Comparing options', tag:'comparing'},
+      {min:11, max:15, label:'Ready to start',     tag:'fast_decision'}
+    ]},
+  { key:'roi',       label:'Expected Value / ROI', max:10, icon:'📈',
+    question:'How clear is their ROI/value awareness?',
+    levels:[
+      {min:0, max:2,  label:'No idea',            tag:'no_roi_awareness'},
+      {min:3, max:5,  label:'Low understanding',  tag:'low_roi_awareness'},
+      {min:6, max:10, label:'Clear ROI thinking', tag:'high_roi_awareness'}
+    ]}
+];
+
+var QUALIFIER_TIERS = [
+  {min:0,  max:30,  key:'cold',    label:'Cold Lead',    color:'var(--blue)',   strategy:'Educate, not sell — nurture with low-commitment ecosystem offers.'},
+  {min:31, max:55,  key:'warm',    label:'Warm Lead',    color:'var(--amber)',  strategy:'Entry transformation packages — build trust and quick wins.'},
+  {min:56, max:80,  key:'hot',     label:'Hot Lead',     color:'var(--gold)',   strategy:'Business optimization packs — sales-ready, push for close.'},
+  {min:81, max:100, key:'premium', label:'Premium Lead', color:'var(--green)',  strategy:'High-ticket transformation or partnership — consultative close.'}
+];
+
+var QUALIFIER_RECOMMENDATIONS = {
+  cold:    ['gata_onboard','p2p_master','globalbiz_list','jobletters_sub'],
+  warm:    ['brand_launch','branding_kit','seo_setup','trust_page','content_basic'],
+  hot:     ['sales_system','content_mgr','paid_ads','funnel_check','whatsapp_auto','email_sms','brand_video'],
+  premium: ['systemization','platform_dev','enterprise_sw','web3_dev','venture_build','growth_engine']
+};
+
+// Map non-proposal-service IDs (memberships/retainers/ventures) → closest proposable service
+// for prefill purposes since PROPOSAL_TEMPLATES only covers the 8 core services
+var QUALIFIER_PROPOSAL_FALLBACK = {
+  growth_engine:'sales_system', content_mgr:'sales_system', content_basic:'brand_launch',
+  branding_kit:'brand_launch', seo_setup:'brand_launch', trust_page:'brand_launch',
+  funnel_check:'sales_system', whatsapp_auto:'sales_system', email_sms:'sales_system',
+  paid_ads:'sales_system', brand_video:'brand_launch',
+  gata_onboard:'gata_onboard', p2p_master:'gata_onboard', globalbiz_list:'gata_onboard', jobletters_sub:'gata_onboard',
+  systemization:'systemization', platform_dev:'platform_dev', enterprise_sw:'enterprise_sw',
+  web3_dev:'web3_dev', venture_build:'venture_build', brand_launch:'brand_launch', sales_system:'sales_system'
+};
+
+function getQualifierTier(score) {
+  return QUALIFIER_TIERS.find(function(t){ return score >= t.min && score <= t.max; }) || QUALIFIER_TIERS[0];
+}
+
+function getDimensionLevel(dim, value) {
+  return dim.levels.find(function(l){ return value >= l.min && value <= l.max; }) || dim.levels[0];
+}
+
+// Automated package-stack rules (run on top of tier-based recommendations)
+function buildQualifierTags(scores) {
+  var tags = [];
+  QUALIFIER_DIMENSIONS.forEach(function(dim) {
+    var lvl = getDimensionLevel(dim, scores[dim.key]||0);
+    tags.push(lvl.tag);
+  });
+  var total = QUALIFIER_DIMENSIONS.reduce(function(s,d){ return s + (scores[d.key]||0); },0);
+  var tier  = getQualifierTier(total).key;
+  if (tier==='hot'||tier==='premium')           tags.push('sales_ready');
+  if (scores.readiness >= 11)                   tags.push('fast_decision');
+  if (scores.budget >= 19)                      tags.push('high_intent');
+  else if (scores.budget >= 6)                  tags.push('mid_budget_intent');
+  return tags;
+}
+
+function buildQualifierPackages(scores) {
+  var total = QUALIFIER_DIMENSIONS.reduce(function(s,d){ return s + (scores[d.key]||0); },0);
+  var tier  = getQualifierTier(total).key;
+  var base  = (QUALIFIER_RECOMMENDATIONS[tier]||[]).slice();
+
+  // Refined cross-dimension rules layered on top
+  if (scores.pain>=19 && scores.budget>=13 && scores.readiness>=11) {
+    base = ['sales_system','systemization','growth_engine'].concat(base.filter(function(p){return ['sales_system','systemization','growth_engine'].indexOf(p)===-1;}));
+  } else if (scores.pain>=13 && scores.budget<=12) {
+    base = ['brand_launch','content_basic','seo_setup'].concat(base.filter(function(p){return ['brand_launch','content_basic','seo_setup'].indexOf(p)===-1;}));
+  } else if (scores.roi>=6 && scores.budget>=19) {
+    base = ['platform_dev','enterprise_sw'].concat(base.filter(function(p){return ['platform_dev','enterprise_sw'].indexOf(p)===-1;}));
+  }
+  // dedupe, cap at 5
+  var seen = {}, out = [];
+  base.forEach(function(p){ if(!seen[p]){ seen[p]=1; out.push(p); } });
+  return out.slice(0,5);
+}
+
+function packageLabel(id) {
+  var s = TEKNNUKU_SERVICES.find(function(x){ return x.id===id; });
+  return s ? s.label : id.replace(/_/g,' ');
+}
+
 // ── Report templates per role ─────────────────────────────────
 var REPORT_TEMPLATES = {
   ops_lead:{title:'Operations Lead Report',fields:[
@@ -8044,12 +8162,60 @@ function saveAssignment() {
   }).catch(function(e) { toast('Save failed: ' + (e.message||e), 'error'); });
 }
 
+function generateProposalFromQualification(leadId) {
+  var l = (window._data.crm_leads||[]).find(function(x){return x.id===leadId;});
+  if (!l || !l.qualification) { toast('Run the Pain Point Analyzer first','error'); return; }
+
+  var q = l.qualification;
+  var primaryPkg = q.recommended_packages[0];
+  var svcId = QUALIFIER_PROPOSAL_FALLBACK[primaryPkg] || primaryPkg;
+  if (!PROPOSAL_TEMPLATES[svcId]) svcId = 'sales_system';
+
+  var addOns = q.recommended_packages.slice(1).map(packageLabel);
+
+  closeDrawer();
+  setTimeout(function(){
+    openProposalDrawer(null, leadId);
+    setTimeout(function() {
+      var svcEl = document.getElementById('prop-service');
+      if (svcEl) { svcEl.value = svcId; onProposalServiceChange(); }
+      var bodyEl = document.getElementById('prop-body');
+      if (bodyEl && !bodyEl.value) {
+        var tmpl = PROPOSAL_TEMPLATES[svcId];
+        var pre = 'BASED ON YOUR QUALIFICATION (' + q.tierLabel.toUpperCase() + ' · ' + q.total_score + '/100)\n' +
+          '══════════════════════════════════════\n' +
+          (addOns.length ? 'Recommended add-ons: ' + addOns.join(', ') + '\n\n' : '\n');
+        bodyEl.value = pre + (tmpl ? tmpl.body : '');
+      }
+      toast('Proposal pre-filled from qualification ✓','success');
+    }, 120);
+    showPanel('proposals', document.querySelector('[data-panel="proposals"]'));
+  }, 200);
+}
+
 // ═══════════════════════════════════════════════════════════════
 // OS RENDER FUNCTIONS
 // ═══════════════════════════════════════════════════════════════
 
 // ── CRM Pipeline ──────────────────────────────────────────────
 var _crmFilters = { status:'', venture:'', assigned:'', source:'', search:'', from:'', to:'', dow:'' };
+
+'<select class="tbl-filter" id="crm-sf-qtier" onchange="applyCRMFilters()">' +
+  '<option value="">All Qualification Tiers</option>' +
+  '<option value="cold">Cold</option>' +
+  '<option value="warm">Warm</option>' +
+  '<option value="hot">Hot</option>' +
+  '<option value="premium">Premium</option>' +
+  '<option value="__unscored__">Unscored</option>' +
+'</select>' +
+
+if (_crmFilters.qtier) {
+  if (_crmFilters.qtier === '__unscored__') {
+    if (l.qualification) return false;
+  } else {
+    if (!l.qualification || l.qualification.tier !== _crmFilters.qtier) return false;
+  }
+}
 
 function applyCRMQuickDate(val) {
   if (!val) return;
@@ -8177,6 +8343,7 @@ function renderCRM(list) {
           (l.businessName?'<div style="font-size:.67rem;color:var(--dimmer);margin-bottom:3px;">'+escHtml(l.businessName)+'</div>':'') +
           '<div style="font-size:.67rem;color:var(--dimmer);margin-bottom:6px;">'+escHtml(l.email||l.phone||'')+'</div>' +
           '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">' +
+          (l.qualification ? '<span class="badge" style="font-size:.5rem;background:rgba(255,255,255,.05);color:'+getQualifierTier(l.qualification.total_score).color+';border:1px solid '+getQualifierTier(l.qualification.total_score).color+';">🧠 '+l.qualification.total_score+'</span>' : '')
             (l.ventureId?'<span class="venture-tag">'+escHtml(v.name||l.ventureId)+'</span>':'') +
             '<span class="badge '+(SRC[l.sourceType]||'badge-dim')+'" style="font-size:.5rem;">'+(SLB[l.sourceType]||'—')+'</span>' +
             '<span style="font-family:var(--mono);font-size:.5rem;color:'+tc+';background:rgba(255,255,255,.04);padding:2px 5px;border-radius:3px;border:1px solid rgba(255,255,255,.06);">T'+tier+'</span>' +
@@ -8511,10 +8678,51 @@ function openCRMLeadDrawer(id) {
 
     // Pipeline flow
     '<div class="detail-section"><h4>⚡ Pipeline Actions</h4><div class="btn-row" style="flex-wrap:wrap;">'+flow+'</div></div>' +
-
+qSection +
+// Linked proposal
+(prop ? ...
+  
     '<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'crm_leads\',\''+id+'\',\'note\')">+ Add Entry</button></h4>' +
   renderCommTimeline('crm_leads', id) +
 '</div>' +
+
+  // ── Qualification section ─────────────────────────────────────
+var qSection;
+if (l.qualification) {
+  var q = l.qualification;
+  var qTier = getQualifierTier(q.total_score);
+  qSection = '<div class="detail-section"><h4>🧠 Pain Point Analyzer ' +
+    '<button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openQualifierDrawer(\''+id+'\')">↺ Re-Score</button></h4>' +
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">' +
+      '<div style="width:48px;height:48px;border-radius:50%;border:2.5px solid '+qTier.color+';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:1rem;color:'+qTier.color+';">'+q.total_score+'</div>' +
+      '<div><div style="font-family:var(--display);font-weight:700;font-size:.9rem;color:'+qTier.color+';">'+escHtml(q.tierLabel)+'</div>' +
+      '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">Scored '+fmtDate(q.scoredAt)+'</div></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;">' +
+      QUALIFIER_DIMENSIONS.map(function(d){
+        return '<div style="text-align:center;background:rgba(255,255,255,.03);border-radius:6px;padding:8px 4px;">' +
+          '<div style="font-size:1rem;margin-bottom:2px;">'+d.icon+'</div>' +
+          '<div style="font-family:var(--mono);font-weight:700;font-size:.78rem;color:var(--gold);">'+(q.scores[d.key]||0)+'/'+d.max+'</div>' +
+          '<div style="font-family:var(--mono);font-size:.46rem;color:var(--dimmer);margin-top:2px;">'+d.label+'</div>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+    '<div style="font-family:var(--mono);font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:7px;">Recommended Packages</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">' +
+      q.recommended_packages.map(function(p){ return '<span class="badge badge-cyan" style="font-size:.6rem;">'+escHtml(packageLabel(p))+'</span>'; }).join('') +
+    '</div>' +
+    '<div style="font-family:var(--mono);font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:7px;">CRM Tags</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">' +
+      q.crm_tags.map(function(t){ return '<span class="badge badge-dim" style="font-size:.56rem;">'+escHtml(t.replace(/_/g,' '))+'</span>'; }).join('') +
+    '</div>' +
+    '<button class="btn-primary" style="font-size:.72rem;padding:8px 16px;" onclick="generateProposalFromQualification(\''+id+'\')">📄 Generate Proposal from Qualification</button>' +
+  '</div>';
+} else {
+  qSection = '<div class="detail-section"><h4>🧠 Pain Point Analyzer</h4>' +
+    '<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:6px;padding:12px 14px;margin-bottom:10px;font-size:.78rem;color:var(--dim);">This lead hasn\'t been qualified yet. Run the analyzer to score pain points, budget, readiness, and get auto-recommended packages.</div>' +
+    '<button class="btn-primary" style="font-size:.72rem;padding:8px 16px;" onclick="openQualifierDrawer(\''+id+'\')">🧠 Run Pain Point Analyzer</button>' +
+  '</div>';
+}
 
     // Linked proposal
     (prop ? '<div class="detail-section"><h4>📄 Linked Proposal</h4>' +
@@ -8827,6 +9035,105 @@ function renderCommTimeline(entityType, entityId) {
       '</div>';
     }).join('') +
   '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PAIN POINT ANALYZER — DRAWER
+// ═══════════════════════════════════════════════════════════════
+function openQualifierDrawer(leadId) {
+  var l = (window._data.crm_leads||[]).find(function(x){return x.id===leadId;});
+  if (!l) return;
+  var existing = l.qualification || null;
+  var scores = existing ? existing.scores : {};
+
+  var html = '<div style="background:rgba(0,188,212,.06);border:1px solid rgba(0,188,212,.18);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-family:var(--mono);font-size:.62rem;color:var(--cyan);">' +
+    '🧠 Score this lead across 5 dimensions (100 pts total). The system will auto-recommend packages and a proposal direction.' +
+  '</div>' +
+
+  QUALIFIER_DIMENSIONS.map(function(dim) {
+    var val = scores[dim.key] !== undefined ? scores[dim.key] : 0;
+    return '<div class="detail-section"><h4>' + dim.icon + ' ' + escHtml(dim.label) + ' <span style="color:var(--dimmer);font-weight:400;">(0–' + dim.max + ')</span></h4>' +
+      '<div style="font-size:.78rem;color:var(--dimmer);margin-bottom:10px;">' + escHtml(dim.question) + '</div>' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<input type="range" id="ql-' + dim.key + '" min="0" max="' + dim.max + '" value="' + val + '" oninput="updateQualifierLevel(\'' + dim.key + '\')" style="flex:1;accent-color:var(--gold);">' +
+        '<div id="ql-val-' + dim.key + '" style="font-family:var(--mono);font-weight:700;font-size:.9rem;color:var(--gold);min-width:32px;text-align:center;">' + val + '</div>' +
+      '</div>' +
+      '<div id="ql-lbl-' + dim.key + '" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-top:6px;">' + escHtml(getDimensionLevel(dim, val).label) + '</div>' +
+    '</div>';
+  }).join('') +
+
+  '<div class="detail-section"><h4>📊 Live Result</h4><div id="ql-result"></div></div>' +
+
+  '<div class="btn-row">' +
+    '<button class="btn-primary" onclick="saveQualification(\'' + leadId + '\')">💾 Save Qualification</button>' +
+    '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+  '</div>';
+
+  openDrawer('Pain Point Analyzer', escHtml(l.name||'Lead'), html);
+  setTimeout(function(){ renderQualifierResult(); }, 50);
+}
+
+function updateQualifierLevel(key) {
+  var dim = QUALIFIER_DIMENSIONS.find(function(d){return d.key===key;});
+  var val = parseInt((document.getElementById('ql-'+key)||{}).value)||0;
+  setText('ql-val-'+key, val);
+  setText('ql-lbl-'+key, getDimensionLevel(dim, val).label);
+  renderQualifierResult();
+}
+
+function getQualifierScores() {
+  var scores = {};
+  QUALIFIER_DIMENSIONS.forEach(function(d){ scores[d.key] = parseInt((document.getElementById('ql-'+d.key)||{}).value)||0; });
+  return scores;
+}
+
+function renderQualifierResult() {
+  var el = document.getElementById('ql-result'); if (!el) return;
+  var scores = getQualifierScores();
+  var total  = QUALIFIER_DIMENSIONS.reduce(function(s,d){ return s + scores[d.key]; },0);
+  var tier   = getQualifierTier(total);
+  var pkgs   = buildQualifierPackages(scores);
+  var tags   = buildQualifierTags(scores);
+
+  el.innerHTML =
+    '<div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">' +
+      '<div style="width:64px;height:64px;border-radius:50%;border:3px solid '+tier.color+';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:1.3rem;color:'+tier.color+';">'+total+'</div>' +
+      '<div><div style="font-family:var(--display);font-weight:800;font-size:1.05rem;color:'+tier.color+';">'+escHtml(tier.label)+'</div>' +
+      '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">Score out of 100</div></div>' +
+    '</div>' +
+    '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:.78rem;color:var(--dim);line-height:1.6;">'+escHtml(tier.strategy)+'</div>' +
+    '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Recommended Packages</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">' +
+      pkgs.map(function(p){ return '<span class="badge badge-cyan" style="font-size:.6rem;">'+escHtml(packageLabel(p))+'</span>'; }).join('') +
+    '</div>' +
+    '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">CRM Tags</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+      tags.map(function(t){ return '<span class="badge badge-dim" style="font-size:.56rem;">'+escHtml(t.replace(/_/g,' '))+'</span>'; }).join('') +
+    '</div>';
+}
+
+function saveQualification(leadId) {
+  var scores = getQualifierScores();
+  var total  = QUALIFIER_DIMENSIONS.reduce(function(s,d){ return s + scores[d.key]; },0);
+  var tier   = getQualifierTier(total);
+  var pkgs   = buildQualifierPackages(scores);
+  var tags   = buildQualifierTags(scores);
+
+  var qualification = {
+    scores: scores,
+    total_score: total,
+    tier: tier.key,
+    tierLabel: tier.label,
+    recommended_packages: pkgs,
+    crm_tags: tags,
+    scoredAt: new Date().toISOString()
+  };
+
+  window._updateDoc('crm_leads', leadId, { qualification: qualification }).then(function() {
+    toast('Qualification saved — ' + tier.label + ' (' + total + '/100) ✓', 'success');
+    closeDrawer();
+    window._loadAll().then(function(){ openCRMLeadDrawer(leadId); });
+  }).catch(function(e){ toast('Save failed: '+(e.message||e),'error'); });
 }
 
 // ── Ventures ──────────────────────────────────────────────────
