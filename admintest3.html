@@ -3261,6 +3261,14 @@ function _panelCRM() {
     '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
     '<input type="date" class="tbl-filter" id="crm-sf-to" style="min-width:130px;" onchange="applyCRMFilters()">' +
     '<select class="tbl-filter" id="crm-sf-dow" onchange="applyCRMFilters()">' +
+    '<select class="tbl-filter" id="crm-sf-qtier" onchange="applyCRMFilters()">' +
+    '<option value="">All Qualification Tiers</option>' +
+    '<option value="cold">Cold</option>' +
+    '<option value="warm">Warm</option>' +
+    '<option value="hot">Hot</option>' +
+    '<option value="premium">Premium</option>' +
+    '<option value="__unscored__">Unscored</option>' +
+  '</select>' +
       '<option value="">All Days</option>' +
       '<option value="0">Sunday</option><option value="1">Monday</option>' +
       '<option value="2">Tuesday</option><option value="3">Wednesday</option>' +
@@ -4646,10 +4654,6 @@ function renderApplicants(allList){
   var elP=document.getElementById('app-kpi-probation');if(elP)elP.textContent=probation;
   var elH=document.getElementById('app-kpi-hired');if(elH)elH.textContent=hired;
   var tbody=document.getElementById('applicants-tbody');if(!tbody)return;
- var active = list.filter(function(a){ return a.status !== 'rejected'; });
- var recycled = list.filter(function(a){ return a.status === 'rejected'; });
- renderRecycleBin(recycled);
- list = active;
  if(!list.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">🎯</div>No applicants yet</div></td></tr>';return;}
   tbody.innerHTML=list.map(function(a){
     var info=a.personalInfo||{};
@@ -8198,24 +8202,7 @@ function generateProposalFromQualification(leadId) {
 // ═══════════════════════════════════════════════════════════════
 
 // ── CRM Pipeline ──────────────────────────────────────────────
-var _crmFilters = { status:'', venture:'', assigned:'', source:'', search:'', from:'', to:'', dow:'' };
-
-'<select class="tbl-filter" id="crm-sf-qtier" onchange="applyCRMFilters()">' +
-  '<option value="">All Qualification Tiers</option>' +
-  '<option value="cold">Cold</option>' +
-  '<option value="warm">Warm</option>' +
-  '<option value="hot">Hot</option>' +
-  '<option value="premium">Premium</option>' +
-  '<option value="__unscored__">Unscored</option>' +
-'</select>' +
-
-if (_crmFilters.qtier) {
-  if (_crmFilters.qtier === '__unscored__') {
-    if (l.qualification) return false;
-  } else {
-    if (!l.qualification || l.qualification.tier !== _crmFilters.qtier) return false;
-  }
-}
+var _crmFilters = { status:'', venture:'', assigned:'', source:'', search:'', from:'', to:'', dow:'', qtier:'' };
 
 function applyCRMQuickDate(val) {
   if (!val) return;
@@ -8253,6 +8240,7 @@ function applyCRMFilters() {
   _crmFilters.from     = (document.getElementById('crm-sf-from')     || {}).value || '';
   _crmFilters.to       = (document.getElementById('crm-sf-to')       || {}).value || '';
   _crmFilters.dow      = (document.getElementById('crm-sf-dow')      || {}).value || '';
+  _crmFilters.qtier    = (document.getElementById('crm-sf-qtier')    || {}).value || '';
   renderCRM(window._data ? window._data.crm_leads || [] : []);
 }
 
@@ -8280,6 +8268,13 @@ function renderCRM(list) {
   if (_crmFilters.assigned === '__unassigned__' && l.assignedTo) return false;
   if (_crmFilters.assigned && _crmFilters.assigned !== '__unassigned__' && l.assignedTo !== _crmFilters.assigned) return false;
   if (!canAccessVentureData(l.ventureId)) return false;
+  if (_crmFilters.qtier) {
+  if (_crmFilters.qtier === '__unscored__') {
+    if (l.qualification) return false;
+  } else {
+    if (!l.qualification || l.qualification.tier !== _crmFilters.qtier) return false;
+  }
+}
 
   var d = tsToDate(l.createdAt);
   var dateStr = isNaN(d) ? '' : d.toISOString().split('T')[0];
@@ -8343,8 +8338,8 @@ function renderCRM(list) {
           (l.businessName?'<div style="font-size:.67rem;color:var(--dimmer);margin-bottom:3px;">'+escHtml(l.businessName)+'</div>':'') +
           '<div style="font-size:.67rem;color:var(--dimmer);margin-bottom:6px;">'+escHtml(l.email||l.phone||'')+'</div>' +
           '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">' +
-          (l.qualification ? '<span class="badge" style="font-size:.5rem;background:rgba(255,255,255,.05);color:'+getQualifierTier(l.qualification.total_score).color+';border:1px solid '+getQualifierTier(l.qualification.total_score).color+';">🧠 '+l.qualification.total_score+'</span>' : '')
-            (l.ventureId?'<span class="venture-tag">'+escHtml(v.name||l.ventureId)+'</span>':'') +
+          (l.qualification ? '<span class="badge" style="font-size:.5rem;background:rgba(255,255,255,.05);color:'+getQualifierTier(l.qualification.total_score).color+';border:1px solid '+getQualifierTier(l.qualification.total_score).color+';">🧠 '+l.qualification.total_score+'</span>' : '') +
+(l.ventureId?'<span class="venture-tag">'+escHtml(v.name||l.ventureId)+'</span>':'') +
             '<span class="badge '+(SRC[l.sourceType]||'badge-dim')+'" style="font-size:.5rem;">'+(SLB[l.sourceType]||'—')+'</span>' +
             '<span style="font-family:var(--mono);font-size:.5rem;color:'+tc+';background:rgba(255,255,255,.04);padding:2px 5px;border-radius:3px;border:1px solid rgba(255,255,255,.06);">T'+tier+'</span>' +
           '</div>' +
@@ -8647,46 +8642,7 @@ function openCRMLeadDrawer(id) {
   '</select>';
 }
 
-  var html =
-    // Header
-    '<div class="detail-section"><div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
-      '<div class="person-avatar" style="width:44px;height:44px;font-size:16px;flex-shrink:0;">'+initials(l.name||'?')+'</div>' +
-      '<div style="flex:1;">' +
-        '<div style="font-family:var(--display);font-weight:700;font-size:1rem;color:var(--white);">'+escHtml(l.name||'—')+'</div>' +
-        (l.businessName?'<div style="font-size:.78rem;color:var(--dimmer);">'+escHtml(l.businessName)+'</div>':'') +
-        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(l.email||'')+(l.phone?' · '+escHtml(l.phone):'')+'</div>' +
-        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;">' +
-          statusBadge(l.status) +
-          '<span class="badge '+(SRC_BADGE[l.sourceType]||'badge-dim')+'">'+escHtml(SRC_LBL[l.sourceType]||'—')+'</span>' +
-          (dv?'<span class="badge badge-gold">₦'+dv.toLocaleString()+'</span>':'') +
-          '<span style="font-family:var(--mono);font-size:.56rem;color:'+tierColor+';background:rgba(255,255,255,.04);padding:2px 7px;border-radius:3px;border:1px solid rgba(255,255,255,.07);">Tier '+tier+' Deal</span>' +
-          (l.intakeScore?'<span class="badge badge-cyan">Intake: '+l.intakeScore+'pts</span>':'') +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="detail-grid">' +
-      '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">'+escHtml(v.name||l.ventureId||'—')+'</div></div>' +
-      '<div class="detail-item"><div class="detail-label">Assigned</div><div class="detail-val">'+escHtml(l.assignedName||'Unassigned')+(l.assignmentType==='self_sourced'?'<span class="badge badge-cyan" style="font-size:.5rem;margin-left:6px;">Self-Sourced</span>':'')+'</div></div>' +
-      '<div class="detail-item"><div class="detail-label">Source</div><div class="detail-val">'+escHtml(l.source||'—')+'</div></div>' +
-      '<div class="detail-item"><div class="detail-label">Added</div><div class="detail-val">'+fmtDate(l.createdAt)+'</div></div>' +
-      (l.budget?'<div class="detail-item"><div class="detail-label">Budget</div><div class="detail-val">'+escHtml(l.budget.replace(/_/g,' '))+'</div></div>':'') +
-      (l.timeline?'<div class="detail-item"><div class="detail-label">Timeline</div><div class="detail-val">'+escHtml(l.timeline.replace(/_/g,' '))+'</div></div>':'') +
-      (l.painPoint?'<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Pain Point</div><div class="detail-val">'+escHtml(l.painPoint)+'</div></div>':'') +
-      (l.desiredOutcome?'<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Desired Outcome</div><div class="detail-val">'+escHtml(l.desiredOutcome)+'</div></div>':'') +
-      (l.notes?'<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Notes</div><div class="detail-val" style="white-space:pre-wrap;">'+escHtml(l.notes)+'</div></div>':'') +
-    '</div></div>' +
-
-    // Pipeline flow
-    '<div class="detail-section"><h4>⚡ Pipeline Actions</h4><div class="btn-row" style="flex-wrap:wrap;">'+flow+'</div></div>' +
-qSection +
-// Linked proposal
-(prop ? ...
-  
-    '<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'crm_leads\',\''+id+'\',\'note\')">+ Add Entry</button></h4>' +
-  renderCommTimeline('crm_leads', id) +
-'</div>' +
-
-  // ── Qualification section ─────────────────────────────────────
+// ── Qualification section ─────────────────────────────────────
 var qSection;
 if (l.qualification) {
   var q = l.qualification;
@@ -8724,28 +8680,64 @@ if (l.qualification) {
   '</div>';
 }
 
-    // Linked proposal
-    (prop ? '<div class="detail-section"><h4>📄 Linked Proposal</h4>' +
-      '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">' +
-        '<div style="font-family:var(--display);font-weight:700;font-size:.88rem;color:var(--white);margin-bottom:5px;">'+escHtml(prop.title||'Untitled')+'</div>' +
-        '<div style="font-family:var(--mono);font-size:.65rem;color:var(--gold);">₦'+Number(prop.amount||0).toLocaleString()+'</div>' +
-        '<div style="margin-top:8px;">'+statusBadge(prop.status)+'</div>' +
-      '</div></div>' : '') +
+  var html =
+    // Header
+    '<div class="detail-section"><div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
+      '<div class="person-avatar" style="width:44px;height:44px;font-size:16px;flex-shrink:0;">'+initials(l.name||'?')+'</div>' +
+      '<div style="flex:1;">' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:1rem;color:var(--white);">'+escHtml(l.name||'—')+'</div>' +
+        (l.businessName?'<div style="font-size:.78rem;color:var(--dimmer);">'+escHtml(l.businessName)+'</div>':'') +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+escHtml(l.email||'')+(l.phone?' · '+escHtml(l.phone):'')+'</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;">' +
+          statusBadge(l.status) +
+          '<span class="badge '+(SRC_BADGE[l.sourceType]||'badge-dim')+'">'+escHtml(SRC_LBL[l.sourceType]||'—')+'</span>' +
+          (dv?'<span class="badge badge-gold">₦'+dv.toLocaleString()+'</span>':'') +
+          '<span style="font-family:var(--mono);font-size:.56rem;color:'+tierColor+';background:rgba(255,255,255,.04);padding:2px 7px;border-radius:3px;border:1px solid rgba(255,255,255,.07);">Tier '+tier+' Deal</span>' +
+          (l.intakeScore?'<span class="badge badge-cyan">Intake: '+l.intakeScore+'pts</span>':'') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="detail-grid">' +
+      '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">'+escHtml(v.name||l.ventureId||'—')+'</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Assigned</div><div class="detail-val">'+escHtml(l.assignedName||'Unassigned')+(l.assignmentType==='self_sourced'?'<span class="badge badge-cyan" style="font-size:.5rem;margin-left:6px;">Self-Sourced</span>':'')+'</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Source</div><div class="detail-val">'+escHtml(l.source||'—')+'</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Added</div><div class="detail-val">'+fmtDate(l.createdAt)+'</div></div>' +
+      (l.budget?'<div class="detail-item"><div class="detail-label">Budget</div><div class="detail-val">'+escHtml(l.budget.replace(/_/g,' '))+'</div></div>':'') +
+      (l.timeline?'<div class="detail-item"><div class="detail-label">Timeline</div><div class="detail-val">'+escHtml(l.timeline.replace(/_/g,' '))+'</div></div>':'') +
+      (l.painPoint?'<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Pain Point</div><div class="detail-val">'+escHtml(l.painPoint)+'</div></div>':'') +
+      (l.desiredOutcome?'<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Desired Outcome</div><div class="detail-val">'+escHtml(l.desiredOutcome)+'</div></div>':'') +
+      (l.notes?'<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Notes</div><div class="detail-val" style="white-space:pre-wrap;">'+escHtml(l.notes)+'</div></div>':'') +
+    '</div></div>' +
 
-    // Linked payment
-    (pay ? '<div class="detail-section"><h4>💰 Linked Payment</h4>' +
-      '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">' +
-        '<div style="font-family:var(--mono);font-size:.72rem;color:var(--gold);margin-bottom:6px;">₦'+Number(pay.amount||0).toLocaleString()+'</div>' +
-        '<div style="margin-bottom:8px;">'+statusBadge(pay.status)+'</div>' +
-        (pay.status!=='paid'?'<button class="btn-success" style="font-size:.68rem;padding:6px 12px;" onclick="markPaid(\''+pay.id+'\')">Mark as Paid ✓</button>':'<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Payment Verified & Paid</div>') +
-      '</div></div>' : '') +
+    // Pipeline flow
+    '<div class="detail-section"><h4>⚡ Pipeline Actions</h4><div class="btn-row" style="flex-wrap:wrap;">'+flow+'</div></div>' +
+qSection +
+'<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'crm_leads\',\''+id+'\',\'note\')">+ Add Entry</button></h4>' +
+  renderCommTimeline('crm_leads', id) +
+'</div>' +
 
-    // Linked client
-    (client ? '<div class="detail-section"><h4>🤝 Client Record</h4>' +
-      '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:12px 14px;">' +
-        '<div style="font-size:.82rem;color:var(--white);">'+escHtml(client.name||'—')+'</div>' +
-        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);margin-top:4px;">✅ Active Client · '+escHtml((V_MAP[client.ventureId]||{}).name||'—')+'</div>' +
-      '</div></div>' : '') +
+// Linked proposal
+(prop ? '<div class="detail-section"><h4>📄 Linked Proposal</h4>' +
+  '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">' +
+    '<div style="font-family:var(--display);font-weight:700;font-size:.88rem;color:var(--white);margin-bottom:5px;">'+escHtml(prop.title||'Untitled')+'</div>' +
+    '<div style="font-family:var(--mono);font-size:.65rem;color:var(--gold);">₦'+Number(prop.amount||0).toLocaleString()+'</div>' +
+    '<div style="margin-top:8px;">'+statusBadge(prop.status)+'</div>' +
+  '</div></div>' : '') +
+
+// Linked payment
+(pay ? '<div class="detail-section"><h4>💰 Linked Payment</h4>' +
+  '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">' +
+    '<div style="font-family:var(--mono);font-size:.72rem;color:var(--gold);margin-bottom:6px;">₦'+Number(pay.amount||0).toLocaleString()+'</div>' +
+    '<div style="margin-bottom:8px;">'+statusBadge(pay.status)+'</div>' +
+    (pay.status!=='paid'?'<button class="btn-success" style="font-size:.68rem;padding:6px 12px;" onclick="markPaid(\''+pay.id+'\')">Mark as Paid ✓</button>':'<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Payment Verified & Paid</div>') +
+  '</div></div>' : '') +
+
+// Linked client
+(client ? '<div class="detail-section"><h4>🤝 Client Record</h4>' +
+  '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:12px 14px;">' +
+    '<div style="font-size:.82rem;color:var(--white);">'+escHtml(client.name||'—')+'</div>' +
+    '<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);margin-top:4px;">✅ Active Client · '+escHtml((V_MAP[client.ventureId]||{}).name||'—')+'</div>' +
+  '</div></div>' : '') +
 
     // Intake data
     (l.sourceType==='intake'&&l.intakeScore ? '<div class="detail-section"><h4>📊 Intake Diagnostic Data</h4>' +
