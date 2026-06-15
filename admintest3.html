@@ -3301,20 +3301,20 @@ function _panelCRM() {
     '<input type="date" class="tbl-filter" id="crm-sf-from" style="min-width:130px;" onchange="applyCRMFilters()">' +
     '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
     '<input type="date" class="tbl-filter" id="crm-sf-to" style="min-width:130px;" onchange="applyCRMFilters()">' +
-    '<select class="tbl-filter" id="crm-sf-dow" onchange="applyCRMFilters()">' +
-    '<select class="tbl-filter" id="crm-sf-qtier" onchange="applyCRMFilters()">' +
-    '<option value="">All Qualification Tiers</option>' +
-    '<option value="cold">Cold</option>' +
-    '<option value="warm">Warm</option>' +
-    '<option value="hot">Hot</option>' +
-    '<option value="premium">Premium</option>' +
-    '<option value="__unscored__">Unscored</option>' +
-  '</select>' +
+   '<select class="tbl-filter" id="crm-sf-dow" onchange="applyCRMFilters()">' +
       '<option value="">All Days</option>' +
       '<option value="0">Sunday</option><option value="1">Monday</option>' +
       '<option value="2">Tuesday</option><option value="3">Wednesday</option>' +
       '<option value="4">Thursday</option><option value="5">Friday</option>' +
       '<option value="6">Saturday</option>' +
+    '</select>' +
+    '<select class="tbl-filter" id="crm-sf-qtier" onchange="applyCRMFilters()">' +
+      '<option value="">All Qualification Tiers</option>' +
+      '<option value="cold">Cold</option>' +
+      '<option value="warm">Warm</option>' +
+      '<option value="hot">Hot</option>' +
+      '<option value="premium">Premium</option>' +
+      '<option value="__unscored__">Unscored</option>' +
     '</select>' +
     '<button onclick="clearCRMFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
   '</div>' +
@@ -6327,8 +6327,7 @@ function displayProposals(proposals) {
         '</div>' +
         '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">' +
           statusBadge(p.status || 'draft') +
-      statusBadge(p.status || 'draft') +
-(p.paymentStatus && p.status!=='draft' ? statusBadge(p.paymentStatus) : '')
+          (p.paymentStatus && p.status!=='draft' ? statusBadge(p.paymentStatus) : '') +
           (hasPaidPay && p.status !== 'accepted' ? '<span class="badge badge-green" style="font-size:.5rem;">💰 Payment Confirmed</span>' : '') +
         '</div>' +
       '</div>' +
@@ -7924,12 +7923,6 @@ function openProposalDrawer(p, prefillLeadId) {
       (p.status==='declined' ? '<div style="font-family:var(--mono);font-size:.62rem;color:var(--red);">✕ Declined · auto-deletes in '+daysUntilProposalPurge(p.declinedAt)+' day(s)</div>' : '') +
     '</div>') +
 '</div>' +
-        ['draft','sent','accepted','declined'].map(function(s) {
-          var sel = (p && p.status === s) ? ' selected' : (!p && s === 'draft' ? ' selected' : '');
-          return '<option value="' + s + '"' + sel + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>';
-        }).join('') +
-      '</select>' +
-    '</div></div>' +
 
     // ════ Action buttons ══════════════════════════════════════
     '<div class="btn-row">' +
