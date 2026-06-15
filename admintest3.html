@@ -971,6 +971,44 @@ function packageLabel(id) {
   return s ? s.label : id.replace(/_/g,' ');
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  PROPOSAL — PRICING & STRUCTURE CONFIG
+// ═══════════════════════════════════════════════════════════════
+var PRICING_TYPES = [
+  {key:'fixed',        label:'Fixed Price'},
+  {key:'milestone',    label:'Milestone-Based'},
+  {key:'subscription', label:'Subscription'},
+  {key:'retainer',     label:'Retainer'}
+];
+
+var PAYMENT_STRUCTURES = [
+  {key:'one_time',  label:'One-Time Payment'},
+  {key:'installments', label:'Installments'},
+  {key:'recurring', label:'Recurring Payments'}
+];
+
+var PROPOSAL_RETENTION_DAYS = 30; // declined proposals auto-delete after this
+
+function daysUntilProposalPurge(declinedAt) {
+  if (!declinedAt) return PROPOSAL_RETENTION_DAYS;
+  var d = new Date(declinedAt).getTime();
+  if (isNaN(d)) return PROPOSAL_RETENTION_DAYS;
+  var daysAgo = (Date.now() - d) / 86400000;
+  return Math.max(0, Math.ceil(PROPOSAL_RETENTION_DAYS - daysAgo));
+}
+
+function autoPurgeDeclinedProposals(proposals) {
+  var now = Date.now();
+  (proposals||[]).forEach(function(p) {
+    if (p.status !== 'declined' || !p.declinedAt) return;
+    var d = new Date(p.declinedAt).getTime();
+    if (isNaN(d)) return;
+    if ((now - d) / 86400000 >= PROPOSAL_RETENTION_DAYS) {
+      window._deleteDoc('proposals', p.id);
+    }
+  });
+}
+
 // ── Report templates per role ─────────────────────────────────
 var REPORT_TEMPLATES = {
   ops_lead:{title:'Operations Lead Report',fields:[
@@ -2497,6 +2535,8 @@ TERMS & CONDITIONS
   }
 };
 
+var PROPOSAL_CORE_SERVICES = ['brand_launch','sales_system','systemization','platform_dev','web3_dev','gata_onboard','venture_build','enterprise_sw'];
+
 // ═══════════════════════════════════════════════════════════════
 //  PAYMENT SYSTEM — SERVICES + BUILDERS
 // ═══════════════════════════════════════════════════════════════
@@ -2680,7 +2720,7 @@ function onPayServiceChange() {
 
 function buildPayProposalOptions(leadId) {
   var sel = document.getElementById('pay-proposal-link'); if (!sel) return;
-  var props = leadId ? (window._data ? window._data.proposals || [] : []).filter(function(p){ return p.leadId === leadId; }) : [];
+  var props = leadId ? (window._data ? window._data.proposals || [] : []).filter(function(p){ return p.leadId === leadId && p.status !== 'active'; }) : [];
   sel.innerHTML = '<option value="">— Not linked to a proposal —</option>' + props.map(function(p) {
     return '<option value="' + p.id + '">' + escHtml(p.title || 'Untitled') + ' · ₦' + Number(p.amount||0).toLocaleString() + ' [' + (p.status||'draft') + ']</option>';
   }).join('');
@@ -2716,6 +2756,7 @@ function _panelProposals() {
         '<button class="tab-btn" onclick="filterProposals(\'sent\',this)">Sent</button>' +
         '<button class="tab-btn" onclick="filterProposals(\'accepted\',this)">Accepted</button>' +
         '<button class="tab-btn" onclick="filterProposals(\'declined\',this)">Declined</button>' +
+        '<button class="tab-btn" onclick="filterProposals(\'active\',this)">Active</button>' +
       '</div>' +
       '<input class="tbl-search" id="prop-search" style="width:180px;margin-left:auto;" placeholder="Search proposals…" oninput="displayProposals(window._data?window._data.proposals:[])">' +
     '</div>' +
@@ -4007,7 +4048,7 @@ window._renderAll = function(){
   if(canAccess('people'))renderPeople(d);
   // Rebuild people cat tabs on every refresh in case counts changed
   if(canAccess('people')&&window._peopleCache&&window._peopleCache.length)buildPeopleCatTabs(window._peopleCache);
-  if(canAccess('proposals'))renderProposals(d.proposals);
+  if(canAccess('proposals')){autoPurgeDeclinedProposals(d.proposals||[]);renderProposals(d.proposals||[]);setTimeout(recalcProposalPaymentStatuses,150);}
   if(canAccess('payments'))renderPayments(d.payments);
   if(canAccess('assignments'))renderAssignments(d.assignments);
   if(canAccess('team'))renderTeam(d.team_members||[]);
@@ -6286,6 +6327,8 @@ function displayProposals(proposals) {
         '</div>' +
         '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">' +
           statusBadge(p.status || 'draft') +
+      statusBadge(p.status || 'draft') +
+(p.paymentStatus && p.status!=='draft' ? statusBadge(p.paymentStatus) : '')
           (hasPaidPay && p.status !== 'accepted' ? '<span class="badge badge-green" style="font-size:.5rem;">💰 Payment Confirmed</span>' : '') +
         '</div>' +
       '</div>' +
@@ -6381,21 +6424,80 @@ function onProposalServiceChange() {
   updateInstalmentsBreakdown();
 }
 
-// ── Auto-fill body from template ──────────────────────────────
-function autoFillProposalBody() {
-  var svc  = (document.getElementById('prop-service') || {}).value || '';
-  var tmpl = PROPOSAL_TEMPLATES[svc];
-  if (!tmpl || !tmpl.body) { toast('Please select a service first', 'error'); return; }
-  var bodyEl = document.getElementById('prop-body');
-  if (bodyEl) { bodyEl.value = tmpl.body; }
-  var titleEl = document.getElementById('prop-title');
-  if (titleEl && !titleEl.value) titleEl.value = tmpl.defaultTitle || '';
+function onProposalServicesChange() {
+  var checked = [];
+  document.querySelectorAll('.prop-svc-cb:checked').forEach(function(cb) {
+    var amtInput = document.querySelector('.prop-svc-amt[data-svc="'+cb.value+'"]');
+    checked.push({ id: cb.value, label: serviceLabel(cb.value), amount: parseFloat((amtInput||{}).value)||0 });
+  });
+
+  // Highlight selected rows
+  document.querySelectorAll('.prop-svc-cb').forEach(function(cb) {
+    var row = cb.closest('label');
+    if (row) row.style.borderColor = cb.checked ? 'rgba(200,155,20,.3)' : 'rgba(242,237,228,.07)';
+  });
+
+  // Sum into total amount
+  var total = checked.reduce(function(s,c){ return s+c.amount; }, 0);
   var amtEl = document.getElementById('prop-amount');
-  if (amtEl && !amtEl.value) amtEl.value = tmpl.defaultAmount || '';
-  toast('Proposal filled from template ✓', 'success');
+  if (amtEl) amtEl.value = total;
+
+  // Auto-title if empty or still default-looking
+  var titleEl = document.getElementById('prop-title');
+  if (titleEl && (!titleEl.value || titleEl.dataset.auto === '1')) {
+    if (checked.length === 1) {
+      titleEl.value = (PROPOSAL_TEMPLATES[checked[0].id]||{}).defaultTitle || checked[0].label;
+    } else if (checked.length > 1) {
+      titleEl.value = checked.map(function(c){return c.label;}).join(' + ') + ' — Combined Package';
+    }
+    titleEl.dataset.auto = '1';
+  }
+
+  // Duration options — union of all selected templates' durations
+  var durSet = {};
+  checked.forEach(function(c) {
+    var t = PROPOSAL_TEMPLATES[c.id];
+    (t && t.durations ? t.durations : []).forEach(function(d){ durSet[d]=1; });
+  });
+  var durEl = document.getElementById('prop-duration');
+  if (durEl) {
+    var durs = Object.keys(durSet).length ? Object.keys(durSet) : ['One-time payment','2 instalments (50/50)','3 monthly payments','Monthly retainer'];
+    var curVal = durEl.value;
+    durEl.innerHTML = durs.map(function(d){ return '<option value="'+d+'"'+(d===curVal?' selected':'')+'>'+d+'</option>'; }).join('');
+  }
+
+  window._propSelectedServices = checked;
   updateInstalmentsBreakdown();
 }
 
+// ── Auto-fill body from template ──────────────────────────────
+function autoFillProposalBody() {
+  var checked = window._propSelectedServices || [];
+  if (!checked.length) { toast('Select at least one service first', 'error'); return; }
+
+  var bodyEl = document.getElementById('prop-body');
+  if (!bodyEl) return;
+
+  var combined;
+  if (checked.length === 1) {
+    var tmpl = PROPOSAL_TEMPLATES[checked[0].id];
+    combined = tmpl ? tmpl.body : '';
+  } else {
+    combined = 'COMBINED SERVICE PROPOSAL\n══════════════════════════════════════\n' +
+      'This proposal covers ' + checked.length + ' integrated service packages, delivered as a single coordinated engagement.\n\n' +
+      checked.map(function(c, i) {
+        var tmpl = PROPOSAL_TEMPLATES[c.id];
+        return '─────────────────────────────────────\nPACKAGE ' + (i+1) + ' OF ' + checked.length + ': ' + c.label.toUpperCase() + ' (₦' + c.amount.toLocaleString() + ')\n─────────────────────────────────────\n' +
+          (tmpl ? tmpl.body : '');
+      }).join('\n\n') +
+      '\n\n══════════════════════════════════════\nCOMBINED TOTAL INVESTMENT: ₦' + checked.reduce(function(s,c){return s+c.amount;},0).toLocaleString() + '\n══════════════════════════════════════';
+  }
+
+  bodyEl.value = combined;
+  if (bodyEl.dataset) bodyEl.dataset.auto = '1';
+  toast('Proposal body generated from ' + checked.length + ' service template(s) ✓', 'success');
+}
+  
 // ── Instalment breakdown live preview ─────────────────────────
 function updateInstalmentsBreakdown() {
   var div = document.getElementById('prop-instal-breakdown');
@@ -6591,6 +6693,7 @@ function saveAndSendProposalWhatsApp() {
     });
   }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
+  
 // ── Shared data builder ───────────────────────────────────────
 function buildProposalData(leadId, lead, title, amount, methods) {
   return {
@@ -6605,6 +6708,11 @@ function buildProposalData(leadId, lead, title, amount, methods) {
     duration:          (document.getElementById('prop-duration')       || {}).value || '',
     contractDuration:  (document.getElementById('prop-contract-dur')   || {}).value || '',
     validUntil:        (document.getElementById('prop-valid')          || {}).value || '',
+    pricingType:      (document.getElementById('prop-pricing-type') || {}).value || 'fixed',
+    paymentStructure: (document.getElementById('prop-pay-structure')|| {}).value || 'one_time',
+    renewalTerms:     (document.getElementById('prop-renewal')      || {}).value || '',
+    deliverables:     getListItems('prop-deliv-item'),
+    services:         window._propSelectedServices || [],
     body:              (document.getElementById('prop-body')           || {}).value || '',
     paymentMethods:    methods,
     bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
@@ -7650,7 +7758,8 @@ function quickProposal(srcId, name, email) {
 
 function openProposalDrawer(p, prefillLeadId) {
   _editingProposalId = p ? p.id : null;
-
+ var isLocked = !!(p && (p.status==='sent' || p.status==='accepted' || p.status==='declined' || p.status==='active'));
+  
   var allLeads = window._data ? (window._data.crm_leads || []) : [];
   var pLeadId  = p ? (p.leadId || '') : (prefillLeadId || '');
   var selLead  = pLeadId ? allLeads.find(function(l) { return l.id === pLeadId; }) : null;
@@ -7710,18 +7819,27 @@ function openProposalDrawer(p, prefillLeadId) {
     // ════ SECTION 2: Proposal Details ════════════════════════
     '<div class="detail-section"><h4>📋 Proposal Content</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field">' +
-        '<div class="form-label">Service / Package *</div>' +
-        '<select class="form-select" id="prop-service" onchange="onProposalServiceChange()">' +
-          '<option value="">Select service…</option>' +
-          ['brand_launch','sales_system','systemization','platform_dev','web3_dev','gata_onboard','venture_build','enterprise_sw'].map(function(s) {
-            return '<option value="' + s + '"' + (selSvc === s ? ' selected' : '') + '>' + serviceLabel(s) + '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
+      '</div>' + // close the 2-col grid early — service picker now spans full width below
+
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Service(s) / Package(s) * — select one or more</div>' +
+  '<div id="prop-services-grid" style="display:flex;flex-direction:column;gap:6px;">' +
+    PROPOSAL_CORE_SERVICES.map(function(s) {
+      var existing = p ? (p.services||[]).find(function(x){return x.id===s;}) : null;
+      var checked  = existing || (selSvc === s);
+      var amt      = existing ? existing.amount : (PROPOSAL_TEMPLATES[s] ? PROPOSAL_TEMPLATES[s].defaultAmount : 0);
+      return '<label style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid '+(checked?'rgba(200,155,20,.3)':'rgba(242,237,228,.07)')+';border-radius:6px;padding:9px 12px;cursor:pointer;">' +
+        '<input type="checkbox" class="prop-svc-cb" value="'+s+'" data-default="'+(PROPOSAL_TEMPLATES[s]?PROPOSAL_TEMPLATES[s].defaultAmount:0)+'"'+(checked?' checked':'')+' onchange="onProposalServicesChange()" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">' +
+        '<span style="flex:1;font-size:.82rem;color:var(--white);">'+serviceLabel(s)+'</span>' +
+        '<input type="number" class="prop-svc-amt" data-svc="'+s+'" min="0" value="'+amt+'" style="width:130px;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:5px;padding:6px 10px;color:var(--white);font-family:var(--mono);font-size:.78rem;" oninput="onProposalServicesChange()" placeholder="₦ Amount">' +
+      '</label>';
+    }).join('') +
+  '</div>' +
+'</div>' +
+
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' + // reopen the grid for title
       '<div class="form-field">' +
         '<div class="form-label">Proposal Title</div>' +
-        '<input class="form-input" id="prop-title" value="' + escHtml(p ? p.title || '' : selTmpl.defaultTitle || '') + '" placeholder="e.g. Brand Launch Package">' +
+        '<input class="form-input" id="prop-title" value="' + escHtml(p ? p.title || '' : selTmpl.defaultTitle || '') + '"' + (p && p.title ? '' : ' data-auto="1"') + ' oninput="this.dataset.auto=\'0\'" placeholder="e.g. Brand Launch Package">' +
       '</div>' +
     '</div>' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
@@ -7744,6 +7862,24 @@ function openProposalDrawer(p, prefillLeadId) {
       '</div>' +
     '</div>' +
     '<div id="prop-instal-breakdown" style="display:none;background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:6px;padding:10px 14px;margin-bottom:10px;font-size:.8rem;"></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+  '<div class="form-field"><div class="form-label">Pricing Type</div>' +
+    '<select class="form-select" id="prop-pricing-type">' +
+      PRICING_TYPES.map(function(pt){ return '<option value="'+pt.key+'"'+(p&&p.pricingType===pt.key?' selected':'')+'>'+pt.label+'</option>'; }).join('') +
+    '</select>' +
+  '</div>' +
+  '<div class="form-field"><div class="form-label">Payment Structure</div>' +
+    '<select class="form-select" id="prop-pay-structure">' +
+      PAYMENT_STRUCTURES.map(function(ps){ return '<option value="'+ps.key+'"'+(p&&p.paymentStructure===ps.key?' selected':'')+'>'+ps.label+'</option>'; }).join('') +
+    '</select>' +
+  '</div>' +
+'</div>' +
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Renewal Terms</div>' +
+  '<input class="form-input" id="prop-renewal" value="'+escHtml(p?p.renewalTerms||'':'')+'" placeholder="e.g. Auto-renews monthly unless cancelled 7 days prior">' +
+'</div>' +
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label" style="margin-bottom:8px;">Key Deliverables</div>' +
+  buildRequirementsEditor(p?p.deliverables||[]:[], 'prop-deliv') +
+'</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Contract Duration (for retainers)</div><input class="form-input" id="prop-contract-dur" value="' + escHtml(p ? p.contractDuration || '' : '') + '" placeholder="e.g. 3 months · Ongoing"></div>' +
       '<div class="form-field"><div class="form-label">Proposal Valid Until</div><input class="form-input" id="prop-valid" type="date" value="' + escHtml(p ? p.validUntil || '' : new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]) + '"></div>' +
@@ -7774,8 +7910,20 @@ function openProposalDrawer(p, prefillLeadId) {
 
     // ════ SECTION 5: Status ═══════════════════════════════════
     '<div class="detail-section"><h4>📌 Status</h4>' +
-    '<div style="max-width:200px;">' +
-      '<select class="form-select" id="prop-status">' +
+(!isLocked
+  ? '<div style="max-width:200px;"><select class="form-select" id="prop-status">' +
+      ['draft','sent'].map(function(s) {
+        var sel = (p && p.status === s) ? ' selected' : (!p && s === 'draft' ? ' selected' : '');
+        return '<option value="' + s + '"' + sel + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>';
+      }).join('') +
+    '</select></div>'
+  : '<div style="display:flex;flex-direction:column;gap:10px;">' +
+      '<div>' + statusBadge(p.status) + (p.paymentStatus ? ' ' + statusBadge(p.paymentStatus) : '') + '</div>' +
+      (p.status==='sent' ? buildAcceptDeclineUI(p) : '') +
+      (p.status==='active' ? '<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Active — payment confirmed and linked (Ref: '+escHtml(p.paymentRef||'—')+')</div>' : '') +
+      (p.status==='declined' ? '<div style="font-family:var(--mono);font-size:.62rem;color:var(--red);">✕ Declined · auto-deletes in '+daysUntilProposalPurge(p.declinedAt)+' day(s)</div>' : '') +
+    '</div>') +
+'</div>' +
         ['draft','sent','accepted','declined'].map(function(s) {
           var sel = (p && p.status === s) ? ' selected' : (!p && s === 'draft' ? ' selected' : '');
           return '<option value="' + s + '"' + sel + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>';
@@ -7793,6 +7941,14 @@ function openProposalDrawer(p, prefillLeadId) {
 
   openDrawer(p ? 'Edit Proposal' : 'New Proposal', p ? (p.title || 'Proposal') : 'Create Proposal', html);
   setTimeout(updateInstalmentsBreakdown, 120);
+  setTimeout(onProposalServicesChange, 100)
+  if (isLocked) {
+  document.querySelectorAll('#drawer-body input, #drawer-body select, #drawer-body textarea').forEach(function(el) {
+    el.setAttribute('disabled', 'disabled');
+    el.style.opacity = '0.6';
+  });
+  document.querySelectorAll('.prop-svc-cb, .prop-svc-amt, #vedit-req-item, .prop-deliv-item').forEach(function(el){ el.setAttribute('disabled','disabled'); });
+}
 }
 
 function saveProposal() {
@@ -7821,6 +7977,11 @@ function saveProposal() {
     duration:          (document.getElementById('prop-duration')       || {}).value || '',
     contractDuration:  (document.getElementById('prop-contract-dur')   || {}).value || '',
     validUntil:        (document.getElementById('prop-valid')          || {}).value || '',
+    pricingType:      (document.getElementById('prop-pricing-type') || {}).value || 'fixed',
+    paymentStructure: (document.getElementById('prop-pay-structure')|| {}).value || 'one_time',
+    renewalTerms:     (document.getElementById('prop-renewal')      || {}).value || '',
+    deliverables:     getListItems('prop-deliv-item'),
+    services:         window._propSelectedServices || [],
     body:              (document.getElementById('prop-body')           || {}).value || '',
     paymentMethods:    methods,
     bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
@@ -7852,6 +8013,62 @@ function openNewPaymentFor(name, email, leadId) {
     showPanel('payments', document.querySelector('[data-panel="payments"]'));
   }, 200);
 }
+
+function buildAcceptDeclineUI(p) {
+  var payments = (window._data.payments||[]).filter(function(pay){
+    return pay.status==='paid' && (pay.leadId===p.leadId) &&
+      !(window._data.proposals||[]).some(function(other){ return other.id!==p.id && other.paymentRef===pay.id; });
+  });
+  var opts = '<option value="">— Select verified payment —</option>' +
+    payments.map(function(pay){
+      return '<option value="'+pay.id+'">₦'+Number(pay.amount||0).toLocaleString()+' · '+escHtml(pay.invoiceRef||pay.fwRef||pay.id)+' · '+fmtDate(pay.paidAt||pay.createdAt)+'</option>';
+    }).join('');
+
+  return '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">' +
+    '<div style="font-family:var(--mono);font-size:.58rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Manual Status Override</div>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Link Verified Payment Reference (required to Accept)</div>' +
+    '<select class="form-select" id="prop-payref">' + opts + '</select></div>' +
+    (!payments.length ? '<div style="font-family:var(--mono);font-size:.58rem;color:var(--amber);margin-bottom:10px;">No unattached paid payments found for this lead yet.</div>' : '') +
+    '<div class="btn-row" style="margin-top:0;">' +
+      '<button class="btn-success" style="font-size:.72rem;padding:7px 14px;" onclick="acceptProposalManual(\''+p.id+'\')">✓ Mark Accepted</button>' +
+      '<button class="btn-secondary" style="font-size:.72rem;padding:7px 14px;border-color:rgba(239,68,68,.3);color:var(--red);" onclick="declineProposalManual(\''+p.id+'\')">✕ Mark Declined</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function acceptProposalManual(propId) {
+  var ref = (document.getElementById('prop-payref')||{}).value || '';
+  if (!ref) { toast('Select a verified payment reference to accept this proposal','error'); return; }
+
+  // Enforce uniqueness
+  var clash = (window._data.proposals||[]).some(function(other){ return other.id!==propId && other.paymentRef===ref; });
+  if (clash) { toast('That payment is already linked to another proposal','error'); return; }
+
+  window._updateDoc('proposals', propId, { status:'accepted', paymentRef:ref, acceptedAt:new Date().toISOString() }).then(function(){
+    toast('Proposal marked Accepted ✓','success');
+    closeDrawer();
+    window._loadAll().then(function(){
+      var pay = (window._data.payments||[]).find(function(p){return p.id===ref;});
+      var prop = (window._data.proposals||[]).find(function(p){return p.id===propId;});
+      if (pay && prop && prop.leadId) {
+        autoWinLead(prop.leadId, pay).then(function(){
+          // Move accepted+paid proposal to "active" so it stops appearing as a linkable proposal
+          window._updateDoc('proposals', propId, { status:'active' }).then(window._loadAll);
+        });
+      }
+    });
+  }).catch(function(e){ toast('Failed: '+(e.message||e),'error'); });
+}
+
+function declineProposalManual(propId) {
+  if (!confirm('Mark this proposal as Declined? It will be auto-deleted in 30 days.')) return;
+  window._updateDoc('proposals', propId, { status:'declined', declinedAt:new Date().toISOString() }).then(function(){
+    toast('Proposal marked Declined','success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Failed: '+(e.message||e),'error'); });
+}
+  
 function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
   _editingPaymentId = p ? p.id : null;
   var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
@@ -8171,28 +8388,37 @@ function generateProposalFromQualification(leadId) {
   if (!l || !l.qualification) { toast('Run the Pain Point Analyzer first','error'); return; }
 
   var q = l.qualification;
-  var primaryPkg = q.recommended_packages[0];
-  var svcId = QUALIFIER_PROPOSAL_FALLBACK[primaryPkg] || primaryPkg;
-  if (!PROPOSAL_TEMPLATES[svcId]) svcId = 'sales_system';
-
-  var addOns = q.recommended_packages.slice(1).map(packageLabel);
+  // Map every recommended package to a core proposable service, dedupe
+  var svcIds = [];
+  q.recommended_packages.forEach(function(pkg) {
+    var svc = QUALIFIER_PROPOSAL_FALLBACK[pkg] || pkg;
+    if (PROPOSAL_TEMPLATES[svc] && svcIds.indexOf(svc) === -1) svcIds.push(svc);
+  });
+  if (!svcIds.length) svcIds = ['sales_system'];
+  // Cap at 3 services to keep proposals manageable
+  svcIds = svcIds.slice(0, 3);
 
   closeDrawer();
   setTimeout(function(){
     openProposalDrawer(null, leadId);
     setTimeout(function() {
-      var svcEl = document.getElementById('prop-service');
-      if (svcEl) { svcEl.value = svcId; onProposalServiceChange(); }
+      // Check the relevant service checkboxes
+      svcIds.forEach(function(svc) {
+        var cb = document.querySelector('.prop-svc-cb[value="'+svc+'"]');
+        if (cb) cb.checked = true;
+      });
+      onProposalServicesChange();
+
       var bodyEl = document.getElementById('prop-body');
-      if (bodyEl && !bodyEl.value) {
-        var tmpl = PROPOSAL_TEMPLATES[svcId];
+      if (bodyEl) {
+        autoFillProposalBody();
         var pre = 'BASED ON YOUR QUALIFICATION (' + q.tierLabel.toUpperCase() + ' · ' + q.total_score + '/100)\n' +
-          '══════════════════════════════════════\n' +
-          (addOns.length ? 'Recommended add-ons: ' + addOns.join(', ') + '\n\n' : '\n');
-        bodyEl.value = pre + (tmpl ? tmpl.body : '');
+          'Pain: ' + (q.scores.pain||0) + '/25 · Outcome: ' + (q.scores.outcome||0) + '/25 · Budget: ' + (q.scores.budget||0) + '/25 · Readiness: ' + (q.scores.readiness||0) + '/15 · ROI: ' + (q.scores.roi||0) + '/10\n' +
+          '══════════════════════════════════════\n\n';
+        bodyEl.value = pre + bodyEl.value;
       }
-      toast('Proposal pre-filled from qualification ✓','success');
-    }, 120);
+      toast('Proposal pre-filled from qualification ('+svcIds.length+' service'+(svcIds.length!==1?'s':'')+') ✓','success');
+    }, 150);
     showPanel('proposals', document.querySelector('[data-panel="proposals"]'));
   }, 200);
 }
@@ -8367,7 +8593,32 @@ function crmLeadHasPaidPayment(leadId) {
 }
 
 function crmLinkedProposal(leadId) {
-  return (window._data.proposals || []).find(function(p) { return p.leadId === leadId; });
+  var props = (window._data.proposals || []).filter(function(p) { return p.leadId === leadId; });
+  return props.find(function(p){ return p.status!=='active'; }) || props[0];
+}
+
+function recalcProposalPaymentStatuses() {
+  var proposals = window._data.proposals || [];
+  var payments  = window._data.payments  || [];
+  var now       = new Date();
+
+  proposals.forEach(function(p) {
+    if (['draft'].indexOf(p.status) !== -1) return; // not sent yet, no status
+    var linkedPayments = payments.filter(function(pay){
+      return pay.status==='paid' && (pay.proposalId===p.id || pay.leadId===p.leadId);
+    });
+    var paidTotal = linkedPayments.reduce(function(s,pay){ return s+(parseFloat(pay.amount)||0); }, 0);
+    var amount    = parseFloat(p.amount)||0;
+    var newStatus;
+    if (paidTotal >= amount && amount > 0)       newStatus = 'paid';
+    else if (paidTotal > 0)                       newStatus = 'partial';
+    else if (p.validUntil && new Date(p.validUntil) < now) newStatus = 'overdue';
+    else                                           newStatus = 'pending';
+
+    if (p.paymentStatus !== newStatus) {
+      window._updateDoc('proposals', p.id, { paymentStatus:newStatus });
+    }
+  });
 }
 
 function crmLinkedPayment(leadId) {
