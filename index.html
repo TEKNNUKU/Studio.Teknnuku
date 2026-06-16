@@ -537,6 +537,12 @@ section { padding:clamp(72px,10vw,120px) 0; }
   color:var(--dimmer);
 }
 
+/* ── Hero image column — hide on mobile ── */
+@media (max-width: 860px) {
+  .hero-inner { grid-template-columns: 1fr !important; }
+  .hero-img-col { display: none; }
+}
+
 /* ============================================
    TRACTION STRIP
 ============================================ */
@@ -4032,45 +4038,82 @@ body { overflow-x: clip; }
   <div class="hero-bg" aria-hidden="true"></div>
   <div class="hero-particles" aria-hidden="true" id="heroParticles"></div>
   <div class="wrap">
-    <div class="hero-inner">
-      <div class="t-eyebrow hero-tag">TEKNNUKU Studio — Venture Factory</div>
+    <div class="hero-inner" style="display:grid;grid-template-columns:1fr auto;gap:clamp(24px,5vw,64px);align-items:center;">
 
-      <h1>
-        Add Your Business. <span class="g">Get Customers.</span><br>
-        Build a <span class="c">Real Online Business</span> System.
-      </h1>
+      <!-- LEFT: existing copy -->
+      <div>
+        <div class="t-eyebrow hero-tag">TEKNNUKU Studio — Venture Factory</div>
 
-      <p class="hero-lead">
-        Most businesses are invisible online.<br>
-        The few that are visible don't convert.<br>
-        TEKNNUKU Studio fixes both.
-      </p>
-      <p class="hero-filter-line">
-        Start by adding your business. Then scale into a complete digital system built to generate real revenue.
-        <strong>No website? No problem. &nbsp;·&nbsp; No customers yet? That's exactly why this exists.</strong>
-      </p>
+        <h1>
+          Add Your Business. <span class="g">Get Customers.</span><br>
+          Build a <span class="c">Real Online Business</span> System.
+        </h1>
 
-      <div class="hero-ctas">
-        <a href="https://globalbizhub.teknnuku.xyz" target="_blank" class="btn btn-gold" style="text-decoration:none;">Add Your Business Free →</a>
-        <button class="btn btn-outline" onclick="openIntakeModal()">Get Customers Now</button>
-        <button class="btn btn-outline" onclick="openIntakeModal()">Find Out What Your Business Needs</button>
+        <p class="hero-lead">
+          Most businesses are invisible online.<br>
+          The few that are visible don't convert.<br>
+          TEKNNUKU Studio fixes both.
+        </p>
+        <p class="hero-filter-line">
+          Start by adding your business. Then scale into a complete digital system built to generate real revenue.
+          <strong>No website? No problem. &nbsp;·&nbsp; No customers yet? That's exactly why this exists.</strong>
+        </p>
+
+        <div class="hero-ctas">
+          <a href="https://globalbizhub.teknnuku.xyz" target="_blank" class="btn btn-gold" style="text-decoration:none;">Add Your Business Free →</a>
+          <button class="btn btn-outline" onclick="openIntakeModal()">Get Customers Now</button>
+          <button class="btn btn-outline" onclick="openIntakeModal()">Find Out What Your Business Needs</button>
+        </div>
+
+        <div class="hero-micro">
+          Takes 2 minutes &nbsp;·&nbsp; Instant routing &nbsp;·&nbsp; No sales pressure
+        </div>
+
+        <div class="sp-strip">
+          <span class="sp-text">Trusted by</span>
+          <div class="sp-badges">
+            <span class="sp-badge">Business Owners</span>
+            <span class="sp-badge">Vendors &amp; Sellers</span>
+            <span class="sp-badge">Founders</span>
+            <span class="sp-badge">Companies Scaling</span>
+          </div>
+        </div>
       </div>
 
-      <div class="hero-micro">
-        Takes 2 minutes &nbsp;·&nbsp; Instant routing &nbsp;·&nbsp; No sales pressure
-      </div>
-
-      <div class="sp-strip">
-        <span class="sp-text">Trusted by</span>
-        <div class="sp-badges">
-          <span class="sp-badge">Business Owners</span>
-          <span class="sp-badge">Vendors &amp; Sellers</span>
-          <span class="sp-badge">Founders</span>
-          <span class="sp-badge">Companies Scaling</span>
+      <!-- RIGHT: hero image -->
+      <div class="hero-img-col" style="flex-shrink:0;">
+        <div style="position:relative;">
+          <!-- glow halo -->
+          <div style="position:absolute;inset:-24px;border-radius:50%;
+            background:radial-gradient(ellipse 70% 70% at 50% 50%,
+              rgba(200,155,20,.18) 0%,
+              rgba(0,188,212,.08) 55%,
+              transparent 80%);
+            pointer-events:none;z-index:0;"></div>
+          <img
+            src="https://pink-quiet-wolf-922.mypinata.cloud/ipfs/bafybeibrzgueosb5prt7zlaq2xsvramykv3oljj7m2e7us2bxjrlvlexga"
+            alt="TEKNNUKU Studio — Digital Business Systems"
+            width="460"
+            style="position:relative;z-index:1;
+              width:clamp(260px,32vw,460px);
+              height:auto;
+              border-radius:16px;
+              box-shadow:0 32px 80px rgba(0,0,0,.55),
+                         0 0 0 1px rgba(200,155,20,.12);
+              display:block;"
+            loading="eager"
+            decoding="async"
+          >
+          <!-- gold corner accent -->
+          <div style="position:absolute;top:-2px;left:-2px;width:40px;height:40px;
+            border-top:2px solid var(--gold);border-left:2px solid var(--gold);
+            border-radius:16px 0 0 0;z-index:2;pointer-events:none;"></div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:40px;height:40px;
+            border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);
+            border-radius:0 0 16px 0;z-index:2;pointer-events:none;"></div>
         </div>
       </div>
     </div>
-  </div>
 </section>
 
 <!-- Traction Strip — unchanged -->
