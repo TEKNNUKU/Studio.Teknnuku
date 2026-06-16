@@ -1184,6 +1184,7 @@ window._initRBAC = function(email) {
   window._renderAll();
   showPanel('overview', document.querySelector('.nav-item[data-panel="overview"]'));
 initHashNav();
+checkFWRedirectParams();
 };
 
 function canAccess(panelId) {
@@ -2122,6 +2123,7 @@ function _panelPeople() {
 // ═══════════════════════════════════════════════════════════════
 var FW_CONFIG = {
   publicKey:     localStorage.getItem('tek_fw_pk')      || '',
+  secretKey:     localStorage.getItem('tek_fw_sk')      || '',
   bankName:      localStorage.getItem('tek_bank_name')  || '',
   accountNumber: localStorage.getItem('tek_bank_accno') || '',
   accountName:   localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
@@ -2132,20 +2134,22 @@ var FW_CONFIG = {
 
 function saveFWConfig() {
   var fields = {
-    tek_fw_pk:      'fw-pk',
-    tek_bank_name:  'fw-bank',
-    tek_bank_accno: 'fw-accno',
-    tek_bank_accnm: 'fw-accnm',
-    tek_cmp_email:  'fw-email',
-    tek_cmp_phone:  'fw-phone',
-    tek_cmp_name:   'fw-cmpname'
-  };
+  tek_fw_pk:      'fw-pk',
+  tek_fw_sk:      'fw-sk',
+  tek_bank_name:  'fw-bank',
+  tek_bank_accno: 'fw-accno',
+  tek_bank_accnm: 'fw-accnm',
+  tek_cmp_email:  'fw-email',
+  tek_cmp_phone:  'fw-phone',
+  tek_cmp_name:   'fw-cmpname'
+};
   Object.keys(fields).forEach(function(key) {
     var el = document.getElementById(fields[key]);
     if (el) localStorage.setItem(key, el.value.trim());
   });
   FW_CONFIG = {
     publicKey:     localStorage.getItem('tek_fw_pk')      || '',
+    secretKey:     localStorage.getItem('tek_fw_sk')      || '',
     bankName:      localStorage.getItem('tek_bank_name')  || '',
     accountNumber: localStorage.getItem('tek_bank_accno') || '',
     accountName:   localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
@@ -2154,6 +2158,228 @@ function saveFWConfig() {
     companyName:   localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio'
   };
   toast('Payment config saved ✓', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FLUTTERWAVE API — PAYMENT LINK + VERIFICATION
+// ═══════════════════════════════════════════════════════════════
+
+async function generateFWPaymentLink(propId) {
+  if (!FW_CONFIG.secretKey) {
+    toast('Add your Flutterwave Secret Key in Settings first (Founder access required)', 'error');
+    return null;
+  }
+  var p = (window._data.proposals||[]).find(function(x){ return x.id === propId; });
+  if (!p) { toast('Proposal not found', 'error'); return null; }
+
+  var btn = document.getElementById('prop-gen-fw-link');
+  if (btn) { btn.textContent = '⏳ Generating…'; btn.disabled = true; }
+
+  // Unique tx_ref tied to this proposal — prevents duplicate matching
+  var txRef = 'PROP-' + propId + '-' + Date.now();
+
+  try {
+    var resp = await fetch('https://api.flutterwave.com/v3/payment-links', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + FW_CONFIG.secretKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name:         p.title || 'Service Payment',
+        amount:       parseFloat(p.amount) || 0,
+        currency:     'NGN',
+        description:  'Payment for: ' + (p.title||'Service') + ' · Ref: ' + txRef,
+        redirect_url: window.location.href.split('#')[0] + '#proposals',
+        meta: [
+          { metaname: 'proposal_id', metavalue: propId },
+          { metaname: 'lead_id',     metavalue: p.leadId || '' },
+          { metaname: 'tx_ref',      metavalue: txRef }
+        ],
+        customer: {
+          name:  p.personName  || '',
+          email: p.personEmail || '',
+          phonenumber: p.personPhone || ''
+        }
+      })
+    });
+
+    if (!resp.ok) {
+      var err = await resp.json();
+      throw new Error(err.message || 'FW API error ' + resp.status);
+    }
+
+    var data = await resp.json();
+    var link = data.data && data.data.link;
+    if (!link) throw new Error('No payment link returned by Flutterwave');
+
+    // Save link + txRef onto proposal
+    await window._updateDoc('proposals', propId, { paymentLink: link, fwTxRef: txRef });
+    await window._loadAll();
+
+    // Auto-fill the link field in the open drawer
+    var linkEl = document.getElementById('prop-fw-link');
+    if (linkEl) linkEl.value = link;
+
+    toast('✅ Flutterwave payment link generated & saved to proposal', 'success');
+    if (btn) { btn.textContent = '✅ Generated'; btn.disabled = false; }
+    return link;
+
+  } catch(e) {
+    toast('FW link generation failed: ' + (e.message||e), 'error');
+    if (btn) { btn.textContent = '⚡ Generate FW Payment Link'; btn.disabled = false; }
+    return null;
+  }
+}
+
+async function verifyFWTransactionByRef(txRef) {
+  if (!FW_CONFIG.secretKey) {
+    toast('Secret key required for verification', 'error'); return null;
+  }
+  try {
+    var resp = await fetch('https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=' + encodeURIComponent(txRef), {
+      headers: { 'Authorization': 'Bearer ' + FW_CONFIG.secretKey }
+    });
+    if (!resp.ok) throw new Error('FW verify error ' + resp.status);
+    var data = await resp.json();
+    return data.data || null;
+  } catch(e) {
+    console.error('FW verify failed:', e);
+    return null;
+  }
+}
+
+async function verifyFWTransactionById(txId) {
+  if (!FW_CONFIG.secretKey) {
+    toast('Secret key required for verification', 'error'); return null;
+  }
+  try {
+    var resp = await fetch('https://api.flutterwave.com/v3/transactions/' + txId + '/verify', {
+      headers: { 'Authorization': 'Bearer ' + FW_CONFIG.secretKey }
+    });
+    if (!resp.ok) throw new Error('FW verify error ' + resp.status);
+    var data = await resp.json();
+    return data.data || null;
+  } catch(e) {
+    console.error('FW verify by ID failed:', e);
+    return null;
+  }
+}
+
+// Called on page load to catch FW redirect-back with payment result
+async function checkFWRedirectParams() {
+  var params = new URLSearchParams(window.location.search);
+  var status  = params.get('status');
+  var txId    = params.get('transaction_id');
+  var txRef   = params.get('tx_ref');
+
+  if (!status || !txId) return; // not a FW redirect
+
+  // Clean URL immediately so a refresh doesn't re-trigger
+  history.replaceState({}, '', window.location.pathname + '#proposals');
+
+  if (status !== 'successful') {
+    toast('Payment was ' + status + ' — no record created', 'error');
+    return;
+  }
+
+  toast('🔍 Verifying Flutterwave payment…');
+  var tx = await verifyFWTransactionById(txId);
+  if (!tx || tx.status !== 'successful') {
+    toast('FW verification failed — payment not confirmed', 'error');
+    return;
+  }
+
+  await autoMatchFWPayment(tx, txRef);
+}
+
+async function autoMatchFWPayment(tx, txRefOverride) {
+  var txRef    = txRefOverride || tx.tx_ref || '';
+  var proposals = window._data ? window._data.proposals || [] : [];
+  var payments  = window._data ? window._data.payments  || [] : [];
+
+  // Prevent duplicate processing
+  var alreadyLogged = payments.some(function(p){ return p.fwRef === String(tx.id) || p.fwTxRef === txRef; });
+  if (alreadyLogged) { toast('Payment already recorded — no duplicate created', 'success'); return; }
+
+  // Find the proposal this payment is for — match via fwTxRef or meta
+  var prop = proposals.find(function(p){ return p.fwTxRef === txRef; });
+  if (!prop && tx.meta) {
+    var metaPropId = null;
+    tx.meta.forEach(function(m){ if (m.metaname === 'proposal_id') metaPropId = m.metavalue; });
+    if (metaPropId) prop = proposals.find(function(p){ return p.id === metaPropId; });
+  }
+
+  var paidAmt  = parseFloat(tx.amount) || 0;
+  var currency = tx.currency || 'NGN';
+  var invRef   = generateDocNumber('INV', window._data ? window._data.invoices||[] : []);
+  var v        = prop ? (V_MAP[prop.ventureId] || {}) : {};
+
+  // 1. Create payment record (locked from edit — auto-verified)
+  var payData = {
+    personName:    tx.customer && tx.customer.name    || (prop ? prop.personName  : ''),
+    personEmail:   tx.customer && tx.customer.email   || (prop ? prop.personEmail : ''),
+    personPhone:   tx.customer && tx.customer.phone_number || (prop ? prop.personPhone : ''),
+    leadId:        prop ? prop.leadId : '',
+    ventureId:     prop ? prop.ventureId : '',
+    proposalId:    prop ? prop.id : '',
+    serviceId:     prop ? prop.service : '',
+    service:       prop ? prop.title : '',
+    amount:        paidAmt,
+    currency:      currency,
+    status:        'paid',
+    paidAt:        new Date().toISOString().split('T')[0],
+    paymentMethod: 'card',
+    paymentMethods:['card'],
+    invoiceRef:    invRef,
+    fwRef:         String(tx.id),
+    fwTxRef:       txRef,
+    fwFlwRef:      tx.flw_ref || '',
+    autoVerified:  true,
+    locked:        true,   // ← record lock
+    lockedAt:      new Date().toISOString(),
+    lockedReason:  'Auto-verified via Flutterwave API',
+    notes:         'Auto-matched from FW payment · Transaction ID: ' + tx.id
+  };
+
+  var newPayId = await window._saveDoc('payments', payData);
+  toast('💰 Payment auto-matched from Flutterwave ✓', 'success');
+
+  // 2. Update proposal status + paymentStatus + paymentRef (enforce uniqueness)
+  if (prop) {
+    var clash = (window._data.proposals||[]).some(function(other){
+      return other.id !== prop.id && other.paymentRef === newPayId;
+    });
+    if (!clash) {
+      await window._updateDoc('proposals', prop.id, {
+        status:        'accepted',
+        paymentRef:    newPayId,
+        paymentStatus: 'paid',
+        acceptedAt:    new Date().toISOString()
+      });
+    }
+  }
+
+  // 3. Reload → triggers reconciliation, auto-win, invoice, receipt creation
+  await window._loadAll();
+
+  var pay = (window._data.payments||[]).find(function(p){ return p.id === newPayId; });
+  if (pay) {
+    reconcilePaymentWithFinance(pay, newPayId);
+    if (pay.leadId) await autoWinLead(pay.leadId, pay);
+    createAndSaveInvoice(pay, newPayId);
+    createAndSaveReceipt(pay, newPayId);
+  }
+
+  // Move proposal to Active
+  if (prop) {
+    setTimeout(function(){
+      window._updateDoc('proposals', prop.id, { status: 'active' }).then(window._loadAll);
+    }, 500);
+  }
+
+  toast('✅ Payment verified · Proposal accepted · Revenue recorded · Client updated', 'success');
+  showPanel('proposals', document.querySelector('[data-panel="proposals"]'));
 }
 
 var PROPOSAL_TEMPLATES = {
@@ -3889,9 +4115,18 @@ function _panelSettings() {
 '<div style="padding:16px;">' +
   '<div style="font-size:.78rem;color:var(--dim);margin-bottom:14px;">These values auto-populate all new proposals and are included in Email/WhatsApp sends.</div>' +
   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
-    '<div class="form-field"><div class="form-label">Company Name</div><input class="form-input" id="fw-cmpname" value="'+escHtml(FW_CONFIG.companyName)+'" placeholder="TEKNNUKU Studio"></div>' +
-    '<div class="form-field"><div class="form-label">Company Email</div><input class="form-input" id="fw-email" type="email" value="'+escHtml(FW_CONFIG.companyEmail)+'" placeholder="hello@teknnuku.xyz"></div>' +
-  '</div>' +
+  '<div class="form-field"><div class="form-label">Company Phone / WhatsApp</div><input class="form-input" id="fw-phone" value="'+escHtml(FW_CONFIG.companyPhone)+'" placeholder="+234 800 ..."></div>' +
+  '<div class="form-field"><div class="form-label">Flutterwave Public Key</div><input class="form-input" id="fw-pk" value="'+escHtml(FW_CONFIG.publicKey)+'" placeholder="FLWPUBK-..."></div>' +
+'</div>' +
+(window._userRole === 'founder'
+  ? '<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:14px 16px;margin-bottom:14px;">' +
+      '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:10px;">🔐 Founder-Only · Secret Key (Never share this)</div>' +
+      '<div class="form-field"><div class="form-label">Flutterwave Secret Key — enables auto payment link generation & verification</div>' +
+        '<input class="form-input" id="fw-sk" type="password" value="'+escHtml(FW_CONFIG.secretKey)+'" placeholder="FLWSECK-..." style="font-family:var(--mono);letter-spacing:.05em;">' +
+      '</div>' +
+      '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-top:8px;line-height:1.7;">Stored in browser localStorage only · Not sent to Firebase · Clear browser data to remove · Only visible to Founder login</div>' +
+    '</div>'
+  : '') +
   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
     '<div class="form-field"><div class="form-label">Company Phone / WhatsApp</div><input class="form-input" id="fw-phone" value="'+escHtml(FW_CONFIG.companyPhone)+'" placeholder="+234 800 ..."></div>' +
     '<div class="form-field"><div class="form-label">Flutterwave Public Key</div><input class="form-input" id="fw-pk" value="'+escHtml(FW_CONFIG.publicKey)+'" placeholder="FLWPUBK-..."></div>' +
@@ -6786,11 +7021,15 @@ function renderPaymentsTable(payments) {
       '<td><div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(p.invoiceRef || '—') + '</div>' +
         (p.fwRef ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--cyan);">FW: ' + escHtml(p.fwRef) + '</div>' : '') + '</td>' +
       '<td><div class="row-actions" style="flex-wrap:wrap;gap:4px;">' +
-        '<button class="action-btn" onclick="openPaymentDrawer(window._data.payments.find(function(x){return x.id===\'' + p.id + '\'}),\'\',\'\')">Edit</button>' +
+        (p.locked
+  ? '<button class="action-btn" style="color:var(--green);border-color:rgba(34,197,94,.2);" onclick="openPaymentDrawer(window._data.payments.find(function(x){return x.id===\'' + p.id + '\'}),\'\',\'\')">🔒 View</button>'
+  : '<button class="action-btn" onclick="openPaymentDrawer(window._data.payments.find(function(x){return x.id===\'' + p.id + '\'}),\'\',\'\')">Edit</button>') +
         (p.status !== 'paid' ? '<button class="action-btn success" onclick="markPaid(\'' + p.id + '\')">✓ Paid</button>' : '') +
         '<button class="action-btn" style="color:var(--gold);border-color:rgba(200,155,20,.3);" onclick="' + (hasInv ? 'openInvoiceFromPayment(\'' + p.id + '\')' : 'createAndOpenInvoice(\'' + p.id + '\')') + '">📄 ' + (hasInv ? 'Invoice' : 'Gen Invoice') + '</button>' +
         (p.status === 'paid' ? '<button class="action-btn" style="color:var(--cyan);border-color:rgba(0,188,212,.3);" onclick="' + (hasRct ? 'openReceiptFromPayment(\'' + p.id + '\')' : 'createAndOpenReceipt(\'' + p.id + '\')') + '">🧾 ' + (hasRct ? 'Receipt' : 'Gen Receipt') + '</button>' : '') +
-        '<button class="action-btn danger" onclick="deleteRecord(\'payments\',\'' + p.id + '\')">Del</button>' +
+        (p.locked
+  ? '<span style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);">Locked</span>'
+  : '<button class="action-btn danger" onclick="deleteRecord(\'payments\',\'' + p.id + '\')">Del</button>') +
       '</div></td>' +
     '</tr>';
   }).join('');
@@ -7393,50 +7632,105 @@ function openFWVerifyModal() {
   openDrawer('Verify Flutterwave Payment', 'FW Transaction Verification', html);
 }
 
-function confirmFWPayment() {
+async function confirmFWPayment() {
   var fwRef   = (document.getElementById('fw-verify-ref')    || {}).value || '';
-  var amount  = parseFloat((document.getElementById('fw-verify-amt') || {}).value) || 0;
   var clientV = (document.getElementById('fw-verify-client') || {}).value || '';
-  var svcId   = (document.getElementById('fw-verify-svc')    || {}).value || '';
-  if (!fwRef)    { toast('Flutterwave reference required', 'error'); return; }
-  if (!amount)   { toast('Amount required', 'error'); return; }
-  if (!clientV)  { toast('Select the client this payment is for', 'error'); return; }
-  var info    = resolvePayClient(clientV);
-  var svc     = TEKNNUKU_SERVICES.find(function(s){ return s.id === svcId; });
-  var invRef  = generateDocNumber('INV', window._data ? window._data.invoices || [] : []);
-  var data    = {
-    clientRef:     clientV,
-    personName:    info.name  || '',
-    personEmail:   info.email || '',
-    personPhone:   info.phone || '',
-    leadId:        info.leadId    || '',
-    ventureId:     info.ventureId || svc && svc.venture || 'studio',
-    serviceId:     svcId,
-    service:       svc ? svc.label : '',
-    proposalId:    '',
-    amount:        amount,
-    status:        'paid',
-    paidAt:        new Date().toISOString().split('T')[0],
-    paymentMethods:['card'],
-    paymentMethod: 'card',
-    invoiceRef:    invRef,
-    fwRef:         fwRef,
-    autoVerified:  true,
-    notes:         'Auto-created from FW verification · Ref: ' + fwRef
-  };
-  window._saveDoc('payments', data).then(function(newId) {
-    toast('FW payment record created ✓', 'success');
+
+  if (!fwRef)   { toast('Flutterwave reference required', 'error'); return; }
+  if (!clientV) { toast('Select the client this payment is for', 'error'); return; }
+
+  toast('🔍 Verifying with Flutterwave…');
+
+  var tx = null;
+
+  // Try verifying by ID first (numeric), else by tx_ref
+  if (FW_CONFIG.secretKey) {
+    if (/^\d+$/.test(fwRef)) {
+      tx = await verifyFWTransactionById(fwRef);
+    } else {
+      tx = await verifyFWTransactionByRef(fwRef);
+    }
+  }
+
+  // If we got a verified FW transaction, use real data
+  if (tx && tx.status === 'successful') {
+    toast('✅ FW transaction verified — creating records…');
+
+    // Override amount from FW verified amount (don't trust manual entry)
+    var amtEl = document.getElementById('fw-verify-amt');
+    if (amtEl) amtEl.value = tx.amount;
+
+    var svcId   = (document.getElementById('fw-verify-svc') || {}).value || '';
+    var info    = resolvePayClient(clientV);
+    var svc     = TEKNNUKU_SERVICES.find(function(s){ return s.id === svcId; });
+    var invRef  = generateDocNumber('INV', window._data ? window._data.invoices||[] : []);
+
+    var data = {
+      clientRef:    clientV,
+      personName:   info.name  || tx.customer && tx.customer.name  || '',
+      personEmail:  info.email || tx.customer && tx.customer.email || '',
+      personPhone:  info.phone || tx.customer && tx.customer.phone_number || '',
+      leadId:       info.leadId    || '',
+      ventureId:    info.ventureId || svc && svc.venture || 'studio',
+      serviceId:    svcId,
+      service:      svc ? svc.label : '',
+      proposalId:   '',
+      amount:       parseFloat(tx.amount) || 0,
+      currency:     tx.currency || 'NGN',
+      status:       'paid',
+      paidAt:       new Date().toISOString().split('T')[0],
+      paymentMethods:['card'],
+      paymentMethod: 'card',
+      invoiceRef:   invRef,
+      fwRef:        String(tx.id),
+      fwTxRef:      tx.tx_ref || fwRef,
+      fwFlwRef:     tx.flw_ref || '',
+      autoVerified: true,
+      locked:       true,
+      lockedAt:     new Date().toISOString(),
+      lockedReason: 'Verified via Flutterwave API',
+      notes:        'Verified via FW dashboard · Transaction ID: ' + tx.id
+    };
+
+    var newPayId = await window._saveDoc('payments', data);
+    toast('✅ Verified payment record created & locked ✓', 'success');
     closeDrawer();
-    window._loadAll().then(function() {
-      var pay = (window._data.payments||[]).find(function(p){ return p.id === newId; });
-      if (pay) {
-        reconcilePaymentWithFinance(pay, newId);
-        if (pay.leadId) autoWinLead(pay.leadId, pay);
-        createAndSaveInvoice(pay, newId);
-        createAndSaveReceipt(pay, newId);
-      }
-    });
-  });
+
+    await window._loadAll();
+    var pay = (window._data.payments||[]).find(function(p){ return p.id === newPayId; });
+    if (pay) {
+      reconcilePaymentWithFinance(pay, newPayId);
+      if (pay.leadId) autoWinLead(pay.leadId, pay);
+      createAndSaveInvoice(pay, newPayId);
+      createAndSaveReceipt(pay, newPayId);
+    }
+    return;
+  }
+
+  // Fallback if no secret key or FW verification unavailable — manual entry
+  toast('⚠ Creating manual record (FW secret key not set or verification unavailable)');
+  var amount  = parseFloat((document.getElementById('fw-verify-amt')||{}).value) || 0;
+  if (!amount) { toast('Amount required for manual entry','error'); return; }
+  var svcId2  = (document.getElementById('fw-verify-svc')||{}).value||'';
+  var info2   = resolvePayClient(clientV);
+  var svc2    = TEKNNUKU_SERVICES.find(function(s){ return s.id===svcId2; });
+  var invRef2 = generateDocNumber('INV', window._data?window._data.invoices||[]:[]);
+  var data2   = {
+    clientRef: clientV, personName: info2.name||'', personEmail: info2.email||'',
+    personPhone: info2.phone||'', leadId: info2.leadId||'',
+    ventureId: info2.ventureId||svc2&&svc2.venture||'studio',
+    serviceId: svcId2, service: svc2?svc2.label:'',
+    amount: amount, status:'paid', paidAt: new Date().toISOString().split('T')[0],
+    paymentMethods:['card'], paymentMethod:'card',
+    invoiceRef: invRef2, fwRef: fwRef, autoVerified: false, locked: false,
+    notes: 'Manual FW entry — verification unavailable · Ref: ' + fwRef
+  };
+  var newPayId2 = await window._saveDoc('payments', data2);
+  toast('Manual payment record created (unverified)', 'success');
+  closeDrawer();
+  await window._loadAll();
+  var pay2 = (window._data.payments||[]).find(function(p){ return p.id===newPayId2; });
+  if (pay2) { reconcilePaymentWithFinance(pay2, newPayId2); if (pay2.leadId) autoWinLead(pay2.leadId, pay2); createAndSaveInvoice(pay2, newPayId2); createAndSaveReceipt(pay2, newPayId2); }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -7896,17 +8190,56 @@ function openProposalDrawer(p, prefillLeadId) {
 
     // ════ SECTION 4: Payment Details ═════════════════════════
     '<div class="detail-section"><h4>🔗 Payment Details</h4>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Bank Name</div><input class="form-input" id="prop-bank-name" value="' + escHtml(p ? p.bankName || FW_CONFIG.bankName : FW_CONFIG.bankName) + '" placeholder="e.g. First Bank Nigeria"></div>' +
-      '<div class="form-field"><div class="form-label">Account Number</div><input class="form-input" id="prop-bank-acct" value="' + escHtml(p ? p.bankAccountNumber || FW_CONFIG.accountNumber : FW_CONFIG.accountNumber) + '" placeholder="0123456789"></div>' +
-    '</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Account Name</div><input class="form-input" id="prop-bank-accname" value="' + escHtml(p ? p.bankAccountName || FW_CONFIG.accountName : FW_CONFIG.accountName) + '" placeholder="TEKNNUKU STUDIO LTD"></div>' +
-      '<div class="form-field"><div class="form-label">Flutterwave Payment Link (paste from FW dashboard)</div><input class="form-input" id="prop-fw-link" value="' + escHtml(p ? p.paymentLink || '' : '') + '" placeholder="https://flutterwave.com/pay/..."></div>' +
-    '</div>' +
-    '<div class="form-field"><div class="form-label">Payment Instructions (shown in proposal)</div><textarea class="form-textarea" id="prop-pay-notes" style="min-height:56px;">' + escHtml(p ? p.paymentNotes || '' : 'Please include your full name and invoice number as payment reference. Send payment receipt to ' + FW_CONFIG.companyEmail + '.') + '</textarea></div>' +
+
+    // Auto-populated info strip
+    '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;margin-bottom:12px;font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">Fields below auto-populate from your Settings · Flutterwave payment link is generated automatically when you click the button below</div>' +
+
+    // Bank details — auto-filled from FW_CONFIG
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Bank Name</div>' +
+        '<input class="form-input" id="prop-bank-name" value="'+escHtml(p?p.bankName||FW_CONFIG.bankName:FW_CONFIG.bankName)+'" placeholder="First Bank Nigeria"></div>' +
+      '<div class="form-field"><div class="form-label">Account Number</div>' +
+        '<input class="form-input" id="prop-bank-acct" value="'+escHtml(p?p.bankAccountNumber||FW_CONFIG.accountNumber:FW_CONFIG.accountNumber)+'" placeholder="0123456789"></div>' +
+      '<div class="form-field"><div class="form-label">Account Name</div>' +
+        '<input class="form-input" id="prop-bank-accname" value="'+escHtml(p?p.bankAccountName||FW_CONFIG.accountName:FW_CONFIG.accountName)+'" placeholder="TEKNNUKU STUDIO LTD"></div>' +
     '</div>' +
 
+    // FW Payment Link — generate button + field
+    '<div style="background:rgba(0,188,212,.04);border:1px solid rgba(0,188,212,.15);border-radius:8px;padding:14px;margin-bottom:10px;">' +
+      '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px;">⚡ Flutterwave Payment Link</div>' +
+      // Show existing FW link on saved proposals
+      (p && p.paymentLink
+        ? '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:6px;">' +
+            '<div style="font-family:var(--mono);font-size:.6rem;color:var(--green);">✅ Active link: </div>' +
+            '<a href="'+escHtml(p.paymentLink)+'" target="_blank" style="font-family:var(--mono);font-size:.6rem;color:var(--cyan);word-break:break-all;flex:1;">'+escHtml(p.paymentLink)+'</a>' +
+          '</div>'
+        : '') +
+      '<div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">' +
+        '<div style="flex:1;min-width:200px;" class="form-field"><div class="form-label">Payment Link (auto-generated or paste manually)</div>' +
+          '<input class="form-input" id="prop-fw-link" value="'+escHtml(p?p.paymentLink||'':'')+'" placeholder="Click button to auto-generate via FW API…" style="font-family:var(--mono);font-size:.72rem;">' +
+        '</div>' +
+        '<div style="flex-shrink:0;padding-top:20px;">' +
+          (FW_CONFIG.secretKey
+            ? '<button id="prop-gen-fw-link" class="btn-secondary" style="border-color:rgba(0,188,212,.3);color:var(--cyan);white-space:nowrap;" onclick="'+(p?'generateFWPaymentLink(\''+p.id+'\')':"toast('Save the proposal first, then generate the FW link','error')")+'" '+(p?'':'disabled')+'>⚡ Generate FW Payment Link</button>'
+            : '<div style="font-family:var(--mono);font-size:.58rem;color:var(--amber);max-width:200px;line-height:1.5;">⚠ Add FW Secret Key in Settings (Founder) to enable auto-generation</div>') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // Payment instructions
+    '<div class="form-field"><div class="form-label">Payment Instructions (included in all proposal sends)</div>' +
+      '<textarea class="form-textarea" id="prop-pay-notes" style="min-height:70px;">' +
+        escHtml(p ? p.paymentNotes || '' :
+          'Payment Options:\n' +
+          '1. Bank Transfer: ' + (FW_CONFIG.bankName?FW_CONFIG.bankName+' · ':'') + (FW_CONFIG.accountNumber||'[Account Number]') + ' · ' + (FW_CONFIG.accountName||FW_CONFIG.companyName||'TEKNNUKU Studio') + '\n' +
+          '2. Online Payment: Use the secure payment link provided above\n\n' +
+          'Please include your full name and invoice/proposal reference as payment description.\n' +
+          'Send payment confirmation to: ' + (FW_CONFIG.companyEmail||'studio@teknnuku.xyz')
+        ) +
+      '</textarea>' +
+    '</div>' +
+    '</div>' +
+    
     // ════ SECTION 5: Status ═══════════════════════════════════
     '<div class="detail-section"><h4>📌 Status</h4>' +
 (!isLocked
@@ -8064,6 +8397,7 @@ function declineProposalManual(propId) {
   
 function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
   _editingPaymentId = p ? p.id : null;
+  var isPayLocked = !!(p && p.locked);
   var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
   var currentClientVal = '';
   if (p && p.clientRef) currentClientVal = p.clientRef;
@@ -8158,7 +8492,28 @@ function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
 
   // Trigger client info display if pre-populated
   if (currentClientVal) setTimeout(onPayClientChange, 80);
+
+ if (isPayLocked) {
+    // Disable all fields — verified FW payments are read-only
+    document.querySelectorAll('#drawer-body input, #drawer-body select, #drawer-body textarea').forEach(function(el) {
+      el.setAttribute('disabled', 'disabled');
+      el.style.opacity = '0.65';
+    });
+    // Replace save button with locked notice
+    var btnRow = document.querySelector('#drawer-body .btn-row');
+    if (btnRow) {
+      btnRow.innerHTML =
+        '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:7px;width:100%;">' +
+          '<span style="font-size:1.1rem;">🔒</span>' +
+          '<div>' +
+            '<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">Verified Payment — Audit Protected</div>' +
+            '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">Auto-verified via Flutterwave on ' + fmtDate(p.lockedAt) + ' · Record cannot be edited to maintain financial integrity</div>' +
+          '</div>' +
+        '</div>';
+    }
+  }
 }
+  
 function savePayment() {
   var clientVal = (document.getElementById('pay-client-sel') || {}).value || '';
   if (!clientVal) { toast('Please select a client or lead', 'error'); return; }
