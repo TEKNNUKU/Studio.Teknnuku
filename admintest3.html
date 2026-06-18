@@ -820,6 +820,85 @@ var TEKNNUKU_URLS = {
   commandCenter: window.TEKNNUKU_OS_URL       || 'https://teknnuku-studio-vos.vercel.app'
 }; // Founder email — full access
 
+// ══════════════════════════════════════════════════════════════
+//  ROLE-BASED OVERVIEW KPI VISIBILITY MAP
+// ══════════════════════════════════════════════════════════════
+var ROLE_KPI_MAP = {
+  kpi_leads:               ['founder','ops_lead','sales_manager','inbound_closer','outbound_closer','outreach_lead_gen'],
+  kpi_inquiries:           ['founder','ops_lead','sales_manager'],
+  kpi_messages:            ['founder','ops_lead'],
+  kpi_proposals:           ['founder','ops_lead','sales_manager','admin_finance_officer'],
+  kpi_payments:            ['founder','ops_lead','sales_manager','admin_finance_officer'],
+  kpi_tiera:               ['founder','ops_lead','sales_manager','inbound_closer','outbound_closer','outreach_lead_gen'],
+  kpi_applicants:          ['founder','ops_lead'],
+  kpi_team:                ['founder','ops_lead'],
+  kpi_crm:                 ['founder','ops_lead','sales_manager','inbound_closer','outbound_closer','outreach_lead_gen'],
+  kpi_ventures:            ['founder','ops_lead','content_lead','tech_product_lead'],
+  kpi_tasks:               ['founder','ops_lead','sales_manager','inbound_closer','outbound_closer','content_lead','content_creator','outreach_lead_gen','tech_product_lead','developer','onboarding_specialist','customer_success_manager'],
+  kpi_clients:             ['founder','ops_lead','tech_product_lead','onboarding_specialist','customer_success_manager'],
+  section_financial:       ['founder','ops_lead','admin_finance_officer'],
+  section_opspulse:        ['founder','ops_lead','sales_manager','inbound_closer','outbound_closer','content_lead','outreach_lead_gen','tech_product_lead','developer','onboarding_specialist','customer_success_manager'],
+  section_venture_health:  ['founder','ops_lead','content_lead','tech_product_lead'],
+  section_underperf:       ['founder','ops_lead','content_lead','tech_product_lead'],
+  section_report_status:   ['founder','ops_lead'],
+  section_perf_scores:     ['founder','ops_lead'],
+  section_latest_reports:  ['founder','ops_lead'],
+  section_activity:        ['founder','ops_lead','sales_manager','inbound_closer','outbound_closer','content_lead','outreach_lead_gen','tech_product_lead','onboarding_specialist','customer_success_manager','admin_finance_officer'],
+  section_tier_breakdown:  ['founder','ops_lead','sales_manager','outreach_lead_gen']
+};
+
+// Data scope per role per collection
+// 'all'=unrestricted · 'team'=my managed team · 'assigned'=assigned to me · 'own'=my records · 'none'=blocked
+var ROLE_DATA_SCOPE = {
+  founder:                  { crm:'all',      tasks:'all',  assignments:'all',  clients:'all',  reports:'all',  payments:'all'  },
+  ops_lead:                 { crm:'all',      tasks:'all',  assignments:'all',  clients:'all',  reports:'all',  payments:'all'  },
+  sales_manager:            { crm:'team',     tasks:'team', assignments:'team', clients:'all',  reports:'team', payments:'team' },
+  inbound_closer:           { crm:'assigned', tasks:'own',  assignments:'own',  clients:'none', reports:'own',  payments:'none' },
+  outbound_closer:          { crm:'assigned', tasks:'own',  assignments:'own',  clients:'none', reports:'own',  payments:'none' },
+  content_lead:             { crm:'none',     tasks:'team', assignments:'team', clients:'none', reports:'team', payments:'none' },
+  content_creator:          { crm:'none',     tasks:'own',  assignments:'own',  clients:'none', reports:'own',  payments:'none' },
+  outreach_lead_gen:        { crm:'assigned', tasks:'own',  assignments:'own',  clients:'none', reports:'own',  payments:'none' },
+  tech_product_lead:        { crm:'none',     tasks:'team', assignments:'team', clients:'all',  reports:'team', payments:'none' },
+  developer:                { crm:'none',     tasks:'own',  assignments:'own',  clients:'none', reports:'own',  payments:'none' },
+  onboarding_specialist:    { crm:'none',     tasks:'own',  assignments:'own',  clients:'own',  reports:'own',  payments:'none' },
+  customer_success_manager: { crm:'none',     tasks:'own',  assignments:'own',  clients:'own',  reports:'own',  payments:'none' },
+  admin_finance_officer:    { crm:'none',     tasks:'none', assignments:'none', clients:'none', reports:'own',  payments:'all'  }
+};
+
+// Role context strip shown at top of every Overview
+var ROLE_CONTEXT = {
+  founder:                  { icon:'👑', title:'Founder Command Centre',        focus:'Full system oversight — sales, ops, finance, ventures, team',           color:'#C89B14' },
+  ops_lead:                 { icon:'🧠', title:'Operations Command Centre',      focus:'Team oversight, venture health, reports and daily operations',          color:'#C89B14' },
+  sales_manager:            { icon:'💰', title:'Sales Manager Dashboard',        focus:'Pipeline, team closers, proposals and revenue targets',                 color:'#22c55e' },
+  inbound_closer:           { icon:'📞', title:'Inbound Sales Dashboard',        focus:'Your assigned leads, today\'s calls and personal pipeline',              color:'#22c55e' },
+  outbound_closer:          { icon:'🎯', title:'Outbound Sales Dashboard',       focus:'Your prospects, daily outreach quota and calls booked',                 color:'#00BCD4' },
+  content_lead:             { icon:'📡', title:'Content & Lead Gen Dashboard',   focus:'Content pipeline, team assignments and venture performance',             color:'#a855f7' },
+  content_creator:          { icon:'🎬', title:'Content Creator Dashboard',      focus:'Your assignments, deadlines and content delivery queue',                 color:'#a855f7' },
+  outreach_lead_gen:        { icon:'📣', title:'Outreach Dashboard',             focus:'Prospects contacted, replies, qualified leads and booked calls',         color:'#f97316' },
+  tech_product_lead:        { icon:'🏗️', title:'Product & Tech Dashboard',       focus:'Project health, team tasks, client deliverables and systems',           color:'#3b82f6' },
+  developer:                { icon:'⚙️', title:'Developer Dashboard',            focus:'Your assigned tasks, bugs, sprint progress and deadlines',               color:'#3b82f6' },
+  onboarding_specialist:    { icon:'🚀', title:'Onboarding Dashboard',           focus:'Clients awaiting setup, active onboardings and your task queue',         color:'#f59e0b' },
+  customer_success_manager: { icon:'🤝', title:'Customer Success Dashboard',     focus:'Active clients, open issues, renewals and satisfaction metrics',         color:'#00BCD4' },
+  admin_finance_officer:    { icon:'📊', title:'Finance & Admin Dashboard',      focus:'Payments received, pending invoices, expenses and profit summary',       color:'#C89B14' }
+};
+
+// Quick-create FAB actions per role
+var ROLE_FAB_ACTIONS = {
+  founder:                  [['proposal','📄 New Proposal'],['payment','💰 Log Payment'],['assignment','🗂️ New Assignment'],['task','✅ Add Task']],
+  ops_lead:                 [['assignment','🗂️ New Assignment'],['task','✅ Add Task'],['payment','💰 Log Payment']],
+  sales_manager:            [['proposal','📄 New Proposal'],['payment','💰 Log Payment'],['assignment','🗂️ New Assignment'],['task','✅ Add Task']],
+  inbound_closer:           [['task','✅ Add Task']],
+  outbound_closer:          [['task','✅ Add Task']],
+  content_lead:             [['assignment','🗂️ New Assignment'],['task','✅ Add Task']],
+  content_creator:          [['task','✅ Add Task']],
+  outreach_lead_gen:        [['task','✅ Add Task']],
+  tech_product_lead:        [['task','✅ Add Task'],['assignment','🗂️ New Assignment']],
+  developer:                [['task','✅ Add Task']],
+  onboarding_specialist:    [['task','✅ Add Task']],
+  customer_success_manager: [['task','✅ Add Task']],
+  admin_finance_officer:    [['payment','💰 Log Payment']]
+};
+
 var ROLE_LABELS = {
   ops_lead:'Operations Lead', sales_manager:'Sales Manager',
   inbound_closer:'Inbound Closer', outbound_closer:'Outbound Closer',
@@ -1182,9 +1261,10 @@ window._initRBAC = function(email) {
   _buildPanels();
   _buildBottomNav();
   window._renderAll();
+  buildRoleFAB();
   showPanel('overview', document.querySelector('.nav-item[data-panel="overview"]'));
-initHashNav();
-checkFWRedirectParams();
+  initHashNav();
+  checkFWRedirectParams();
 };
 
 function canAccess(panelId) {
@@ -1275,75 +1355,151 @@ function matchReportToMember(report, member) {
 // PANEL HTML TEMPLATES
 // ═══════════════════════════════════════
 function _panelOverview() {
-  return '<div class="panel active" id="panel-overview">' +
-    '<div class="eyebrow">Dashboard</div>' +
-    '<div class="panel-header"><div class="panel-title">Command Overview</div><div class="panel-sub" id="overview-updated">Loading…</div></div>' +
-    '<div class="kpi-grid">' +
-      '<div class="kpi-card gold"><div class="kpi-icon">📥</div><div class="kpi-label">Total Leads</div><div class="kpi-value" id="kpi-leads">—</div><div class="kpi-meta">intake diagnostic</div></div>' +
-      '<div class="kpi-card cyan"><div class="kpi-icon">📋</div><div class="kpi-label">Inquiries</div><div class="kpi-value" id="kpi-inquiries">—</div><div class="kpi-meta">service forms</div></div>' +
-      '<div class="kpi-card purple"><div class="kpi-icon">💬</div><div class="kpi-label">Messages</div><div class="kpi-value" id="kpi-messages">—</div><div class="kpi-meta">contact modal</div></div>' +
-      '<div class="kpi-card green"><div class="kpi-icon">📄</div><div class="kpi-label">Proposals</div><div class="kpi-value" id="kpi-proposals">—</div><div class="kpi-meta">active & pending</div></div>' +
-      '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Payments</div><div class="kpi-value" id="kpi-payments">—</div><div class="kpi-meta">logged</div></div>' +
-      '<div class="kpi-card cyan"><div class="kpi-icon">🟢</div><div class="kpi-label">Tier A Leads</div><div class="kpi-value" id="kpi-tiera">—</div><div class="kpi-meta">score ≥ 70</div></div>' +
-      '<div class="kpi-card orange"><div class="kpi-icon">🎯</div><div class="kpi-label">Applicants</div><div class="kpi-value" id="kpi-applicants">—</div><div class="kpi-meta">careers portal</div></div>' +
-      '<div class="kpi-card green"><div class="kpi-icon">🏢</div><div class="kpi-label">Team Members</div><div class="kpi-value" id="kpi-team">—</div><div class="kpi-meta">active staff</div></div>' +
-      '<div class="kpi-card purple"><div class="kpi-icon">🔄</div><div class="kpi-label">CRM Pipeline</div><div class="kpi-value" id="kpi-crm">—</div><div class="kpi-meta">all leads</div></div>' +
-      '<div class="kpi-card cyan"><div class="kpi-icon">🏢</div><div class="kpi-label">Ventures</div><div class="kpi-value" id="kpi-ventures">—</div><div class="kpi-meta">active portfolio</div></div>' +
-      '<div class="kpi-card gold"><div class="kpi-icon">✅</div><div class="kpi-label">Tasks</div><div class="kpi-value" id="kpi-tasks">—</div><div class="kpi-meta">open today</div></div>' +
-      '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="kpi-clients">—</div><div class="kpi-meta">onboarded</div></div>' +
-    // ── Financial KPIs ───────────────────────────────────────────
-    '</div>' +
-    '<div class="eyebrow" style="margin-top:20px;margin-bottom:12px;">Financial Summary</div>' +
-    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-bottom:16px;">' +
-      '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="ov-revenue">—</div><div class="kpi-meta">all income logged</div></div>' +
-      '<div class="kpi-card red"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="ov-expenses">—</div><div class="kpi-meta">all outgoings</div></div>' +
-      '<div class="kpi-card green" id="ov-profit-card"><div class="kpi-icon">📈</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="ov-profit">—</div><div class="kpi-meta" id="ov-margin">net margin</div></div>' +
-      '<div class="kpi-card amber"><div class="kpi-icon">⚠️</div><div class="kpi-label">System Liability</div><div class="kpi-value" id="ov-liability">—</div><div class="kpi-meta" id="ov-liability-meta">pending + overdue</div></div>' +
-    '</div>' +
+  var ctx = getRoleContext();
+  var role = window._userRole || 'developer';
 
-    // ── Underperforming ventures alert strip ─────────────────────
-    '<div id="ov-underperf-alert" style="display:none;margin-bottom:16px;"></div>' +
+  // ── Role context strip ──────────────────────────────────────
+  var html = '<div class="panel active" id="panel-overview">' +
+    '<div style="background:linear-gradient(135deg,rgba(0,0,0,0),rgba(0,0,0,0.1));' +
+      'border:1px solid ' + ctx.color + '28;border-radius:8px;padding:12px 18px;margin-bottom:18px;' +
+      'display:flex;align-items:center;gap:12px;">' +
+      '<span style="font-size:1.4rem;flex-shrink:0;">' + ctx.icon + '</span>' +
+      '<div style="flex:1;">' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--white);">' + ctx.title + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-top:2px;">' + ctx.focus + '</div>' +
+      '</div>' +
+      '<div id="overview-updated" style="font-family:var(--mono);font-size:.55rem;color:var(--dimmer);text-align:right;flex-shrink:0;">Loading…</div>' +
+    '</div>';
 
-    // ── Operational KPIs ─────────────────────────────────────────
-    '<div class="eyebrow" style="margin:16px 0 12px;">Operational Pulse</div>' +
-    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:24px;">' +
-      '<div class="kpi-card red"><div class="kpi-icon">⏰</div><div class="kpi-label">Tasks Overdue</div><div class="kpi-value" id="ov-overdue">—</div><div class="kpi-meta">past deadline</div></div>' +
-      '<div class="kpi-card cyan"><div class="kpi-icon">🔥</div><div class="kpi-label">Hot CRM Leads</div><div class="kpi-value" id="ov-hot-leads">—</div><div class="kpi-meta">qualified + proposal</div></div>' +
-      '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="ov-clients">—</div><div class="kpi-meta" id="ov-mrr">MRR</div></div>' +
-      '<div class="kpi-card purple"><div class="kpi-icon">📥</div><div class="kpi-label">Leads This Week</div><div class="kpi-value" id="ov-leads-week">—</div><div class="kpi-meta">intake + CRM</div></div>' +
-    '</div>' +
+  // ── Primary KPI cards (role-scoped) ────────────────────────
+  var kpiItems = '';
+  if (canSeeKPI('kpi_leads'))
+    kpiItems += '<div class="kpi-card gold"><div class="kpi-icon">📥</div><div class="kpi-label">Total Leads</div><div class="kpi-value" id="kpi-leads">—</div><div class="kpi-meta">intake diagnostic</div></div>';
+  if (canSeeKPI('kpi_inquiries'))
+    kpiItems += '<div class="kpi-card cyan"><div class="kpi-icon">📋</div><div class="kpi-label">Inquiries</div><div class="kpi-value" id="kpi-inquiries">—</div><div class="kpi-meta">service forms</div></div>';
+  if (canSeeKPI('kpi_messages'))
+    kpiItems += '<div class="kpi-card purple"><div class="kpi-icon">💬</div><div class="kpi-label">Messages</div><div class="kpi-value" id="kpi-messages">—</div><div class="kpi-meta">contact modal</div></div>';
+  if (canSeeKPI('kpi_proposals'))
+    kpiItems += '<div class="kpi-card green"><div class="kpi-icon">📄</div><div class="kpi-label">Proposals</div><div class="kpi-value" id="kpi-proposals">—</div><div class="kpi-meta">active & pending</div></div>';
+  if (canSeeKPI('kpi_payments'))
+    kpiItems += '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Payments</div><div class="kpi-value" id="kpi-payments">—</div><div class="kpi-meta">logged</div></div>';
+  if (canSeeKPI('kpi_tiera'))
+    kpiItems += '<div class="kpi-card cyan"><div class="kpi-icon">🟢</div><div class="kpi-label">Tier A Leads</div><div class="kpi-value" id="kpi-tiera">—</div><div class="kpi-meta">score ≥ 70</div></div>';
+  if (canSeeKPI('kpi_applicants'))
+    kpiItems += '<div class="kpi-card orange"><div class="kpi-icon">🎯</div><div class="kpi-label">Applicants</div><div class="kpi-value" id="kpi-applicants">—</div><div class="kpi-meta">careers portal</div></div>';
+  if (canSeeKPI('kpi_team'))
+    kpiItems += '<div class="kpi-card green"><div class="kpi-icon">👥</div><div class="kpi-label">Team Members</div><div class="kpi-value" id="kpi-team">—</div><div class="kpi-meta">active staff</div></div>';
+  if (canSeeKPI('kpi_crm'))
+    kpiItems += '<div class="kpi-card purple"><div class="kpi-icon">🔄</div><div class="kpi-label">' + (['founder','ops_lead','sales_manager'].indexOf(role)!==-1?'CRM Pipeline':'My Pipeline') + '</div><div class="kpi-value" id="kpi-crm">—</div><div class="kpi-meta">active leads</div></div>';
+  if (canSeeKPI('kpi_ventures'))
+    kpiItems += '<div class="kpi-card cyan"><div class="kpi-icon">🏢</div><div class="kpi-label">Ventures</div><div class="kpi-value" id="kpi-ventures">—</div><div class="kpi-meta">active portfolio</div></div>';
+  if (canSeeKPI('kpi_tasks'))
+    kpiItems += '<div class="kpi-card gold"><div class="kpi-icon">✅</div><div class="kpi-label">' + (['founder','ops_lead'].indexOf(role)!==-1?'Tasks':'My Tasks') + '</div><div class="kpi-value" id="kpi-tasks">—</div><div class="kpi-meta">open today</div></div>';
+  if (canSeeKPI('kpi_clients'))
+    kpiItems += '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">' + (['founder','ops_lead'].indexOf(role)!==-1?'Active Clients':'My Clients') + '</div><div class="kpi-value" id="kpi-clients">—</div><div class="kpi-meta">onboarded</div></div>';
 
-    // ── Venture health + team side-by-side ───────────────────────
-    '<div class="two-col" style="align-items:start;margin-bottom:20px;">' +
+  if (kpiItems) html += '<div class="kpi-grid">' + kpiItems + '</div>';
+
+  // ── Financial summary ── (founder / ops_lead / admin only)
+  if (canSeeKPI('section_financial')) {
+    html += '<div class="eyebrow" style="margin-top:20px;margin-bottom:12px;">Financial Summary</div>' +
+      '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-bottom:16px;">' +
+        '<div class="kpi-card gold"><div class="kpi-icon">💰</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="ov-revenue">—</div><div class="kpi-meta">all income logged</div></div>' +
+        '<div class="kpi-card red"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="ov-expenses">—</div><div class="kpi-meta">all outgoings</div></div>' +
+        '<div class="kpi-card green" id="ov-profit-card"><div class="kpi-icon">📈</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="ov-profit">—</div><div class="kpi-meta" id="ov-margin">net margin</div></div>' +
+        '<div class="kpi-card amber"><div class="kpi-icon">⚠️</div><div class="kpi-label">System Liability</div><div class="kpi-value" id="ov-liability">—</div><div class="kpi-meta" id="ov-liability-meta">pending + overdue</div></div>' +
+      '</div>';
+  }
+
+  // ── Underperforming ventures alert ────────────────────────
+  if (canSeeKPI('section_underperf')) {
+    html += '<div id="ov-underperf-alert" style="display:none;margin-bottom:16px;"></div>';
+  }
+
+  // ── Operational pulse ── (most roles except admin/finance + creator)
+  if (canSeeKPI('section_opspulse')) {
+    var pulseLabel = canSeeKPI('kpi_team') ? 'Operational Pulse' : 'My Performance Pulse';
+    html += '<div class="eyebrow" style="margin:16px 0 12px;">' + pulseLabel + '</div>' +
+      '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:24px;">';
+    if (canSeeKPI('kpi_tasks'))
+      html += '<div class="kpi-card red"><div class="kpi-icon">⏰</div><div class="kpi-label">Tasks Overdue</div><div class="kpi-value" id="ov-overdue">—</div><div class="kpi-meta">past deadline</div></div>';
+    if (canSeeKPI('kpi_crm'))
+      html += '<div class="kpi-card cyan"><div class="kpi-icon">🔥</div><div class="kpi-label">Hot Leads</div><div class="kpi-value" id="ov-hot-leads">—</div><div class="kpi-meta">qualified + proposal</div></div>';
+    if (canSeeKPI('kpi_clients'))
+      html += '<div class="kpi-card green"><div class="kpi-icon">🤝</div><div class="kpi-label">Active Clients</div><div class="kpi-value" id="ov-clients">—</div><div class="kpi-meta" id="ov-mrr">MRR</div></div>';
+    if (canSeeKPI('kpi_leads'))
+      html += '<div class="kpi-card purple"><div class="kpi-icon">📥</div><div class="kpi-label">Leads This Week</div><div class="kpi-value" id="ov-leads-week">—</div><div class="kpi-meta">intake + CRM</div></div>';
+    html += '</div>';
+  }
+
+  // ── FOUNDER / OPS LEAD / TECH LEAD / CONTENT LEAD:
+  //    Venture health + staff reporting side by side
+  if (canSeeKPI('section_venture_health')) {
+    html += '<div class="two-col" style="align-items:start;margin-bottom:20px;">' +
       '<div class="table-wrap">' +
         '<div class="table-toolbar"><div class="table-toolbar-title">Venture Health <span id="ov-underperf-badge"></span></div></div>' +
         '<div id="ov-venture-health"><div class="loading-row"><div class="spinner"></div></div></div>' +
-      '</div>' +
-      '<div style="display:flex;flex-direction:column;gap:16px;">' +
-        '<div class="table-wrap">' +
-          '<div class="table-toolbar"><div class="table-toolbar-title">Report Submissions</div><span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">This week</span></div>' +
-          '<div id="ov-report-status"><div class="loading-row"><div class="spinner"></div></div></div>' +
-        '</div>' +
-        '<div class="table-wrap">' +
-          '<div class="table-toolbar"><div class="table-toolbar-title">Weekly Performance</div><span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">Score / 100</span></div>' +
-          '<div style="padding:12px 16px;" id="ov-perf-scores"><div class="loading-row"><div class="spinner"></div></div></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
+      '</div>';
+    if (canSeeKPI('section_report_status') || canSeeKPI('section_perf_scores')) {
+      html += '<div style="display:flex;flex-direction:column;gap:16px;">';
+      if (canSeeKPI('section_report_status'))
+        html += '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Report Submissions</div><span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">This week</span></div><div id="ov-report-status"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+      if (canSeeKPI('section_perf_scores'))
+        html += '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Weekly Performance</div><span style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">Score / 100</span></div><div style="padding:12px 16px;" id="ov-perf-scores"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
 
-    // ── Latest reports ───────────────────────────────────────────
-    '<div class="table-wrap">' +
+  // ── ROLE-SPECIFIC FOCUS WIDGETS ──────────────────────────
+  // My Pipeline — closers & outreach (not founder/ops who see CRM panel directly)
+  if (canSeeKPI('kpi_crm') && !canSeeKPI('kpi_team')) {
+    html += '<div class="table-wrap" style="margin-bottom:16px;">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">My Pipeline</div>' +
+        '<button class="action-btn" onclick="showPanel(\'crm\',document.querySelector(\'[data-panel=crm]\'))">View All →</button>' +
+      '</div><div id="ov-my-pipeline"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+  }
+
+  // My Tasks — all non-founder roles that can see tasks
+  if (canSeeKPI('kpi_tasks')) {
+    html += '<div class="table-wrap" style="margin-bottom:16px;">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">' + (['founder','ops_lead'].indexOf(role)!==-1?'Task Board':'My Tasks') + '</div>' +
+        '<button class="action-btn" onclick="showPanel(\'tasks\',document.querySelector(\'[data-panel=tasks]\'))">View All →</button>' +
+      '</div><div id="ov-my-tasks"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+  }
+
+  // My Clients — CS / Onboarding / Tech
+  if (canSeeKPI('kpi_clients') && !canSeeKPI('kpi_team')) {
+    html += '<div class="table-wrap" style="margin-bottom:16px;">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">My Clients</div>' +
+        '<button class="action-btn" onclick="showPanel(\'clients\',document.querySelector(\'[data-panel=clients]\'))">View All →</button>' +
+      '</div><div id="ov-my-clients"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+  }
+
+  // ── Latest Reports — ops_lead / founder only ──────────────
+  if (canSeeKPI('section_latest_reports')) {
+    html += '<div class="table-wrap">' +
       '<div class="table-toolbar"><div class="table-toolbar-title">Latest Reports</div>' +
         '<button class="action-btn" onclick="showPanel(\'reports\',document.querySelector(\'[data-panel=reports]\'))">View All →</button>' +
-      '</div>' +
-      '<div id="ov-latest-reports"><div class="loading-row"><div class="spinner"></div></div></div>' +
-    '</div>' +
-    
-    '<div class="two-col">' +
-      '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Recent Activity</div></div><div class="activity-feed" id="activity-feed"><div class="loading-row"><div class="spinner"></div></div></div></div>' +
-      '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Tier Breakdown</div></div><div style="padding:20px;" id="tier-breakdown"><div class="loading-row"><div class="spinner"></div></div></div></div>' +
-    '</div>' +
-  '</div>';
+      '</div><div id="ov-latest-reports"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+  }
+
+  // ── Activity + Tier breakdown (two-col, conditional each) ─
+  var hasActivity = canSeeKPI('section_activity');
+  var hasTier     = canSeeKPI('section_tier_breakdown');
+  if (hasActivity || hasTier) {
+    html += '<div class="two-col">';
+    if (hasActivity)
+      html += '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">' +
+        (canSeeKPI('kpi_team') ? 'Recent Activity' : 'My Activity') +
+        '</div></div><div class="activity-feed" id="activity-feed"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+    if (hasTier)
+      html += '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">Tier Breakdown</div></div><div style="padding:20px;" id="tier-breakdown"><div class="loading-row"><div class="spinner"></div></div></div></div>';
+    html += '</div>';
+  }
+
+  html += '</div>'; // close panel
+  return html;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1361,54 +1517,74 @@ function renderOverview(d) {
   var weekStart  = getWeekStart();
   var today      = new Date(); today.setHours(0, 0, 0, 0);
 
-  // Financial totals
-  var totalRevenue = 0, totalExpenses = 0;
-  financials.forEach(function(f) {
-    var amt = parseFloat(f.amount) || 0;
-    if (f.type === 'income') totalRevenue += amt; else totalExpenses += amt;
-  });
-  var netProfit = totalRevenue - totalExpenses;
-  var margin    = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
-
-  // System liability — pending + overdue payments
-  var pendingAmt = 0, overdueAmt = 0;
-  payments.forEach(function(p) {
-    var amt = parseFloat(p.amount) || 0;
-    if (p.status === 'pending') pendingAmt += amt;
-    if (p.status === 'overdue') overdueAmt += amt;
-  });
-
-  // Operational
-  var overdueTasks  = tasks.filter(function(t) { return t.status !== 'done' && t.deadline && new Date(t.deadline) < today; });
-  var hotLeads      = crm.filter(function(l) { return l.status === 'qualified' || l.status === 'proposal'; }).length;
-  var activeClients = clients.filter(function(c) { return c.status !== 'churned'; });
-  var mrr           = activeClients.reduce(function(s, c) { return s + (parseFloat(c.monthlyValue) || 0); }, 0);
-  var leadsWeek     = leads.filter(function(l) { return tsToDate(l.completedAt || l.createdAt) >= weekStart; }).length
-                    + crm.filter(function(l)   { return tsToDate(l.createdAt) >= weekStart; }).length;
-
-  // Set KPI text
-  setText('ov-revenue',       '₦' + totalRevenue.toLocaleString());
-  setText('ov-expenses',      '₦' + totalExpenses.toLocaleString());
-  setText('ov-profit',        (netProfit < 0 ? '−' : '') + '₦' + Math.abs(netProfit).toLocaleString());
-  setText('ov-margin',        margin + '% net margin');
-  setText('ov-liability',     '₦' + (pendingAmt + overdueAmt).toLocaleString());
-  setText('ov-liability-meta','₦' + pendingAmt.toLocaleString() + ' pending · ₦' + overdueAmt.toLocaleString() + ' overdue');
-  setText('ov-overdue',       overdueTasks.length);
-  setText('ov-hot-leads',     hotLeads);
-  setText('ov-clients',       activeClients.length);
-  setText('ov-mrr',           '₦' + mrr.toLocaleString() + '/mo MRR');
-  setText('ov-leads-week',    leadsWeek);
+  // Always update timestamp
   setText('overview-updated', 'Updated ' + new Date().toLocaleTimeString());
 
-  // Flip profit card red when loss
-  var profitCard = document.getElementById('ov-profit-card');
-  if (profitCard) profitCard.className = 'kpi-card ' + (netProfit >= 0 ? 'green' : 'red');
+  // ── Financial totals — only compute+render if section is visible ──
+  if (canSeeKPI('section_financial')) {
+    var totalRevenue = 0, totalExpenses = 0;
+    financials.forEach(function(f) {
+      var amt = parseFloat(f.amount) || 0;
+      if (f.type === 'income') totalRevenue += amt; else totalExpenses += amt;
+    });
+    var netProfit = totalRevenue - totalExpenses;
+    var margin    = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 100) : 0;
+    var pendingAmt = 0, overdueAmt = 0;
+    payments.forEach(function(p) {
+      var amt = parseFloat(p.amount) || 0;
+      if (p.status === 'pending') pendingAmt += amt;
+      if (p.status === 'overdue') overdueAmt += amt;
+    });
+    setText('ov-revenue',  '₦' + totalRevenue.toLocaleString());
+    setText('ov-expenses', '₦' + totalExpenses.toLocaleString());
+    setText('ov-profit',   (netProfit < 0 ? '−' : '') + '₦' + Math.abs(netProfit).toLocaleString());
+    setText('ov-margin',   margin + '% net margin');
+    setText('ov-liability','₦' + (pendingAmt + overdueAmt).toLocaleString());
+    setText('ov-liability-meta', '₦' + pendingAmt.toLocaleString() + ' pending · ₦' + overdueAmt.toLocaleString() + ' overdue');
+    var profitCard = document.getElementById('ov-profit-card');
+    if (profitCard) profitCard.className = 'kpi-card ' + (netProfit >= 0 ? 'green' : 'red');
+  }
 
-  // Sub-renders
-  ovVentureHealth(financials, tasks, clients, today);
-  ovReportStatus(team, reports, weekStart);
-  ovPerfScores(team, reports, tasks, weekStart);
-  ovLatestReports(reports);
+  // ── Operational pulse ──
+  if (canSeeKPI('section_opspulse')) {
+    var myTasks  = scopeRecords(tasks, 'tasks');
+    var myClients= scopeRecords(clients, 'clients');
+    var myCrm    = scopeRecords(crm, 'crm');
+
+    var overdueTasks  = myTasks.filter(function(t) { return t.status !== 'done' && t.deadline && new Date(t.deadline) < today; });
+    var hotLeads      = myCrm.filter(function(l) { return l.status === 'qualified' || l.status === 'proposal'; }).length;
+    var activeClients = myClients.filter(function(c) { return c.status !== 'churned'; });
+    var mrr           = activeClients.reduce(function(s, c) { return s + (parseFloat(c.monthlyValue) || 0); }, 0);
+    var leadsWeek     = leads.filter(function(l) { return tsToDate(l.completedAt || l.createdAt) >= weekStart; }).length
+                      + crm.filter(function(l)   { return tsToDate(l.createdAt) >= weekStart; }).length;
+
+    setText('ov-overdue',     overdueTasks.length);
+    setText('ov-hot-leads',   hotLeads);
+    setText('ov-clients',     activeClients.length);
+    setText('ov-mrr',         '₦' + mrr.toLocaleString() + '/mo MRR');
+    setText('ov-leads-week',  leadsWeek);
+  }
+
+  // ── Venture health + staff reporting (ops/founder/tech/content leads) ──
+  if (canSeeKPI('section_venture_health')) {
+    ovVentureHealth(financials, tasks, clients, today);
+    if (canSeeKPI('section_report_status')) ovReportStatus(team, reports, weekStart);
+    if (canSeeKPI('section_perf_scores'))   ovPerfScores(team, reports, tasks, weekStart);
+  }
+
+  // ── Latest reports ──
+  if (canSeeKPI('section_latest_reports')) ovLatestReports(reports);
+
+  // ── Role-specific focus widgets ──
+  if (document.getElementById('ov-my-tasks'))    renderOvMyTasks(tasks);
+  if (document.getElementById('ov-my-clients'))  renderOvMyClients(clients);
+  if (document.getElementById('ov-my-pipeline')) renderOvMyPipeline(crm);
+
+  // ── Activity feed ──
+  if (canSeeKPI('section_activity')) renderActivity(d);
+
+  // ── Tier breakdown ──
+  if (canSeeKPI('section_tier_breakdown')) renderTierBreakdown(d.leads);
 }
 
 // ── Venture health rows ────────────────────────────────────────
@@ -4275,7 +4451,13 @@ window._renderAll = function(){
 
   renderActivity(d);
   renderTierBreakdown(d.leads);
-  if(canAccess('overview'))renderOverview(d);
+  if(canAccess('overview')){
+    renderOverview(d);
+    // Refresh scoped widgets if they exist in DOM
+    if(document.getElementById('ov-my-tasks'))    renderOvMyTasks(d.tasks||[]);
+    if(document.getElementById('ov-my-clients'))  renderOvMyClients(d.clients||[]);
+    if(document.getElementById('ov-my-pipeline')) renderOvMyPipeline(d.crm_leads||[]);
+  }
   if(canAccess('leads'))renderLeads(d.leads);
   if(canAccess('inquiries'))renderInquiries(d.inquiries);
   if(canAccess('messages'))renderMessages(d.messages);
@@ -4311,17 +4493,201 @@ if (ovVen) {
   if(canAccess('reports'))renderReports(d.daily_reports||[]);
 };
 
-function renderActivity(d){
-  var feed=document.getElementById('activity-feed');if(!feed)return;
-  var items=[];
-  d.leads.forEach(function(l){items.push({icon:'📥',bg:'rgba(200,155,20,.1)',title:(l.firstName||'?')+' '+(l.lastName||'')+' completed diagnostic',meta:'Tier '+(l.tier||'?')+' · Score '+(l.score||0),time:l.completedAt||l.createdAt,onClick:function(){openLeadDrawer(l);}});});
-  d.inquiries.forEach(function(i){items.push({icon:'📋',bg:'rgba(0,188,212,.1)',title:(i.name||'?')+' — '+serviceLabel(i.service),meta:i.email||'',time:i.submittedAt||i.createdAt,onClick:function(){openInquiryDrawer(i);}});});
-  d.messages.forEach(function(m){items.push({icon:'💬',bg:'rgba(168,85,247,.1)',title:(m.name||'?')+' sent a message',meta:m.subject||'General',time:m.sentAt||m.createdAt,onClick:function(){openMessageDrawer(m);}});});
-  (d.applicants||[]).forEach(function(a){var info=a.personalInfo||{};items.push({icon:'🎯',bg:'rgba(249,115,22,.1)',title:(info.name||a.name||'?')+' applied for '+(ROLE_LABELS[a.positionApplied]||a.positionTitle||'—'),meta:'Score: '+(a.score||0)+' · Status: '+(a.status||'pending'),time:a.submittedAt||a.createdAt,onClick:function(){openApplicantDrawer(a);}});});
-  items.sort(function(a,b){var at=a.time&&a.time.seconds?a.time.seconds:(new Date(a.time||0)/1000);var bt=b.time&&b.time.seconds?b.time.seconds:(new Date(b.time||0)/1000);return bt-at;});
-  if(!items.length){feed.innerHTML='<div class="empty-state"><div class="empty-icon">⬡</div>No activity yet</div>';return;}
-  feed.innerHTML=items.slice(0,14).map(function(item){return'<div class="activity-item"><div class="activity-icon" style="background:'+item.bg+'">'+item.icon+'</div><div class="activity-body"><div class="activity-title">'+escHtml(item.title)+'</div><div class="activity-meta">'+escHtml(item.meta)+'</div></div><div class="activity-time">'+timeAgo(item.time)+'</div></div>';}).join('');
-  feed.querySelectorAll('.activity-item').forEach(function(el,i){if(items[i])el.onclick=items[i].onClick;});
+// ── Overview: My Tasks widget (scoped) ────────────────────────
+function renderOvMyTasks(tasks) {
+  var el = document.getElementById('ov-my-tasks'); if (!el) return;
+  var today = new Date(); today.setHours(0,0,0,0);
+  var scoped = scopeRecords(tasks, 'tasks')
+    .filter(function(t){ return t.status !== 'done'; })
+    .sort(function(a,b){ return new Date(a.deadline||'9999')-new Date(b.deadline||'9999'); })
+    .slice(0, 10);
+  if (!scoped.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-icon">✅</div>All clear — no open tasks</div>';
+    return;
+  }
+  var PRI = { high:'var(--red)', medium:'var(--amber)', low:'var(--dimmer)' };
+  el.innerHTML = scoped.map(function(t) {
+    var od = t.deadline && new Date(t.deadline) < today;
+    var v  = V_MAP[t.ventureId] || {};
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(200,155,20,.04);cursor:pointer;" onclick="openTaskDrawer(\'' + t.id + '\')">' +
+      '<div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:' + (od?'var(--red)':PRI[t.priority||'low']) + '"></div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:.8rem;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(t.title||'—') + '</div>' +
+        (v.name ? '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">' + escHtml(v.name) + '</div>' : '') +
+      '</div>' +
+      (t.deadline ? '<div style="font-family:var(--mono);font-size:.58rem;color:' + (od?'var(--red)':'var(--dimmer)') + ';flex-shrink:0;">' + (od?'⚠ ':'') + fmtDate(t.deadline) + '</div>' : '') +
+      statusBadge(t.status) +
+    '</div>';
+  }).join('');
+}
+
+// ── Overview: My Clients widget (scoped) ─────────────────────
+function renderOvMyClients(clients) {
+  var el = document.getElementById('ov-my-clients'); if (!el) return;
+  var scoped = scopeRecords(clients, 'clients')
+    .filter(function(c){ return c.status !== 'churned'; })
+    .sort(function(a,b){ return a.onboardingStatus==='pending'&&b.onboardingStatus!=='pending'?-1:1; })
+    .slice(0, 8);
+  if (!scoped.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-icon">🤝</div>No clients currently assigned to you</div>';
+    return;
+  }
+  var OB_COLOR = { pending:'var(--red)', in_progress:'var(--amber)', complete:'var(--green)' };
+  el.innerHTML = scoped.map(function(c) {
+    var v = V_MAP[c.ventureId] || {};
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(200,155,20,.04);cursor:pointer;" onclick="openClientDrawer(\'' + c.id + '\')">' +
+      '<div class="person-avatar" style="width:30px;height:30px;font-size:10px;flex-shrink:0;">' + initials(c.name||'?') + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:.8rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(c.name||'—') + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">' + escHtml(v.name||'—') + '</div>' +
+      '</div>' +
+      '<div style="font-family:var(--mono);font-size:.6rem;color:' + (OB_COLOR[c.onboardingStatus||'pending']||'var(--dimmer)') + ';flex-shrink:0;">' +
+        escHtml((c.onboardingStatus||'pending').replace(/_/g,' ')) +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Overview: My Pipeline widget (scoped) ────────────────────
+function renderOvMyPipeline(crm) {
+  var el = document.getElementById('ov-my-pipeline'); if (!el) return;
+  var scoped = scopeRecords(crm, 'crm')
+    .filter(function(l){ return l.status !== 'won' && l.status !== 'lost'; })
+    .slice(0, 10);
+  if (!scoped.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-icon">🔄</div>No active leads in your pipeline</div>';
+    return;
+  }
+  var SB = {new_lead:'badge-dim',contacted:'badge-purple',qualified:'badge-amber',proposal:'badge-gold'};
+  el.innerHTML = scoped.map(function(l) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(200,155,20,.04);cursor:pointer;" onclick="openCRMLeadDrawer(\'' + l.id + '\')">' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:.8rem;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escHtml(l.name||'—') + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">' + escHtml(l.email||'') + '</div>' +
+      '</div>' +
+      '<span class="badge ' + (SB[l.status]||'badge-dim') + '" style="font-size:.52rem;flex-shrink:0;">' + escHtml(l.status.replace(/_/g,' ')) + '</span>' +
+      (l.dealValue ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--gold);flex-shrink:0;">₦' + Number(l.dealValue).toLocaleString() + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function renderActivity(d) {
+  var feed = document.getElementById('activity-feed'); if (!feed) return;
+  var myId = getMyMemberId();
+  var cu   = window._currentUser;
+  var items = [];
+
+  // Determine which activity types this role should see
+  var showLeads      = canSeeKPI('kpi_leads');
+  var showInquiries  = canSeeKPI('kpi_inquiries');
+  var showMessages   = canSeeKPI('kpi_messages');
+  var showApplicants = canSeeKPI('kpi_applicants');
+
+  // For closers/outreach: build set of sourceIds for their assigned CRM leads
+  var mySourceIds = null;
+  if (myId) {
+    var scope = (ROLE_DATA_SCOPE[window._userRole||''] || {}).crm || 'all';
+    if (scope === 'assigned') {
+      mySourceIds = new Set(
+        (d.crm_leads || [])
+          .filter(function(l){ return l.assignedTo === myId; })
+          .map(function(l){ return l.sourceId; })
+          .filter(Boolean)
+      );
+    }
+  }
+
+  if (showLeads) {
+    d.leads.forEach(function(l) {
+      if (mySourceIds && !mySourceIds.has(l.id)) return;
+      items.push({
+        icon:'📥', bg:'rgba(200,155,20,.1)',
+        title:((l.firstName||'?')+' '+(l.lastName||'')+' completed diagnostic').trim(),
+        meta:'Tier '+(l.tier||'?')+' · Score '+(l.score||0),
+        time:l.completedAt||l.createdAt,
+        onClick:function(){ openLeadDrawer(l); }
+      });
+    });
+  }
+
+  if (showInquiries) {
+    d.inquiries.forEach(function(i) {
+      items.push({
+        icon:'📋', bg:'rgba(0,188,212,.1)',
+        title:(i.name||'?')+' — '+serviceLabel(i.service),
+        meta:i.email||'',
+        time:i.submittedAt||i.createdAt,
+        onClick:function(){ openInquiryDrawer(i); }
+      });
+    });
+  }
+
+  if (showMessages) {
+    d.messages.forEach(function(m) {
+      items.push({
+        icon:'💬', bg:'rgba(168,85,247,.1)',
+        title:(m.name||'?')+' sent a message',
+        meta:m.subject||'General',
+        time:m.sentAt||m.createdAt,
+        onClick:function(){ openMessageDrawer(m); }
+      });
+    });
+  }
+
+  if (showApplicants) {
+    (d.applicants||[]).forEach(function(a) {
+      var info=a.personalInfo||{};
+      items.push({
+        icon:'🎯', bg:'rgba(249,115,22,.1)',
+        title:(info.name||a.name||'?')+' applied for '+(ROLE_LABELS[a.positionApplied]||a.positionTitle||'—'),
+        meta:'Score: '+(a.score||0)+' · Status: '+(a.status||'pending'),
+        time:a.submittedAt||a.createdAt,
+        onClick:function(){ openApplicantDrawer(a); }
+      });
+    });
+  }
+
+  // Tasks / assignments — show own completed items for operational roles
+  if (!showLeads && canSeeKPI('kpi_tasks')) {
+    var myTasks = scopeRecords(d.tasks||[], 'tasks')
+      .filter(function(t){ return t.status === 'done'; })
+      .slice(0, 5);
+    myTasks.forEach(function(t) {
+      items.push({
+        icon:'✅', bg:'rgba(34,197,94,.1)',
+        title:'Task completed: ' + (t.title||'—'),
+        meta:(V_MAP[t.ventureId]||{}).name||'',
+        time:t.updatedAt||t.createdAt,
+        onClick:function(){ openTaskDrawer(t.id); }
+      });
+    });
+  }
+
+  items.sort(function(a,b){
+    var at=a.time&&a.time.seconds?a.time.seconds*1000:new Date(a.time||0).getTime();
+    var bt=b.time&&b.time.seconds?b.time.seconds*1000:new Date(b.time||0).getTime();
+    return bt-at;
+  });
+
+  if (!items.length) {
+    feed.innerHTML = '<div class="empty-state"><div class="empty-icon">⬡</div>No recent activity to show</div>';
+    return;
+  }
+
+  feed.innerHTML = items.slice(0, 14).map(function(item) {
+    return '<div class="activity-item">' +
+      '<div class="activity-icon" style="background:'+item.bg+'">'+item.icon+'</div>' +
+      '<div class="activity-body">' +
+        '<div class="activity-title">'+escHtml(item.title)+'</div>' +
+        '<div class="activity-meta">'+escHtml(item.meta)+'</div>' +
+      '</div>' +
+      '<div class="activity-time">'+timeAgo(item.time)+'</div>' +
+    '</div>';
+  }).join('');
+
+  feed.querySelectorAll('.activity-item').forEach(function(el, i) {
+    if (items[i]) el.onclick = items[i].onClick;
+  });
 }
 
 function renderTierBreakdown(leads){
@@ -5982,6 +6348,98 @@ function deleteCustomVacancy(configId) {
 // ═══════════════════════════════════════════════════════════════
 var _peopleFilters = { search:'', category:'', venture:'' };
 
+// ── Role-based KPI visibility + data scoping helpers ──────────
+
+function canSeeKPI(key) {
+  var role = window._userRole || 'developer';
+  if (role === 'founder') return true;
+  return (ROLE_KPI_MAP[key] || []).indexOf(role) !== -1;
+}
+
+function getRoleContext() {
+  return ROLE_CONTEXT[window._userRole || 'developer'] ||
+    { icon:'⬡', title:'Dashboard', focus:'Your workspace', color:'var(--gold)' };
+}
+
+function getMyMemberId() {
+  var cu = window._currentUser; if (!cu) return null;
+  var me = (window._data ? window._data.team_members || [] : []).find(function(m) {
+    return (m.email || '').toLowerCase() === (cu.email || '').toLowerCase();
+  });
+  return me ? me.id : null;
+}
+
+function getManagedMemberIds() {
+  var role = window._userRole || '';
+  var d    = window._data    || {};
+  var myId = getMyMemberId();
+  var MANAGED = {
+    sales_manager:     ['inbound_closer','outbound_closer'],
+    content_lead:      ['content_creator','outreach_lead_gen'],
+    tech_product_lead: ['developer','onboarding_specialist']
+  };
+  if (role === 'ops_lead' || role === 'founder') return null; // null = unrestricted
+  var managed = MANAGED[role];
+  if (!managed) return myId ? [myId] : [];
+  var ids = (d.team_members || [])
+    .filter(function(m) { return managed.indexOf(m.role) !== -1; })
+    .map(function(m) { return m.id; });
+  if (myId) ids.push(myId);
+  return ids;
+}
+
+function scopeRecords(records, collection) {
+  var role = window._userRole || 'developer';
+  if (role === 'founder' || role === 'ops_lead') return records;
+  var scope = (ROLE_DATA_SCOPE[role] || {})[collection] || 'own';
+  if (scope === 'all')  return records;
+  if (scope === 'none') return [];
+  var myId    = getMyMemberId();
+  var managed = getManagedMemberIds();
+  var cu      = window._currentUser;
+
+  if (scope === 'team') {
+    if (managed === null) return records;
+    return records.filter(function(r) {
+      return managed.indexOf(r.assignedTo) !== -1 ||
+             managed.indexOf(r.userId)     !== -1 ||
+             (!r.assignedTo && collection === 'tasks'); // unassigned tasks visible to leads
+    });
+  }
+  if (scope === 'assigned') {
+    return records.filter(function(r) { return r.assignedTo === myId; });
+  }
+  // 'own' — by assignment, userId, userName match, or CS manager
+  return records.filter(function(r) {
+    if (r.assignedTo === myId) return true;
+    if (cu && r.userId === cu.uid) return true;
+    if (r.csManager === myId) return true;
+    if (cu && r.userName) {
+      return r.userName === cu.email ||
+        (window._data ? window._data.team_members || [] : []).some(function(m) {
+          return m.id === myId && (m.name === r.userName || m.email === r.userName);
+        });
+    }
+    return false;
+  });
+}
+
+function buildRoleFAB() {
+  var role    = window._userRole || 'developer';
+  var actions = ROLE_FAB_ACTIONS[role] || [['task','✅ Add Task']];
+  var fab     = document.getElementById('quick-fab');
+  var menuEl  = document.getElementById('fab-menu');
+  if (!fab || !menuEl) return;
+  if (!actions.length) { fab.style.display = 'none'; return; }
+  fab.style.display = 'flex';
+  var DOT_COLORS = { proposal:'var(--gold)', payment:'var(--green)', assignment:'var(--cyan)', task:'var(--purple)' };
+  menuEl.innerHTML = actions.map(function(a) {
+    return '<button class="fab-option" onclick="fabCreate(\'' + a[0] + '\')">' +
+      '<span class="fab-dot" style="background:' + (DOT_COLORS[a[0]] || 'var(--gold)') + ';"></span>' +
+      a[1] + '</button>';
+  }).join('');
+}
+
 // Who can see applicant records
 function canSeeApplicants() {
   return window._userRole === 'founder' || window._userRole === 'ops_lead';
@@ -6978,6 +7436,7 @@ function applyPaymentFilters() {
 }
 
 function renderPayments(payments) {
+  payments = scopeRecords(payments, 'payments');
   renderPaymentsTable(payments);
   var totalPaid = 0, pendingV = 0, overdueV = 0, pendingC = 0, overdueC = 0, pipeline = 0;
   payments.forEach(function(p) {
@@ -7902,6 +8361,7 @@ function onAsnTeamChange() {
 // ═══════════════════════════════════════
 function renderAssignments(assignments) {
   // Populate assigned-to filter
+  assignments = scopeRecords(assignments, 'assignments');
   var asnFlt = document.getElementById('asf-assignedto');
   if (asnFlt) {
     var cur = asnFlt.value;
@@ -8820,6 +9280,7 @@ function applyCRMFilters() {
 
 function renderCRM(list) {
   // Populate assigned filter dynamically
+  list = scopeRecords(list, 'crm');
   var asel = document.getElementById('crm-sf-assigned');
   if (asel && window._data && window._data.team_members) {
     var cur = asel.value;
@@ -10247,6 +10708,7 @@ function applyClientFilters() {
 
 function renderClients(clients, members) {
   // KPIs
+  clients = scopeRecords(clients, 'clients');
   var active    = clients.filter(function(c){ return c.status !== 'churned'; }).length;
   var pending   = clients.filter(function(c){ return c.onboardingStatus === 'pending'; }).length;
   var onboarded = clients.filter(function(c){ return c.onboardingStatus === 'complete'; }).length;
@@ -10897,6 +11359,7 @@ function submitDailyReport(){
     }).catch(function(e){toast('Submit failed: '+(e.message||e),'error');});
 }
 function renderReports(list){
+  list = scopeRecords(list, 'reports');
   var el=document.getElementById('reports-list');if(!el)return;
   var role=window._userRole||'developer';
   var isLeader=(role==='founder'||role==='ops_lead');
