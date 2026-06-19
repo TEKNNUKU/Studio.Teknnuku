@@ -8505,7 +8505,6 @@ function quickProposal(srcId, name, email) {
   closeDrawer();
   setTimeout(function() {
     openProposalDrawer(null, srcId || '');
-    showPanel('proposals', document.querySelector('[data-panel="proposals"]'));
   }, 200);
 }
 
@@ -8796,7 +8795,6 @@ function openNewPaymentFor(name, email, leadId) {
   closeDrawer();
   setTimeout(function() {
     openPaymentDrawer(null, name, email, leadId);
-    showPanel('payments', document.querySelector('[data-panel="payments"]'));
   }, 200);
 }
 
@@ -9041,7 +9039,6 @@ function openNewAssignmentFor(name, email) {
   closeDrawer();
   setTimeout(function() {
     openAssignmentDrawer(null, name, email);
-    showPanel('assignments', document.querySelector('[data-panel="assignments"]'));
   }, 200);
 }
 
