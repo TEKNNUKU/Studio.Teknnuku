@@ -2298,40 +2298,107 @@ function _panelPeople() {
 //  PROPOSAL SYSTEM — CONFIG + TEMPLATES
 // ═══════════════════════════════════════════════════════════════
 var FW_CONFIG = {
-  publicKey:     localStorage.getItem('tek_fw_pk')      || '',
-  secretKey:     localStorage.getItem('tek_fw_sk')      || '',
-  bankName:      localStorage.getItem('tek_bank_name')  || '',
-  accountNumber: localStorage.getItem('tek_bank_accno') || '',
-  accountName:   localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
-  companyEmail:  localStorage.getItem('tek_cmp_email')  || 'hello@teknnuku.xyz',
-  companyPhone:  localStorage.getItem('tek_cmp_phone')  || '',
-  companyName:   localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio'
+  publicKey:         localStorage.getItem('tek_fw_pk')      || '',
+  secretKey:         localStorage.getItem('tek_fw_sk')      || '',
+  bankName:          localStorage.getItem('tek_bank_name')  || '',
+  accountNumber:     localStorage.getItem('tek_bank_accno') || '',
+  accountName:       localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
+  companyEmail:      localStorage.getItem('tek_cmp_email')  || 'hello@teknnuku.xyz',
+  companyPhone:      localStorage.getItem('tek_cmp_phone')  || '',
+  companyName:       localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio',
+  cryptoNetwork:     localStorage.getItem('tek_crypto_net')  || '',
+  cryptoAddress:     localStorage.getItem('tek_crypto_addr') || '',
+  mobileMoneyInfo:   localStorage.getItem('tek_mm_info')     || '',
+  ussdInfo:          localStorage.getItem('tek_ussd_info')   || '',
+  otherInstructions: localStorage.getItem('tek_other_pay')   || ''
 };
 
 function saveFWConfig() {
   var fields = {
-  tek_fw_pk:      'fw-pk',
-  tek_fw_sk:      'fw-sk',
-  tek_bank_name:  'fw-bank',
-  tek_bank_accno: 'fw-accno',
-  tek_bank_accnm: 'fw-accnm',
-  tek_cmp_email:  'fw-email',
-  tek_cmp_phone:  'fw-phone',
-  tek_cmp_name:   'fw-cmpname'
-};
+    tek_fw_pk:       'fw-pk',
+    tek_fw_sk:       'fw-sk',
+    tek_bank_name:   'fw-bank',
+    tek_bank_accno:  'fw-accno',
+    tek_bank_accnm:  'fw-accnm',
+    tek_cmp_email:   'fw-email',
+    tek_cmp_phone:   'fw-phone',
+    tek_cmp_name:    'fw-cmpname',
+    tek_crypto_net:  'fw-crypto-net',
+    tek_crypto_addr: 'fw-crypto-addr',
+    tek_mm_info:     'fw-mm-info',
+    tek_ussd_info:   'fw-ussd-info',
+    tek_other_pay:   'fw-other-pay'
+  };
   Object.keys(fields).forEach(function(key) {
     var el = document.getElementById(fields[key]);
     if (el) localStorage.setItem(key, el.value.trim());
   });
   FW_CONFIG = {
-    publicKey:     localStorage.getItem('tek_fw_pk')      || '',
-    secretKey:     localStorage.getItem('tek_fw_sk')      || '',
-    bankName:      localStorage.getItem('tek_bank_name')  || '',
-    accountNumber: localStorage.getItem('tek_bank_accno') || '',
-    accountName:   localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
-    companyEmail:  localStorage.getItem('tek_cmp_email')  || 'hello@teknnuku.xyz',
-    companyPhone:  localStorage.getItem('tek_cmp_phone')  || '',
-    companyName:   localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio'
+    publicKey:         localStorage.getItem('tek_fw_pk')      || '',
+    secretKey:         localStorage.getItem('tek_fw_sk')      || '',
+    bankName:          localStorage.getItem('tek_bank_name')  || '',
+    accountNumber:     localStorage.getItem('tek_bank_accno') || '',
+    accountName:       localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
+    companyEmail:      localStorage.getItem('tek_cmp_email')  || 'hello@teknnuku.xyz',
+    companyPhone:      localStorage.getItem('tek_cmp_phone')  || '',
+    companyName:       localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio',
+    cryptoNetwork:     localStorage.getItem('tek_crypto_net')  || '',
+    cryptoAddress:     localStorage.getItem('tek_crypto_addr') || '',
+    mobileMoneyInfo:   localStorage.getItem('tek_mm_info')     || '',
+    ussdInfo:          localStorage.getItem('tek_ussd_info')   || '',
+    otherInstructions: localStorage.getItem('tek_other_pay')   || ''
+  };
+  toast('Payment config saved ✓', 'success');
+}var FW_CONFIG = {
+  publicKey:         localStorage.getItem('tek_fw_pk')      || '',
+  secretKey:         localStorage.getItem('tek_fw_sk')      || '',
+  bankName:          localStorage.getItem('tek_bank_name')  || '',
+  accountNumber:     localStorage.getItem('tek_bank_accno') || '',
+  accountName:       localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
+  companyEmail:      localStorage.getItem('tek_cmp_email')  || 'hello@teknnuku.xyz',
+  companyPhone:      localStorage.getItem('tek_cmp_phone')  || '',
+  companyName:       localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio',
+  cryptoNetwork:     localStorage.getItem('tek_crypto_net')  || '',
+  cryptoAddress:     localStorage.getItem('tek_crypto_addr') || '',
+  mobileMoneyInfo:   localStorage.getItem('tek_mm_info')     || '',
+  ussdInfo:          localStorage.getItem('tek_ussd_info')   || '',
+  otherInstructions: localStorage.getItem('tek_other_pay')   || ''
+};
+
+function saveFWConfig() {
+  var fields = {
+    tek_fw_pk:       'fw-pk',
+    tek_fw_sk:       'fw-sk',
+    tek_bank_name:   'fw-bank',
+    tek_bank_accno:  'fw-accno',
+    tek_bank_accnm:  'fw-accnm',
+    tek_cmp_email:   'fw-email',
+    tek_cmp_phone:   'fw-phone',
+    tek_cmp_name:    'fw-cmpname',
+    tek_crypto_net:  'fw-crypto-net',
+    tek_crypto_addr: 'fw-crypto-addr',
+    tek_mm_info:     'fw-mm-info',
+    tek_ussd_info:   'fw-ussd-info',
+    tek_other_pay:   'fw-other-pay'
+  };
+  Object.keys(fields).forEach(function(key) {
+    var el = document.getElementById(fields[key]);
+    if (el) localStorage.setItem(key, el.value.trim());
+  });
+  FW_CONFIG = {
+    publicKey:         localStorage.getItem('tek_fw_pk')      || '',
+    secretKey:         localStorage.getItem('tek_fw_sk')      || '',
+    bankName:          localStorage.getItem('tek_bank_name')  || '',
+    accountNumber:     localStorage.getItem('tek_bank_accno') || '',
+    accountName:       localStorage.getItem('tek_bank_accnm') || 'TEKNNUKU STUDIO LTD',
+    companyEmail:      localStorage.getItem('tek_cmp_email')  || 'studio@teknnuku.xyz',
+    companyPhone:      localStorage.getItem('tek_cmp_phone')  || '',
+    companyName:       localStorage.getItem('tek_cmp_name')   || 'TEKNNUKU Studio',
+    cryptoNetwork:     localStorage.getItem('tek_crypto_net')  || '',
+    cryptoAddress:     localStorage.getItem('tek_crypto_addr') || '',
+    mobileMoneyInfo:   localStorage.getItem('tek_mm_info')     || '',
+    ussdInfo:          localStorage.getItem('tek_ussd_info')   || '',
+    otherInstructions: localStorage.getItem('tek_other_pay')   || ''
   };
   toast('Payment config saved ✓', 'success');
 }
@@ -2393,9 +2460,12 @@ async function generateFWPaymentLink(propId) {
     await window._updateDoc('proposals', propId, { paymentLink: link, fwTxRef: txRef });
     await window._loadAll();
 
-    // Auto-fill the link field in the open drawer
-    var linkEl = document.getElementById('prop-fw-link');
-    if (linkEl) linkEl.value = link;
+    // Refresh the auto-populated payment blocks in the open drawer, if any
+    window._propLastLink = link;
+    var blockEl = document.getElementById('prop-payment-detail-blocks');
+    if (blockEl) blockEl.innerHTML = buildProposalPaymentDetailsBlock(getCheckedProposalMethods());
+    var notesEl = document.getElementById('prop-pay-notes');
+    if (notesEl) notesEl.value = buildAutoPaymentInstructions(getCheckedProposalMethods());
 
     toast('✅ Flutterwave payment link generated & saved to proposal', 'success');
     if (btn) { btn.textContent = '✅ Generated'; btn.disabled = false; }
@@ -2499,6 +2569,7 @@ async function autoMatchFWPayment(tx, txRefOverride) {
     leadId:        prop ? prop.leadId : '',
     ventureId:     prop ? prop.ventureId : '',
     proposalId:    prop ? prop.id : '',
+    proposalRef:   prop ? (prop.proposalRef||'') : '',
     serviceId:     prop ? prop.service : '',
     service:       prop ? prop.title : '',
     amount:        paidAmt,
@@ -2542,11 +2613,12 @@ async function autoMatchFWPayment(tx, txRefOverride) {
   var pay = (window._data.payments||[]).find(function(p){ return p.id === newPayId; });
   if (pay) {
     reconcilePaymentWithFinance(pay, newPayId);
+    autoAcceptProposalsForPayment(pay);
     if (pay.leadId) await autoWinLead(pay.leadId, pay);
     createAndSaveInvoice(pay, newPayId);
     createAndSaveReceipt(pay, newPayId);
   }
-
+  
   // Move proposal to Active
   if (prop) {
     setTimeout(function(){
@@ -2939,6 +3011,16 @@ TERMS & CONDITIONS
 
 var PROPOSAL_CORE_SERVICES = ['brand_launch','sales_system','systemization','platform_dev','web3_dev','gata_onboard','venture_build','enterprise_sw'];
 
+var DEFAULT_SLA_TEXT = `SERVICE LEVEL AGREEMENT (SLA)
+──────────────────────────────────────
+- Response Time: We respond to all client communications within 24 business hours on business days.
+- Revision Policy: Revisions are limited to what is stated in the proposal scope. Additional revisions outside scope are billed separately at an agreed rate.
+- Delivery Timeline: As outlined in the Timeline section above. Delays caused by late client feedback, missing assets, or scope changes extend the timeline accordingly.
+- Support Window: 30 days of post-delivery support is included unless otherwise stated in the proposal scope.
+- Confidentiality: All client information, materials, and business data shared during this engagement are kept strictly confidential.
+- Termination: Either party may terminate this engagement with 14 days' written notice. Work completed up to the termination date will be invoiced and is payable in full.
+- Force Majeure: Neither party is liable for delays caused by circumstances beyond reasonable control.`;
+
 // ═══════════════════════════════════════════════════════════════
 //  PAYMENT SYSTEM — SERVICES + BUILDERS
 // ═══════════════════════════════════════════════════════════════
@@ -2982,8 +3064,39 @@ var TEKNNUKU_SERVICES = [
   {id:'gata_market',    label:'GATAMarket Vendor Fee',          venture:'gata',         category:'GATA'},
   {id:'p2p_master',     label:'P2P Masterclass',               venture:'p2p',          category:'Poverty2Prosperity'},
   {id:'pawa_product',   label:'Pawa+9ja Product Sale',         venture:'pawa',         category:'Pawa+9ja'},
-  {id:'globalbiz_list', label:'Global Biz Hub Listing',        venture:'globalbiz',    category:'Global Biz Hub'}
+ {id:'globalbiz_list', label:'Global Biz Hub Listing',        venture:'globalbiz',    category:'Global Biz Hub'}
 ];
+
+// ── Full service label lookup — used so proposal checklist matches Payments page exactly ──
+function fullServiceLabel(id) {
+  var s = TEKNNUKU_SERVICES.find(function(x){ return x.id === id; });
+  return s ? s.label : serviceLabel(id);
+}
+
+// ── Proposal service checklist — same grouped list as the Payments service dropdown ──
+function buildProposalServiceChecklist(p, selSvc) {
+  var groups = {};
+  TEKNNUKU_SERVICES.forEach(function(s) {
+    if (!groups[s.category]) groups[s.category] = [];
+    groups[s.category].push(s);
+  });
+  var html = '<div style="max-height:340px;overflow-y:auto;border:1px solid rgba(242,237,228,.06);border-radius:6px;padding:10px;">';
+  Object.keys(groups).forEach(function(cat) {
+    html += '<div style="font-family:var(--mono);font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:10px 0 6px;">── ' + escHtml(cat) + ' ──</div>';
+    html += groups[cat].map(function(s) {
+      var existing = p ? (p.services||[]).find(function(x){return x.id===s.id;}) : null;
+      var checked  = !!existing || (selSvc === s.id);
+      var amt      = existing ? existing.amount : (PROPOSAL_TEMPLATES[s.id] ? PROPOSAL_TEMPLATES[s.id].defaultAmount : 0);
+      return '<label style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid '+(checked?'rgba(200,155,20,.3)':'rgba(242,237,228,.07)')+';border-radius:6px;padding:8px 11px;cursor:pointer;margin-bottom:5px;">' +
+        '<input type="checkbox" class="prop-svc-cb" value="'+s.id+'" data-default="'+(PROPOSAL_TEMPLATES[s.id]?PROPOSAL_TEMPLATES[s.id].defaultAmount:0)+'"'+(checked?' checked':'')+' onchange="onProposalServicesChange()" style="accent-color:var(--gold);width:14px;height:14px;flex-shrink:0;">' +
+        '<span style="flex:1;font-size:.8rem;color:var(--white);">'+escHtml(s.label)+'</span>' +
+        '<input type="number" class="prop-svc-amt" data-svc="'+s.id+'" min="0" value="'+amt+'" style="width:120px;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:5px;padding:5px 9px;color:var(--white);font-family:var(--mono);font-size:.74rem;" oninput="onProposalServicesChange()" placeholder="₦ Amount">' +
+      '</label>';
+    }).join('');
+  });
+  html += '</div>';
+  return html;
+}
 
 function buildClientOptions(currentVal) {
   var d    = window._data || {};
@@ -3124,7 +3237,7 @@ function buildPayProposalOptions(leadId) {
   var sel = document.getElementById('pay-proposal-link'); if (!sel) return;
   var props = leadId ? (window._data ? window._data.proposals || [] : []).filter(function(p){ return p.leadId === leadId && p.status !== 'active'; }) : [];
   sel.innerHTML = '<option value="">— Not linked to a proposal —</option>' + props.map(function(p) {
-    return '<option value="' + p.id + '">' + escHtml(p.title || 'Untitled') + ' · ₦' + Number(p.amount||0).toLocaleString() + ' [' + (p.status||'draft') + ']</option>';
+    return '<option value="' + p.id + '">' + (p.proposalRef ? escHtml(p.proposalRef) + ' · ' : '') + escHtml(p.title || 'Untitled') + ' · ₦' + Number(p.amount||0).toLocaleString() + ' [' + (p.status||'draft') + ']</option>';
   }).join('');
   if (props.length === 1) { sel.value = props[0].id; onPayProposalChange(); }
 }
@@ -3144,6 +3257,26 @@ function generateDocNumber(prefix, existingList) {
   return prefix + '-' + yr + '-' + num;
 }
   
+var _propFilters = { venture:'', service:'', paymentStatus:'', from:'', to:'', search:'' };
+
+function applyProposalFilters() {
+  _propFilters.venture       = (document.getElementById('prop-f-venture')    || {}).value || '';
+  _propFilters.service       = (document.getElementById('prop-f-service')    || {}).value || '';
+  _propFilters.paymentStatus = (document.getElementById('prop-f-paystatus')  || {}).value || '';
+  _propFilters.from          = (document.getElementById('prop-f-from')       || {}).value || '';
+  _propFilters.to            = (document.getElementById('prop-f-to')         || {}).value || '';
+  _propFilters.search        = ((document.getElementById('prop-search')     || {}).value || '').toLowerCase().trim();
+  displayProposals(window._data ? window._data.proposals : []);
+}
+
+function clearProposalFilters() {
+  ['prop-f-venture','prop-f-service','prop-f-paystatus','prop-f-from','prop-f-to','prop-search'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_propFilters).forEach(function(k){ _propFilters[k] = ''; });
+  displayProposals(window._data ? window._data.proposals : []);
+}
+
 function _panelProposals() {
   return '<div class="panel" id="panel-proposals">' +
     '<div class="eyebrow">Proposals & Quotes</div>' +
@@ -3151,17 +3284,36 @@ function _panelProposals() {
       '<div class="panel-title">Proposals</div>' +
       '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openProposalDrawer(null,\'\')">+ New Proposal</button>' +
     '</div>' +
-    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;">' +
-      '<div class="tab-bar" style="margin-bottom:0;">' +
-        '<button class="tab-btn active" onclick="filterProposals(\'all\',this)">All</button>' +
-        '<button class="tab-btn" onclick="filterProposals(\'draft\',this)">Draft</button>' +
-        '<button class="tab-btn" onclick="filterProposals(\'sent\',this)">Sent</button>' +
-        '<button class="tab-btn" onclick="filterProposals(\'accepted\',this)">Accepted</button>' +
-        '<button class="tab-btn" onclick="filterProposals(\'declined\',this)">Declined</button>' +
-        '<button class="tab-btn" onclick="filterProposals(\'active\',this)">Active</button>' +
-      '</div>' +
-      '<input class="tbl-search" id="prop-search" style="width:180px;margin-left:auto;" placeholder="Search proposals…" oninput="displayProposals(window._data?window._data.proposals:[])">' +
+
+    '<div class="tab-bar" style="margin-bottom:14px;">' +
+      '<button class="tab-btn active" onclick="filterProposals(\'all\',this)">All</button>' +
+      '<button class="tab-btn" onclick="filterProposals(\'draft\',this)">Draft</button>' +
+      '<button class="tab-btn" onclick="filterProposals(\'sent\',this)">Sent</button>' +
+      '<button class="tab-btn" onclick="filterProposals(\'accepted\',this)">Accepted</button>' +
+      '<button class="tab-btn" onclick="filterProposals(\'declined\',this)">Declined</button>' +
+      '<button class="tab-btn" onclick="filterProposals(\'active\',this)">Active</button>' +
     '</div>' +
+
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+        '<input class="tbl-search" id="prop-search" style="width:200px;" placeholder="Search name, email, ref…" oninput="applyProposalFilters()">' +
+        '<select class="tbl-filter" id="prop-f-venture" onchange="applyProposalFilters()"><option value="">All Ventures</option>' +
+          VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+        '</select>' +
+        '<select class="tbl-filter" id="prop-f-service" onchange="applyProposalFilters()"><option value="">All Services</option>' +
+          TEKNNUKU_SERVICES.map(function(s){return'<option value="'+s.id+'">'+escHtml(s.label)+'</option>';}).join('') +
+        '</select>' +
+        '<select class="tbl-filter" id="prop-f-paystatus" onchange="applyProposalFilters()"><option value="">All Payment Status</option><option value="paid">Paid</option><option value="partial">Partial</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
+        '<input type="date" class="tbl-filter" id="prop-f-from" style="min-width:130px;" onchange="applyProposalFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+        '<input type="date" class="tbl-filter" id="prop-f-to" style="min-width:130px;" onchange="applyProposalFilters()">' +
+        '<button onclick="clearProposalFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+      '</div>' +
+    '</div>' +
+
     '<div id="proposals-list"><div class="loading-row"><div class="spinner"></div></div></div>' +
   '</div>';
 }
@@ -4312,6 +4464,19 @@ function _panelSettings() {
     '<div class="form-field"><div class="form-label">Account Number</div><input class="form-input" id="fw-accno" value="'+escHtml(FW_CONFIG.accountNumber)+'" placeholder="0123456789"></div>' +
     '<div class="form-field"><div class="form-label">Account Name</div><input class="form-input" id="fw-accnm" value="'+escHtml(FW_CONFIG.accountName)+'" placeholder="TEKNNUKU STUDIO LTD"></div>' +
   '</div>' +
+
+  '<div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:18px 0 10px;">Other Payment Methods (auto-pulled into proposals)</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
+    '<div class="form-field"><div class="form-label">Crypto Network</div><input class="form-input" id="fw-crypto-net" value="'+escHtml(FW_CONFIG.cryptoNetwork)+'" placeholder="USDT (TRC20) / ETH (ERC20)"></div>' +
+    '<div class="form-field"><div class="form-label">Crypto Wallet Address</div><input class="form-input" id="fw-crypto-addr" value="'+escHtml(FW_CONFIG.cryptoAddress)+'" placeholder="0x... or T..." style="font-family:var(--mono);"></div>' +
+  '</div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
+    '<div class="form-field"><div class="form-label">Mobile Money Details</div><input class="form-input" id="fw-mm-info" value="'+escHtml(FW_CONFIG.mobileMoneyInfo)+'" placeholder="e.g. MTN MoMo 080xxxxxxx"></div>' +
+    '<div class="form-field"><div class="form-label">USSD Code / Details</div><input class="form-input" id="fw-ussd-info" value="'+escHtml(FW_CONFIG.ussdInfo)+'" placeholder="e.g. *894*GOLD#"></div>' +
+  '</div>' +
+  '<div class="form-field" style="margin-bottom:14px;"><div class="form-label">Other Payment Instructions (appended to every proposal)</div>' +
+    '<textarea class="form-textarea" id="fw-other-pay" style="min-height:60px;">'+escHtml(FW_CONFIG.otherInstructions)+'</textarea></div>' +
+
   '<button class="btn-primary" onclick="saveFWConfig()">💾 Save Payment Config</button>' +
 '</div></div></div>';
 }
@@ -6970,12 +7135,24 @@ function filterProposals(status, btn) {
 function displayProposals(proposals) {
   var el = document.getElementById('proposals-list');
   if (!el) return;
-  var q = ((document.getElementById('prop-search') || {}).value || '').toLowerCase().trim();
+  var f = _propFilters;
   var filtered = proposals.filter(function(p) {
     if (_proposalFilter !== 'all' && p.status !== _proposalFilter) return false;
-    if (q) {
-      var hay = ((p.personName||'') + (p.personEmail||'') + (p.title||'')).toLowerCase();
-      if (!hay.includes(q)) return false;
+    if (f.venture && p.ventureId !== f.venture) return false;
+    if (f.service) {
+      var svcIds = (p.services && p.services.length) ? p.services.map(function(s){return s.id;}) : [p.service];
+      if (svcIds.indexOf(f.service) === -1) return false;
+    }
+    if (f.paymentStatus && p.paymentStatus !== f.paymentStatus) return false;
+    if (f.from || f.to) {
+      var d = tsToDate(p.sentAt || p.createdAt);
+      var dateStr = isNaN(d) ? '' : d.toISOString().split('T')[0];
+      if (f.from && dateStr && dateStr < f.from) return false;
+      if (f.to   && dateStr && dateStr > f.to)   return false;
+    }
+    if (f.search) {
+      var hay = ((p.personName||'') + (p.personEmail||'') + (p.title||'') + (p.proposalRef||'')).toLowerCase();
+      if (!hay.includes(f.search)) return false;
     }
     return true;
   });
@@ -7012,8 +7189,9 @@ function displayProposals(proposals) {
       // ── Header ────────────────────────────────────────────
       '<div class="proposal-header">' +
         '<div style="flex:1;">' +
-          '<div class="proposal-title">' + escHtml(p.title || 'Untitled Proposal') + '</div>' +
+         '<div class="proposal-title">' + escHtml(p.title || 'Untitled Proposal') + '</div>' +
           '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-top:3px;">' +
+            (p.proposalRef ? '<span style="color:var(--gold);">' + escHtml(p.proposalRef) + '</span> · ' : '') +
             'To: ' + escHtml(p.personName || p.personEmail || '—') +
             (v.name ? ' <span style="color:var(--gold);">· ' + escHtml(v.name) + '</span>' : '') +
           '</div>' +
@@ -7120,7 +7298,7 @@ function onProposalServicesChange() {
   var checked = [];
   document.querySelectorAll('.prop-svc-cb:checked').forEach(function(cb) {
     var amtInput = document.querySelector('.prop-svc-amt[data-svc="'+cb.value+'"]');
-    checked.push({ id: cb.value, label: serviceLabel(cb.value), amount: parseFloat((amtInput||{}).value)||0 });
+    checked.push({ id: cb.value, label: fullServiceLabel(cb.value), amount: parseFloat((amtInput||{}).value)||0 });
   });
 
   // Highlight selected rows
@@ -7162,6 +7340,10 @@ function onProposalServicesChange() {
   updateInstalmentsBreakdown();
 }
 
+function genericServiceBody(label) {
+  return 'SCOPE OF WORK\n══════════════════════════════════════\nThis package covers: ' + label + '.\n\nDELIVERABLES\n──────────────────────────────────────\n✦ Scope, deliverables and timeline to be confirmed during onboarding based on your specific requirements for this service.\n\nTERMS & CONDITIONS\n──────────────────────────────────────\n- 50% deposit required before work begins\n- Balance due upon final delivery\n- See SLA section below for support and revision terms';
+}
+
 // ── Auto-fill body from template ──────────────────────────────
 function autoFillProposalBody() {
   var checked = window._propSelectedServices || [];
@@ -7173,14 +7355,14 @@ function autoFillProposalBody() {
   var combined;
   if (checked.length === 1) {
     var tmpl = PROPOSAL_TEMPLATES[checked[0].id];
-    combined = tmpl ? tmpl.body : '';
+    combined = tmpl ? tmpl.body : genericServiceBody(checked[0].label);
   } else {
     combined = 'COMBINED SERVICE PROPOSAL\n══════════════════════════════════════\n' +
       'This proposal covers ' + checked.length + ' integrated service packages, delivered as a single coordinated engagement.\n\n' +
       checked.map(function(c, i) {
         var tmpl = PROPOSAL_TEMPLATES[c.id];
         return '─────────────────────────────────────\nPACKAGE ' + (i+1) + ' OF ' + checked.length + ': ' + c.label.toUpperCase() + ' (₦' + c.amount.toLocaleString() + ')\n─────────────────────────────────────\n' +
-          (tmpl ? tmpl.body : '');
+          (tmpl ? tmpl.body : genericServiceBody(c.label));
       }).join('\n\n') +
       '\n\n══════════════════════════════════════\nCOMBINED TOTAL INVESTMENT: ₦' + checked.reduce(function(s,c){return s+c.amount;},0).toLocaleString() + '\n══════════════════════════════════════';
   }
@@ -7228,6 +7410,109 @@ function updateInstalmentsBreakdown() {
   else div.style.display = 'none';
 }
 
+// ── Auto-payment-details helpers (replaces manual entry) ──────
+function getCheckedProposalMethods() {
+  var methods = [];
+  document.querySelectorAll('.prop-method-cb').forEach(function(cb){ if (cb.checked) methods.push(cb.value); });
+  return methods;
+}
+
+function buildAutoPaymentInstructions(methods) {
+  if (!methods.length) return 'No payment method selected yet — select at least one method above.';
+  var lines = ['Payment Options:', ''];
+  var n = 1;
+  if (methods.indexOf('bank_transfer') !== -1) {
+    lines.push(n+'. Bank Transfer');
+    lines.push('   Bank: ' + (FW_CONFIG.bankName||'[Not set in Settings]'));
+    lines.push('   Account Number: ' + (FW_CONFIG.accountNumber||'[Not set in Settings]'));
+    lines.push('   Account Name: ' + (FW_CONFIG.accountName||FW_CONFIG.companyName||'TEKNNUKU Studio'));
+    lines.push(''); n++;
+  }
+  if (methods.indexOf('card') !== -1 || methods.indexOf('ussd') !== -1) {
+    lines.push(n+'. Online Payment (Card' + (methods.indexOf('ussd')!==-1?' / USSD':'') + ')');
+    lines.push('   A secure payment link is generated automatically and attached to this proposal.');
+    if (FW_CONFIG.ussdInfo && methods.indexOf('ussd')!==-1) lines.push('   USSD: ' + FW_CONFIG.ussdInfo);
+    lines.push(''); n++;
+  }
+  if (methods.indexOf('mobile_money') !== -1) {
+    lines.push(n+'. Mobile Money');
+    lines.push('   ' + (FW_CONFIG.mobileMoneyInfo || '[Not set in Settings]'));
+    lines.push(''); n++;
+  }
+  if (methods.indexOf('crypto') !== -1) {
+    lines.push(n+'. Crypto Payment');
+    lines.push('   Network: ' + (FW_CONFIG.cryptoNetwork||'[Not set in Settings]'));
+    lines.push('   Address: ' + (FW_CONFIG.cryptoAddress||'[Not set in Settings]'));
+    lines.push(''); n++;
+  }
+  if (FW_CONFIG.otherInstructions) {
+    lines.push('Additional Instructions:');
+    lines.push(FW_CONFIG.otherInstructions);
+    lines.push('');
+  }
+  lines.push('Please include your full name and proposal reference as payment description.');
+  lines.push('Send payment confirmation to: ' + (FW_CONFIG.companyEmail||'studio@teknnuku.xyz'));
+  return lines.join('\n');
+}
+
+function buildProposalPaymentDetailsBlock(methods) {
+  var html = '';
+  if (methods.indexOf('bank_transfer') !== -1) {
+    html += '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:7px;padding:12px 14px;margin-bottom:10px;">' +
+      '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">🏦 Bank Transfer Details (from Settings)</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:.78rem;color:var(--white);">' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;">Bank</div>'+escHtml(FW_CONFIG.bankName||'Not set')+'</div>' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;">Account No.</div>'+escHtml(FW_CONFIG.accountNumber||'Not set')+'</div>' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;">Account Name</div>'+escHtml(FW_CONFIG.accountName||'Not set')+'</div>' +
+      '</div>' +
+      (!FW_CONFIG.bankName || !FW_CONFIG.accountNumber ? '<div style="font-family:var(--mono);font-size:.56rem;color:var(--amber);margin-top:8px;">⚠ Add bank details in Settings (Founder) to populate this automatically</div>' : '') +
+    '</div>';
+  }
+  if (methods.indexOf('crypto') !== -1) {
+    html += '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:7px;padding:12px 14px;margin-bottom:10px;">' +
+      '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">₿ Crypto Payment Details (from Settings)</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;font-size:.78rem;color:var(--white);">' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;">Network</div>'+escHtml(FW_CONFIG.cryptoNetwork||'Not set')+'</div>' +
+        '<div><div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);text-transform:uppercase;">Address</div><span style="word-break:break-all;">'+escHtml(FW_CONFIG.cryptoAddress||'Not set')+'</span></div>' +
+      '</div>' +
+      (!FW_CONFIG.cryptoAddress ? '<div style="font-family:var(--mono);font-size:.56rem;color:var(--amber);margin-top:8px;">⚠ Add crypto wallet details in Settings (Founder) to populate this automatically</div>' : '') +
+    '</div>';
+  }
+  if (methods.indexOf('mobile_money') !== -1) {
+    html += '<div style="background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.15);border-radius:7px;padding:12px 14px;margin-bottom:10px;">' +
+      '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:8px;">📲 Mobile Money Details (from Settings)</div>' +
+      '<div style="font-size:.78rem;color:var(--white);">'+escHtml(FW_CONFIG.mobileMoneyInfo||'Not set — add in Settings')+'</div>' +
+    '</div>';
+  }
+  if (methods.indexOf('card') !== -1 || methods.indexOf('ussd') !== -1) {
+    html += '<div style="background:rgba(0,188,212,.04);border:1px solid rgba(0,188,212,.15);border-radius:8px;padding:14px;margin-bottom:10px;" id="prop-fw-link-block">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">' +
+        '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);">⚡ Flutterwave Payment Link</div>' +
+        (_editingProposalId && FW_CONFIG.secretKey ? '<button class="action-btn" style="font-size:.56rem;" onclick="generateFWPaymentLink(\''+_editingProposalId+'\')">↺ Regenerate</button>' : '') +
+      '</div>' +
+      (window._propLastLink
+        ? '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:6px;">' +
+            '<div style="font-family:var(--mono);font-size:.6rem;color:var(--green);">✅ Active link: </div>' +
+            '<a href="'+escHtml(window._propLastLink)+'" target="_blank" style="font-family:var(--mono);font-size:.6rem;color:var(--cyan);word-break:break-all;flex:1;">'+escHtml(window._propLastLink)+'</a>' +
+          '</div>'
+        : '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">Link will be generated automatically when this proposal is saved' + (FW_CONFIG.secretKey?'':' (requires FW Secret Key in Settings)') + '.</div>') +
+      (FW_CONFIG.ussdInfo && methods.indexOf('ussd')!==-1 ? '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dim);margin-top:8px;">USSD: '+escHtml(FW_CONFIG.ussdInfo)+'</div>' : '') +
+    '</div>';
+  }
+  if (!methods.length) {
+    html = '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);padding:10px 0;">Select one or more payment methods above to see auto-populated details from Settings.</div>';
+  }
+  return html;
+}
+
+function onProposalMethodsChange() {
+  var methods = getCheckedProposalMethods();
+  var blockEl = document.getElementById('prop-payment-detail-blocks');
+  if (blockEl) blockEl.innerHTML = buildProposalPaymentDetailsBlock(methods);
+  var notesEl = document.getElementById('prop-pay-notes');
+  if (notesEl) notesEl.value = buildAutoPaymentInstructions(methods);
+}
+
 // ── Generate full proposal message text ───────────────────────
 function generateProposalMessage(p) {
   var lead   = window._data ? (window._data.crm_leads || []).find(function(l) { return l.id === p.leadId; }) : null;
@@ -7239,6 +7524,7 @@ function generateProposalMessage(p) {
   var dv     = parseFloat(p.amount) || 0;
 
   var paySection = '\n\n💰 PAYMENT DETAILS\n' + subline + '\n';
+  paySection += '• Proposal Ref:    ' + (p.proposalRef || '—') + '\n';
   paySection += '• Total Amount:    ₦' + dv.toLocaleString() + '\n';
   if (p.duration)         paySection += '• Payment Terms:   ' + p.duration + '\n';
   if (p.contractDuration) paySection += '• Contract Period: ' + p.contractDuration + '\n';
@@ -7266,21 +7552,30 @@ function generateProposalMessage(p) {
   } else if (p.paymentLink) {
     paySection += '\n💳 PAYMENT LINK: ' + p.paymentLink + '\n';
   }
-  if (p.paymentNotes) {
-    paySection += '\n📌 Important: ' + p.paymentNotes + '\n';
+  if (methods.indexOf('crypto') !== -1 && p.cryptoAddress) {
+    paySection += '\n₿ CRYPTO PAYMENT\n';
+    paySection += '   Network: ' + (p.cryptoNetwork || '') + '\n';
+    paySection += '   Address: ' + (p.cryptoAddress || '') + '\n';
   }
+  if (p.paymentNotes) {
+    paySection += '\n📌 Notes: ' + p.paymentNotes + '\n';
+  }
+
+  var slaSection = p.slaTerms ? ('\n\n📋 SERVICE LEVEL AGREEMENT (SLA)\n' + subline + '\n' + p.slaTerms + '\n') : '';
 
   var msg = 'PROPOSAL FROM ' + cn.toUpperCase() + '\n' + line + '\n\n' +
     'Dear ' + (p.personName || 'Valued Client') + ',\n\n' +
     'Thank you for your interest in our services. Please find below our formal proposal:\n\n' +
-    '📋 ' + (p.title || 'Service Proposal').toUpperCase() + '\n' + subline + '\n\n' +
+    '📋 ' + (p.title || 'Service Proposal').toUpperCase() + (p.proposalRef ? ' · Ref: ' + p.proposalRef : '') + '\n' + subline + '\n\n' +
     (p.body || '') +
     paySection +
+    slaSection +
     '\n\n✍️ TO ACCEPT THIS PROPOSAL\n' + subline + '\n' +
     'To accept this proposal:\n' +
     '1. Reply to confirm your acceptance\n' +
     '2. Proceed with the deposit payment to begin work\n' +
     '3. We will send you a formal invoice upon receipt\n\n' +
+    'Please quote reference ' + (p.proposalRef||'—') + ' in your payment description.\n\n' +
     '📞 QUESTIONS OR CLARIFICATIONS\n' + subline + '\n' +
     'Email: ' + ce + '\n' +
     (cp ? 'WhatsApp/Phone: ' + cp + '\n' : '') +
@@ -7331,12 +7626,10 @@ function saveAndSendProposalEmail() {
   if (!title || !amount) { toast('Title and amount are required', 'error'); return; }
 
   var lead    = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
-  var methods = [];
-  document.querySelectorAll('.prop-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
+  var methods = getCheckedProposalMethods();
   var data    = buildProposalData(leadId, lead, title, amount, methods);
   data.status = 'sent';
 
-  // Capture editing ID before it's cleared
   var capturedEditId = _editingProposalId;
   var fn = capturedEditId
     ? window._updateDoc('proposals', capturedEditId, data)
@@ -7345,12 +7638,19 @@ function saveAndSendProposalEmail() {
   fn.then(function(newId) {
     _editingProposalId = null;
     closeDrawer();
-    window._loadAll().then(function() {
+    window._loadAll().then(async function() {
       var pid   = capturedEditId || newId;
       var saved = (window._data.proposals || []).find(function(p) {
         return p.id === pid || (p.leadId === leadId && p.title === title);
       });
-      if (saved) sendProposalEmail(saved.id);
+      if (saved) {
+        if ((methods.indexOf('card')!==-1 || methods.indexOf('ussd')!==-1) && !saved.paymentLink && FW_CONFIG.secretKey) {
+          await generateFWPaymentLink(saved.id);
+          await window._loadAll();
+          saved = (window._data.proposals || []).find(function(p){ return p.id === saved.id; }) || saved;
+        }
+        sendProposalEmail(saved.id);
+      }
     });
   }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
@@ -7363,8 +7663,7 @@ function saveAndSendProposalWhatsApp() {
   if (!title || !amount) { toast('Title and amount are required', 'error'); return; }
 
   var lead    = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
-  var methods = [];
-  document.querySelectorAll('.prop-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
+  var methods = getCheckedProposalMethods();
   var data    = buildProposalData(leadId, lead, title, amount, methods);
   data.status = 'sent';
 
@@ -7376,20 +7675,30 @@ function saveAndSendProposalWhatsApp() {
   fn.then(function(newId) {
     _editingProposalId = null;
     closeDrawer();
-    window._loadAll().then(function() {
+    window._loadAll().then(async function() {
       var pid   = capturedEditId || newId;
       var saved = (window._data.proposals || []).find(function(p) {
         return p.id === pid || (p.leadId === leadId && p.title === title);
       });
-      if (saved) sendProposalWhatsApp(saved.id);
+      if (saved) {
+        if ((methods.indexOf('card')!==-1 || methods.indexOf('ussd')!==-1) && !saved.paymentLink && FW_CONFIG.secretKey) {
+          await generateFWPaymentLink(saved.id);
+          await window._loadAll();
+          saved = (window._data.proposals || []).find(function(p){ return p.id === saved.id; }) || saved;
+        }
+        sendProposalWhatsApp(saved.id);
+      }
     });
   }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
   
 // ── Shared data builder ───────────────────────────────────────
 function buildProposalData(leadId, lead, title, amount, methods) {
+  var existingProp = _editingProposalId ? (window._data.proposals||[]).find(function(x){return x.id===_editingProposalId;}) : null;
+  var proposalRef   = existingProp && existingProp.proposalRef ? existingProp.proposalRef : generateDocNumber('PROP', window._data ? window._data.proposals||[] : []);
   return {
     leadId:            leadId,
+    proposalRef:       proposalRef,
     personName:        lead ? lead.name    || '' : '',
     personEmail:       lead ? lead.email   || '' : '',
     personPhone:       lead ? lead.phone   || '' : '',
@@ -7406,11 +7715,14 @@ function buildProposalData(leadId, lead, title, amount, methods) {
     deliverables:     getListItems('prop-deliv-item'),
     services:         window._propSelectedServices || [],
     body:              (document.getElementById('prop-body')           || {}).value || '',
+    slaTerms:          (document.getElementById('prop-sla')            || {}).value || '',
     paymentMethods:    methods,
-    bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
-    bankAccountNumber: (document.getElementById('prop-bank-acct')      || {}).value || '',
-    bankAccountName:   (document.getElementById('prop-bank-accname')   || {}).value || '',
-    paymentLink:       (document.getElementById('prop-fw-link')        || {}).value || '',
+    bankName:          FW_CONFIG.bankName      || '',
+    bankAccountNumber: FW_CONFIG.accountNumber || '',
+    bankAccountName:   FW_CONFIG.accountName   || '',
+    cryptoNetwork:     FW_CONFIG.cryptoNetwork || '',
+    cryptoAddress:     FW_CONFIG.cryptoAddress || '',
+    paymentLink:       window._propLastLink || (existingProp ? existingProp.paymentLink||'' : ''),
     paymentNotes:      (document.getElementById('prop-pay-notes')      || {}).value || '',
     sentAt:            new Date().toISOString()
   };
@@ -7478,6 +7790,7 @@ function renderPaymentsTable(payments) {
       '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">' + escHtml(p.paymentMethod || '—') + '</td>' +
       '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + fmtDate(p.paidAt || p.createdAt) + '</td>' +
       '<td><div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(p.invoiceRef || '—') + '</div>' +
+        (p.proposalRef ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--gold);">Prop: ' + escHtml(p.proposalRef) + '</div>' : '') +
         (p.fwRef ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--cyan);">FW: ' + escHtml(p.fwRef) + '</div>' : '') + '</td>' +
       '<td><div class="row-actions" style="flex-wrap:wrap;gap:4px;">' +
         (p.locked
@@ -7505,8 +7818,8 @@ function markPaid(id) {
     window._loadAll().then(function() {
       var pay = (window._data.payments||[]).find(function(p){ return p.id === id; });
       if (pay) {
-        reconcilePaymentWithFinance(pay, id);
-        if (pay.proposalId) autoAcceptProposal(pay);
+       reconcilePaymentWithFinance(pay, id);
+        autoAcceptProposalsForPayment(pay);
         if (pay.leadId)     autoWinLead(pay.leadId, pay);
         var hasInv = (window._data.invoices||[]).some(function(i){ return i.paymentId === id; });
         var hasRct = (window._data.receipts||[]).some(function(r){ return r.paymentId === id; });
@@ -7560,14 +7873,27 @@ function reconcilePaymentWithFinance(pay, payId) {
   });
 }
 
-function autoAcceptProposal(pay) {
-  if (!pay.proposalId) return;
-  var prop = (window._data.proposals || []).find(function(p){ return p.id === pay.proposalId; });
-  if (prop && prop.status !== 'accepted') {
-    window._updateDoc('proposals', pay.proposalId, {status: 'accepted'}).then(function() {
-      toast('Proposal auto-accepted ✓', 'success');
-    });
+function autoAcceptProposalsForPayment(pay) {
+  var proposals  = window._data.proposals || [];
+  var candidates = [];
+  if (pay.proposalId) {
+    var direct = proposals.find(function(x){ return x.id === pay.proposalId; });
+    if (direct) candidates.push(direct);
   }
+  if (!candidates.length && pay.leadId) {
+    candidates = proposals.filter(function(x){ return x.leadId === pay.leadId && x.status === 'sent'; });
+  }
+  candidates.forEach(function(prop) {
+    if (prop.status === 'sent') {
+      window._updateDoc('proposals', prop.id, {
+        status:     'accepted',
+        paymentRef: pay.id,
+        acceptedAt: new Date().toISOString()
+      }).then(function() {
+        toast('Proposal ' + (prop.proposalRef||'') + ' auto-accepted — payment confirmed ✓', 'success');
+      });
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -8159,6 +8485,7 @@ async function confirmFWPayment() {
     var pay = (window._data.payments||[]).find(function(p){ return p.id === newPayId; });
     if (pay) {
       reconcilePaymentWithFinance(pay, newPayId);
+      autoAcceptProposalsForPayment(pay);
       if (pay.leadId) autoWinLead(pay.leadId, pay);
       createAndSaveInvoice(pay, newPayId);
       createAndSaveReceipt(pay, newPayId);
@@ -8189,7 +8516,7 @@ async function confirmFWPayment() {
   closeDrawer();
   await window._loadAll();
   var pay2 = (window._data.payments||[]).find(function(p){ return p.id===newPayId2; });
-  if (pay2) { reconcilePaymentWithFinance(pay2, newPayId2); if (pay2.leadId) autoWinLead(pay2.leadId, pay2); createAndSaveInvoice(pay2, newPayId2); createAndSaveReceipt(pay2, newPayId2); }
+  if (pay2) { reconcilePaymentWithFinance(pay2, newPayId2); autoAcceptProposalsForPayment(pay2); if (pay2.leadId) autoWinLead(pay2.leadId, pay2); createAndSaveInvoice(pay2, newPayId2); createAndSaveReceipt(pay2, newPayId2); }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -8510,6 +8837,7 @@ function quickProposal(srcId, name, email) {
 
 function openProposalDrawer(p, prefillLeadId) {
   _editingProposalId = p ? p.id : null;
+  window._propLastLink = p ? (p.paymentLink || '') : '';
  var isLocked = !!(p && (p.status==='sent' || p.status==='accepted' || p.status==='declined' || p.status==='active'));
   
   var allLeads = window._data ? (window._data.crm_leads || []) : [];
@@ -8573,19 +8901,8 @@ function openProposalDrawer(p, prefillLeadId) {
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '</div>' + // close the 2-col grid early — service picker now spans full width below
 
-'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Service(s) / Package(s) * — select one or more</div>' +
-  '<div id="prop-services-grid" style="display:flex;flex-direction:column;gap:6px;">' +
-    PROPOSAL_CORE_SERVICES.map(function(s) {
-      var existing = p ? (p.services||[]).find(function(x){return x.id===s;}) : null;
-      var checked  = existing || (selSvc === s);
-      var amt      = existing ? existing.amount : (PROPOSAL_TEMPLATES[s] ? PROPOSAL_TEMPLATES[s].defaultAmount : 0);
-      return '<label style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid '+(checked?'rgba(200,155,20,.3)':'rgba(242,237,228,.07)')+';border-radius:6px;padding:9px 12px;cursor:pointer;">' +
-        '<input type="checkbox" class="prop-svc-cb" value="'+s+'" data-default="'+(PROPOSAL_TEMPLATES[s]?PROPOSAL_TEMPLATES[s].defaultAmount:0)+'"'+(checked?' checked':'')+' onchange="onProposalServicesChange()" style="accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;">' +
-        '<span style="flex:1;font-size:.82rem;color:var(--white);">'+serviceLabel(s)+'</span>' +
-        '<input type="number" class="prop-svc-amt" data-svc="'+s+'" min="0" value="'+amt+'" style="width:130px;background:rgba(255,255,255,.04);border:1px solid rgba(242,237,228,.08);border-radius:5px;padding:6px 10px;color:var(--white);font-family:var(--mono);font-size:.78rem;" oninput="onProposalServicesChange()" placeholder="₦ Amount">' +
-      '</label>';
-    }).join('') +
-  '</div>' +
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Service(s) / Package(s) * — select one or more (matches Payments page)</div>' +
+  buildProposalServiceChecklist(p, selSvc) +
 '</div>' +
 
 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' + // reopen the grid for title
@@ -8598,7 +8915,13 @@ function openProposalDrawer(p, prefillLeadId) {
       '<div class="form-label">Proposal Body</div>' +
       '<button onclick="autoFillProposalBody()" style="background:rgba(200,155,20,.1);border:1px solid rgba(200,155,20,.25);color:var(--gold);border-radius:5px;padding:4px 12px;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;cursor:pointer;">↺ Auto-Fill from Template</button>' +
     '</div>' +
-    '<textarea class="form-textarea" id="prop-body" style="min-height:240px;font-family:var(--mono);font-size:.72rem;line-height:1.75;">' + escHtml(p ? p.body || '' : (selTmpl.body || '')) + '</textarea>' +
+   '<textarea class="form-textarea" id="prop-body" style="min-height:240px;font-family:var(--mono);font-size:.72rem;line-height:1.75;">' + escHtml(p ? p.body || '' : (selTmpl.body || '')) + '</textarea>' +
+    '</div>' +
+
+    // ════ SECTION 2B: Service Level Agreement (SLA) ═════════════════════════
+    '<div class="detail-section"><h4>📋 Service Level Agreement (SLA)</h4>' +
+      '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-bottom:8px;">Editable per-proposal — adjust terms as needed for this engagement.</div>' +
+      '<textarea class="form-textarea" id="prop-sla" style="min-height:140px;font-family:var(--mono);font-size:.7rem;line-height:1.7;">' + escHtml(p ? (p.slaTerms || DEFAULT_SLA_TEXT) : DEFAULT_SLA_TEXT) + '</textarea>' +
     '</div>' +
 
     // ════ SECTION 3: Financial Terms ═════════════════════════
@@ -8641,60 +8964,22 @@ function openProposalDrawer(p, prefillLeadId) {
         methodList.map(function(m) {
           var checked = storedMethods.indexOf(m[0]) !== -1 ? ' checked' : '';
           return '<label style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:6px;padding:8px 13px;cursor:pointer;font-size:.8rem;color:var(--dim);">' +
-            '<input type="checkbox" class="prop-method-cb" value="' + m[0] + '"' + checked + ' style="accent-color:var(--gold);width:14px;height:14px;">' +
+            '<input type="checkbox" class="prop-method-cb" value="' + m[0] + '"' + checked + ' onchange="onProposalMethodsChange()" style="accent-color:var(--gold);width:14px;height:14px;">' +
             m[1] + '</label>';
         }).join('') +
       '</div>' +
     '</div></div>' +
 
-    // ════ SECTION 4: Payment Details ═════════════════════════
-    '<div class="detail-section"><h4>🔗 Payment Details</h4>' +
+    // ════ SECTION 4: Payment Details — auto-populated, read-only ═════════════════════════
+    '<div class="detail-section"><h4>🔗 Payment Details <span style="font-weight:400;color:var(--dimmer);font-size:.58rem;text-transform:none;letter-spacing:0;">— pulled automatically from Settings</span></h4>' +
 
-    // Auto-populated info strip
-    '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;margin-bottom:12px;font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">Fields below auto-populate from your Settings · Flutterwave payment link is generated automatically when you click the button below</div>' +
+    '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;margin-bottom:12px;font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">These details come from your founder Settings based on the methods checked above. They cannot be edited per-proposal — update Settings to change them.</div>' +
 
-    // Bank details — auto-filled from FW_CONFIG
-    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Bank Name</div>' +
-        '<input class="form-input" id="prop-bank-name" value="'+escHtml(p?p.bankName||FW_CONFIG.bankName:FW_CONFIG.bankName)+'" placeholder="First Bank Nigeria"></div>' +
-      '<div class="form-field"><div class="form-label">Account Number</div>' +
-        '<input class="form-input" id="prop-bank-acct" value="'+escHtml(p?p.bankAccountNumber||FW_CONFIG.accountNumber:FW_CONFIG.accountNumber)+'" placeholder="0123456789"></div>' +
-      '<div class="form-field"><div class="form-label">Account Name</div>' +
-        '<input class="form-input" id="prop-bank-accname" value="'+escHtml(p?p.bankAccountName||FW_CONFIG.accountName:FW_CONFIG.accountName)+'" placeholder="TEKNNUKU STUDIO LTD"></div>' +
-    '</div>' +
+    '<div id="prop-payment-detail-blocks">' + buildProposalPaymentDetailsBlock(storedMethods) + '</div>' +
 
-    // FW Payment Link — generate button + field
-    '<div style="background:rgba(0,188,212,.04);border:1px solid rgba(0,188,212,.15);border-radius:8px;padding:14px;margin-bottom:10px;">' +
-      '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px;">⚡ Flutterwave Payment Link</div>' +
-      // Show existing FW link on saved proposals
-      (p && p.paymentLink
-        ? '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:6px;">' +
-            '<div style="font-family:var(--mono);font-size:.6rem;color:var(--green);">✅ Active link: </div>' +
-            '<a href="'+escHtml(p.paymentLink)+'" target="_blank" style="font-family:var(--mono);font-size:.6rem;color:var(--cyan);word-break:break-all;flex:1;">'+escHtml(p.paymentLink)+'</a>' +
-          '</div>'
-        : '') +
-      '<div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">' +
-        '<div style="flex:1;min-width:200px;" class="form-field"><div class="form-label">Payment Link (auto-generated or paste manually)</div>' +
-          '<input class="form-input" id="prop-fw-link" value="'+escHtml(p?p.paymentLink||'':'')+'" placeholder="Click button to auto-generate via FW API…" style="font-family:var(--mono);font-size:.72rem;">' +
-        '</div>' +
-        '<div style="flex-shrink:0;padding-top:20px;">' +
-          (FW_CONFIG.secretKey
-            ? '<button id="prop-gen-fw-link" class="btn-secondary" style="border-color:rgba(0,188,212,.3);color:var(--cyan);white-space:nowrap;" onclick="'+(p?'generateFWPaymentLink(\''+p.id+'\')':"toast('Save the proposal first, then generate the FW link','error')")+'" '+(p?'':'disabled')+'>⚡ Generate FW Payment Link</button>'
-            : '<div style="font-family:var(--mono);font-size:.58rem;color:var(--amber);max-width:200px;line-height:1.5;">⚠ Add FW Secret Key in Settings (Founder) to enable auto-generation</div>') +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-
-    // Payment instructions
-    '<div class="form-field"><div class="form-label">Payment Instructions (included in all proposal sends)</div>' +
-      '<textarea class="form-textarea" id="prop-pay-notes" style="min-height:70px;">' +
-        escHtml(p ? p.paymentNotes || '' :
-          'Payment Options:\n' +
-          '1. Bank Transfer: ' + (FW_CONFIG.bankName?FW_CONFIG.bankName+' · ':'') + (FW_CONFIG.accountNumber||'[Account Number]') + ' · ' + (FW_CONFIG.accountName||FW_CONFIG.companyName||'TEKNNUKU Studio') + '\n' +
-          '2. Online Payment: Use the secure payment link provided above\n\n' +
-          'Please include your full name and invoice/proposal reference as payment description.\n' +
-          'Send payment confirmation to: ' + (FW_CONFIG.companyEmail||'studio@teknnuku.xyz')
-        ) +
+    '<div class="form-field"><div class="form-label">Payment Instructions <span style="color:var(--dimmer);text-transform:none;">(auto-generated — included in all proposal sends)</span></div>' +
+      '<textarea class="form-textarea" id="prop-pay-notes" readonly style="min-height:150px;font-family:var(--mono);font-size:.72rem;background:rgba(255,255,255,.015);color:var(--dim);cursor:not-allowed;">' +
+        escHtml(p && p.paymentNotes ? p.paymentNotes : buildAutoPaymentInstructions(storedMethods)) +
       '</textarea>' +
     '</div>' +
     '</div>' +
@@ -8744,14 +9029,15 @@ function saveProposal() {
   if (!title)  { toast('Proposal title is required', 'error'); return; }
   if (!amount) { toast('Amount is required', 'error'); return; }
 
-  var lead = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
-  var methods = [];
-  document.querySelectorAll('.prop-method-cb').forEach(function(cb) {
-    if (cb.checked) methods.push(cb.value);
-  });
+  var lead    = (window._data.crm_leads || []).find(function(l) { return l.id === leadId; });
+  var methods = getCheckedProposalMethods();
+
+  var existingProp = _editingProposalId ? (window._data.proposals||[]).find(function(x){return x.id===_editingProposalId;}) : null;
+  var proposalRef   = existingProp && existingProp.proposalRef ? existingProp.proposalRef : generateDocNumber('PROP', window._data ? window._data.proposals||[] : []);
 
   var data = {
     leadId:            leadId,
+    proposalRef:       proposalRef,
     personName:        lead ? lead.name || '' : '',
     personEmail:       lead ? lead.email || '' : '',
     personPhone:       lead ? lead.phone || '' : '',
@@ -8768,24 +9054,32 @@ function saveProposal() {
     deliverables:     getListItems('prop-deliv-item'),
     services:         window._propSelectedServices || [],
     body:              (document.getElementById('prop-body')           || {}).value || '',
+    slaTerms:          (document.getElementById('prop-sla')            || {}).value || '',
     paymentMethods:    methods,
-    bankName:          (document.getElementById('prop-bank-name')      || {}).value || '',
-    bankAccountNumber: (document.getElementById('prop-bank-acct')      || {}).value || '',
-    bankAccountName:   (document.getElementById('prop-bank-accname')   || {}).value || '',
-    paymentLink:       (document.getElementById('prop-fw-link')        || {}).value || '',
+    bankName:          FW_CONFIG.bankName      || '',
+    bankAccountNumber: FW_CONFIG.accountNumber || '',
+    bankAccountName:   FW_CONFIG.accountName   || '',
+    cryptoNetwork:     FW_CONFIG.cryptoNetwork || '',
+    cryptoAddress:     FW_CONFIG.cryptoAddress || '',
+    paymentLink:       window._propLastLink || (existingProp ? existingProp.paymentLink||'' : ''),
     paymentNotes:      (document.getElementById('prop-pay-notes')      || {}).value || '',
     status:            (document.getElementById('prop-status')         || {}).value || 'draft',
     sentAt:            new Date().toISOString()
   };
 
+  var needsFWLink = (methods.indexOf('card')!==-1 || methods.indexOf('ussd')!==-1) && !data.paymentLink && FW_CONFIG.secretKey;
+
   var fn = _editingProposalId
     ? window._updateDoc('proposals', _editingProposalId, data)
     : window._saveDoc('proposals', data);
 
-  fn.then(function() {
-    toast('Proposal saved ✓', 'success');
+  fn.then(function(newId) {
+    var savedId = _editingProposalId || newId;
+    toast('Proposal saved ✓ (Ref: ' + proposalRef + ')', 'success');
     closeDrawer();
-    window._loadAll();
+    window._loadAll().then(function() {
+      if (needsFWLink && savedId) generateFWPaymentLink(savedId);
+    });
   }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
 }
 
@@ -8982,6 +9276,9 @@ function savePayment() {
   var methods    = [];
   document.querySelectorAll('.pay-method-cb').forEach(function(cb) { if (cb.checked) methods.push(cb.value); });
 
+  var linkedProposalId = (document.getElementById('pay-proposal-link') || {}).value || '';
+  var linkedProposal    = linkedProposalId ? (window._data.proposals||[]).find(function(x){return x.id===linkedProposalId;}) : null;
+
   var invRef = (document.getElementById('pay-ref')    || {}).value || '';
   var status = (document.getElementById('pay-status') || {}).value || 'pending';
   if (!invRef && status === 'paid') {
@@ -8998,7 +9295,8 @@ function savePayment() {
     ventureId:     (document.getElementById('pay-venture')       || {}).value || clientInfo.ventureId || '',
     serviceId:     (document.getElementById('pay-service-sel')   || {}).value || '',
     service:       (function(){ var s=TEKNNUKU_SERVICES.find(function(x){return x.id===((document.getElementById('pay-service-sel')||{}).value||'');}); return s?s.label:''; })(),
-    proposalId:    (document.getElementById('pay-proposal-link') || {}).value || '',
+    proposalId:    linkedProposalId,
+    proposalRef:   linkedProposal ? (linkedProposal.proposalRef || '') : '',
     amount:        amount,
     status:        status,
     paidAt:        (document.getElementById('pay-date')    || {}).value || '',
@@ -9022,7 +9320,7 @@ function savePayment() {
       var pay = (window._data.payments||[]).find(function(p){ return p.id === payId; });
       if (pay && pay.status === 'paid') {
         reconcilePaymentWithFinance(pay, payId);
-        if (pay.proposalId) autoAcceptProposal(pay);
+        autoAcceptProposalsForPayment(pay);
         if (pay.leadId)     autoWinLead(pay.leadId, pay);
         if (isNew) createAndSaveInvoice(pay, payId);
         if (isNew) createAndSaveReceipt(pay, payId);
@@ -9421,8 +9719,15 @@ function recalcProposalPaymentStatuses() {
     else if (p.validUntil && new Date(p.validUntil) < now) newStatus = 'overdue';
     else                                           newStatus = 'pending';
 
-    if (p.paymentStatus !== newStatus) {
-      window._updateDoc('proposals', p.id, { paymentStatus:newStatus });
+    var updates = {};
+    if (p.paymentStatus !== newStatus) updates.paymentStatus = newStatus;
+    if (newStatus === 'paid' && p.status === 'sent') {
+      updates.status     = 'accepted';
+      updates.acceptedAt = new Date().toISOString();
+      if (linkedPayments[0]) updates.paymentRef = linkedPayments[0].id;
+    }
+    if (Object.keys(updates).length) {
+      window._updateDoc('proposals', p.id, updates);
     }
   });
 }
