@@ -3371,18 +3371,54 @@ function _panelPayments() {
   '</div>';
 }
 
+// ── Assignment permission model ────────────────────────────────
+// Founder: full access (create, edit, delete)
+// Leaders (ops_lead, sales_manager, content_lead, tech_product_lead): create + edit, NO delete
+// Everyone else (assignees): status update + comms only on THEIR OWN assignments — no create, no edit, no delete
+var ASSIGNMENT_LEADER_ROLES = ['founder','ops_lead','sales_manager','content_lead','tech_product_lead'];
+
+function canCreateAssignment() {
+  return ASSIGNMENT_LEADER_ROLES.indexOf(window._userRole) !== -1;
+}
+function canEditAssignmentFull(a) {
+  return ASSIGNMENT_LEADER_ROLES.indexOf(window._userRole) !== -1;
+}
+function canDeleteAssignment() {
+  return window._userRole === 'founder';
+}
+function getMyTeamMemberId() {
+  var cu = window._currentUser; if (!cu) return null;
+  var me = (window._data && window._data.team_members ? window._data.team_members : []).find(function(m){
+    return (m.email||'').toLowerCase() === (cu.email||'').toLowerCase();
+  });
+  return me ? me.id : null;
+}
+function isAssignedToMe(a) {
+  var myId = getMyTeamMemberId();
+  return !!(myId && a && a.assignedTo === myId);
+}
+function deleteAssignmentSafe(id) {
+  if (!canDeleteAssignment()) { toast('Only the Founder can delete assignments', 'error'); return; }
+  deleteRecord('assignments', id);
+}
+  
 function _panelAssignments() {
+  var canCreate = canCreateAssignment();
   return '<div class="panel" id="panel-assignments">' +
     '<div class="eyebrow">Routing & Assignment</div>' +
     '<div class="panel-header">' +
       '<div class="panel-title">Assignments</div>' +
-      '<div style="display:flex;gap:8px;align-items:center;">' +
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
         '<div id="asn-count-label" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;">— assignments</div>' +
-        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openNewAssignment()">+ New Assignment</button>' +
+        '<button class="topbar-btn" style="padding:7px 12px;font-size:.62rem;" onclick="openAssignmentHistoryBrowser()">📜 History by Person</button>' +
+        (canCreate ? '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openNewAssignment()">+ New Assignment</button>' : '') +
       '</div>' +
     '</div>' +
 
-    // ── KPIs ────────────────────────────────────────────────
+    (canCreate ? '' :
+      '<div style="background:rgba(0,188,212,.06);border:1px solid rgba(0,188,212,.15);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);line-height:1.6;">⬡ You can update the status and add notes/communication on assignments given to you. Only Team Leaders and the Founder can create or edit assignments.</div>'
+    ) +
+
     '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px;">' +
       '<div class="kpi-card cyan"  ><div class="kpi-icon">🗂️</div><div class="kpi-label">Total</div><div class="kpi-value" id="asn-kpi-total">—</div><div class="kpi-meta">all assignments</div></div>' +
       '<div class="kpi-card gold"  ><div class="kpi-icon">🔄</div><div class="kpi-label">Active</div><div class="kpi-value" id="asn-kpi-active">—</div><div class="kpi-meta">in progress</div></div>' +
@@ -3390,60 +3426,42 @@ function _panelAssignments() {
       '<div class="kpi-card green" ><div class="kpi-icon">✅</div><div class="kpi-label">Completed</div><div class="kpi-value" id="asn-kpi-done">—</div><div class="kpi-meta">finished</div></div>' +
     '</div>' +
 
-    // ── Filter bar ───────────────────────────────────────────
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
-
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">' +
         '<input class="tbl-search" id="asf-search" style="width:200px;" placeholder="Search name, email, venture…" oninput="applyAsnFilters()">' +
-
-        '<select class="tbl-filter" id="asf-assignedto" onchange="applyAsnFilters()">' +
-          '<option value="">All Assigned</option>' +
-        '</select>' +
-
+        '<select class="tbl-filter" id="asf-assignedto" onchange="applyAsnFilters()"><option value="">All Assigned</option></select>' +
         '<select class="tbl-filter" id="asf-status" onchange="applyAsnFilters()">' +
-          '<option value="">All Status</option>' +
-          '<option value="active">Active</option>' +
-          '<option value="in-progress">In Progress</option>' +
-          '<option value="on-hold">On Hold</option>' +
-          '<option value="completed">Completed</option>' +
-          '<option value="cancelled">Cancelled</option>' +
+          '<option value="">All Status</option><option value="active">Active</option><option value="in-progress">In Progress</option>' +
+          '<option value="on-hold">On Hold</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>' +
         '</select>' +
-
         '<select class="tbl-filter" id="asf-priority" onchange="applyAsnFilters()">' +
-          '<option value="">All Priorities</option>' +
-          '<option value="high">🔥 High</option>' +
-          '<option value="medium">🟡 Medium</option>' +
-          '<option value="low">⚪ Low</option>' +
+          '<option value="">All Priorities</option><option value="high">🔥 High</option><option value="medium">🟡 Medium</option><option value="low">⚪ Low</option>' +
         '</select>' +
-
         '<select class="tbl-filter" id="asf-venture" onchange="applyAsnFilters()">' +
           '<option value="">All Ventures</option>' +
           VENTURES_SEED.map(function(v){ return '<option value="' + v.id + '">' + v.name + '</option>'; }).join('') +
         '</select>' +
-
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Assigned From</span>' +
+        '<input type="date" class="tbl-filter" id="asf-assigned-from" style="min-width:130px;" onchange="applyAsnFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+        '<input type="date" class="tbl-filter" id="asf-assigned-to" style="min-width:130px;" onchange="applyAsnFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Deadline From</span>' +
+        '<input type="date" class="tbl-filter" id="asf-deadline-from" style="min-width:130px;" onchange="applyAsnFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+        '<input type="date" class="tbl-filter" id="asf-deadline-to" style="min-width:130px;" onchange="applyAsnFilters()">' +
+        '<label style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;color:var(--dim);cursor:pointer;"><input type="checkbox" id="asf-overdue-only" onchange="applyAsnFilters()" style="accent-color:var(--red);">⚠ Overdue only</label>' +
         '<button onclick="clearAsnFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
-
       '</div>' +
     '</div>' +
 
-    // ── Table ────────────────────────────────────────────────
-    '<div class="table-wrap"><div class="table-toolbar">' +
-      '<div class="table-toolbar-title">assignments</div>' +
-    '</div>' +
+    '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">assignments</div></div>' +
     '<div class="table-scroll"><table><thead><tr>' +
-      '<th>Person / Lead</th>' +
-      '<th>Venture</th>' +
-      '<th>Assigned To</th>' +
-      '<th>Status</th>' +
-      '<th>Priority</th>' +
-      '<th>Target Date</th>' +
-      '<th>Assigned</th>' +
-      '<th>Actions</th>' +
+      '<th>Person / Lead</th><th>Venture</th><th>Assigned To</th><th>Status</th><th>Priority</th>' +
+      '<th>Deadline</th><th>Assigned On</th><th>Completed</th><th>Last Updated</th><th>Actions</th>' +
     '</tr></thead>' +
-    '<tbody id="assignments-tbody">' +
-      '<tr><td colspan="8" class="loading-row"><div class="spinner"></div></td></tr>' +
-    '</tbody></table></div></div>' +
-
+    '<tbody id="assignments-tbody"><tr><td colspan="10" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div>' +
   '</div>';
 }
 
@@ -8633,25 +8651,34 @@ async function confirmFWPayment() {
 // ═══════════════════════════════════════════════════════════════
 //  ASSIGNMENTS — FILTER STATE + HELPERS
 // ═══════════════════════════════════════════════════════════════
-var _asnFilters = { search:'', assignedTo:'', status:'', priority:'', venture:'' };
+var _asnFilters = {
+  search:'', assignedTo:'', status:'', priority:'', venture:'',
+  assignedFrom:'', assignedToDate:'', deadlineFrom:'', deadlineToDate:'', overdueOnly:false
+};
 
 function applyAsnFilters() {
-  _asnFilters.search     = ((document.getElementById('asf-search')     ||{}).value||'').toLowerCase().trim();
-  _asnFilters.assignedTo = (document.getElementById('asf-assignedto')  ||{}).value||'';
-  _asnFilters.status     = (document.getElementById('asf-status')       ||{}).value||'';
-  _asnFilters.priority   = (document.getElementById('asf-priority')     ||{}).value||'';
-  _asnFilters.venture    = (document.getElementById('asf-venture')      ||{}).value||'';
+  _asnFilters.search        = ((document.getElementById('asf-search')         ||{}).value||'').toLowerCase().trim();
+  _asnFilters.assignedTo    = (document.getElementById('asf-assignedto')      ||{}).value||'';
+  _asnFilters.status        = (document.getElementById('asf-status')          ||{}).value||'';
+  _asnFilters.priority      = (document.getElementById('asf-priority')        ||{}).value||'';
+  _asnFilters.venture       = (document.getElementById('asf-venture')         ||{}).value||'';
+  _asnFilters.assignedFrom  = (document.getElementById('asf-assigned-from')   ||{}).value||'';
+  _asnFilters.assignedToDate= (document.getElementById('asf-assigned-to')     ||{}).value||'';
+  _asnFilters.deadlineFrom  = (document.getElementById('asf-deadline-from')   ||{}).value||'';
+  _asnFilters.deadlineToDate= (document.getElementById('asf-deadline-to')     ||{}).value||'';
+  _asnFilters.overdueOnly   = !!(document.getElementById('asf-overdue-only')  ||{}).checked;
   renderAssignments(window._data ? window._data.assignments || [] : []);
 }
 
 function clearAsnFilters() {
-  ['asf-search','asf-assignedto','asf-status','asf-priority','asf-venture'].forEach(function(id){
+  ['asf-search','asf-assignedto','asf-status','asf-priority','asf-venture','asf-assigned-from','asf-assigned-to','asf-deadline-from','asf-deadline-to'].forEach(function(id){
     var el = document.getElementById(id); if (el) el.value = '';
   });
-  Object.keys(_asnFilters).forEach(function(k){ _asnFilters[k] = ''; });
+  var ov = document.getElementById('asf-overdue-only'); if (ov) ov.checked = false;
+  Object.keys(_asnFilters).forEach(function(k){ _asnFilters[k] = (k==='overdueOnly') ? false : ''; });
   renderAssignments(window._data ? window._data.assignments || [] : []);
 }
-
+  
 function buildAsnTeamOptions(currentId) {
   var members = window._data ? window._data.team_members || [] : [];
   return '<option value="">— Unassigned —</option>' +
@@ -8798,8 +8825,8 @@ function onAsnTeamChange() {
 // ASSIGNMENTS
 // ═══════════════════════════════════════
 function renderAssignments(assignments) {
-  // Populate assigned-to filter
-  assignments = scopeRecords(assignments, 'assignments');
+  if (typeof scopeRecords === 'function') assignments = scopeRecords(assignments, 'assignments');
+
   var asnFlt = document.getElementById('asf-assignedto');
   if (asnFlt) {
     var cur = asnFlt.value;
@@ -8807,12 +8834,10 @@ function renderAssignments(assignments) {
     if (cur) asnFlt.value = cur;
   }
 
-  // Build member lookup
   var members = window._data ? window._data.team_members || [] : [];
   var memberMap = {};
   members.forEach(function(m){ memberMap[m.id] = m; });
 
-  // KPIs — always from full list
   var total  = assignments.length;
   var active = assignments.filter(function(a){ return a.status === 'active' || a.status === 'in-progress'; }).length;
   var high   = assignments.filter(function(a){ return a.priority === 'high'; }).length;
@@ -8822,8 +8847,8 @@ function renderAssignments(assignments) {
   setText('asn-kpi-high',   high);
   setText('asn-kpi-done',   done);
 
-  // Apply filters
   var f = _asnFilters;
+  var today = new Date(); today.setHours(0,0,0,0);
   var filtered = assignments.filter(function(a) {
     if (f.status   && a.status   !== f.status)   return false;
     if (f.priority && a.priority !== f.priority) return false;
@@ -8834,19 +8859,32 @@ function renderAssignments(assignments) {
       var hay = ((a.personName||'')+(a.personEmail||'')+(a.venture||'')+(a.notes||'')).toLowerCase();
       if (!hay.includes(f.search)) return false;
     }
+    if (f.assignedFrom || f.assignedToDate) {
+      var ad = tsToDate(a.assignedAt || a.createdAt);
+      var adStr = isNaN(ad) ? '' : ad.toISOString().split('T')[0];
+      if (f.assignedFrom   && adStr && adStr < f.assignedFrom)   return false;
+      if (f.assignedToDate && adStr && adStr > f.assignedToDate) return false;
+    }
+    if (f.deadlineFrom || f.deadlineToDate) {
+      if (!a.targetDate) return false;
+      if (f.deadlineFrom   && a.targetDate < f.deadlineFrom)   return false;
+      if (f.deadlineToDate && a.targetDate > f.deadlineToDate) return false;
+    }
+    if (f.overdueOnly) {
+      var isOd = a.targetDate && new Date(a.targetDate) < today && a.status !== 'completed';
+      if (!isOd) return false;
+    }
     return true;
   });
 
-  // Count label
   var lbl = document.getElementById('asn-count-label');
   if (lbl) lbl.textContent = filtered.length + ' of ' + total + ' assignment' + (total !== 1 ? 's' : '');
 
   var tbody = document.getElementById('assignments-tbody'); if (!tbody) return;
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">' +
-      '<div class="empty-icon">🗂️</div>' +
-      '<div>No assignments match your filters</div>' +
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state">' +
+      '<div class="empty-icon">🗂️</div><div>No assignments match your filters</div>' +
       '<div style="margin-top:8px;"><button class="action-btn" onclick="clearAsnFilters()">Clear Filters</button></div>' +
     '</div></td></tr>';
     return;
@@ -8859,65 +8897,282 @@ function renderAssignments(assignments) {
   };
 
   tbody.innerHTML = filtered.map(function(a) {
-    var assignee = a.assignedTo ? memberMap[a.assignedTo] : null;
-    var v        = V_MAP[a.ventureId] || {};
-    var pri      = PRIORITY_STYLE[a.priority] || PRIORITY_STYLE.low;
+    var assignee  = a.assignedTo ? memberMap[a.assignedTo] : null;
+    var v         = V_MAP[a.ventureId] || {};
+    var pri       = PRIORITY_STYLE[a.priority] || PRIORITY_STYLE.low;
     var isOverdue = a.targetDate && new Date(a.targetDate) < new Date() && a.status !== 'completed';
 
+    var canFull = canEditAssignmentFull(a);
+    var canSelf = isAssignedToMe(a);
+    var canDel  = canDeleteAssignment();
+
+    var actionLabel = canFull ? 'Edit' : (canSelf ? 'Update' : 'View');
+    var actions = '<button class="action-btn" onclick="openAssignmentDrawer(window._data.assignments.find(function(x){return x.id===\'' + a.id + '\'}))">' + actionLabel + '</button>';
+    if ((canFull || canSelf) && a.status !== 'completed') {
+      actions += '<button class="action-btn success" onclick="markAssignmentDone(\'' + a.id + '\')">✓ Done</button>';
+    }
+    if (canDel) actions += '<button class="action-btn danger" onclick="deleteAssignmentSafe(\'' + a.id + '\')">Del</button>';
+
     return '<tr>' +
-      // Person
-      '<td>' +
-        '<div style="font-weight:600;font-size:.82rem;">' + escHtml(a.personName||'—') + '</div>' +
+      '<td><div style="font-weight:600;font-size:.82rem;">' + escHtml(a.personName||'—') + '</div>' +
         (a.personEmail ? '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(a.personEmail) + '</div>' : '') +
         (a.businessName ? '<div style="font-size:.68rem;color:var(--dimmer);">' + escHtml(a.businessName) + '</div>' : '') +
       '</td>' +
-      // Venture
       '<td><span class="venture-tag">' + escHtml(v.name || a.venture || a.ventureId || '—') + '</span></td>' +
-      // Assigned to
       '<td>' +
         (assignee
           ? '<div style="display:flex;align-items:center;gap:7px;">' +
               '<div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:9px;color:#080808;flex-shrink:0;">' +
                 escHtml(initials(assignee.name||assignee.email||'?')) +
-              '</div>' +
-              '<div>' +
+              '</div><div>' +
                 '<div style="font-size:.78rem;font-weight:600;">' + escHtml(assignee.name||assignee.email||'—') + '</div>' +
                 '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);">' + escHtml(ROLE_LABELS[assignee.role]||assignee.role||'') + '</div>' +
-              '</div>' +
-            '</div>'
-          : '<span style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">Unassigned</span>'
-        ) +
+              '</div></div>'
+          : '<span style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">Unassigned</span>') +
       '</td>' +
-      // Status
       '<td>' + statusBadge(a.status||'active') + '</td>' +
-      // Priority
-      '<td>' +
-        '<span class="badge ' + pri.badge + '" style="font-size:.56rem;">' + pri.icon + ' ' + pri.label + '</span>' +
-      '</td>' +
-      // Target date
+      '<td><span class="badge ' + pri.badge + '" style="font-size:.56rem;">' + pri.icon + ' ' + pri.label + '</span></td>' +
       '<td style="font-family:var(--mono);font-size:.62rem;color:' + (isOverdue ? 'var(--red)' : 'var(--dimmer)') + ';">' +
         (a.targetDate ? (isOverdue ? '⚠ ' : '') + fmtDate(a.targetDate) : '—') +
       '</td>' +
-      // Assigned date
-      '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' +
-        fmtDate(a.assignedAt||a.createdAt) +
-      '</td>' +
-      // Actions
-      '<td><div class="row-actions">' +
-        '<button class="action-btn" onclick="openAssignmentDrawer(window._data.assignments.find(function(x){return x.id===\'' + a.id + '\'}))">Edit</button>' +
-        (a.status !== 'completed' ? '<button class="action-btn success" onclick="markAssignmentDone(\'' + a.id + '\')">✓ Done</button>' : '') +
-        '<button class="action-btn danger" onclick="deleteRecord(\'assignments\',\'' + a.id + '\')">Del</button>' +
-      '</div></td>' +
+      '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + fmtDate(a.assignedAt||a.createdAt) + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.6rem;color:' + (a.completedAt?'var(--green)':'var(--dimmer)') + ';">' + (a.completedAt ? fmtDate(a.completedAt) : '—') + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + (a.updatedAt ? timeAgo(a.updatedAt) : '—') + '</td>' +
+      '<td><div class="row-actions">' + actions + '</div></td>' +
     '</tr>';
   }).join('');
 }
 
 function markAssignmentDone(id) {
+  var a = (window._data.assignments||[]).find(function(x){return x.id===id;});
+  if (a && !canEditAssignmentFull(a) && !isAssignedToMe(a)) { toast('You do not have permission to update this assignment', 'error'); return; }
   window._updateDoc('assignments', id, { status:'completed', completedAt:new Date().toISOString() })
     .then(function(){ toast('Assignment marked complete ✓','success'); window._loadAll(); })
     .catch(function(e){ toast('Update failed: '+(e.message||e),'error'); });
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  ASSIGNMENT HISTORY REPO — grouped by person / lead / client
+// ═══════════════════════════════════════════════════════════════
+var _asnHistoryFilters = { search:'', crmStage:'', status:'', assigner:'', assignee:'', from:'', to:'', track:'' };
+
+function buildAssignmentSubjectGroups() {
+  var assignments = window._data ? window._data.assignments || [] : [];
+  if (typeof scopeRecords === 'function') assignments = scopeRecords(assignments, 'assignments');
+  var map = {};
+  assignments.forEach(function(a) {
+    var key = (a.personEmail || a.subjectRef || a.personName || 'unknown').toLowerCase();
+    if (!map[key]) map[key] = { key:key, name:a.personName||'—', email:a.personEmail||'', records:[] };
+    if (a.personName && a.personName.length > map[key].name.length) map[key].name = a.personName;
+    map[key].records.push(a);
+  });
+  return Object.values(map);
+}
+
+function computeSubjectTrackRecord(records) {
+  var total = records.length;
+  var completed = records.filter(function(a){ return a.status === 'completed'; }).length;
+  var overdue = records.filter(function(a){ return a.status !== 'completed' && a.targetDate && new Date(a.targetDate) < new Date(); }).length;
+  var rate = total ? Math.round((completed/total)*100) : 0;
+  return { total:total, completed:completed, overdue:overdue, rate:rate };
+}
+
+function openAssignmentHistoryBrowser() {
+  Object.keys(_asnHistoryFilters).forEach(function(k){ _asnHistoryFilters[k] = ''; });
+  var members = window._data ? window._data.team_members || [] : [];
+  var html =
+    '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--dim);line-height:1.7;">📜 Full assignment history grouped by person, lead, or client — every assignment ever attached to them, completed or not.</div>' +
+
+    '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<input class="tbl-search" id="ash-search" style="flex:1;min-width:160px;" placeholder="Search name or email…" oninput="applyAsnHistoryFilters()">' +
+        '<select class="tbl-filter" id="ash-crmstage" onchange="applyAsnHistoryFilters()">' +
+          '<option value="">All CRM Stages</option>' +
+          '<option value="new_lead">New Lead</option><option value="contacted">Contacted</option>' +
+          '<option value="qualified">Qualified</option><option value="proposal">Proposal</option>' +
+          '<option value="won">Won</option><option value="lost">Lost</option>' +
+        '</select>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<select class="tbl-filter" id="ash-status" onchange="applyAsnHistoryFilters()">' +
+          '<option value="">All Assignment Status</option>' +
+          '<option value="active">Active</option><option value="in-progress">In Progress</option>' +
+          '<option value="on-hold">On Hold</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>' +
+        '</select>' +
+        '<select class="tbl-filter" id="ash-assigner" onchange="applyAsnHistoryFilters()">' +
+          '<option value="">All Assigners</option>' +
+          members.map(function(m){return'<option value="'+m.id+'">'+escHtml(m.name||m.email||'')+'</option>';}).join('') +
+        '</select>' +
+        '<select class="tbl-filter" id="ash-assignee" onchange="applyAsnHistoryFilters()">' +
+          '<option value="">All Assignees</option>' +
+          members.map(function(m){return'<option value="'+m.id+'">'+escHtml(m.name||m.email||'')+'</option>';}).join('') +
+        '</select>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
+        '<input type="date" class="tbl-filter" id="ash-from" style="min-width:130px;" onchange="applyAsnHistoryFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+        '<input type="date" class="tbl-filter" id="ash-to" style="min-width:130px;" onchange="applyAsnHistoryFilters()">' +
+        '<select class="tbl-filter" id="ash-track" onchange="applyAsnHistoryFilters()">' +
+          '<option value="">All Track Records</option>' +
+          '<option value="high">🟢 High Performers (≥80%)</option>' +
+          '<option value="mid">🟡 Average (40–79%)</option>' +
+          '<option value="low">🔴 Needs Attention (&lt;40%)</option>' +
+          '<option value="none">⚪ No Completions Yet</option>' +
+        '</select>' +
+        '<button onclick="clearAsnHistoryFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div id="ash-results"></div>';
+
+  openDrawer('Assignment History', 'Browse by Person / Lead / Client', html);
+  renderAssignmentHistoryResults();
+}
+
+function applyAsnHistoryFilters() {
+  _asnHistoryFilters.search   = ((document.getElementById('ash-search')   ||{}).value||'').toLowerCase().trim();
+  _asnHistoryFilters.crmStage = (document.getElementById('ash-crmstage')  ||{}).value||'';
+  _asnHistoryFilters.status   = (document.getElementById('ash-status')    ||{}).value||'';
+  _asnHistoryFilters.assigner = (document.getElementById('ash-assigner')  ||{}).value||'';
+  _asnHistoryFilters.assignee = (document.getElementById('ash-assignee')  ||{}).value||'';
+  _asnHistoryFilters.from     = (document.getElementById('ash-from')      ||{}).value||'';
+  _asnHistoryFilters.to       = (document.getElementById('ash-to')        ||{}).value||'';
+  _asnHistoryFilters.track    = (document.getElementById('ash-track')     ||{}).value||'';
+  renderAssignmentHistoryResults();
+}
+
+function clearAsnHistoryFilters() {
+  ['ash-search','ash-crmstage','ash-status','ash-assigner','ash-assignee','ash-from','ash-to','ash-track'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_asnHistoryFilters).forEach(function(k){ _asnHistoryFilters[k] = ''; });
+  renderAssignmentHistoryResults();
+}
+
+function renderAssignmentHistoryResults() {
+  var el = document.getElementById('ash-results'); if (!el) return;
+  var f = _asnHistoryFilters;
+  var groups = buildAssignmentSubjectGroups();
+
+  var filtered = groups.filter(function(g) {
+    if (f.search) {
+      var hay = (g.name + ' ' + g.email).toLowerCase();
+      if (!hay.includes(f.search)) return false;
+    }
+    if (f.crmStage) {
+      var crmInfo = typeof getPersonPipelineStatus === 'function' ? getPersonPipelineStatus(g.email) : null;
+      if (!crmInfo || crmInfo.status !== f.crmStage) return false;
+    }
+    if (f.status   && !g.records.some(function(a){ return a.status === f.status; })) return false;
+    if (f.assigner && !g.records.some(function(a){ return a.assignedById === f.assigner; })) return false;
+    if (f.assignee && !g.records.some(function(a){ return a.assignedTo === f.assignee; })) return false;
+    if (f.from || f.to) {
+      var inRange = g.records.some(function(a) {
+        var d = tsToDate(a.assignedAt || a.createdAt);
+        var dStr = isNaN(d) ? '' : d.toISOString().split('T')[0];
+        if (f.from && dStr < f.from) return false;
+        if (f.to   && dStr > f.to)   return false;
+        return true;
+      });
+      if (!inRange) return false;
+    }
+    if (f.track) {
+      var tr = computeSubjectTrackRecord(g.records);
+      if (f.track === 'high' && tr.rate < 80) return false;
+      if (f.track === 'mid'  && (tr.rate < 40 || tr.rate >= 80)) return false;
+      if (f.track === 'low'  && tr.rate >= 40) return false;
+      if (f.track === 'none' && tr.completed > 0) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div>No assignment history matches your filters</div>';
+    return;
+  }
+
+  filtered.sort(function(a,b){ return b.records.length - a.records.length; });
+  window._asnHistoryGroups = filtered;
+
+  el.innerHTML = filtered.map(function(g, i) {
+    var tr = computeSubjectTrackRecord(g.records);
+    var rateColor = tr.rate >= 80 ? 'var(--green)' : tr.rate >= 40 ? 'var(--amber)' : (tr.completed===0 ? 'var(--dimmer)' : 'var(--red)');
+    var crmInfo = typeof getPersonPipelineStatus === 'function' ? getPersonPipelineStatus(g.email) : null;
+    return '<div class="person-card" onclick="openSubjectAssignmentHistory(' + i + ')">' +
+      '<div class="person-avatar">' + initials(g.name) + '</div>' +
+      '<div class="person-info" style="flex:1;">' +
+        '<div class="person-name">' + escHtml(g.name) + '</div>' +
+        '<div class="person-email">' + escHtml(g.email||'—') + '</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">' +
+          '<span class="badge badge-dim" style="font-size:.5rem;">' + tr.total + ' total</span>' +
+          '<span class="badge badge-green" style="font-size:.5rem;">' + tr.completed + ' done</span>' +
+          (tr.overdue ? '<span class="badge badge-red" style="font-size:.5rem;">' + tr.overdue + ' overdue</span>' : '') +
+          (crmInfo ? '<span class="badge badge-cyan" style="font-size:.5rem;">' + escHtml((crmInfo.status||'').replace(/_/g,' ')) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="person-meta">' +
+        '<div style="font-family:var(--mono);font-weight:700;font-size:.95rem;color:' + rateColor + ';">' + tr.rate + '%</div>' +
+        '<div style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);">completion</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openSubjectAssignmentHistory(idx) {
+  var g = (window._asnHistoryGroups||[])[idx];
+  if (!g) return;
+  var tr = computeSubjectTrackRecord(g.records);
+  var members = window._data ? window._data.team_members || [] : [];
+  var memberMap = {}; members.forEach(function(m){ memberMap[m.id]=m; });
+  var crmInfo = typeof getPersonPipelineStatus === 'function' ? getPersonPipelineStatus(g.email) : null;
+
+  var sorted = g.records.slice().sort(function(a,b){
+    return tsToDate(b.assignedAt||b.createdAt) - tsToDate(a.assignedAt||a.createdAt);
+  });
+
+  var html =
+    '<button onclick="openAssignmentHistoryBrowser()" style="background:none;border:none;color:var(--gold);font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-bottom:16px;">← Back to History</button>' +
+
+    '<div class="detail-section"><h4>👤 Subject Summary</h4>' +
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">' +
+      '<div class="person-avatar" style="width:48px;height:48px;font-size:18px;">' + initials(g.name) + '</div>' +
+      '<div><div style="font-family:var(--display);font-weight:700;font-size:1rem;">' + escHtml(g.name) + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + escHtml(g.email||'—') + '</div>' +
+        (crmInfo ? '<div style="margin-top:5px;">' + statusBadge(crmInfo.status) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="detail-grid">' +
+      '<div class="detail-item"><div class="detail-label">Total Assignments</div><div class="detail-val gold">' + tr.total + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Completed</div><div class="detail-val">' + tr.completed + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Overdue</div><div class="detail-val" style="color:'+(tr.overdue?'var(--red)':'var(--white)')+';">' + tr.overdue + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Completion Rate</div><div class="detail-val" style="color:'+(tr.rate>=80?'var(--green)':tr.rate>=40?'var(--amber)':'var(--red)')+';">' + tr.rate + '%</div></div>' +
+    '</div></div>' +
+
+    '<div class="detail-section"><h4>🗂️ All Assignments (' + sorted.length + ')</h4>' +
+    sorted.map(function(a) {
+      var assignee  = a.assignedTo ? memberMap[a.assignedTo] : null;
+      var v         = V_MAP[a.ventureId] || {};
+      var isOverdue = a.targetDate && new Date(a.targetDate) < new Date() && a.status !== 'completed';
+      return '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:7px;padding:12px 14px;margin-bottom:8px;cursor:pointer;" onclick="closeDrawer();setTimeout(function(){openAssignmentDrawer(window._data.assignments.find(function(x){return x.id===\'' + a.id + '\'}));},150);">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px;">' +
+          '<span class="venture-tag">' + escHtml(v.name||a.ventureId||'—') + '</span>' + statusBadge(a.status||'active') +
+        '</div>' +
+        '<div style="font-size:.78rem;color:var(--dim);margin-bottom:6px;">' + escHtml(a.notes ? a.notes.substring(0,80) : 'No notes') + (a.notes&&a.notes.length>80?'…':'') + '</div>' +
+        '<div style="display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' +
+          '<span>Assigned by: ' + escHtml(a.assignedByName||'—') + '</span>' +
+          '<span>To: ' + escHtml(assignee ? (assignee.name||assignee.email) : (a.assignedName||'Unassigned')) + '</span>' +
+          '<span>On: ' + fmtDate(a.assignedAt||a.createdAt) + '</span>' +
+          (a.targetDate ? '<span style="color:'+(isOverdue?'var(--red)':'var(--dimmer)')+';">' + (isOverdue?'⚠ ':'') + 'Due: ' + fmtDate(a.targetDate) + '</span>' : '') +
+          (a.completedAt ? '<span style="color:var(--green);">✓ Completed: ' + fmtDate(a.completedAt) + '</span>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('') +
+    '</div>';
+
+  openDrawer('Assignment History', escHtml(g.name), html);
+}
+  
 // ═══════════════════════════════════════
 // DRAWERS (shared)
 // ═══════════════════════════════════════
@@ -9509,9 +9764,13 @@ async function finalizePaidPayment(pay, payId) {
   
 var _editingAssignmentId = null;
 
-function openNewAssignment() { openAssignmentDrawer(null, '', ''); }
+function openNewAssignment() {
+  if (!canCreateAssignment()) { toast('Only Team Leaders and the Founder can create assignments', 'error'); return; }
+  openAssignmentDrawer(null, '', '');
+}
 
 function openNewAssignmentFor(name, email) {
+  if (!canCreateAssignment()) { toast('Only Team Leaders and the Founder can create assignments', 'error'); return; }
   closeDrawer();
   setTimeout(function() {
     openAssignmentDrawer(null, name, email);
@@ -9519,9 +9778,15 @@ function openNewAssignmentFor(name, email) {
 }
 
 function openAssignmentDrawer(a, prefillName, prefillEmail) {
-  _editingAssignmentId = a ? a.id : null;
+  if (!a && !canCreateAssignment()) { toast('Only Team Leaders and the Founder can create assignments', 'error'); return; }
 
-  // Resolve pre-fill client ref from email
+  _editingAssignmentId = a ? a.id : null;
+  var canFull = a ? canEditAssignmentFull(a) : canCreateAssignment();
+  var canSelf = a ? isAssignedToMe(a) : false;
+
+  if (a && !canFull && !canSelf) { toast('You do not have access to this assignment', 'error'); return; }
+  if (a && !canFull && canSelf)  { openAssignmentSelfDrawer(a); return; }
+
   var prefillSubjectVal = '';
   if (!a && prefillEmail) {
     var d = window._data || {};
@@ -9538,16 +9803,10 @@ function openAssignmentDrawer(a, prefillName, prefillEmail) {
   var showInfo    = !!subjectInfo.name;
 
   var html =
-    // ── Section 1: Who is this for? ──────────────────────────
     '<div class="detail-section"><h4>👤 Assign To Person / Lead</h4>' +
-    '<div class="form-field" style="margin-bottom:8px;">' +
-      '<div class="form-label">Select Lead / Client *</div>' +
-      '<select class="form-select" id="asn-subject" onchange="onAsnSubjectChange()">' +
-        buildAsnSubjectOptions(currentSubjectVal) +
-      '</select>' +
+    '<div class="form-field" style="margin-bottom:8px;"><div class="form-label">Select Lead / Client *</div>' +
+      '<select class="form-select" id="asn-subject" onchange="onAsnSubjectChange()">' + buildAsnSubjectOptions(currentSubjectVal) + '</select>' +
     '</div>' +
-
-    // Auto-fill info panel
     '<div id="asn-subject-info" style="' + (showInfo ? '' : 'display:none;') + '">' +
       '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;">' +
         '<div><div class="form-label">Name</div><div id="asn-si-name" style="font-size:.78rem;color:var(--white);">' + escHtml(subjectInfo.name||'') + '</div></div>' +
@@ -9558,69 +9817,113 @@ function openAssignmentDrawer(a, prefillName, prefillEmail) {
       '</div>' +
     '</div></div>' +
 
-    // ── Section 2: Assigned Team Member ──────────────────────
     '<div class="detail-section"><h4>👥 Assigned Team Member</h4>' +
-    '<div class="form-field">' +
-      '<div class="form-label">Select Team Member *</div>' +
-      '<select class="form-select" id="asn-assigned-to" onchange="onAsnTeamChange()">' +
-        buildAsnTeamOptions(a ? a.assignedTo || '' : '') +
-      '</select>' +
-    '</div>' +
-    '<div id="asn-assignee-email" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-top:5px;"></div>' +
+    '<div class="form-field"><div class="form-label">Select Team Member *</div>' +
+      '<select class="form-select" id="asn-assigned-to" onchange="onAsnTeamChange()">' + buildAsnTeamOptions(a ? a.assignedTo || '' : '') + '</select>' +
+    '</div><div id="asn-assignee-email" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-top:5px;"></div>' +
     '</div>' +
 
-    // ── Section 3: Assignment Details ────────────────────────
     '<div class="detail-section"><h4>📋 Assignment Details</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Venture</div>' +
         '<select class="form-select" id="asn-venture"><option value="">Select…</option>' +
-          VENTURES_SEED.map(function(v) {
-            return '<option value="' + v.id + '"' + (a && a.ventureId===v.id ? ' selected' : '') + '>' + v.name + '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
-      '<div class="form-field"><div class="form-label">Target Date</div>' +
-        '<input class="form-input" id="asn-date" type="date" value="' + escHtml(a ? a.targetDate||'' : '') + '">' +
-      '</div>' +
+          VENTURES_SEED.map(function(v) { return '<option value="' + v.id + '"' + (a && a.ventureId===v.id ? ' selected' : '') + '>' + v.name + '</option>'; }).join('') +
+        '</select></div>' +
+      '<div class="form-field"><div class="form-label">Target Date / Deadline</div>' +
+        '<input class="form-input" id="asn-date" type="date" value="' + escHtml(a ? a.targetDate||'' : '') + '"></div>' +
     '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Status</div>' +
         '<select class="form-select" id="asn-status">' +
           ['active','in-progress','on-hold','completed','cancelled'].map(function(s) {
             return '<option value="' + s + '"' + (a && a.status===s ? ' selected' : (!a && s==='active' ? ' selected' : '')) + '>' + s + '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
+          }).join('') + '</select></div>' +
       '<div class="form-field"><div class="form-label">Priority</div>' +
         '<select class="form-select" id="asn-priority">' +
           ['high','medium','low'].map(function(p) {
             return '<option value="' + p + '"' + (a && a.priority===p ? ' selected' : (!a && p==='medium' ? ' selected' : '')) + '>' +
-              (p==='high'?'🔥 High':p==='medium'?'🟡 Medium':'⚪ Low') +
-            '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
+              (p==='high'?'🔥 High':p==='medium'?'🟡 Medium':'⚪ Low') + '</option>';
+          }).join('') + '</select></div>' +
     '</div>' +
     '<div class="form-field"><div class="form-label">Notes / Instructions</div>' +
       '<textarea class="form-textarea" id="asn-notes" style="min-height:80px;" placeholder="What needs to be done? Any specific instructions…">' + escHtml(a ? a.notes||'' : '') + '</textarea>' +
     '</div></div>' +
 
+    (a ? '<div class="detail-section"><h4>🗓 Timeline</h4><div class="detail-grid">' +
+      '<div class="detail-item"><div class="detail-label">Assigned By</div><div class="detail-val">' + escHtml(a.assignedByName||'—') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Assigned On</div><div class="detail-val">' + fmtDate(a.assignedAt||a.createdAt) + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Date Completed</div><div class="detail-val" style="color:' + (a.completedAt?'var(--green)':'var(--dimmer)') + ';">' + (a.completedAt?fmtDate(a.completedAt):'Not yet completed') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Last Updated</div><div class="detail-val">' + (a.updatedAt?fmtTime(a.updatedAt):'—') + '</div></div>' +
+    '</div></div>' : '') +
+
+    (a ? '<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'assignments\',\''+a.id+'\',\'note\')">+ Add Entry</button></h4>' +
+      renderCommTimeline('assignments', a.id) + '</div>' : '') +
+
     '<div class="btn-row">' +
       '<button class="btn-primary" onclick="saveAssignment()">💾 ' + (a ? 'Update' : 'Create') + ' Assignment</button>' +
+      (a && canDeleteAssignment() ? '<button class="action-btn danger" onclick="deleteAssignmentSafe(\''+a.id+'\');closeDrawer();">🗑 Delete</button>' : '') +
       '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
     '</div>';
 
-  openDrawer(
-    a ? 'Edit Assignment' : 'New Assignment',
-    a ? (a.personName || 'Assignment') : 'Create Assignment',
-    html
-  );
-
-  // Trigger info display if pre-filled
+  openDrawer(a ? 'Edit Assignment' : 'New Assignment', a ? (a.personName || 'Assignment') : 'Create Assignment', html);
   if (currentSubjectVal) setTimeout(onAsnSubjectChange, 80);
 }
 
+function openAssignmentSelfDrawer(a) {
+  var v = V_MAP[a.ventureId] || {};
+  var isOverdue = a.targetDate && new Date(a.targetDate) < new Date() && a.status !== 'completed';
+
+  var html =
+    '<div style="background:rgba(0,188,212,.06);border:1px solid rgba(0,188,212,.18);border-radius:7px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);">⬡ You can update the status and add notes/communication below. Other fields can only be changed by a Team Leader or the Founder.</div>' +
+
+    '<div class="detail-section"><h4>📋 Assignment Details</h4><div class="detail-grid">' +
+      '<div class="detail-item"><div class="detail-label">Person / Lead</div><div class="detail-val">' + escHtml(a.personName||'—') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Venture</div><div class="detail-val gold">' + escHtml(v.name||a.ventureId||'—') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Priority</div><div class="detail-val">' + statusBadge(a.priority||'low') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Deadline</div><div class="detail-val" style="color:'+(isOverdue?'var(--red)':'var(--white)')+';">' + (a.targetDate?fmtDate(a.targetDate):'—') + (isOverdue?' ⚠️':'') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Assigned By</div><div class="detail-val">' + escHtml(a.assignedByName||'—') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Assigned On</div><div class="detail-val">' + fmtDate(a.assignedAt||a.createdAt) + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Date Completed</div><div class="detail-val" style="color:'+(a.completedAt?'var(--green)':'var(--dimmer)')+';">' + (a.completedAt?fmtDate(a.completedAt):'Not yet completed') + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Last Updated</div><div class="detail-val">' + (a.updatedAt?fmtTime(a.updatedAt):'—') + '</div></div>' +
+    '</div>' +
+    (a.notes ? '<div style="margin-top:12px;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:6px;font-size:.8rem;color:var(--dim);line-height:1.7;white-space:pre-wrap;">' + escHtml(a.notes) + '</div>' : '') +
+    '</div>' +
+
+    '<div class="detail-section"><h4>⚡ Update Status</h4>' +
+    '<div class="form-field" style="margin-bottom:10px;"><select class="form-select" id="asn-self-status">' +
+      ['active','in-progress','on-hold','completed','cancelled'].map(function(s) {
+        return '<option value="' + s + '"' + (a.status===s ? ' selected' : '') + '>' + s + '</option>';
+      }).join('') + '</select></div>' +
+    '<button class="btn-primary" style="font-size:.75rem;padding:9px 18px;" onclick="updateAssignmentStatusSelf(\''+a.id+'\')">💾 Update Status</button>' +
+    '</div>' +
+
+    '<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'assignments\',\''+a.id+'\',\'note\')">+ Add Entry</button></h4>' +
+      renderCommTimeline('assignments', a.id) +
+    '</div>';
+
+  openDrawer('Assignment', escHtml(a.personName||'—'), html);
+}
+
+function updateAssignmentStatusSelf(id) {
+  var a = (window._data.assignments||[]).find(function(x){return x.id===id;});
+  if (!a) return;
+  if (!isAssignedToMe(a)) { toast('You can only update assignments given to you', 'error'); return; }
+  var newStatus = (document.getElementById('asn-self-status')||{}).value || a.status;
+  var upd = { status: newStatus };
+  if (newStatus === 'completed' && a.status !== 'completed') upd.completedAt = new Date().toISOString();
+  if (newStatus !== 'completed' && a.completedAt) upd.completedAt = null;
+  window._updateDoc('assignments', id, upd)
+    .then(function(){ toast('Status updated ✓','success'); closeDrawer(); window._loadAll(); })
+    .catch(function(e){ toast('Update failed: '+(e.message||e),'error'); });
+}
+
 function saveAssignment() {
+  if (!canCreateAssignment() && !_editingAssignmentId) { toast('Only Team Leaders and the Founder can create assignments', 'error'); return; }
+  if (_editingAssignmentId) {
+    var existing0 = (window._data.assignments||[]).find(function(x){return x.id===_editingAssignmentId;});
+    if (existing0 && !canEditAssignmentFull(existing0)) { toast('You do not have permission to edit this assignment', 'error'); return; }
+  }
+
   var subjectVal  = (document.getElementById('asn-subject')     ||{}).value || '';
   var assignedTo  = (document.getElementById('asn-assigned-to') ||{}).value || '';
   var ventureId   = (document.getElementById('asn-venture')     ||{}).value || '';
@@ -9649,12 +9952,27 @@ function saveAssignment() {
     status:       status,
     priority:     priority,
     targetDate:   targetDate,
-    notes:        notes,
-    assignedAt:   new Date().toISOString()
+    notes:        notes
   };
 
-  var fn = _editingAssignmentId
-    ? window._updateDoc('assignments', _editingAssignmentId, data)
+  var capturedId  = _editingAssignmentId;
+  var existingRec = capturedId ? (window._data.assignments||[]).find(function(x){return x.id===capturedId;}) : null;
+
+  if (existingRec) {
+    // Preserve original assigner + assigned date; only track completedAt transitions
+    if (status === 'completed' && existingRec.status !== 'completed') data.completedAt = new Date().toISOString();
+    if (status !== 'completed' && existingRec.completedAt) data.completedAt = null;
+  } else {
+    var cu = window._currentUser;
+    var me = members.find(function(m){ return cu && (m.email||'').toLowerCase()===(cu.email||'').toLowerCase(); });
+    data.assignedById   = me ? me.id : (cu ? cu.email : '');
+    data.assignedByName = me ? (me.name||me.email||'') : (cu ? cu.email : (window._userRole==='founder'?'Founder':'Unknown'));
+    data.assignedAt      = new Date().toISOString();
+    if (status === 'completed') data.completedAt = new Date().toISOString();
+  }
+
+  var fn = capturedId
+    ? window._updateDoc('assignments', capturedId, data)
     : window._saveDoc('assignments', data);
 
   fn.then(function() {
