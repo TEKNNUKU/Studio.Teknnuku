@@ -2615,7 +2615,6 @@ async function autoMatchFWPayment(tx, txRefOverride) {
     reconcilePaymentWithFinance(pay, newPayId);
     autoAcceptProposalsForPayment(pay);
     if (pay.leadId) await autoWinLead(pay.leadId, pay);
-    createAndSaveInvoice(pay, newPayId);
     createAndSaveReceipt(pay, newPayId);
   }
   
@@ -3319,40 +3318,55 @@ function _panelProposals() {
 }
 
 function _panelPayments() {
+  var isFounder = window._userRole === 'founder';
   return '<div class="panel" id="panel-payments">' +
     '<div class="eyebrow">Revenue Tracking</div>' +
     '<div class="panel-header">' +
       '<div class="panel-title">Payments</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-        '<button class="action-btn" onclick="openInvoiceRepo()">📄 Invoices</button>' +
         '<button class="action-btn" onclick="openReceiptRepo()">🧾 Receipts</button>' +
         '<button class="action-btn" onclick="openFWVerifyModal()">🔗 Verify FW Payment</button>' +
         '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="openPaymentDrawer(null,\'\',\'\')">+ Log Payment</button>' +
       '</div>' +
     '</div>' +
 
-    // ── KPIs ────────────────────────────────────────────────
-    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));margin-bottom:16px;">' +
+    // ── KPIs (longer — 2 per row) ────────────────────────────
+    '<div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px;">' +
       '<div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-label">Total Collected</div><div class="kpi-value" id="pay-total">—</div><div class="kpi-meta">all confirmed paid</div></div>' +
       '<div class="kpi-card amber"><div class="kpi-icon">⏳</div><div class="kpi-label">Pending</div><div class="kpi-value" id="pay-pending-val">—</div><div class="kpi-meta" id="pay-pending-count">0 payments</div></div>' +
       '<div class="kpi-card red"><div class="kpi-icon">🚨</div><div class="kpi-label">Overdue</div><div class="kpi-value" id="pay-overdue-val">—</div><div class="kpi-meta" id="pay-overdue-count">0 payments</div></div>' +
       '<div class="kpi-card cyan"><div class="kpi-icon">📊</div><div class="kpi-label">Active Pipeline</div><div class="kpi-value" id="pay-pipeline">—</div><div class="kpi-meta">pending + partial</div></div>' +
     '</div>' +
 
+    // ── Founder-only deletion approval queue ────────────────
+    (isFounder ? '<div id="pay-deletion-queue" style="margin-bottom:16px;"></div>' : '') +
+
     // ── Filter bar ───────────────────────────────────────────
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">' +
-      '<select class="tbl-filter" id="pf-status" onchange="applyPaymentFilters()"><option value="">All Status</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="partial">Partial</option><option value="overdue">Overdue</option></select>' +
-      '<select class="tbl-filter" id="pf-venture" onchange="applyPaymentFilters()"><option value="">All Ventures</option>' +
-        VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
-      '</select>' +
-      '<select class="tbl-filter" id="pf-method" onchange="applyPaymentFilters()"><option value="">All Methods</option><option value="bank_transfer">Bank Transfer</option><option value="card">Card</option><option value="cash">Cash</option><option value="crypto">Crypto</option><option value="ussd">USSD</option></select>' +
-      '<input class="tbl-search" id="pf-search" style="width:180px;" placeholder="Search name / ref…" oninput="applyPaymentFilters()">' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">' +
+        '<select class="tbl-filter" id="pay-f-status" onchange="applyPaymentFilters()"><option value="">All Status</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="partial">Partial</option><option value="overdue">Overdue</option></select>' +
+        '<select class="tbl-filter" id="pay-f-venture" onchange="applyPaymentFilters()"><option value="">All Ventures</option>' +
+          VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+        '</select>' +
+        '<select class="tbl-filter" id="pay-f-service" onchange="applyPaymentFilters()"><option value="">All Services</option>' +
+          TEKNNUKU_SERVICES.map(function(s){return'<option value="'+s.id+'">'+escHtml(s.label)+'</option>';}).join('') +
+        '</select>' +
+        '<select class="tbl-filter" id="pay-f-method" onchange="applyPaymentFilters()"><option value="">All Methods</option><option value="bank_transfer">Bank Transfer</option><option value="card">Card</option><option value="cash">Cash</option><option value="crypto">Crypto</option><option value="ussd">USSD</option><option value="mobile_money">Mobile Money</option></select>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
+        '<input type="date" class="tbl-filter" id="pay-f-from" style="min-width:130px;" onchange="applyPaymentFilters()">' +
+        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+        '<input type="date" class="tbl-filter" id="pay-f-to" style="min-width:130px;" onchange="applyPaymentFilters()">' +
+        '<input class="tbl-search" id="pay-f-search" style="width:200px;" placeholder="Search name / ref…" oninput="applyPaymentFilters()">' +
+        '<button onclick="clearPaymentFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+      '</div>' +
     '</div>' +
 
     // ── Table ────────────────────────────────────────────────
     '<div class="table-wrap"><div class="table-toolbar"><div class="table-toolbar-title">payments</div></div>' +
     '<div class="table-scroll"><table><thead><tr>' +
-      '<th>Client / Lead</th><th>Service</th><th>Venture</th><th>Amount</th><th>Status</th><th>Method</th><th>Date</th><th>Ref / FW ID</th><th>Actions</th>' +
+      '<th>Client / Lead</th><th>Service</th><th>Venture</th><th>Amount</th><th>Status</th><th>Method</th><th>Date</th><th>Receipt / FW Ref</th><th>Actions</th>' +
     '</tr></thead><tbody id="payments-tbody"><tr><td colspan="9" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div></div>' +
   '</div>';
 }
@@ -7731,24 +7745,49 @@ function buildProposalData(leadId, lead, title, amount, methods) {
 // ═══════════════════════════════════════
 // PAYMENTS
 // ═══════════════════════════════════════
+var _payFilters = { status:'', venture:'', service:'', method:'', from:'', to:'', search:'' };
+
 function applyPaymentFilters() {
-  var fS = (document.getElementById('pf-status')  || {}).value || '';
-  var fV = (document.getElementById('pf-venture') || {}).value || '';
-  var fM = (document.getElementById('pf-method')  || {}).value || '';
-  var fQ = ((document.getElementById('pf-search') || {}).value || '').toLowerCase().trim();
-  var payments = window._data ? window._data.payments || [] : [];
-  var filtered = payments.filter(function(p) {
-    if (fS && p.status !== fS) return false;
-    if (fV && p.ventureId !== fV) return false;
-    if (fM && p.paymentMethod !== fM) return false;
-    if (fQ && !((p.personName||'')+(p.personEmail||'')+(p.invoiceRef||'')+(p.fwRef||'')).toLowerCase().includes(fQ)) return false;
+  _payFilters.status  = (document.getElementById('pay-f-status')  || {}).value || '';
+  _payFilters.venture = (document.getElementById('pay-f-venture') || {}).value || '';
+  _payFilters.service = (document.getElementById('pay-f-service') || {}).value || '';
+  _payFilters.method  = (document.getElementById('pay-f-method')  || {}).value || '';
+  _payFilters.from    = (document.getElementById('pay-f-from')    || {}).value || '';
+  _payFilters.to      = (document.getElementById('pay-f-to')      || {}).value || '';
+  _payFilters.search  = ((document.getElementById('pay-f-search') || {}).value || '').toLowerCase().trim();
+
+  var basePayments = window._data ? window._data.payments || [] : [];
+  if (typeof scopeRecords === 'function') basePayments = scopeRecords(basePayments, 'payments');
+
+  var filtered = basePayments.filter(function(p) {
+    if (_payFilters.status  && p.status !== _payFilters.status) return false;
+    if (_payFilters.venture && p.ventureId !== _payFilters.venture) return false;
+    if (_payFilters.service && p.serviceId !== _payFilters.service) return false;
+    if (_payFilters.method  && p.paymentMethod !== _payFilters.method) return false;
+    if (_payFilters.from || _payFilters.to) {
+      var d = tsToDate(p.paidAt || p.createdAt);
+      var dateStr = isNaN(d) ? '' : d.toISOString().split('T')[0];
+      if (_payFilters.from && dateStr && dateStr < _payFilters.from) return false;
+      if (_payFilters.to   && dateStr && dateStr > _payFilters.to)   return false;
+    }
+    if (_payFilters.search && !((p.personName||'')+(p.personEmail||'')+(p.receiptRef||'')+(p.fwRef||'')).toLowerCase().includes(_payFilters.search)) return false;
     return true;
   });
   renderPaymentsTable(filtered);
 }
 
+function clearPaymentFilters() {
+  ['pay-f-status','pay-f-venture','pay-f-service','pay-f-method','pay-f-from','pay-f-to','pay-f-search'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  Object.keys(_payFilters).forEach(function(k){ _payFilters[k] = ''; });
+  var basePayments = window._data ? window._data.payments || [] : [];
+  if (typeof scopeRecords === 'function') basePayments = scopeRecords(basePayments, 'payments');
+  renderPaymentsTable(basePayments);
+}
+
 function renderPayments(payments) {
-  payments = scopeRecords(payments, 'payments');
+  if (typeof scopeRecords === 'function') payments = scopeRecords(payments, 'payments');
   renderPaymentsTable(payments);
   var totalPaid = 0, pendingV = 0, overdueV = 0, pendingC = 0, overdueC = 0, pipeline = 0;
   payments.forEach(function(p) {
@@ -7764,6 +7803,38 @@ function renderPayments(payments) {
   setText('pay-overdue-val',  '₦' + overdueV.toLocaleString());
   setText('pay-overdue-count', overdueC + ' payment' + (overdueC !== 1 ? 's' : ''));
   setText('pay-pipeline',     '₦' + pipeline.toLocaleString());
+  renderPaymentDeletionQueue(window._data ? window._data.payments || [] : []);
+}
+
+function renderPaymentDeletionQueue(allPayments) {
+  var el = document.getElementById('pay-deletion-queue'); if (!el) return;
+  var pending = (allPayments||[]).filter(function(p){ return p.deletionRequested; });
+  if (!pending.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="table-wrap"><div class="table-toolbar" style="background:rgba(239,68,68,.06);">' +
+    '<div class="table-toolbar-title" style="color:var(--red);">🗑 Pending Deletion Requests (' + pending.length + ')</div>' +
+  '</div><div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;">' +
+    pending.map(function(p) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15);border-radius:6px;flex-wrap:wrap;">' +
+        '<div style="flex:1;min-width:160px;">' +
+          '<div style="font-size:.8rem;font-weight:600;color:var(--white);">' + escHtml(p.personName||'—') + ' · ₦' + Number(p.amount||0).toLocaleString() + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Requested by ' + escHtml(p.deletionRequestedByName||'—') + ' · ' + fmtDate(p.deletionRequestedAt) + '</div>' +
+        '</div>' +
+        '<button class="action-btn danger" onclick="approvePaymentDeletion(\'' + p.id + '\')">✓ Approve & Delete</button>' +
+        '<button class="action-btn" onclick="rejectPaymentDeletion(\'' + p.id + '\')">✕ Reject</button>' +
+      '</div>';
+    }).join('') +
+  '</div></div>';
+}
+
+function approvePaymentDeletion(id) {
+  if (!confirm('Permanently delete this payment record? This cannot be undone.')) return;
+  window._deleteDoc('payments', id).then(function(){ toast('Payment deleted ✓','success'); window._loadAll(); }).catch(function(e){ toast('Delete failed: '+(e.message||e),'error'); });
+}
+
+function rejectPaymentDeletion(id) {
+  window._updateDoc('payments', id, { deletionRequested:false, deletionRequestedBy:null, deletionRequestedByName:null, deletionRequestedAt:null })
+    .then(function(){ toast('Deletion request rejected','success'); window._loadAll(); })
+    .catch(function(e){ toast('Update failed: '+(e.message||e),'error'); });
 }
 
 function renderPaymentsTable(payments) {
@@ -7772,14 +7843,35 @@ function renderPaymentsTable(payments) {
     tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">💰</div>No payments logged yet</div></td></tr>';
     return;
   }
-  var invoices = window._data ? window._data.invoices || [] : [];
-  var receipts = window._data ? window._data.receipts || [] : [];
+  var receipts  = window._data ? window._data.receipts || [] : [];
+  var isFounder = window._userRole === 'founder';
+
   tbody.innerHTML = payments.map(function(p) {
-    var v        = V_MAP[p.ventureId] || {};
-    var svc      = TEKNNUKU_SERVICES.find(function(s){ return s.id === p.serviceId; });
-    var hasInv   = invoices.some(function(i){ return i.paymentId === p.id; });
-    var hasRct   = receipts.some(function(r){ return r.paymentId === p.id; });
-    var linkedProp = window._data ? (window._data.proposals||[]).find(function(pr){ return pr.id === p.proposalId; }) : null;
+    var v       = V_MAP[p.ventureId] || {};
+    var svc     = TEKNNUKU_SERVICES.find(function(s){ return s.id === p.serviceId; });
+    var hasRct  = receipts.some(function(r){ return r.paymentId === p.id; });
+    var isPaid  = p.status === 'paid';
+
+    var refLine  = p.receiptRef  ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--green);">🧾 ' + escHtml(p.receiptRef) + '</div>' : '';
+    var fwLine   = p.fwRef       ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--cyan);">FW: ' + escHtml(p.fwRef) + '</div>' : '';
+    var propLine = p.proposalRef ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--gold);">Prop: ' + escHtml(p.proposalRef) + '</div>' : '';
+
+    var actions = '';
+    if (isPaid) {
+      actions += '<button class="action-btn" style="color:var(--green);border-color:rgba(34,197,94,.2);" onclick="openPaymentDrawer(window._data.payments.find(function(x){return x.id===\'' + p.id + '\'}),\'\',\'\')">🔒 View</button>';
+      if (hasRct) actions += '<button class="action-btn" style="color:var(--cyan);border-color:rgba(0,188,212,.3);" onclick="openReceiptFromPayment(\'' + p.id + '\')">🧾 Receipt</button>';
+    } else {
+      actions += '<button class="action-btn" onclick="openPaymentDrawer(window._data.payments.find(function(x){return x.id===\'' + p.id + '\'}),\'\',\'\')">Update Status</button>';
+    }
+
+    if (isFounder) {
+      actions += '<button class="action-btn danger" onclick="deletePaymentAsFounder(\'' + p.id + '\')">🗑 Delete</button>';
+    } else if (p.deletionRequested) {
+      actions += '<span class="badge badge-amber" style="font-size:.5rem;">Deletion Pending</span>';
+    } else {
+      actions += '<button class="action-btn danger" onclick="requestPaymentDeletion(\'' + p.id + '\')">🗑 Request Delete</button>';
+    }
+
     return '<tr>' +
       '<td><div style="font-weight:600;font-size:.82rem;">' + escHtml(p.personName || '—') + '</div>' +
         '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(p.personEmail || '') + '</div></td>' +
@@ -7787,26 +7879,35 @@ function renderPaymentsTable(payments) {
       '<td><span class="venture-tag">' + escHtml(v.name || p.ventureId || '—') + '</span></td>' +
       '<td style="font-family:var(--mono);font-weight:700;color:var(--gold);">₦' + Number(p.amount || 0).toLocaleString() + '</td>' +
       '<td>' + statusBadge(p.status || 'pending') + (p.autoVerified ? '<div style="font-family:var(--mono);font-size:.5rem;color:var(--green);margin-top:2px;">⚡ FW Verified</div>' : '') + '</td>' +
-      '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">' + escHtml(p.paymentMethod || '—') + '</td>' +
+      '<td style="font-family:var(--mono);font-size:.65rem;color:var(--dimmer);">' + escHtml((p.paymentMethod||'').replace(/_/g,' ') || '—') + '</td>' +
       '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + fmtDate(p.paidAt || p.createdAt) + '</td>' +
-      '<td><div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(p.invoiceRef || '—') + '</div>' +
-        (p.proposalRef ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--gold);">Prop: ' + escHtml(p.proposalRef) + '</div>' : '') +
-        (p.fwRef ? '<div style="font-family:var(--mono);font-size:.54rem;color:var(--cyan);">FW: ' + escHtml(p.fwRef) + '</div>' : '') + '</td>' +
-      '<td><div class="row-actions" style="flex-wrap:wrap;gap:4px;">' +
-        (p.locked
-  ? '<button class="action-btn" style="color:var(--green);border-color:rgba(34,197,94,.2);" onclick="openPaymentDrawer(window._data.payments.find(function(x){return x.id===\'' + p.id + '\'}),\'\',\'\')">🔒 View</button>'
-  : '<button class="action-btn" onclick="openPaymentDrawer(window._data.payments.find(function(x){return x.id===\'' + p.id + '\'}),\'\',\'\')">Edit</button>') +
-        (p.status !== 'paid' ? '<button class="action-btn success" onclick="markPaid(\'' + p.id + '\')">✓ Paid</button>' : '') +
-        '<button class="action-btn" style="color:var(--gold);border-color:rgba(200,155,20,.3);" onclick="' + (hasInv ? 'openInvoiceFromPayment(\'' + p.id + '\')' : 'createAndOpenInvoice(\'' + p.id + '\')') + '">📄 ' + (hasInv ? 'Invoice' : 'Gen Invoice') + '</button>' +
-        (p.status === 'paid' ? '<button class="action-btn" style="color:var(--cyan);border-color:rgba(0,188,212,.3);" onclick="' + (hasRct ? 'openReceiptFromPayment(\'' + p.id + '\')' : 'createAndOpenReceipt(\'' + p.id + '\')') + '">🧾 ' + (hasRct ? 'Receipt' : 'Gen Receipt') + '</button>' : '') +
-        (p.locked
-  ? '<span style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);">Locked</span>'
-  : '<button class="action-btn danger" onclick="deleteRecord(\'payments\',\'' + p.id + '\')">Del</button>') +
-      '</div></td>' +
+      '<td>' + (refLine + fwLine + propLine || '<span style="color:var(--dimmer);font-size:.7rem;">—</span>') + '</td>' +
+      '<td><div class="row-actions" style="flex-wrap:wrap;gap:4px;">' + actions + '</div></td>' +
     '</tr>';
   }).join('');
 }
 
+function requestPaymentDeletion(id) {
+  var p = (window._data.payments||[]).find(function(x){return x.id===id;});
+  if (!p) return;
+  if (p.deletionRequested) { toast('Deletion already requested — awaiting founder approval', 'error'); return; }
+  if (!confirm('Request deletion of this payment? The founder must approve before it is removed.')) return;
+  var cu = window._currentUser;
+  var me = (window._data.team_members||[]).find(function(m){ return cu && (m.email||'').toLowerCase()===(cu.email||'').toLowerCase(); });
+  window._updateDoc('payments', id, {
+    deletionRequested: true,
+    deletionRequestedBy: me ? me.id : (cu?cu.email:''),
+    deletionRequestedByName: me ? (me.name||me.email) : (cu?cu.email:'Unknown'),
+    deletionRequestedAt: new Date().toISOString()
+  }).then(function(){ toast('Deletion requested — awaiting founder approval ✓','success'); window._loadAll(); })
+    .catch(function(e){ toast('Request failed: '+(e.message||e),'error'); });
+}
+
+function deletePaymentAsFounder(id) {
+  if (!confirm('Delete this payment? This cannot be undone.')) return;
+  window._deleteDoc('payments', id).then(function(){ toast('Payment deleted ✓','success'); window._loadAll(); }).catch(function(e){ toast('Delete failed: '+(e.message||e),'error'); });
+}
+  
 function markPaid(id) {
   var invRef = generateDocNumber('INV', window._data ? window._data.invoices || [] : []);
   window._updateDoc('payments', id, {
@@ -8179,14 +8280,12 @@ function createAndSaveReceipt(pay, payId) {
   var rctNum = generateDocNumber('RCT', receipts);
   var v   = V_MAP[pay.ventureId] || {};
   var svc = TEKNNUKU_SERVICES.find(function(s){ return s.id === pay.serviceId; });
-  var inv = (window._data ? window._data.invoices||[] : []).find(function(i){ return i.paymentId === payId; });
   var data = {
     receiptNumber: rctNum,
     paymentId:     payId,
-    invoiceId:     inv ? inv.id : '',
-    invoiceNumber: inv ? inv.invoiceNumber : '',
     leadId:        pay.leadId      || '',
     proposalId:    pay.proposalId  || '',
+    proposalRef:   pay.proposalRef || '',
     ventureId:     pay.ventureId   || '',
     ventureName:   v.name          || '',
     clientName:    pay.personName  || '',
@@ -8199,16 +8298,19 @@ function createAndSaveReceipt(pay, payId) {
     paymentMethod: pay.paymentMethod || '',
     paymentDate:   pay.paidAt || new Date().toISOString().split('T')[0],
     fwRef:         pay.fwRef || '',
-    invoiceRef:    pay.invoiceRef || '',
+    proofRef:      pay.proofRef      || '',
+    proofLink:     pay.proofLink     || '',
+    proofFile:     pay.proofFile     || '',
+    proofFileName: pay.proofFileName || '',
     createdAt:     new Date().toISOString()
   };
   return window._saveDoc('receipts', data).then(function(id) {
-    toast('Receipt generated: ' + rctNum, 'success');
+    window._updateDoc('payments', payId, { receiptRef: rctNum });
     window._loadAll();
     return id;
   });
 }
-
+  
 function generateReceiptHTML(rct) {
   var cn  = FW_CONFIG.companyName  || 'TEKNNUKU Studio';
   var ce  = FW_CONFIG.companyEmail || 'studio@teknnuku.xyz';
@@ -8299,6 +8401,11 @@ function openReceiptDrawer(rctId) {
       '<div class="detail-item"><div class="detail-label">Method</div><div class="detail-val">' + escHtml((rct.paymentMethod||'').replace(/_/g,' ')) + '</div></div>' +
       '<div class="detail-item"><div class="detail-label">Service</div><div class="detail-val">' + escHtml(rct.serviceLabel||'—') + '</div></div>' +
     '</div></div>' +
+    (rct.proofRef || rct.proofLink || rct.proofFile ? '<div class="detail-section"><h4>🧾 Proof of Payment</h4>' +
+      (rct.proofRef  ? '<div class="detail-item" style="margin-bottom:8px;"><div class="detail-label">Transaction Ref / Hash</div><div class="detail-val mono">'+escHtml(rct.proofRef)+'</div></div>' : '') +
+      (rct.proofLink ? '<div style="margin-bottom:8px;"><a href="'+escHtml(rct.proofLink)+'" target="_blank" style="font-family:var(--mono);font-size:.68rem;color:var(--cyan);word-break:break-all;">🔗 '+escHtml(rct.proofLink)+'</a></div>' : '') +
+      (rct.proofFile ? (rct.proofFile.indexOf('data:image')===0 ? '<img src="'+rct.proofFile+'" style="max-width:100%;border-radius:6px;border:1px solid var(--border);">' : '<a href="'+rct.proofFile+'" download="'+(rct.proofFileName||'proof')+'" style="display:inline-flex;align-items:center;gap:6px;background:rgba(200,155,20,.08);border:1px solid rgba(200,155,20,.2);color:var(--gold);padding:7px 14px;border-radius:6px;text-decoration:none;font-family:var(--mono);font-size:.65rem;">⬇ Download '+escHtml(rct.proofFileName||'Proof File')+'</a>') : '') +
+    '</div>' : '') +
     '<div class="btn-row">' +
       '<button class="btn-primary" onclick="printReceipt(\'' + rctId + '\')">🖨 Print / Save PDF</button>' +
       (rct.clientEmail ? '<button class="btn-secondary" style="color:var(--gold);border-color:rgba(200,155,20,.3);" onclick="sendReceiptEmail(\'' + rctId + '\')">✉ Email</button>' : '') +
@@ -8316,20 +8423,25 @@ function printReceipt(rctId) {
 function sendReceiptEmail(rctId) {
   var rct = (window._data.receipts||[]).find(function(x){ return x.id === rctId; });
   if (!rct) return;
-  var subject = encodeURIComponent('Payment Receipt ' + rct.receiptNumber + ' — ' + (FW_CONFIG.companyName||'TEKNNUKU Studio'));
-  var body    = encodeURIComponent(
-    'Dear ' + (rct.clientName||'Valued Client') + ',\n\n' +
-    'Thank you for your payment! Please find your receipt details below:\n\n' +
-    'Receipt No: ' + rct.receiptNumber + '\n' +
-    'Service: ' + (rct.serviceLabel||'Professional Service') + '\n' +
-    'Amount Paid: ₦' + Number(rct.amountPaid||0).toLocaleString() + '\n' +
-    'Payment Date: ' + (rct.paymentDate||'—') + '\n' +
-    'Method: ' + (rct.paymentMethod||'').replace(/_/g,' ') + '\n' +
-    (rct.invoiceNumber ? 'Invoice Ref: ' + rct.invoiceNumber + '\n' : '') + '\n' +
-    'This receipt confirms full and complete payment.\n\n' +
-    'Kind regards,\n' + (FW_CONFIG.companyName||'TEKNNUKU Studio') + '\n' + (FW_CONFIG.companyEmail||'')
-  );
-  window.open('mailto:' + encodeURIComponent(rct.clientEmail||'') + '?subject=' + subject + '&body=' + body, '_blank');
+  toast('Opening printable receipt — choose "Save as PDF" in the print dialog, then attach it in the email that opens next', 'success');
+  printReceipt(rctId);
+  setTimeout(function() {
+    var subject = encodeURIComponent('Payment Receipt ' + rct.receiptNumber + ' — ' + (FW_CONFIG.companyName||'TEKNNUKU Studio'));
+    var body    = encodeURIComponent(
+      'Dear ' + (rct.clientName||'Valued Client') + ',\n\n' +
+      'Thank you for your payment! Please find your receipt details below.\n\n' +
+      '⚠ Please attach the PDF receipt you just saved/downloaded to this email before sending.\n\n' +
+      'Receipt No: ' + rct.receiptNumber + '\n' +
+      'Service: ' + (rct.serviceLabel||'Professional Service') + '\n' +
+      'Amount Paid: ₦' + Number(rct.amountPaid||0).toLocaleString() + '\n' +
+      'Payment Date: ' + (rct.paymentDate||'—') + '\n' +
+      'Method: ' + (rct.paymentMethod||'').replace(/_/g,' ') + '\n' +
+      (rct.proposalRef ? 'Proposal Ref: ' + rct.proposalRef + '\n' : '') + '\n' +
+      'This receipt confirms full and complete payment.\n\n' +
+      'Kind regards,\n' + (FW_CONFIG.companyName||'TEKNNUKU Studio') + '\n' + (FW_CONFIG.companyEmail||'')
+    );
+    window.open('mailto:' + encodeURIComponent(rct.clientEmail||'') + '?subject=' + subject + '&body=' + body, '_blank');
+  }, 1400);
 }
 
 function sendReceiptWhatsApp(rctId) {
@@ -8487,7 +8599,6 @@ async function confirmFWPayment() {
       reconcilePaymentWithFinance(pay, newPayId);
       autoAcceptProposalsForPayment(pay);
       if (pay.leadId) autoWinLead(pay.leadId, pay);
-      createAndSaveInvoice(pay, newPayId);
       createAndSaveReceipt(pay, newPayId);
     }
     return;
@@ -8516,7 +8627,7 @@ async function confirmFWPayment() {
   closeDrawer();
   await window._loadAll();
   var pay2 = (window._data.payments||[]).find(function(p){ return p.id===newPayId2; });
-  if (pay2) { reconcilePaymentWithFinance(pay2, newPayId2); autoAcceptProposalsForPayment(pay2); if (pay2.leadId) autoWinLead(pay2.leadId, pay2); createAndSaveInvoice(pay2, newPayId2); createAndSaveReceipt(pay2, newPayId2); }
+  if (pay2) { reconcilePaymentWithFinance(pay2, newPayId2); autoAcceptProposalsForPayment(pay2); if (pay2.leadId) autoWinLead(pay2.leadId, pay2); createAndSaveReceipt(pay2, newPayId2); }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -9149,7 +9260,9 @@ function declineProposalManual(propId) {
   
 function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
   _editingPaymentId = p ? p.id : null;
-  var isPayLocked = !!(p && p.locked);
+  var isFullyPaid    = !!(p && p.status === 'paid');
+  var statusOnlyEdit = !!p && !isFullyPaid;   // existing, not-yet-paid → only Status (+ proof on transition to Paid) editable
+
   var storedMethods = p ? (p.paymentMethods || ['bank_transfer']) : ['bank_transfer'];
   var currentClientVal = '';
   if (p && p.clientRef) currentClientVal = p.clientRef;
@@ -9162,22 +9275,30 @@ function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
     ['bank_transfer','🏦 Bank Transfer'],
     ['ussd',         '📱 USSD'],
     ['cash',         '💵 Cash'],
-    ['crypto',       '₿ Crypto']
+    ['crypto',       '₿ Crypto'],
+    ['mobile_money', '📲 Mobile Money']
   ];
 
   var proposalOpts = '<option value="">— Not linked to a proposal —</option>';
   if (p && p.proposalId) {
     var lProp = window._data ? (window._data.proposals||[]).find(function(pr){ return pr.id === p.proposalId; }) : null;
-    if (lProp) proposalOpts = '<option value="' + lProp.id + '" selected>' + escHtml(lProp.title||'Untitled') + ' · ₦' + Number(lProp.amount||0).toLocaleString() + '</option>';
+    if (lProp) proposalOpts = '<option value="' + lProp.id + '" selected>' + (lProp.proposalRef?escHtml(lProp.proposalRef)+' · ':'') + escHtml(lProp.title||'Untitled') + ' · ₦' + Number(lProp.amount||0).toLocaleString() + '</option>';
   }
 
   var clientInfo = p ? resolvePayClient(p.clientRef || '') : {};
+  var disAttr  = statusOnlyEdit ? ' disabled' : '';
+  var disStyle = statusOnlyEdit ? 'opacity:.55;pointer-events:none;' : '';
 
   var html =
+    (isFullyPaid
+      ? '<div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:7px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:.62rem;color:var(--green);">🔒 This payment is marked Paid and is fully locked. No fields can be edited.</div>'
+      : (statusOnlyEdit ? '<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:.62rem;color:var(--amber);">⚠ This payment is already logged. Only Status can be changed below. If you set it to Paid, you must provide proof of payment to finalize.</div>' : '')
+    ) +
+
     // ── Section 1: Client ──────────────────────────────────
-    '<div class="detail-section"><h4>👤 Client / Lead</h4>' +
+    '<div class="detail-section" style="' + disStyle + '"><h4>👤 Client / Lead</h4>' +
     '<div class="form-field" style="margin-bottom:8px;"><div class="form-label">Select Client *</div>' +
-      '<select class="form-select" id="pay-client-sel" onchange="onPayClientChange()">' + clientOpts + '</select>' +
+      '<select class="form-select" id="pay-client-sel" onchange="onPayClientChange()"' + disAttr + '>' + clientOpts + '</select>' +
     '</div>' +
     '<div id="pay-cinfo" style="' + (currentClientVal ? '' : 'display:none;') + '">' +
       '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:7px;padding:10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">' +
@@ -9189,84 +9310,134 @@ function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
     '</div></div>' +
 
     // ── Section 2: Service & Venture ───────────────────────
-    '<div class="detail-section"><h4>📦 Service & Venture</h4>' +
+    '<div class="detail-section" style="' + disStyle + '"><h4>📦 Service & Venture</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Service / Package *</div>' +
-        '<select class="form-select" id="pay-service-sel" onchange="onPayServiceChange()">' + serviceOpts + '</select>' +
+        '<select class="form-select" id="pay-service-sel" onchange="onPayServiceChange()"' + disAttr + '>' + serviceOpts + '</select>' +
       '</div>' +
       '<div class="form-field"><div class="form-label">Venture Receiving Payment</div>' +
-        '<select class="form-select" id="pay-venture"><option value="">Select…</option>' +
+        '<select class="form-select" id="pay-venture"' + disAttr + '><option value="">Select…</option>' +
           VENTURES_SEED.map(function(v){ return '<option value="' + v.id + '"' + (p && p.ventureId===v.id?' selected':'') + '>' + v.name + '</option>'; }).join('') +
         '</select>' +
       '</div>' +
     '</div>' +
     '<div class="form-field"><div class="form-label">Linked Proposal (optional)</div>' +
-      '<select class="form-select" id="pay-proposal-link" onchange="onPayProposalChange()">' + proposalOpts + '</select>' +
+      '<select class="form-select" id="pay-proposal-link" onchange="onPayProposalChange()"' + disAttr + '>' + proposalOpts + '</select>' +
     '</div></div>' +
 
     // ── Section 3: Financial ───────────────────────────────
-    '<div class="detail-section"><h4>💰 Financial Details</h4>' +
+    '<div class="detail-section" style="' + disStyle + '"><h4>💰 Financial Details</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="pay-amount" type="number" min="0" value="' + (p ? p.amount || '' : '') + '"></div>' +
-      '<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="pay-status">' +
+      '<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="pay-amount" type="number" min="0" value="' + (p ? p.amount || '' : '') + '"' + disAttr + '></div>' +
+      '<div class="form-field"><div class="form-label">Status' + (statusOnlyEdit?' *':'') + '</div><select class="form-select" id="pay-status" onchange="onPayStatusChange()">' +
         ['pending','partial','paid','overdue'].map(function(s){ return '<option value="' + s + '"' + (p && p.status===s?' selected':(!p&&s==='pending'?' selected':'')) + '>' + s + '</option>'; }).join('') +
       '</select></div>' +
-      '<div class="form-field"><div class="form-label">Payment Date</div><input class="form-input" id="pay-date" type="date" value="' + escHtml(p ? p.paidAt || '' : '') + '"></div>' +
+      '<div class="form-field"><div class="form-label">Payment Date</div><input class="form-input" id="pay-date" type="date" value="' + escHtml(p ? p.paidAt || '' : '') + '"' + disAttr + '></div>' +
     '</div>' +
     '<div class="form-field" style="margin-bottom:10px;"><div class="form-label" style="margin-bottom:7px;">Payment Method</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:7px;">' +
         methodList.map(function(m) {
           var chk = storedMethods.indexOf(m[0]) !== -1 ? ' checked' : '';
           return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:5px;padding:7px 12px;cursor:pointer;font-size:.78rem;color:var(--dim);">' +
-            '<input type="checkbox" class="pay-method-cb" value="' + m[0] + '"' + chk + ' style="accent-color:var(--gold);width:13px;height:13px;">' + m[1] + '</label>';
+            '<input type="checkbox" class="pay-method-cb" value="' + m[0] + '"' + chk + disAttr + ' style="accent-color:var(--gold);width:13px;height:13px;">' + m[1] + '</label>';
         }).join('') +
       '</div>' +
     '</div>' +
     '</div>' +
 
-    // ── Section 4: References ──────────────────────────────
-    '<div class="detail-section"><h4>🔖 References</h4>' +
+    // ── Section 4: Proof of Payment ────────────────────────
+    '<div class="detail-section" id="pay-proof-section" style="display:none;">' +
+      '<h4>🧾 Proof of Payment <span style="font-weight:400;color:var(--amber);font-size:.58rem;text-transform:none;letter-spacing:0;">— required to mark fully Paid</span></h4>' +
+      '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-bottom:10px;">Provide at least one: transaction reference/hash, a proof link, or an uploaded image/PDF. The receipt reference number is generated automatically after saving — do not type one in manually.</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+        '<div class="form-field"><div class="form-label">Transaction Ref / Hash / ID</div><input class="form-input" id="pay-proof-ref" value="' + escHtml(p ? p.proofRef || '' : '') + '" placeholder="e.g. bank transfer ref, card auth code, crypto tx hash"></div>' +
+        '<div class="form-field"><div class="form-label">Proof Link (optional)</div><input class="form-input" id="pay-proof-link" type="url" value="' + escHtml(p ? p.proofLink || '' : '') + '" placeholder="e.g. blockchain explorer / screenshot URL"></div>' +
+      '</div>' +
+      '<div class="form-field">' +
+        '<div class="form-label">Upload Proof (image/PDF, max 200KB)</div>' +
+        (p && p.proofFile ? '<div style="font-size:.72rem;color:var(--green);margin-bottom:6px;">✅ File already attached — uploading a new one will replace it</div>' : '') +
+        '<input type="file" id="pay-proof-file" accept="image/*,.pdf" style="color:var(--dim);font-size:.75rem;width:100%;">' +
+      '</div>' +
+    '</div>' +
+
+    // ── Section 5: References ──────────────────────────────
+    '<div class="detail-section" style="' + disStyle + '"><h4>🔖 References</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-      '<div class="form-field"><div class="form-label">Invoice Ref (auto-generated on save)</div><input class="form-input" id="pay-ref" value="' + escHtml(p ? p.invoiceRef || '' : '') + '" placeholder="INV-2026-0001 (auto)"></div>' +
-      '<div class="form-field"><div class="form-label">Flutterwave Transaction ID (if applicable)</div><input class="form-input" id="pay-fw-ref" value="' + escHtml(p ? p.fwRef || '' : '') + '" placeholder="FLW-TX-..."></div>' +
+      '<div class="form-field"><div class="form-label">Receipt Reference (auto-generated once fully paid)</div><input class="form-input" value="' + escHtml(p ? p.receiptRef || '— not yet generated —' : '— generated after save —') + '" disabled style="opacity:.6;"></div>' +
+      '<div class="form-field"><div class="form-label">Flutterwave Transaction ID (if applicable)</div><input class="form-input" id="pay-fw-ref" value="' + escHtml(p ? p.fwRef || '' : '') + '" placeholder="FLW-TX-..."' + disAttr + '></div>' +
     '</div></div>' +
 
-    // ── Section 5: Notes ───────────────────────────────────
-    '<div class="detail-section"><h4>📝 Notes</h4>' +
-    '<textarea class="form-textarea" id="pay-notes" style="min-height:60px;">' + escHtml(p ? p.notes || '' : '') + '</textarea></div>' +
+    // ── Section 6: Notes ───────────────────────────────────
+    '<div class="detail-section" style="' + disStyle + '"><h4>📝 Notes</h4>' +
+    '<textarea class="form-textarea" id="pay-notes" style="min-height:60px;"' + disAttr + '>' + escHtml(p ? p.notes || '' : '') + '</textarea></div>' +
 
-    '<div class="btn-row">' +
-      '<button class="btn-primary" onclick="savePayment()">💾 Save Payment</button>' +
-      '<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
-    '</div>';
+    (isFullyPaid
+      ? '<div class="btn-row"><div style="font-family:var(--mono);font-size:.62rem;color:var(--green);padding:10px 0;">🔒 Locked — use the Receipt button in the table to print, save as PDF, or email.</div></div>'
+      : '<div class="btn-row"><button class="btn-primary" onclick="savePayment()">💾 ' + (statusOnlyEdit ? 'Update Status' : 'Save Payment') + '</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>'
+    );
 
   openDrawer(p ? 'Edit Payment' : 'Log Payment', p ? (p.personName || 'Payment') : 'New Payment Log', html);
 
-  // Trigger client info display if pre-populated
   if (currentClientVal) setTimeout(onPayClientChange, 80);
+  setTimeout(onPayStatusChange, 80);
+}
 
- if (isPayLocked) {
-    // Disable all fields — verified FW payments are read-only
-    document.querySelectorAll('#drawer-body input, #drawer-body select, #drawer-body textarea').forEach(function(el) {
-      el.setAttribute('disabled', 'disabled');
-      el.style.opacity = '0.65';
-    });
-    // Replace save button with locked notice
-    var btnRow = document.querySelector('#drawer-body .btn-row');
-    if (btnRow) {
-      btnRow.innerHTML =
-        '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:7px;width:100%;">' +
-          '<span style="font-size:1.1rem;">🔒</span>' +
-          '<div>' +
-            '<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">Verified Payment — Audit Protected</div>' +
-            '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">Auto-verified via Flutterwave on ' + fmtDate(p.lockedAt) + ' · Record cannot be edited to maintain financial integrity</div>' +
-          '</div>' +
-        '</div>';
-    }
-  }
+function onPayStatusChange() {
+  var status  = (document.getElementById('pay-status') || {}).value || '';
+  var section = document.getElementById('pay-proof-section');
+  if (section) section.style.display = (status === 'paid') ? 'block' : 'none';
 }
   
-function savePayment() {
+async function savePayment() {
+  var existing = _editingPaymentId ? (window._data.payments||[]).find(function(x){return x.id===_editingPaymentId;}) : null;
+  if (existing && existing.status === 'paid') { toast('This payment is locked and cannot be edited', 'error'); return; }
+
+  var status = (document.getElementById('pay-status') || {}).value || 'pending';
+  var proofRef  = (document.getElementById('pay-proof-ref')  || {}).value || '';
+  var proofLink = (document.getElementById('pay-proof-link') || {}).value || '';
+  var proofFileInput  = document.getElementById('pay-proof-file');
+  var hasNewProofFile = proofFileInput && proofFileInput.files && proofFileInput.files[0];
+
+  if (status === 'paid') {
+    var hasExistingProof = existing && (existing.proofRef || existing.proofLink || existing.proofFile);
+    if (!proofRef.trim() && !proofLink.trim() && !hasNewProofFile && !hasExistingProof) {
+      toast('Proof of payment is required to mark this as fully Paid (transaction ref, link, or uploaded file)', 'error');
+      return;
+    }
+  }
+
+  var proofFileData = null, proofFileName = '';
+  if (hasNewProofFile) {
+    var res = await readFileAsBase64(proofFileInput.files[0]);
+    if (res.tooBig) { toast('Proof file too large (max 200KB) — use a link instead', 'error'); return; }
+    proofFileData = res.data; proofFileName = res.name;
+  }
+
+  // ── EDITING AN EXISTING, NOT-YET-PAID PAYMENT — status-only update ──
+  if (existing) {
+    var upd = { status: status };
+    var paidAtEl = document.getElementById('pay-date');
+    if (status === 'paid') {
+      upd.paidAt    = (paidAtEl && paidAtEl.value) || new Date().toISOString().split('T')[0];
+      upd.proofRef  = proofRef  || existing.proofRef  || '';
+      upd.proofLink = proofLink || existing.proofLink || '';
+      if (proofFileData) { upd.proofFile = proofFileData; upd.proofFileName = proofFileName; }
+    }
+    var capturedId = _editingPaymentId;
+    window._updateDoc('payments', capturedId, upd).then(function() {
+      toast('Payment status updated ✓', 'success');
+      closeDrawer();
+      window._loadAll().then(function() {
+        if (status === 'paid') {
+          var pay = (window._data.payments||[]).find(function(p){ return p.id === capturedId; });
+          if (pay) finalizePaidPayment(pay, capturedId);
+        }
+      });
+    }).catch(function(e) { toast('Update failed: ' + (e.message || e), 'error'); });
+    return;
+  }
+
+  // ── NEW PAYMENT ──
   var clientVal = (document.getElementById('pay-client-sel') || {}).value || '';
   if (!clientVal) { toast('Please select a client or lead', 'error'); return; }
   var amount = parseFloat((document.getElementById('pay-amount') || {}).value) || 0;
@@ -9278,12 +9449,6 @@ function savePayment() {
 
   var linkedProposalId = (document.getElementById('pay-proposal-link') || {}).value || '';
   var linkedProposal    = linkedProposalId ? (window._data.proposals||[]).find(function(x){return x.id===linkedProposalId;}) : null;
-
-  var invRef = (document.getElementById('pay-ref')    || {}).value || '';
-  var status = (document.getElementById('pay-status') || {}).value || 'pending';
-  if (!invRef && status === 'paid') {
-    invRef = generateDocNumber('INV', window._data ? window._data.invoices || [] : []);
-  }
 
   var data = {
     clientRef:     clientVal,
@@ -9299,34 +9464,47 @@ function savePayment() {
     proposalRef:   linkedProposal ? (linkedProposal.proposalRef || '') : '',
     amount:        amount,
     status:        status,
-    paidAt:        (document.getElementById('pay-date')    || {}).value || '',
+    paidAt:        (document.getElementById('pay-date') || {}).value || (status==='paid' ? new Date().toISOString().split('T')[0] : ''),
     paymentMethods: methods,
     paymentMethod:  methods[0] || '',
-    invoiceRef:     invRef,
     fwRef:          (document.getElementById('pay-fw-ref') || {}).value || '',
     notes:          (document.getElementById('pay-notes')  || {}).value || ''
   };
 
-  var isNew = !_editingPaymentId;
-  var fn = _editingPaymentId
-    ? window._updateDoc('payments', _editingPaymentId, data)
-    : window._saveDoc('payments', data);
+  if (status === 'paid') {
+    data.proofRef  = proofRef;
+    data.proofLink = proofLink;
+    if (proofFileData) { data.proofFile = proofFileData; data.proofFileName = proofFileName; }
+  }
 
-  fn.then(function(newId) {
-    var payId = _editingPaymentId || newId;
+  window._saveDoc('payments', data).then(function(newId) {
     toast('Payment saved ✓', 'success');
     closeDrawer();
     window._loadAll().then(function() {
-      var pay = (window._data.payments||[]).find(function(p){ return p.id === payId; });
-      if (pay && pay.status === 'paid') {
-        reconcilePaymentWithFinance(pay, payId);
-        autoAcceptProposalsForPayment(pay);
-        if (pay.leadId)     autoWinLead(pay.leadId, pay);
-        if (isNew) createAndSaveInvoice(pay, payId);
-        if (isNew) createAndSaveReceipt(pay, payId);
+      if (status === 'paid') {
+        var pay = (window._data.payments||[]).find(function(p){ return p.id === newId; });
+        if (pay) finalizePaidPayment(pay, newId);
       }
     });
   }).catch(function(e) { toast('Save failed: ' + (e.message || e), 'error'); });
+}
+
+async function finalizePaidPayment(pay, payId) {
+  reconcilePaymentWithFinance(pay, payId);
+  if (typeof autoAcceptProposalsForPayment === 'function') autoAcceptProposalsForPayment(pay);
+  else if (pay.proposalId && typeof autoAcceptProposal === 'function') autoAcceptProposal(pay);
+  if (pay.leadId) autoWinLead(pay.leadId, pay);
+
+  var existingRct = (window._data.receipts||[]).find(function(r){ return r.paymentId === payId; });
+  if (!existingRct) {
+    var rctId = await createAndSaveReceipt(pay, payId);
+    await window._loadAll();
+    var rct = (window._data.receipts||[]).find(function(r){ return r.id === rctId; });
+    if (rct) {
+      toast('🧾 Receipt ' + rct.receiptNumber + ' generated — ready to print, save as PDF, or email', 'success');
+      openReceiptDrawer(rct.id);
+    }
+  }
 }
   
 var _editingAssignmentId = null;
@@ -10091,7 +10269,7 @@ qSection +
   '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">' +
     '<div style="font-family:var(--mono);font-size:.72rem;color:var(--gold);margin-bottom:6px;">₦'+Number(pay.amount||0).toLocaleString()+'</div>' +
     '<div style="margin-bottom:8px;">'+statusBadge(pay.status)+'</div>' +
-    (pay.status!=='paid'?'<button class="btn-success" style="font-size:.68rem;padding:6px 12px;" onclick="markPaid(\''+pay.id+'\')">Mark as Paid ✓</button>':'<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Payment Verified & Paid</div>') +
+    (pay.status!=='paid'?'<button class="btn-success" style="font-size:.68rem;padding:6px 12px;" onclick="closeDrawer();openPaymentDrawer(window._data.payments.find(function(x){return x.id===\''+pay.id+'\'}))">Update Status →</button>':'<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Payment Verified & Paid</div>') +
   '</div></div>' : '') +
 
 // Linked client
