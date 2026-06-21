@@ -910,14 +910,14 @@ var ROLE_LABELS = {
 
 // ── Venture definitions (seed data) ──────────────────────────
 var VENTURES_SEED = [
-  {id:'studio',name:'TEKNNUKU Studio',focus:'Web, funnels, business systems',stage:'Revenue',color:'linear-gradient(135deg,#C89B14,#daa820)',segment:'type1'},
-  {id:'jobletters',name:'Jobletters.xyz',focus:'CV, career tools, job placement',stage:'Revenue',color:'linear-gradient(135deg,#3b82f6,#1a5f9c)',segment:'type2'},
-  {id:'tek1security',name:'TEK1SECURITY',focus:'Guard tracking, payroll systems',stage:'Building',color:'linear-gradient(135deg,#ef4444,#aa0022)',segment:'type3'},
-  {id:'gata',name:'GATA Protocol',focus:'Business ecosystem marketplace',stage:'Building',color:'linear-gradient(135deg,#00BCD4,#006688)',segment:'type1'},
-  {id:'globalbiz',name:'Global Biz Hub',focus:'Business directory and listings',stage:'Building',color:'linear-gradient(135deg,#a855f7,#3d2080)',segment:'type1'},
-  {id:'p2p',name:'Poverty2Prosperity',focus:'Business masterclass program',stage:'Revenue',color:'linear-gradient(135deg,#f59e0b,#cc8800)',segment:'type1'},
-  {id:'pawa',name:'Pawa+9ja',focus:'Energy solutions for Nigerian SMEs',stage:'Idea',color:'linear-gradient(135deg,#22c55e,#166534)',segment:'type3'},
-  {id:'autodex',name:'AUTODEX Trader',focus:'Automated trading systems',stage:'Building',color:'linear-gradient(135deg,#00BCD4,#C89B14)',segment:'type1'}
+  {id:'studio',name:'TEKNNUKU Studio',focus:'Web, funnels, business systems',stage:'Revenue',color:'linear-gradient(135deg,#C89B14,#daa820)',segment:'type1',url:'https://studio.teknnuku.xyz'},
+  {id:'jobletters',name:'Jobletters.xyz',focus:'CV, career tools, job placement',stage:'Revenue',color:'linear-gradient(135deg,#3b82f6,#1a5f9c)',segment:'type2',url:'https://jobletters.xyz'},
+  {id:'tek1security',name:'TEK1SECURITY',focus:'Guard tracking, payroll systems',stage:'Building',color:'linear-gradient(135deg,#ef4444,#aa0022)',segment:'type3',url:'https://tek1security.teknnuku.xyz'},
+  {id:'gata',name:'GATA Protocol',focus:'Business ecosystem marketplace',stage:'Building',color:'linear-gradient(135deg,#00BCD4,#006688)',segment:'type1',url:'https://gataprotocol.org'},
+  {id:'globalbiz',name:'Global Biz Hub',focus:'Business directory and listings',stage:'Building',color:'linear-gradient(135deg,#a855f7,#3d2080)',segment:'type1',url:'https://globalbizhub.teknnuku.xyz'},
+  {id:'p2p',name:'Poverty2Prosperity',focus:'Business masterclass program',stage:'Revenue',color:'linear-gradient(135deg,#f59e0b,#cc8800)',segment:'type1',url:'https://p2p.teknnuku.xyz'},
+  {id:'pawa',name:'Pawa+9ja',focus:'Energy solutions for Nigerian SMEs',stage:'Idea',color:'linear-gradient(135deg,#22c55e,#166534)',segment:'type3',url:'https://pawaplus.vercel.app'},
+  {id:'autodex',name:'AUTODEX Trader',focus:'Automated trading systems',stage:'Building',color:'linear-gradient(135deg,#00BCD4,#C89B14)',segment:'type1',url:''}
 ];
 var V_MAP = {};
 VENTURES_SEED.forEach(function(v){V_MAP[v.id] = v;});
@@ -2272,11 +2272,8 @@ function _panelPeople() {
             '<option value="contact">💬 Contacts</option>' +
           '</select>' +
 
-          '<select class="tbl-filter" id="pf-venture" onchange="applyPeopleFilters()">' +
-            '<option value="">All Ventures</option>' +
-            VENTURES_SEED.map(function(v){
-              return '<option value="' + v.id + '">' + v.name + '</option>';
-            }).join('') +
+          '<select class="tbl-filter venture-filter-select" id="pf-venture" onchange="applyPeopleFilters()">' +
+            buildVentureDropdownOptions('', true, 'All Ventures') +
           '</select>' +
 
           '<button onclick="clearPeopleFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
@@ -3345,8 +3342,8 @@ function _panelPayments() {
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">' +
         '<select class="tbl-filter" id="pay-f-status" onchange="applyPaymentFilters()"><option value="">All Status</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="partial">Partial</option><option value="overdue">Overdue</option></select>' +
-        '<select class="tbl-filter" id="pay-f-venture" onchange="applyPaymentFilters()"><option value="">All Ventures</option>' +
-          VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+        '<select class="tbl-filter venture-filter-select" id="pay-f-venture" onchange="applyPaymentFilters()">' +
+          buildVentureDropdownOptions('', true, 'All Ventures') +
         '</select>' +
         '<select class="tbl-filter" id="pay-f-service" onchange="applyPaymentFilters()"><option value="">All Services</option>' +
           TEKNNUKU_SERVICES.map(function(s){return'<option value="'+s.id+'">'+escHtml(s.label)+'</option>';}).join('') +
@@ -3437,9 +3434,8 @@ function _panelAssignments() {
         '<select class="tbl-filter" id="asf-priority" onchange="applyAsnFilters()">' +
           '<option value="">All Priorities</option><option value="high">🔥 High</option><option value="medium">🟡 Medium</option><option value="low">⚪ Low</option>' +
         '</select>' +
-        '<select class="tbl-filter" id="asf-venture" onchange="applyAsnFilters()">' +
-          '<option value="">All Ventures</option>' +
-          VENTURES_SEED.map(function(v){ return '<option value="' + v.id + '">' + v.name + '</option>'; }).join('') +
+       '<select class="tbl-filter venture-filter-select" id="asf-venture" onchange="applyAsnFilters()">' +
+          buildVentureDropdownOptions('', true, 'All Ventures') +
         '</select>' +
       '</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
@@ -3508,7 +3504,7 @@ function canAccessVentureData(ventureId) {
 function buildVentureCheckboxes(selectedIds) {
   var sel = selectedIds || [];
   return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-    VENTURES_SEED.map(function(v) {
+    getAllVentures().map(function(v) {
       var checked = sel.indexOf(v.id) !== -1;
       var STAGE_COLORS = { Idea:'var(--dimmer)', Building:'var(--amber)', Revenue:'var(--green)', Scaling:'var(--cyan)' };
       return '<label style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid ' +
@@ -3854,9 +3850,8 @@ function _panelCRM() {
       '<option value="won">Won</option>' +
       '<option value="lost">Lost</option>' +
     '</select>' +
-    '<select class="tbl-filter" id="crm-sf-venture" onchange="applyCRMFilters()">' +
-      '<option value="">All Ventures</option>' +
-      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '<select class="tbl-filter venture-filter-select" id="crm-sf-venture" onchange="applyCRMFilters()">' +
+      buildVentureDropdownOptions('', true, 'All Ventures') +
     '</select>' +
     '<select class="tbl-filter" id="crm-sf-assigned" onchange="applyCRMFilters()">' +
       '<option value="">All Assigned</option>' +
@@ -3926,6 +3921,38 @@ function _panelCRM() {
 // ═══════════════════════════════════════════════════════════════
 function isSeedVenture(id) {
   return VENTURES_SEED.some(function(v){ return v.id === id; });
+}
+
+// ── Merged ventures list (seed + custom, minus deleted) — single source of truth ──
+function getAllVentures() {
+  var dbV = window._data ? window._data.ventures || [] : [];
+  var deletedIds = new Set(dbV.filter(function(v){ return v.deleted; }).map(function(v){ return v.id; }));
+  var seedFiltered = VENTURES_SEED.filter(function(v){
+    return !dbV.find(function(dv){ return dv.id === v.id; }) && !deletedIds.has(v.id);
+  });
+  var customActive = dbV.filter(function(v){ return !v.deleted; });
+  return seedFiltered.concat(customActive);
+}
+
+function buildVentureDropdownOptions(selectedVal, includeBlank, blankLabel) {
+  var ventures = getAllVentures();
+  var html = includeBlank ? '<option value="">' + escHtml(blankLabel || 'Select…') + '</option>' : '';
+  html += ventures.map(function(v) {
+    return '<option value="' + v.id + '"' + (selectedVal === v.id ? ' selected' : '') + '>' + escHtml(v.name) + '</option>';
+  }).join('');
+  return html;
+}
+
+// Rebuilds every venture filter dropdown in the DOM so newly added ventures appear
+// without requiring a full panel rebuild / re-login
+function refreshVentureFilterDropdowns() {
+  document.querySelectorAll('select.venture-filter-select').forEach(function(sel) {
+    var cur = sel.value;
+    var blankOpt = sel.querySelector('option[value=""]');
+    var blankLabel = blankOpt ? blankOpt.textContent : 'All Ventures';
+    sel.innerHTML = buildVentureDropdownOptions(cur, true, blankLabel);
+    if (cur) sel.value = cur;
+  });
 }
 
 // Stage radio button visual preview update
@@ -4044,11 +4071,8 @@ function _panelTasks() {
 
         '<input class="tbl-search" id="tf-search" style="width:190px;" placeholder="Search task title…" oninput="applyTaskFilters()">' +
 
-        '<select class="tbl-filter" id="tf-venture" onchange="applyTaskFilters()">' +
-          '<option value="">All Ventures</option>' +
-          VENTURES_SEED.map(function(v){
-            return '<option value="' + v.id + '">' + v.name + '</option>';
-          }).join('') +
+        '<select class="tbl-filter venture-filter-select" id="tf-venture" onchange="applyTaskFilters()">' +
+          buildVentureDropdownOptions('', true, 'All Ventures') +
         '</select>' +
 
         '<select class="tbl-filter" id="tf-status" onchange="applyTaskFilters()">' +
@@ -4108,9 +4132,8 @@ function _panelClients() {
         '<option value="in_progress">In Progress</option>' +
         '<option value="complete">Complete</option>' +
       '</select>' +
-      '<select class="tbl-filter" id="cl-f-venture" onchange="applyClientFilters()">' +
-        '<option value="">All Ventures</option>' +
-        VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+      '<select class="tbl-filter venture-filter-select" id="cl-f-venture" onchange="applyClientFilters()">' +
+        buildVentureDropdownOptions('', true, 'All Ventures') +
       '</select>' +
       '<select class="tbl-filter" id="cl-f-status" onchange="applyClientFilters()">' +
         '<option value="">All Status</option>' +
@@ -4253,8 +4276,8 @@ function _panelFinance() {
       '</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
         '<select class="tbl-filter" id="fin-f-type" onchange="applyFinFilters()"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>' +
-        '<select class="tbl-filter" id="fin-f-venture" onchange="applyFinFilters()"><option value="">All Ventures</option>' +
-          VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+       '<select class="tbl-filter venture-filter-select" id="fin-f-venture" onchange="applyFinFilters()">' +
+          buildVentureDropdownOptions('', true, 'All Ventures') +
         '</select>' +
         '<select class="tbl-filter" id="fin-f-cat" onchange="applyFinFilters()">' +
           '<option value="">All Categories</option>' +
@@ -4628,6 +4651,7 @@ function refreshAll(){if(!window._loadAll){toast('Still initialising','error');r
 // ═══════════════════════════════════════
 window._renderAll = function(){
   var d=window._data;if(!d)return;
+  refreshVentureFilterDropdowns();
   // Settings collection counts
   ['intake_leads','service_inquiries','contact_messages','proposals','payments','assignments','applicants','team_members','careers_config','ventures','tasks','crm_leads','clients','financials','daily_reports','weekly_reports','invoices','receipts'].forEach(function(c){var el=document.getElementById('col-count-'+c);if(el)el.textContent=(d[c.replace(/-/g,'_')]||[]).length;});
   // Overview
@@ -8487,8 +8511,8 @@ function openReceiptRepo() {
   var receipts = window._data ? window._data.receipts || [] : [];
   var html = '<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;">' +
     '<input class="tbl-search" id="rct-repo-search" style="flex:1;min-width:180px;" placeholder="Search receipt number, client…" oninput="filterReceiptRepo()">' +
-    '<select class="tbl-filter" id="rct-repo-venture" onchange="filterReceiptRepo()"><option value="">All Ventures</option>' +
-      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '<select class="tbl-filter venture-filter-select" id="rct-repo-venture" onchange="filterReceiptRepo()">' +
+      buildVentureDropdownOptions('', true, 'All Ventures') +
     '</select>' +
   '</div>' +
   '<div id="rct-repo-list">' + renderReceiptRepoList(receipts) + '</div>';
@@ -9571,8 +9595,8 @@ function openPaymentDrawer(p, prefillName, prefillEmail, prefillLeadId) {
         '<select class="form-select" id="pay-service-sel" onchange="onPayServiceChange()"' + disAttr + '>' + serviceOpts + '</select>' +
       '</div>' +
       '<div class="form-field"><div class="form-label">Venture Receiving Payment</div>' +
-        '<select class="form-select" id="pay-venture"' + disAttr + '><option value="">Select…</option>' +
-          VENTURES_SEED.map(function(v){ return '<option value="' + v.id + '"' + (p && p.ventureId===v.id?' selected':'') + '>' + v.name + '</option>'; }).join('') +
+        '<select class="form-select" id="pay-venture">' +
+          buildVentureDropdownOptions(p ? p.ventureId || '' : '', true, 'Select…') +
         '</select>' +
       '</div>' +
     '</div>' +
@@ -9826,9 +9850,9 @@ function openAssignmentDrawer(a, prefillName, prefillEmail) {
     '<div class="detail-section"><h4>📋 Assignment Details</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Venture</div>' +
-        '<select class="form-select" id="asn-venture"><option value="">Select…</option>' +
-          VENTURES_SEED.map(function(v) { return '<option value="' + v.id + '"' + (a && a.ventureId===v.id ? ' selected' : '') + '>' + v.name + '</option>'; }).join('') +
-        '</select></div>' +
+        '<select class="form-select" id="asn-venture">' +
+          buildVentureDropdownOptions(a ? a.ventureId || '' : '', true, 'Select…') +
+        '</select>' +
       '<div class="form-field"><div class="form-label">Target Date / Deadline</div>' +
         '<input class="form-input" id="asn-date" type="date" value="' + escHtml(a ? a.targetDate||'' : '') + '"></div>' +
     '</div>' +
@@ -10634,8 +10658,8 @@ function openAddCRMLeadDirect() {
       '<div class="form-field"><div class="form-label">Phone / WhatsApp *</div><input class="form-input" id="dc-phone" placeholder="+234…"></div>' +
     '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-      '<div class="form-field"><div class="form-label">Venture *</div><select class="form-select" id="dc-venture">' +
-        '<option value="">Select venture…</option>'+VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('')+
+     '<div class="form-field"><div class="form-label">Venture *</div><select class="form-select" id="dc-venture">' +
+        buildVentureDropdownOptions('', true, 'Select venture…') +
       '</select></div>' +
       '<div class="form-field"><div class="form-label">Segment</div><select class="form-select" id="dc-segment">' +
         '<option value="type1">Type 1 — SME / Business</option><option value="type2">Type 2 — Job Seeker</option><option value="type3">Type 3 — Corporate</option>' +
@@ -11039,14 +11063,17 @@ function renderVentures(dbVentures, tasks, crm_leads, clients, financials) {
   };
 
   grid.innerHTML = allV.map(function(v) {
-    var f      = finMap[v.id]  || {i:0, e:0};
-    var tm     = taskMap[v.id] || {tot:0, done:0};
-    var profit = f.i - f.e;
-    var h      = tm.tot > 0 ? Math.round((tm.done / tm.tot) * 100) : (v.health || 0);
-    var hc     = h >= 70 ? 'hf-green' : h >= 40 ? 'hf-yellow' : 'hf-red';
-    var sc     = (v.stage||'idea').toLowerCase();
-    var isDbV  = !!dbVentures.find(function(dv){ return dv.id === v.id && !dv.deleted; });
-    var isSeed = isSeedVenture(v.id);
+    var f       = finMap[v.id]  || {i:0, e:0};
+    var tm      = taskMap[v.id] || {tot:0, done:0};
+    var profit  = f.i - f.e;
+    var clCount = clientMap[v.id] || 0;
+    var taskPct = tm.tot > 0 ? Math.round((tm.done / tm.tot) * 100) : 0;
+    // Composite health: 50% task completion, +30 if generating revenue, +20 if any active clients
+    var h       = Math.min(100, Math.round(taskPct * 0.5 + (f.i > 0 ? 30 : 0) + (clCount > 0 ? 20 : 0)));
+    var hc      = h >= 70 ? 'hf-green' : h >= 40 ? 'hf-yellow' : 'hf-red';
+    var sc      = (v.stage||'idea').toLowerCase();
+    var isDbV   = !!dbVentures.find(function(dv){ return dv.id === v.id && !dv.deleted; });
+    var isSeed  = isSeedVenture(v.id);
 
     return '<div class="venture-card" style="border-color:' + (STAGE_BORDER[sc]||'rgba(200,155,20,.12)') + ';">' +
 
@@ -11064,6 +11091,10 @@ function renderVentures(dbVentures, tasks, crm_leads, clients, financials) {
           (isSeed ? '<span style="font-family:var(--mono);font-size:.48rem;color:var(--dimmer);letter-spacing:.08em;">SEED</span>' : '') +
         '</div>' +
       '</div>' +
+
+      // ── Venture link ─────────────────────────────────────────
+      (v.url ? '<a href="' + escHtml(v.url) + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid rgba(200,155,20,.25);border-radius:5px;padding:6px 12px;margin-bottom:12px;transition:all .15s;" onmouseover="this.style.background=\'rgba(200,155,20,.08)\'" onmouseout="this.style.background=\'transparent\'">🔗 Visit Platform →</a>'
+        : '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);margin-bottom:12px;">No link added yet</div>') +
 
       // ── Stats grid ──────────────────────────────────────────
       '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;text-align:center;">' +
@@ -11114,8 +11145,10 @@ function openAddVenture() {
     '<div style="margin-bottom:16px;">' + buildStageRadios('Building') + '</div>' +
     '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Venture Name *</div>' +
       '<input class="form-input" id="ven-name" placeholder="e.g. TEKNNUKU Logistics"></div>' +
-    '<div class="form-field"><div class="form-label">Focus / Description</div>' +
+    '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Focus / Description</div>' +
       '<input class="form-input" id="ven-focus" placeholder="What is this venture doing right now?"></div>' +
+    '<div class="form-field"><div class="form-label">Website / Platform Link</div>' +
+      '<input class="form-input" id="ven-url" type="url" placeholder="https://yourventure.com"></div>' +
     '</div>' +
     '<div class="btn-row">' +
       '<button class="btn-primary" onclick="saveVenture(null)">💾 Add Venture</button>' +
@@ -11143,8 +11176,10 @@ function openEditVenture(id) {
     '<div class="detail-section"><h4>📋 Details</h4>' +
     '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Venture Name</div>' +
       '<input class="form-input" id="ven-name" value="' + escHtml(v.name||'') + '"></div>' +
-    '<div class="form-field"><div class="form-label">Focus / Description</div>' +
+    '<div class="form-field" style="margin-bottom:12px;"><div class="form-label">Focus / Description</div>' +
       '<input class="form-input" id="ven-focus" value="' + escHtml(v.focus||'') + '" placeholder="What is this venture doing right now?"></div>' +
+    '<div class="form-field"><div class="form-label">Website / Platform Link</div>' +
+      '<input class="form-input" id="ven-url" type="url" value="' + escHtml(v.url||'') + '" placeholder="https://yourventure.com"></div>' +
     '</div>' +
 
     // Context banner for seed ventures
@@ -11176,6 +11211,7 @@ function openEditVenture(id) {
 function saveVenture(id) {
   var name    = (document.getElementById('ven-name')  ||{}).value||'';
   var focus   = (document.getElementById('ven-focus') ||{}).value||'';
+  var url     = (document.getElementById('ven-url')   ||{}).value||'';
   var stageEl = document.querySelector('input[name="ven-stage-r"]:checked');
   var stage   = stageEl ? stageEl.value : 'Idea';
 
@@ -11190,11 +11226,12 @@ function saveVenture(id) {
   var data   = {
     name:    name.trim(),
     focus:   focus.trim(),
+    url:     url.trim(),
     stage:   stage,
     color:   (dbV && dbV.color)   || (seedV && seedV.color)   || 'linear-gradient(135deg,var(--gold),var(--goldL))',
     segment: (dbV && dbV.segment) || (seedV && seedV.segment) || 'type1'
   };
-
+  
   var fn;
   if (isNew) {
     // Brand-new venture → auto-generated Firestore ID
@@ -11433,8 +11470,9 @@ function openAddTask(){
   var members=window._data.team_members||[];
   var html='<div class="drawer-form">' +
     '<div class="form-field"><div class="form-label">Title</div><input class="form-input" id="tsk-title" placeholder="What needs to be done?"></div>' +
-    '<div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="tsk-v"><option value="">Select…</option>' +
-      VENTURES_SEED.map(function(v){return'<option value="'+v.id+'">'+v.name+'</option>';}).join('') +
+    '<div class="form-row"><div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="tsk-v">' +
+      buildVentureDropdownOptions('', true, 'Select…') +
+    '</select></div>' +
     '</select></div><div class="form-field"><div class="form-label">Assign To</div><select class="form-select" id="tsk-a"><option value="">Unassigned</option>' +
       members.map(function(m){return'<option value="'+m.id+'">'+escHtml(m.name||m.email||'')+'</option>';}).join('') +
     '</select></div></div>' +
@@ -11928,10 +11966,8 @@ function openTransactionDrawer(f) {
         '</select>' +
       '</div>' +
       '<div class="form-field"><div class="form-label">Venture *</div>' +
-        '<select class="form-select" id="tx-v"><option value="">Select…</option>' +
-          VENTURES_SEED.map(function(v) {
-            return '<option value="' + v.id + '"' + (f && f.ventureId === v.id ? ' selected' : '') + '>' + v.name + '</option>';
-          }).join('') +
+        '<select class="form-select" id="tx-v">' +
+          buildVentureDropdownOptions(f ? f.ventureId || '' : '', true, 'Select…') +
         '</select>' +
       '</div>' +
     '</div>' +
