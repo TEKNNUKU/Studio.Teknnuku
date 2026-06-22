@@ -766,17 +766,24 @@ window._updateDoc = async (col, id, data) => { data.updatedAt=serverTimestamp();
 window._deleteDoc = async (col, id) => { await deleteDoc(doc(db,col,id)); };
 
 window._loadAll = async function() {
-  const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
-       ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log] = await Promise.all([
-  getCol('intake_leads'), getCol('service_inquiries'), getCol('contact_messages'),
-  getCol('proposals'), getCol('payments'), getCol('assignments'),
-  getCol('applicants'), getCol('team_members'), getCol('careers_config'),
-  getCol('ventures'), getCol('tasks'), getCol('crm_leads'),
-  getCol('clients'), getCol('financials'), getCol('daily_reports'), getCol('weekly_reports'),
-  getCol('invoices'), getCol('receipts'), getCol('comm_log')
+const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
+ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log,
+fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
+fin_investments,fin_ledger,fin_budgets] = await Promise.all([
+getCol('intake_leads'), getCol('service_inquiries'), getCol('contact_messages'),
+getCol('proposals'), getCol('payments'), getCol('assignments'),
+getCol('applicants'), getCol('team_members'), getCol('careers_config'),
+getCol('ventures'), getCol('tasks'), getCol('crm_leads'),
+getCol('clients'), getCol('financials'), getCol('daily_reports'), getCol('weekly_reports'),
+getCol('invoices'), getCol('receipts'), getCol('comm_log'),
+getCol('fin_accounts'), getCol('fin_transfers'), getCol('fin_assets'), getCol('fin_liabilities'),
+getCol('fin_equity'), getCol('fin_receivables'), getCol('fin_payables'),
+getCol('fin_investments'), getCol('fin_ledger'), getCol('fin_budgets')
 ]);
 window._data = { leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
-                 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log };
+ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log,
+fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
+fin_investments,fin_ledger,fin_budgets };
   document.getElementById('last-refresh').textContent = 'Updated '+new Date().toLocaleTimeString();
   window._renderAll();
 };
@@ -11828,7 +11835,85 @@ function filterClientsByStatus(status) {
 // ── Finance ────────────────────────────────────────────────────
 var _finTxFilter='';
 function filterTransactions(type){_finTxFilter=type;renderFinance(window._data.financials||[],window._data.clients||[]);}
-function renderFinance(financials, clients) {
+// ═══════════════════════════════════════════════════════════════
+
+//  FINANCE OS — CONSTANTS
+
+// ═══════════════════════════════════════════════════════════════
+
+var FIN_ACCOUNT_TYPES = [
+
+'Bank Account', 'Digital Wallet', 'Crypto Wallet', 'Cash', 'Mobile Money',
+
+'Payment Gateway', 'Investment Account', 'Reserve Fund'
+
+];
+
+var FIN_CURRENCIES = ['NGN', 'USD', 'USDT', 'ETH', 'BTC', 'GBP', 'EUR'];
+
+var FIN_ASSET_TYPES = [
+
+'Cash & Bank', 'Accounts Receivable', 'Crypto / Digital Asset', 'Equipment & Hardware',
+
+'Software License', 'Domain & IP', 'Investment', 'Prepaid Expense', 'Other Asset'
+
+];
+
+var FIN_LIABILITY_TYPES = [
+
+'Salary Payable', 'Tax Payable', 'Vendor Payable', 'Loan', 'Credit Card',
+
+'Customer Refund', 'Investor Convertible Note', 'Other Liability'
+
+];
+
+var FIN_EQUITY_TYPES = [
+
+'Founder Capital', 'Retained Earnings', 'Investor Equity', 'Drawings (Withdrawal)',
+
+'Profit Distribution', 'Share Issuance', 'Other Equity'
+
+];
+
+var FIN_RECEIVABLE_STATUS = ['Outstanding', 'Partial', 'Paid', 'Overdue', 'Written Off'];
+
+var FIN_PAYABLE_STATUS    = ['Outstanding', 'Partial', 'Paid', 'Overdue', 'Disputed'];
+
+var FIN_INVESTMENT_ROUNDS = ['Pre-Seed', 'Seed', 'Series A', 'SAFE', 'Convertible Note',
+
+'Equity', 'Grant', 'Loan', 'Crowdfunding', 'Other'];
+
+var FIN_WITHDRAWAL_REASONS = ['Founder Salary', 'Dividend', 'Expense Reimbursement',
+
+'Personal Draw', 'Profit Share', 'Loan Repayment', 'Other'];
+var _finTab = 'dashboard'; // active Finance OS sub-tab
+function switchFinTab(tab) {
+
+_finTab = tab;
+
+document.querySelectorAll('.fin-tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === tab); });
+
+document.querySelectorAll('.fin-sub-panel').forEach(function(p){ p.style.display = p.dataset.panel === tab ? '' : 'none'; });
+
+if (tab === 'pl')         renderFinance(window._data?window._data.financials||[]:[], window._data?window._data.clients||[]:[]);
+
+if (tab === 'dashboard')  renderFinDashboard();
+
+if (tab === 'accounts')   renderFinAccounts();
+if (tab === 'transfers')  renderFinTransfers();
+if (tab === 'assets')     renderFinAssets();
+if (tab === 'liabilities')renderFinLiabilities();
+if (tab === 'equity')     renderFinEquity();
+if (tab === 'cashflow')   renderFinCashFlow();
+if (tab === 'receivables')renderFinReceivables();
+if (tab === 'payables')   renderFinPayables();
+if (tab === 'withdrawals')renderFinWithdrawals();
+if (tab === 'investments')renderFinInvestments();
+if (tab === 'ledger')     renderFinLedger();
+if (tab === 'budget')     renderFinBudget();
+}
+
+  function renderFinance(financials, clients) {
   // ── All-time stats (always full dataset, never filtered) ───
   var allFin = window._data ? window._data.financials || [] : [];
   var allPay = window._data ? window._data.payments   || [] : [];
@@ -11936,16 +12021,24 @@ function renderFinance(financials, clients) {
       '<td style="font-family:var(--mono);font-weight:700;color:'+(isInc?'var(--green)':'var(--red)')+';white-space:nowrap;">' + (isInc?'+':'−') + '₦' + amt.toLocaleString() + '</td>' +
       '<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">' + escHtml((f.paymentMethod||'').replace(/_/g,' ')||'—') + '</td>' +
       '<td>' +
-        (f.invoiceRef?'<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">'+escHtml(f.invoiceRef)+'</div>':'') +
-        (isAuto?'<span class="badge badge-cyan" style="font-size:.5rem;">⚡ Auto</span>':'') +
-      '</td>' +
+    (f.finRef?'<div style="font-family:var(--mono);font-size:.62rem;color:var(--gold);">'+escHtml(f.finRef)+'</div>':'') +
+    (f.invoiceRef?'<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">'+escHtml(f.invoiceRef)+'</div>':'') +
+    (isAuto?'<span class="badge badge-cyan" style="font-size:.5rem;">⚡ Auto</span>':'') +
+    (f.locked?'<span class="badge badge-dim" style="font-size:.48rem;">🔒</span>':'') +
+  '</td>' +
       '<td>' +
         (hasDoc?'<button class="action-btn" style="font-size:.58rem;" onclick="viewTxAttachments(\''+f.id+'\')">📎 Docs</button>':'<span style="color:var(--dimmer);font-size:.7rem;">—</span>') +
       '</td>' +
-      '<td><div class="row-actions">' +
-        '<button class="action-btn" onclick="openEditTransaction(\''+f.id+'\')">Edit</button>' +
-        '<button class="action-btn danger" onclick="deleteRecord(\'financials\',\''+f.id+'\')">Del</button>' +
-      '</div></td>' +
+     '<td><div class="row-actions">' +
+    (f.locked
+      ? (window._userRole==='founder'
+          ? '<button class="action-btn danger" onclick="deleteRecord(\'financials\',\''+f.id+'\')">🗑 Del</button>'
+          : '<span class="badge badge-dim" style="font-size:.5rem;">🔒 Locked</span>')
+      : '<button class="action-btn" onclick="openEditTransaction(\''+f.id+'\')">Edit</button>' +
+        (window._userRole==='founder'
+          ? '<button class="action-btn danger" onclick="deleteRecord(\'financials\',\''+f.id+'\')">Del</button>'
+          : '<button class="action-btn danger" onclick="requestFinDeletion(\''+f.id+'\')">Del</button>')) +
+  '</div></td>' +
     '</tr>';
   }).join('');
 }
@@ -11999,7 +12092,27 @@ function openTransactionDrawer(f) {
       ? '<div style="background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.2);border-radius:6px;padding:9px 13px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);">⚡ Auto-reconciled from verified payment — editing live finance data</div>'
       : '') +
 
-    // ── Link to verified payment (income entries — auto
+    // ── Link to verified payment (income entries — auto-populates all fields) ─────────
+(!f || type === 'income'
+? (function(){
+var paidPayments = (window._data ? window._data.payments||[] : []).filter(function(p){return p.status==='paid';});
+var curLink = f ? f.paymentId||'' : '';
+var payOpts = '<option value="">— Not linked to a payment record —</option>' +
+paidPayments.map(function(p){
+var svc = TEKNNUKU_SERVICES.find(function(s){return s.id===p.serviceId;});
+return '<option value="'+p.id+'"'+(curLink===p.id?' selected':'')+'>₦'+Number(p.amount||0).toLocaleString()+' · '+escHtml(p.personName||'—')+' · '+(svc?escHtml(svc.label):escHtml(p.serviceId||'—'))+' · '+escHtml(fmtDate(p.paidAt||p.createdAt))+'</option>';
+}).join('');
+
+return '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.18);border-radius:8px;padding:14px 16px;margin-bottom:14px;">' +
+'<div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">🔗 Link to Verified Payment (Recommended for Income)</div>' +
+'<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:10px;line-height:1.6;">Linking to a confirmed paid payment auto-fills all fields below and carries over the receipt/proof image. A Finance Reference Number is generated automatically on save.</div>' +
+'<select class="form-select" id="tx-pay-link" onchange="onTxPaymentLinkChange()">'+payOpts+'</select>' +
+'<div id="tx-pay-linked-info" style="margin-top:8px;'+(curLink?'':'display:none;')+'"></div>' +
+'</div>';
+})()
+: '') +
+
+'<div class="detail-section"><h4>📋 Transaction Details</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Type *</div>' +
         '<select class="form-select" id="tx-type" onchange="onFinTypeChange()">' +
@@ -12161,18 +12274,63 @@ async function saveTransaction() {
   var btn = document.getElementById('tx-save-btn');
   if (btn) { btn.textContent='Saving…'; btn.disabled=true; }
 
-  var fn = _editingTxId
-    ? window._updateDoc('financials', _editingTxId, data)
-    : window._saveDoc('financials', data);
+ // ── Receipt requirement for income entries ─────────────────
+var isInc = data.type === 'income';
+var hasReceipt = data.receiptFile || data.receiptUrl ||
+(document.getElementById('tx-rct-file') && document.getElementById('tx-rct-file').files && document.getElementById('tx-rct-file').files[0]) ||
+(document.getElementById('tx-rct-keep') && document.getElementById('tx-rct-keep').value === '1') ||
+data.invoiceFile || data.invoiceUrl ||
+data.externalLink || data.paymentId ||
+((document.getElementById('tx-pay-link')||{}).value);
+if (isInc && !hasReceipt) {
+toast('Income entries require a receipt or proof document before saving — upload a file, paste a link, or link to a verified payment', 'error');
+if (btn) { btn.textContent='💾 Save Transaction'; btn.disabled=false; }
+return;
+}
 
-  fn.then(function() {
-    toast('Transaction saved ✓', 'success');
-    closeDrawer();
-    window._loadAll();
-  }).catch(function(e) {
-    toast('Save failed: '+(e.message||e), 'error');
-    if (btn) { btn.textContent='💾 Save Transaction'; btn.disabled=false; }
-  });
+  // ── Auto-generate Finance Reference Number ─────────────────
+var existingFin = window._data ? window._data.financials||[] : [];
+var finRef = (_editingTxId ? (existingFin.find(function(f){return f.id===_editingTxId;})||{}).finRef : null)
+|| generateDocNumber('FIN', existingFin);
+data.finRef = finRef;
+
+  // ── Link payment if selected ───────────────────────────────
+var linkedPayId = (document.getElementById('tx-pay-link')||{}).value || '';
+if (linkedPayId) data.paymentId = linkedPayId;
+
+  // ── Lock record ────────────────────────────────────────────
+if (!_editingTxId) {
+data.locked       = true;
+data.lockedAt     = new Date().toISOString();
+data.lockedBy     = window._currentUser ? window._currentUser.email : 'system';
+data.lockedByRole = window._userRole || 'unknown';
+}
+
+  var fn = _editingTxId
+? window._updateDoc('financials', _editingTxId, data)
+: window._saveDoc('financials', data);
+
+fn.then(function() {
+toast('Transaction saved ✓ · Ref: ' + finRef, 'success');
+closeDrawer();
+window._loadAll();
+}).catch(function(e) {
+toast('Save failed: '+(e.message||e), 'error');
+if (btn) { btn.textContent='💾 Save Transaction'; btn.disabled=false; }
+});
+}
+
+function requestFinDeletion(id) {
+if (!confirm('Request deletion of this finance entry? The founder must approve before it is removed.')) return;
+var cu = window._currentUser;
+var me = (window._data.team_members||[]).find(function(m){ return cu && (m.email||'').toLowerCase()===(cu.email||'').toLowerCase(); });
+window._updateDoc('financials', id, {
+deletionRequested: true,
+deletionRequestedBy: me ? me.id : (cu?cu.email:''),
+deletionRequestedByName: me ? (me.name||me.email) : (cu?cu.email:'Unknown'),
+deletionRequestedAt: new Date().toISOString()
+}).then(function(){ toast('Deletion requested — awaiting founder approval ✓','success'); window._loadAll(); })
+.catch(function(e){ toast('Request failed: '+(e.message||e),'error'); });
 }
 
 function viewTxAttachments(txId) {
@@ -12218,6 +12376,7 @@ function viewTxAttachments(txId) {
   html += '</div>';
   openDrawer('Attachments', escHtml(f.description||'Transaction'), html);
 }
+  
 // ── Daily Reports ─────────────────────────────────────────────
 function submitDailyReport(){
   var role=window._userRole||'developer';
