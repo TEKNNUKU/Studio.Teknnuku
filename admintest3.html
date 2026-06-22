@@ -1270,8 +1270,10 @@ window._initRBAC = function(email) {
   window._renderAll();
   buildRoleFAB();
   showPanel('overview', document.querySelector('.nav-item[data-panel="overview"]'));
-  initHashNav();
-  checkFWRedirectParams();
+ initHashNav();
+checkFWRedirectParams();
+// Render Finance dashboard on first load
+if (canAccess('finance')) setTimeout(renderFinDashboard, 300);
 };
 
 function canAccess(panelId) {
@@ -3739,13 +3741,1075 @@ function _panelVacancies() {
 
 </script>
 <script>
+// ═══════════════════════════════════════════════════════════════
+//  FINANCE OS — RENDERERS
+// ═══════════════════════════════════════════════════════════════
+function renderFinDashboard() {
+var el = document.getElementById('fin-sub-dashboard'); if (!el) return;
+var d  = window._data || {};
+var fin = d.financials   || [];
+var pay = d.payments     || [];
+var accts = d.fin_accounts || [];
+var rec  = d.fin_receivables || [];
+var pal  = d.fin_payables    || [];
+var inv  = d.fin_investments || [];
+
+  var totRev = 0, totExp = 0;
+fin.forEach(function(f){ var a=parseFloat(f.amount)||0; if(f.type==='income')totRev+=a; else totExp+=a; });
+var netProfit = totRev - totExp;
+
+  // Cash available = sum of all account balances
+var cashAvail = accts.reduce(function(s,a){ return s+(parseFloat(a.balance)||0); },0);
+
+  // Outstanding receivables
+var outRec = rec.filter(function(r){return r.status!=='Paid';}).reduce(function(s,r){return s+(parseFloat(r.outstandingAmount)||0);},0);
+
+// Outstanding payables
+var outPal = pal.filter(function(p){return p.status!=='Paid';}).reduce(function(s,p){return s+(parseFloat(p.outstandingAmount)||0);},0);
+
+  // Pending payments (reserve estimate)
+var pendPay = pay.filter(function(p){return p.status==='pending';}).reduce(function(s,p){return s+(parseFloat(p.amount)||0);},0);
+
+  // Investments total
+var invTotal = inv.reduce(function(s,i){return s+(parseFloat(i.amount)||0);},0);
+
+  // Founder drawings (equity entries of type Drawings)
+var drawings = (d.fin_equity||[]).filter(function(e){return e.type==='Drawings (Withdrawal)';}).reduce(function(s,e){return s+(parseFloat(e.amount)||0);},0);
+
+  el.innerHTML =
+'<div class="eyebrow" style="margin-bottom:14px;">Financial Snapshot</div>' +
+'<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-bottom:20px;">' +
+'<div class="kpi-card gold"><div class="kpi-icon">📈</div><div class="kpi-label">Total Revenue</div><div class="kpi-value">₦'+totRev.toLocaleString()+'</div><div class="kpi-meta">all income logged</div></div>' +
+'<div class="kpi-card red"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value">₦'+totExp.toLocaleString()+'</div><div class="kpi-meta">all outgoings</div></div>' +
+'<div class="kpi-card '+(netProfit>=0?'green':'red')+'"><div class="kpi-icon">💰</div><div class="kpi-label">Net Profit</div><div class="kpi-value">'+(netProfit<0?'−':'')+'₦'+Math.abs(netProfit).toLocaleString()+'</div><div class="kpi-meta">'+(totRev>0?Math.round(netProfit/totRev*100):0)+'% margin</div></div>' +
+'<div class="kpi-card cyan"><div class="kpi-icon">💵</div><div class="kpi-label">Cash Available</div><div class="kpi-value">₦'+cashAvail.toLocaleString()+'</div><div class="kpi-meta">across all accounts</div></div>' +
+'<div class="kpi-card amber"><div class="kpi-icon">📥</div><div class="kpi-label">Outstanding Receivables</div><div class="kpi-value">₦'+outRec.toLocaleString()+'</div><div class="kpi-meta">owed to us</div></div>' +
+'<div class="kpi-card purple"><div class="kpi-icon">📤</div><div class="kpi-label">Outstanding Payables</div><div class="kpi-value">₦'+outPal.toLocaleString()+'</div><div class="kpi-meta">we owe others</div></div>' +
+(pendPay?'<div class="kpi-card orange"><div class="kpi-icon">⏳</div><div class="kpi-label">Reserve (Pending)</div><div class="kpi-value">₦'+pendPay.toLocaleString()+'</div><div class="kpi-meta">invoiced, not yet paid</div></div>':'') +
+(drawings?'<div class="kpi-card amber"><div class="kpi-icon">👤</div><div class="kpi-label">Founder Drawings</div><div class="kpi-value">₦'+drawings.toLocaleString()+'</div><div class="kpi-meta">total withdrawn</div></div>':'') +
+(invTotal?'<div class="kpi-card green"><div class="kpi-icon">🌱</div><div class="kpi-label">Investor Funds</div><div class="kpi-value">₦'+invTotal.toLocaleString()+'</div><div class="kpi-meta">total raised</div></div>':'') +
+'</div>' +
+
+  // Quick links
+'<div class="eyebrow" style="margin-bottom:12px;">Quick Navigation</div>' +
+'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;">' +
+  ['pl','cashflow','accounts','transfers','assets','liabilities','equity','receivables','payables','withdrawals','investments','ledger','budget'].map(function(t){
+    var ICONS={pl:'📈',cashflow:'💸',accounts:'🏦',transfers:'🔄',assets:'🏗️',liabilities:'⚠️',equity:'💎',receivables:'📥',payables:'📤',withdrawals:'👤',investments:'🌱',ledger:'📒',budget:'🎯'};
+    var LABELS={pl:'P&L',cashflow:'Cash Flow',accounts:'Accounts',transfers:'Transfers',assets:'Assets',liabilities:'Liabilities',equity:'Equity',receivables:'Receivables',payables:'Payables',withdrawals:'Drawings',investments:'Investments',ledger:'Ledger',budget:'Budget'};
+    return '<button onclick="switchFinTab(\''+t+'\')" style="background:rgba(255,255,255,.03);border:1px solid rgba(242,237,228,.08);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all .15s;font-family:var(--mono);font-size:.65rem;color:var(--dim);" onmouseover="this.style.borderColor=\'rgba(200,155,20,.3)\'" onmouseout="this.style.borderColor=\'rgba(242,237,228,.08)\'">' +
+      '<div style="font-size:1.3rem;margin-bottom:6px;">'+ICONS[t]+'</div>' +
+      escHtml(LABELS[t]) +
+    '</button>';
+  }).join('') +
+'</div>' +
+
+// Accounts summary
+(accts.length ? '<div class="eyebrow" style="margin-bottom:10px;">Account Balances</div>' +
+  '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px;">' +
+    accts.map(function(a){
+      var color = parseFloat(a.balance)>=0?'var(--green)':'var(--red)';
+      return '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;">' +
+        '<div style="font-size:.82rem;font-weight:600;color:var(--white);margin-bottom:4px;">'+escHtml(a.name||'—')+'</div>' +
+        '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-bottom:8px;">'+escHtml(a.type||'Account')+' · '+escHtml(a.currency||'NGN')+'</div>' +
+        '<div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:'+color+';">'+escHtml(a.currency==='NGN'?'₦':a.currency+' ')+(parseFloat(a.balance)||0).toLocaleString()+'</div>' +
+      '</div>';
+    }).join('') +
+  '</div>' : '') +
+
+// Recent transactions
+'<div class="eyebrow" style="margin-bottom:10px;">Recent Transactions</div>' +
+'<div class="table-wrap">' +
+  '<div class="table-scroll"><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th><th>FIN Ref</th></tr></thead><tbody>' +
+    (function(){
+      var recent = (d.financials||[]).slice(0,10);
+      if (!recent.length) return '<tr><td colspan="5"><div class="empty-state" style="padding:20px;"><div class="empty-icon">💰</div>No transactions yet</div></td></tr>';
+      return recent.map(function(f){
+        return '<tr><td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+fmtDate(f.date||f.createdAt)+'</td>' +
+          '<td><span class="badge '+(f.type==='income'?'badge-green':'badge-red')+'">'+escHtml((f.type||'').toUpperCase())+'</span></td>' +
+          '<td style="font-size:.78rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(f.description||'—')+'</td>' +
+          '<td style="font-family:var(--mono);font-weight:700;color:'+(f.type==='income'?'var(--green)':'var(--red)')+';white-space:nowrap;">'+(f.type==='income'?'+':'−')+'₦'+(parseFloat(f.amount)||0).toLocaleString()+'</td>' +
+          '<td style="font-family:var(--mono);font-size:.6rem;color:var(--gold);">'+escHtml(f.finRef||'—')+'</td>' +
+        '</tr>';
+      }).join('');
+    })() +
+  '</tbody></table></div>' +
+'</div>';
+}
+
+// ── Accounts ──────────────────────────────────────────────────
+function renderFinAccounts() {
+var el = document.getElementById('fin-sub-accounts'); if (!el) return;
+var accts = window._data ? window._data.fin_accounts || [] : [];
+var isFounder = window._userRole === 'founder';
+var canAdd = isFounder || window._userRole === 'ops_lead' || window._userRole === 'admin_finance_officer';
+
+  var totalByCurrency = {};
+accts.forEach(function(a) {
+var cur = a.currency || 'NGN';
+totalByCurrency[cur] = (totalByCurrency[cur]||0) + (parseFloat(a.balance)||0);
+});
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div class="eyebrow" style="margin-bottom:0;">Where Our Money Lives</div>' +
+(canAdd ? '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinAccountDrawer(null)">+ Add Account</button>' : '') +
+'</div>' +
+
+// Summary by currency
+(Object.keys(totalByCurrency).length
+  ? '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">' +
+      Object.entries(totalByCurrency).map(function(e){
+        return '<div style="background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.18);border-radius:8px;padding:12px 18px;">' +
+          '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Total '+escHtml(e[0])+'</div>' +
+          '<div style="font-family:var(--display);font-weight:800;font-size:1.5rem;color:var(--gold);">'+(e[0]==='NGN'?'₦':e[0]+' ')+e[1].toLocaleString()+'</div>' +
+        '</div>';
+      }).join('')+
+    '</div>'
+  : '') +
+
+(accts.length
+  ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;">' +
+      accts.map(function(a) {
+        var bal = parseFloat(a.balance)||0;
+        var color = bal >= 0 ? 'var(--green)' : 'var(--red)';
+        return '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:border-color .15s;" onmouseover="this.style.borderColor=\'rgba(200,155,20,.3)\'" onmouseout="this.style.borderColor=\'rgba(242,237,228,.12)\'">' +
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">' +
+            '<div>' +
+              '<div style="font-family:var(--display);font-weight:700;font-size:.95rem;color:var(--white);">'+escHtml(a.name||'—')+'</div>' +
+              '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-top:2px;">'+escHtml(a.type||'Account')+' · '+escHtml(a.currency||'NGN')+'</div>' +
+            '</div>' +
+            (a.isDefault?'<span class="badge badge-gold" style="font-size:.48rem;">Default</span>':'') +
+          '</div>' +
+          '<div style="font-family:var(--display);font-weight:800;font-size:1.8rem;color:'+color+';margin-bottom:12px;">'+(a.currency==='NGN'?'₦':a.currency+' ')+(bal<0?'−':'')+Math.abs(bal).toLocaleString()+'</div>' +
+          (a.accountNumber?'<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);margin-bottom:8px;">Acct: '+escHtml(a.accountNumber)+'</div>':'') +
+          (a.notes?'<div style="font-size:.72rem;color:var(--dimmer);margin-bottom:10px;">'+escHtml(a.notes)+'</div>':'') +
+          (canAdd?'<div style="display:flex;gap:6px;">' +
+            '<button class="action-btn" style="flex:1;justify-content:center;" onclick="openFinAccountDrawer(window._data.fin_accounts.find(function(x){return x.id===\''+a.id+'\'}))">✏ Edit</button>' +
+            '<button class="action-btn" onclick="openFinAccountTopUp(\''+a.id+'\')">+ Top Up</button>' +
+            (isFounder?'<button class="action-btn danger" onclick="deleteRecord(\'fin_accounts\',\''+a.id+'\')">🗑</button>':'') +
+          '</div>':'') +
+        '</div>';
+      }).join('') +
+    '</div>'
+  : '<div class="empty-state" style="padding:48px;"><div class="empty-icon">🏦</div><div>No accounts yet</div><div style="margin-top:10px;">'+(canAdd?'<button class="btn-primary" onclick="openFinAccountDrawer(null)">+ Add First Account</button>':'')+'</div></div>'
+);
+}
+
+function openFinAccountDrawer(a) {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Account Name *</div><input class="form-input" id="fac-name" value="'+escHtml(a?a.name||'':'')+'" placeholder="e.g. Flutterwave, Business Bank, USDT Wallet"></div>' +
+'<div class="form-field"><div class="form-label">Account Type</div><select class="form-select" id="fac-type">' +
+FIN_ACCOUNT_TYPES.map(function(t){return'<option value="'+t+'"'+(a&&a.type===t?' selected':'')+'>'+t+'</option>';}).join('') +
+'</select></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Currency</div><select class="form-select" id="fac-cur">' +
+FIN_CURRENCIES.map(function(c){return'<option value="'+c+'"'+(a&&a.currency===c?' selected':(!a&&c==='NGN'?' selected':''))+'>'+c+'</option>';}).join('') +
+'</select></div>' +
+'<div class="form-field"><div class="form-label">Opening Balance</div><input class="form-input" id="fac-bal" type="number" value="'+(a?a.balance||'0':'0')+'"></div>' +
+'<div class="form-field"><div class="form-label">Account / Wallet Number</div><input class="form-input" id="fac-accno" value="'+escHtml(a?a.accountNumber||'':'')+'" placeholder="Optional"></div>' +
+'</div>' +
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Notes</div><input class="form-input" id="fac-notes" value="'+escHtml(a?a.notes||'':'')+'" placeholder="e.g. Primary operating account"></div>' +
+'<label style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.62rem;color:var(--dim);cursor:pointer;margin-bottom:14px;"><input type="checkbox" id="fac-default"'+(a&&a.isDefault?' checked':'')+' style="accent-color:var(--gold);"> Set as default account</label>' +
+'<div class="btn-row">' +
+'<button class="btn-primary" onclick="saveFinAccount(\''+(a?a.id:'')+'\')">💾 '+(a?'Update':'Add')+' Account</button>' +
+'<button class="btn-secondary" onclick="closeDrawer()">Cancel</button>' +
+'</div>' +
+'</div>';
+openDrawer(a?'Edit Account':'Add Account', a?escHtml(a.name||'Account'):'New Account', html);
+}
+
+  function saveFinAccount(id) {
+var name = (document.getElementById('fac-name')||{}).value||'';
+if (!name.trim()) { toast('Account name required','error'); return; }
+var data = {
+name:          name.trim(),
+type:          (document.getElementById('fac-type')  ||{}).value||'Bank Account',
+currency:      (document.getElementById('fac-cur')   ||{}).value||'NGN',
+balance:       parseFloat((document.getElementById('fac-bal')||{}).value)||0,
+accountNumber: (document.getElementById('fac-accno') ||{}).value||'',
+notes:         (document.getElementById('fac-notes') ||{}).value||'',
+isDefault:     !!(document.getElementById('fac-default')||{}).checked
+};
+var fn = id ? window._updateDoc('fin_accounts',id,data) : window._saveDoc('fin_accounts',data);
+fn.then(function(){ toast('Account saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinAccounts); });
+}
+
+  function openFinAccountTopUp(id) {
+var a = (window._data.fin_accounts||[]).find(function(x){return x.id===id;}); if (!a) return;
+var html = '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-bottom:14px;">Manually adjust the balance of <strong style="color:var(--white);">'+escHtml(a.name)+'</strong>.<br>Use this for reconciliation, incoming transfers recorded elsewhere, or opening balance corrections.</div>' +
+'<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Adjustment Type</div><select class="form-select" id="ftu-dir"><option value="add">+ Add / Deposit</option><option value="sub">− Deduct / Withdrawal</option></select></div>' +
+'<div class="form-field"><div class="form-label">Amount ('+escHtml(a.currency||'NGN')+')</div><input class="form-input" id="ftu-amt" type="number" min="0" placeholder="0"></div>' +
+'</div>' +
+'<div class="form-field"><div class="form-label">Reason / Note</div><input class="form-input" id="ftu-note" placeholder="e.g. Received from client, transfer from Flutterwave…"></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveAccountAdjustment(\''+id+'\','+a.balance+')">Apply Adjustment</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer('Adjust Balance', escHtml(a.name), html);
+}
+
+  function saveAccountAdjustment(id, currentBalance) {
+var dir  = (document.getElementById('ftu-dir')||{}).value||'add';
+var amt  = parseFloat((document.getElementById('ftu-amt')||{}).value)||0;
+var note = (document.getElementById('ftu-note')||{}).value||'Manual adjustment';
+if (!amt) { toast('Amount required','error'); return; }
+var newBal = dir==='add' ? currentBalance+amt : currentBalance-amt;
+window._updateDoc('fin_accounts', id, { balance:newBal })
+.then(function(){ toast('Balance updated ✓ · New balance: '+newBal.toLocaleString(),'success'); closeDrawer(); window._loadAll().then(renderFinAccounts); });
+}
+
+  // ── Transfers ─────────────────────────────────────────────────
+function renderFinTransfers() {
+var el = document.getElementById('fin-sub-transfers'); if (!el) return;
+var transfers = window._data ? window._data.fin_transfers||[] : [];
+var accts     = window._data ? window._data.fin_accounts||[] : [];
+var acctMap   = {}; accts.forEach(function(a){ acctMap[a.id]=a; });
+var canAdd    = window._userRole==='founder'||window._userRole==='ops_lead'||window._userRole==='admin_finance_officer';
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div><div class="eyebrow" style="margin-bottom:2px;">Internal Money Movement</div><div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">Transfers between accounts are not income or expenses — they simply move money from one pot to another.</div></div>' +
+(canAdd?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinTransferDrawer()">+ New Transfer</button>':'') +
+'</div>' +
+(transfers.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Date</th><th>From Account</th><th>To Account</th><th>Amount</th><th>Status</th><th>Note</th><th></th></tr></thead><tbody>' +
+transfers.map(function(t){
+var fromA = acctMap[t.fromAccountId]||{name:t.fromAccountName||'—'};
+var toA   = acctMap[t.toAccountId]  ||{name:t.toAccountName||'—'};
+var STATUS = {pending:'badge-amber',completed:'badge-green',failed:'badge-red'};
+return '<tr>' +
+'<td style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">'+fmtDate(t.date||t.createdAt)+'</td>' +
+'<td style="font-weight:600;font-size:.8rem;">'+escHtml(fromA.name)+'</td>' +
+'<td><span style="color:var(--dimmer);margin:0 6px;">→</span><span style="font-weight:600;font-size:.8rem;">'+escHtml(toA.name)+'</span></td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:var(--cyan);">'+escHtml((fromA.currency||'₦')==='NGN'?'₦':(fromA.currency+' '))+(parseFloat(t.amount)||0).toLocaleString()+'</td>' +
+'<td><span class="badge '+(STATUS[t.status]||'badge-dim')+'">'+escHtml(t.status||'pending')+'</span></td>' +
+'<td style="font-size:.74rem;color:var(--dim);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(t.note||'—')+'</td>' +
+'<td><div class="row-actions">' +
+(t.status!=='completed'?'<button class="action-btn success" onclick="markTransferComplete(\''+t.id+'\')">✓ Mark Done</button>':'') +
+'<button class="action-btn danger" onclick="deleteRecord(\'fin_transfers\',\''+t.id+'\')">🗑</button>' +
+'</div></td>' +
+'</tr>';
+}).join('') +
+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:48px;"><div class="empty-icon">🔄</div><div>No transfers recorded yet</div></div>'
+);
+}
+
+  function openFinTransferDrawer() {
+var accts = window._data ? window._data.fin_accounts||[] : [];
+if (accts.length < 2) { toast('Add at least 2 accounts before recording a transfer','error'); return; }
+var acctOpts = accts.map(function(a){ return '<option value="'+a.id+'" data-cur="'+escHtml(a.currency||'NGN')+'">'+escHtml(a.name)+' ('+escHtml(a.currency||'NGN')+')</option>'; }).join('');
+var html = '<div class="drawer-form">' +
+'<div style="background:rgba(0,188,212,.06);border:1px solid rgba(0,188,212,.18);border-radius:7px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);">Transfers are not income or expenses. They update both account balances automatically.</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">From Account *</div><select class="form-select" id="ftr-from"><option value="">Select…</option>'+acctOpts+'</select></div>' +
+'<div class="form-field"><div class="form-label">To Account *</div><select class="form-select" id="ftr-to"><option value="">Select…</option>'+acctOpts+'</select></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Amount *</div><input class="form-input" id="ftr-amt" type="number" min="0" placeholder="0"></div>' +
+'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="ftr-date" type="date" value="'+new Date().toISOString().split(\'T\')[0]+'"></div>' +
+'</div>' +
+'<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="ftr-status"><option value="completed">Completed</option><option value="pending">Pending</option></select></div>' +
+'<div class="form-field" style="margin-top:10px;"><div class="form-label">Note</div><input class="form-input" id="ftr-note" placeholder="e.g. Flutterwave sweep to operating account"></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinTransfer()">💾 Record Transfer</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer('Record Transfer','Internal Transfer', html);
+}
+
+  async function saveFinTransfer() {
+var fromId = (document.getElementById('ftr-from')||{}).value||'';
+var toId   = (document.getElementById('ftr-to')  ||{}).value||'';
+var amt    = parseFloat((document.getElementById('ftr-amt') ||{}).value)||0;
+var date   = (document.getElementById('ftr-date')||{}).value||new Date().toISOString().split('T')[0];
+var status = (document.getElementById('ftr-status')||{}).value||'completed';
+var note   = (document.getElementById('ftr-note') ||{}).value||'';
+if (!fromId||!toId) { toast('Both accounts required','error'); return; }
+if (fromId===toId)  { toast('Cannot transfer to the same account','error'); return; }
+if (!amt)           { toast('Amount required','error'); return; }
+
+    var accts  = window._data.fin_accounts||[];
+var fromA  = accts.find(function(a){return a.id===fromId;});
+var toA    = accts.find(function(a){return a.id===toId;});
+if (!fromA||!toA) { toast('Account not found','error'); return; }
+
+    await window._saveDoc('fin_transfers',{
+fromAccountId:fromId, fromAccountName:fromA.name,
+toAccountId:toId,     toAccountName:toA.name,
+amount:amt, date:date, status:status, note:note
+});
+    
+if (status==='completed') {
+await window._updateDoc('fin_accounts',fromId,{balance:(fromA.balance||0)-amt});
+await window._updateDoc('fin_accounts',toId,  {balance:(toA.balance||0)+amt});
+}
+toast('Transfer recorded ✓','success');
+closeDrawer();
+window._loadAll().then(renderFinTransfers);
+}
+
+  async function markTransferComplete(id) {
+var t = (window._data.fin_transfers||[]).find(function(x){return x.id===id;}); if (!t) return;
+var accts = window._data.fin_accounts||[];
+var fromA = accts.find(function(a){return a.id===t.fromAccountId;});
+var toA   = accts.find(function(a){return a.id===t.toAccountId;});
+await window._updateDoc('fin_transfers',id,{status:'completed'});
+if (fromA) await window._updateDoc('fin_accounts',fromA.id,{balance:(fromA.balance||0)-(parseFloat(t.amount)||0)});
+if (toA)   await window._updateDoc('fin_accounts',toA.id,  {balance:(toA.balance||0)+(parseFloat(t.amount)||0)});
+toast('Transfer marked complete · Balances updated ✓','success');
+window._loadAll().then(renderFinTransfers);
+}
+
+  // ── Assets ────────────────────────────────────────────────────
+function renderFinAssets() {
+var el = document.getElementById('fin-sub-assets'); if (!el) return;
+var assets = window._data ? window._data.fin_assets||[] : [];
+var canAdd = window._userRole==='founder'||window._userRole==='ops_lead';
+var total  = assets.reduce(function(s,a){return s+(parseFloat(a.value)||0);},0);
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div><div class="eyebrow" style="margin-bottom:2px;">What We Own</div><div style="font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--white);">Total Assets: <span style="color:var(--green);">₦'+total.toLocaleString()+'</span></div></div>' +
+(canAdd?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinAssetDrawer(null)">+ Add Asset</button>':'') +
+'</div>' +
+(assets.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Asset</th><th>Type</th><th>Value</th><th>Venture</th><th>Date Acquired</th><th>Notes</th><th></th></tr></thead><tbody>' +
+assets.map(function(a){
+var v = V_MAP[a.ventureId]||{};
+return '<tr>' +
+'<td style="font-weight:600;font-size:.82rem;">'+escHtml(a.name||'—')+'</td>' +
+'<td><span class="badge badge-dim">'+escHtml(a.type||'—')+'</span></td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:var(--green);">₦'+(parseFloat(a.value)||0).toLocaleString()+'</td>' +
+'<td>'+(a.ventureId?'<span class="venture-tag">'+escHtml(v.name||a.ventureId)+'</span>':'—')+'</td>' +
+'<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">'+fmtDate(a.dateAcquired||a.createdAt)+'</td>' +
+'<td style="font-size:.74rem;color:var(--dim);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(a.notes||'—')+'</td>' +
+'<td><div class="row-actions">'+
+(canAdd?'<button class="action-btn" onclick="openFinAssetDrawer(window._data.fin_assets.find(function(x){return x.id===\''+a.id+'\'}))">Edit</button>':'') +
+'<button class="action-btn danger" onclick="deleteRecord(\'fin_assets\',\''+a.id+'\')">🗑</button>'+
+'</div></td>' +
+'</tr>';
+}).join('') +
+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:48px;"><div class="empty-icon">🏗️</div><div>No assets recorded yet</div></div>'
+);
+}
+
+  function openFinAssetDrawer(a) {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Asset Name *</div><input class="form-input" id="fas-name" value="'+escHtml(a?a.name||'':'')+'" placeholder="e.g. MacBook Pro, teknnuku.xyz domain"></div>' +
+'<div class="form-field"><div class="form-label">Asset Type</div><select class="form-select" id="fas-type">' +
+FIN_ASSET_TYPES.map(function(t){return'<option value="'+t+'"'+(a&&a.type===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Current Value (₦)</div><input class="form-input" id="fas-val" type="number" min="0" value="'+(a?a.value||'':'')+'" placeholder="0"></div>' +
+'<div class="form-field"><div class="form-label">Date Acquired</div><input class="form-input" id="fas-date" type="date" value="'+(a?a.dateAcquired||'':'')+'"></div>' +
+'</div>' +
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Venture</div><select class="form-select" id="fas-v">' +
+buildVentureDropdownOptions(a?a.ventureId||'':'', true, 'All Ventures / Company-wide') +
+'</select></div>' +
+'<div class="form-field"><div class="form-label">Notes</div><textarea class="form-textarea" id="fas-notes" style="min-height:60px;">'+escHtml(a?a.notes||'':'')+'</textarea></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinAsset(\''+(a?a.id:'')+'\')">💾 Save Asset</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer(a?'Edit Asset':'Add Asset','Asset Record',html);
+}
+
+  function saveFinAsset(id) {
+var name = (document.getElementById('fas-name')||{}).value||'';
+if (!name.trim()) { toast('Asset name required','error'); return; }
+var data = {
+name:(document.getElementById('fas-name')||{}).value||'',
+type:(document.getElementById('fas-type')||{}).value||'',
+value:parseFloat((document.getElementById('fas-val')||{}).value)||0,
+dateAcquired:(document.getElementById('fas-date')||{}).value||'',
+ventureId:(document.getElementById('fas-v')||{}).value||'',
+notes:(document.getElementById('fas-notes')||{}).value||''
+};
+var fn = id?window._updateDoc('fin_assets',id,data):window._saveDoc('fin_assets',data);
+fn.then(function(){ toast('Asset saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinAssets); });
+}
+
+  // ── Liabilities ───────────────────────────────────────────────
+function renderFinLiabilities() {
+var el = document.getElementById('fin-sub-liabilities'); if (!el) return;
+var liabs = window._data ? window._data.fin_liabilities||[] : [];
+var canAdd = window._userRole==='founder'||window._userRole==='ops_lead';
+var total  = liabs.filter(function(l){return l.status!=='Paid';}).reduce(function(s,l){return s+(parseFloat(l.amount)||0);},0);
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div><div class="eyebrow" style="margin-bottom:2px;">What We Owe</div><div style="font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--white);">Total Liabilities: <span style="color:var(--red);">₦'+total.toLocaleString()+'</span></div></div>' +
+(canAdd?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinLiabilityDrawer(null)">+ Add Liability</button>':'') +
+'</div>' +
+(liabs.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Description</th><th>Type</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Creditor</th><th></th></tr></thead><tbody>' +
+liabs.map(function(l){
+var isOverdue = l.dueDate && new Date(l.dueDate)<new Date() && l.status!=='Paid';
+return '<tr style="'+(isOverdue?'background:rgba(239,68,68,.03);':'')+'">' +
+'<td style="font-weight:600;font-size:.82rem;">'+escHtml(l.description||'—')+'</td>' +
+'<td><span class="badge badge-dim">'+escHtml(l.type||'—')+'</span></td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:var(--red);">₦'+(parseFloat(l.amount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);font-size:.6rem;color:'+(isOverdue?'var(--red)':'var(--dimmer)')+';">'+(isOverdue?'⚠ ':'')+fmtDate(l.dueDate)+'</td>' +
+'<td>'+statusBadge(l.status||'Outstanding')+'</td>' +
+'<td style="font-size:.74rem;color:var(--dim);">'+escHtml(l.creditor||'—')+'</td>' +
+'<td><div class="row-actions">' +
+(canAdd?'<button class="action-btn" onclick="openFinLiabilityDrawer(window._data.fin_liabilities.find(function(x){return x.id===\''+l.id+'\'}))">Edit</button>':'') +
+(l.status!=='Paid'?'<button class="action-btn success" onclick="window._updateDoc(\'fin_liabilities\',\''+l.id+'\',{status:\'Paid\',paidAt:new Date().toISOString()}).then(function(){window._loadAll().then(renderFinLiabilities);})">Mark Paid</button>':'') +
+'<button class="action-btn danger" onclick="deleteRecord(\'fin_liabilities\',\''+l.id+'\')">🗑</button>' +
+'</div></td>' +
+'</tr>';
+}).join('') +
+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:48px;"><div class="empty-icon">⚠️</div><div>No liabilities recorded yet</div></div>'
+);
+}
+
+  function openFinLiabilityDrawer(l) {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Description *</div><input class="form-input" id="fli-desc" value="'+escHtml(l?l.description||'':'')+'" placeholder="e.g. Developer salary payable, VAT Q1"></div>' +
+'<div class="form-field"><div class="form-label">Liability Type</div><select class="form-select" id="fli-type">' +
+FIN_LIABILITY_TYPES.map(function(t){return'<option value="'+t+'"'+(l&&l.type===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="fli-amt" type="number" min="0" value="'+(l?l.amount||'':'')+'" placeholder="0"></div>' +
+'<div class="form-field"><div class="form-label">Creditor / Who We Owe</div><input class="form-input" id="fli-cred" value="'+escHtml(l?l.creditor||'':'')+'" placeholder="e.g. FIRS, Freelancer Name"></div>' +
+'<div class="form-field"><div class="form-label">Due Date</div><input class="form-input" id="fli-due" type="date" value="'+(l?l.dueDate||'':'')+'"></div>' +
+'</div>' +
+'<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="fli-status">' +
+FIN_PAYABLE_STATUS.map(function(s){return'<option value="'+s+'"'+(l&&l.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>' +
+'<div class="form-field" style="margin-top:10px;"><div class="form-label">Notes</div><textarea class="form-textarea" id="fli-notes" style="min-height:60px;">'+escHtml(l?l.notes||'':'')+'</textarea></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinLiability(\''+(l?l.id:'')+'\')">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer(l?'Edit Liability':'Add Liability','Liability Record',html);
+}
+
+  function saveFinLiability(id) {
+var desc = (document.getElementById('fli-desc')||{}).value||'';
+if (!desc.trim()) { toast('Description required','error'); return; }
+var data = {
+description:(document.getElementById('fli-desc')  ||{}).value||'',
+type:       (document.getElementById('fli-type')  ||{}).value||'',
+amount:     parseFloat((document.getElementById('fli-amt')||{}).value)||0,
+creditor:   (document.getElementById('fli-cred')  ||{}).value||'',
+dueDate:    (document.getElementById('fli-due')   ||{}).value||'',
+status:     (document.getElementById('fli-status')||{}).value||'Outstanding',
+notes:      (document.getElementById('fli-notes') ||{}).value||''
+};
+var fn = id?window._updateDoc('fin_liabilities',id,data):window._saveDoc('fin_liabilities',data);
+fn.then(function(){ toast('Liability saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinLiabilities); });
+}
+
+  // ── Equity ────────────────────────────────────────────────────
+function renderFinEquity() {
+var el = document.getElementById('fin-sub-equity'); if (!el) return;
+var entries = window._data ? window._data.fin_equity||[] : [];
+var assets  = (window._data ? window._data.fin_assets     ||[] : []).reduce(function(s,a){return s+(parseFloat(a.value)||0);},0);
+var liabs   = (window._data ? window._data.fin_liabilities||[] : []).filter(function(l){return l.status!=='Paid';}).reduce(function(s,l){return s+(parseFloat(l.amount)||0);},0);
+var equityFromEntries = entries.reduce(function(s,e){
+return s + (e.type==='Drawings (Withdrawal)'||e.type==='Profit Distribution' ? -(parseFloat(e.amount)||0) : (parseFloat(e.amount)||0));
+},0);
+var bookEquity = assets - liabs;
+var canAdd = window._userRole==='founder';
+
+  el.innerHTML =
+'<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">' +
+'<div class="kpi-card gold" style="min-height:100px;"><div class="kpi-icon">🏗️</div><div class="kpi-label">Total Assets</div><div class="kpi-value">₦'+assets.toLocaleString()+'</div></div>' +
+'<div class="kpi-card red"  style="min-height:100px;"><div class="kpi-icon">⚠️</div><div class="kpi-label">Total Liabilities</div><div class="kpi-value">₦'+liabs.toLocaleString()+'</div></div>' +
+'<div class="kpi-card '+(bookEquity>=0?'green':'red')+'" style="min-height:100px;"><div class="kpi-icon">💎</div><div class="kpi-label">Book Equity<br><span style="font-size:.6rem;font-weight:400;color:var(--dimmer);">Assets − Liabilities</span></div><div class="kpi-value">'+(bookEquity<0?'−':'')+'₦'+Math.abs(bookEquity).toLocaleString()+'</div></div>' +
+'</div>' +
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">' +
+'<div class="eyebrow" style="margin-bottom:0;">Equity Events</div>' +
+(canAdd?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinEquityDrawer(null)">+ Add Equity Entry</button>':'') +
+'</div>' +
+(entries.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Venture</th><th>Party</th><th>Notes</th><th></th></tr></thead><tbody>' +
+entries.map(function(e){
+var v = V_MAP[e.ventureId]||{};
+var isOut = e.type==='Drawings (Withdrawal)'||e.type==='Profit Distribution';
+return '<tr><td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">'+fmtDate(e.date||e.createdAt)+'</td>' +
+'<td><span class="badge badge-dim">'+escHtml(e.type||'—')+'</span></td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:'+(isOut?'var(--red)':'var(--green))')+'">'+(isOut?'−':'+')+'₦'+(parseFloat(e.amount)||0).toLocaleString()+'</td>' +
+'<td>'+(e.ventureId?'<span class="venture-tag">'+escHtml(v.name||e.ventureId)+'</span>':'—')+'</td>' +
+'<td style="font-size:.76rem;color:var(--dim);">'+escHtml(e.party||'—')+'</td>' +
+'<td style="font-size:.74rem;color:var(--dim);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(e.notes||'—')+'</td>' +
+'<td><div class="row-actions"><button class="action-btn danger" onclick="deleteRecord(\'fin_equity\',\''+e.id+'\')">🗑</button></div></td></tr>';
+}).join('')+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:32px;"><div class="empty-icon">💎</div><div>No equity entries yet</div></div>'
+);
+}
+
+  function openFinEquityDrawer(e) {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Equity Type *</div><select class="form-select" id="feq-type">' +
+FIN_EQUITY_TYPES.map(function(t){return'<option value="'+t+'"'+(e&&e.type===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>' +
+'<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="feq-amt" type="number" min="0" value="'+(e?e.amount||'':'')+'" placeholder="0"></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="feq-date" type="date" value="'+(e?e.date||new Date().toISOString().split(\'T\')[0]:new Date().toISOString().split(\'T\')[0])+'"></div>' +
+'<div class="form-field"><div class="form-label">Party (Investor / Founder name)</div><input class="form-input" id="feq-party" value="'+escHtml(e?e.party||'':'')+'" placeholder="e.g. Naza Raymond, Investor X"></div>' +
+'</div>' +
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Venture</div><select class="form-select" id="feq-v">' +
+buildVentureDropdownOptions(e?e.ventureId||'':'',true,'Company-wide') +
+'</select></div>' +
+'<div class="form-field"><div class="form-label">Notes</div><textarea class="form-textarea" id="feq-notes" style="min-height:60px;">'+escHtml(e?e.notes||'':'')+'</textarea></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinEquity(\''+(e?e.id:'')+'\')">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer(e?'Edit Equity Entry':'Add Equity Entry','Equity Record',html);
+}
+
+  function saveFinEquity(id) {
+var amt = parseFloat((document.getElementById('feq-amt')||{}).value)||0;
+if (!amt) { toast('Amount required','error'); return; }
+var data = {
+type:     (document.getElementById('feq-type') ||{}).value||'',
+amount:   amt,
+date:     (document.getElementById('feq-date') ||{}).value||new Date().toISOString().split('T')[0],
+party:    (document.getElementById('feq-party')||{}).value||'',
+ventureId:(document.getElementById('feq-v')    ||{}).value||'',
+notes:    (document.getElementById('feq-notes')||{}).value||''
+};
+var fn = id?window._updateDoc('fin_equity',id,data):window._saveDoc('fin_equity',data);
+fn.then(function(){ toast('Equity entry saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinEquity); });
+}
+
+  // ── Cash Flow ─────────────────────────────────────────────────
+function renderFinCashFlow() {
+var el = document.getElementById('fin-sub-cashflow'); if (!el) return;
+var fin      = window._data ? window._data.financials||[] : [];
+var inv      = window._data ? window._data.fin_investments||[] : [];
+var eq       = window._data ? window._data.fin_equity||[] : [];
+var transfers= window._data ? window._data.fin_transfers||[] : [];
+
+  // Classify transactions
+var operIn   = fin.filter(function(f){return f.type==='income';});
+var operOut  = fin.filter(function(f){return f.type==='expense';});
+var invIn    = inv.filter(function(i){return i.type!=='Loan';});
+var loanIn   = inv.filter(function(i){return i.type==='Loan';});
+var drawOut  = eq.filter(function(e){return e.type==='Drawings (Withdrawal)'||e.type==='Profit Distribution';});
+var totOperIn  = operIn.reduce(function(s,f){return s+(parseFloat(f.amount)||0);},0);
+var totOperOut = operOut.reduce(function(s,f){return s+(parseFloat(f.amount)||0);},0);
+var totInvIn   = invIn.reduce(function(s,i){return s+(parseFloat(i.amount)||0);},0);
+var totLoanIn  = loanIn.reduce(function(s,i){return s+(parseFloat(i.amount)||0);},0);
+var totDrawOut = drawOut.reduce(function(s,e){return s+(parseFloat(e.amount)||0);},0);
+var netCash    = totOperIn + totInvIn + totLoanIn - totOperOut - totDrawOut;
+
+  el.innerHTML =
+'<div class="eyebrow" style="margin-bottom:14px;">Where Money Actually Moved</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">' +
+
+// Cash In
+  '<div style="background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.15);border-radius:10px;padding:18px 20px;">' +
+    '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:14px;">💵 Cash In</div>' +
+    [['Client Payments',totOperIn,'Flutterwave · Bank · Cash · Crypto'],
+     ['Investments / Grants',totInvIn,'Equity rounds, grants'],
+     ['Loans Received',totLoanIn,'Business loans']].map(function(row){
+      return '<div class="fin-row"><span class="fin-row-label">'+escHtml(row[0])+'<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);">'+escHtml(row[2])+'</div></span><span class="fin-income">₦'+row[1].toLocaleString()+'</span></div>';
+    }).join('') +
+    '<div class="fin-row" style="border-top:2px solid rgba(34,197,94,.2);margin-top:10px;padding-top:10px;"><span style="font-weight:700;color:var(--white);">Total Cash In</span><span style="font-family:var(--mono);font-weight:700;font-size:1rem;color:var(--green);">₦'+(totOperIn+totInvIn+totLoanIn).toLocaleString()+'</span></div>' +
+  '</div>' +
+
+  // Cash Out
+  '<div style="background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:18px 20px;">' +
+    '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:14px;">💸 Cash Out</div>' +
+    [['Operations & Expenses',totOperOut,'Salary, hosting, marketing…'],
+     ['Founder Drawings',totDrawOut,'Salary, dividends, draws']].map(function(row){
+      return '<div class="fin-row"><span class="fin-row-label">'+escHtml(row[0])+'<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);">'+escHtml(row[2])+'</div></span><span class="fin-expense">₦'+row[1].toLocaleString()+'</span></div>';
+    }).join('') +
+    '<div class="fin-row" style="border-top:2px solid rgba(239,68,68,.2);margin-top:10px;padding-top:10px;"><span style="font-weight:700;color:var(--white);">Total Cash Out</span><span style="font-family:var(--mono);font-weight:700;font-size:1rem;color:var(--red);">₦'+(totOperOut+totDrawOut).toLocaleString()+'</span></div>' +
+  '</div>' +
+
+'</div>' +
+
+'<div style="text-align:center;padding:24px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;">' +
+  '<div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer);margin-bottom:8px;">Net Cash Flow</div>' +
+  '<div style="font-family:var(--display);font-weight:800;font-size:2.5rem;color:'+(netCash>=0?'var(--green)':'var(--red)')+'">'+(netCash<0?'−':'')+'₦'+Math.abs(netCash).toLocaleString()+'</div>' +
+  '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);margin-top:6px);">'+(netCash>=0?'Positive cash position — more cash in than out':'Negative cash position — spending outpacing income')+'</div>' +
+'</div>' +
+
+'<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.12);border-radius:8px;padding:14px 18px;font-family:var(--mono);font-size:.62rem;color:var(--dim);line-height:1.8;">' +
+  '<strong style="color:var(--gold);">Note:</strong> Cash Flow ≠ Profit. A company can be profitable but still run out of cash if receivables are slow or expenses are front-loaded. Track both.' +
+'</div>';
+  }
+
+  // ── Receivables ───────────────────────────────────────────────
+function renderFinReceivables() {
+var el = document.getElementById('fin-sub-receivables'); if (!el) return;
+var recs = window._data ? window._data.fin_receivables||[] : [];
+var canAdd = window._userRole==='founder'||window._userRole==='ops_lead'||window._userRole==='admin_finance_officer';
+var outstanding = recs.filter(function(r){return r.status!=='Paid';}).reduce(function(s,r){return s+(parseFloat(r.outstandingAmount)||0);},0);
+var today = new Date();
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div><div class="eyebrow" style="margin-bottom:2px;">Money Owed to Us</div><div style="font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--white);">Outstanding: <span style="color:var(--amber);">₦'+outstanding.toLocaleString()+'</span></div></div>' +
+(canAdd?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinReceivableDrawer(null)">+ Add Receivable</button>':'') +
+'</div>' +
+(recs.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Client</th><th>Invoice</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Due Date</th><th>Days Late</th><th>Status</th><th></th></tr></thead><tbody>' +
+recs.map(function(r){
+var dueDate = r.dueDate ? new Date(r.dueDate) : null;
+var daysLate = dueDate && r.status!=='Paid' ? Math.max(0,Math.floor((today-dueDate)/86400000)) : 0;
+return '<tr style="'+(daysLate>0?'background:rgba(239,68,68,.02);':'')+'">' +
+'<td style="font-weight:600;font-size:.82rem;">'+escHtml(r.clientName||'—')+'</td>' +
+'<td style="font-family:var(--mono);font-size:.62rem;color:var(--gold);">'+escHtml(r.invoiceRef||'—')+'</td>' +
+'<td style="font-family:var(--mono);font-weight:700;">₦'+(parseFloat(r.totalAmount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);color:var(--green);">₦'+(parseFloat(r.paidAmount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:var(--amber);">₦'+(parseFloat(r.outstandingAmount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);font-size:.6rem;color:'+(daysLate>0?'var(--red)':'var(--dimmer)')+';">'+fmtDate(r.dueDate)+'</td>' +
+'<td style="font-family:var(--mono);font-size:.62rem;color:'+(daysLate>0?'var(--red)':'var(--dimmer)')+'">'+(daysLate>0?daysLate+' days':'On time')+'</td>' +
+'<td>'+statusBadge(r.status||'Outstanding')+'</td>' +
+'<td><div class="row-actions">' +
+(canAdd?'<button class="action-btn" onclick="openFinReceivableDrawer(window._data.fin_receivables.find(function(x){return x.id===\''+r.id+'\'}))">Edit</button>':'') +
+'<button class="action-btn danger" onclick="deleteRecord(\'fin_receivables\',\''+r.id+'\')">🗑</button>' +
+'</div></td>' +
+'</tr>';
+}).join('')+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:48px;"><div class="empty-icon">📥</div><div>No receivables recorded yet</div></div>'
+);
+}
+
+  function openFinReceivableDrawer(r) {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Client Name *</div><input class="form-input" id="frec-client" value="'+escHtml(r?r.clientName||'':'')+'" placeholder="Client or company name"></div>' +
+'<div class="form-field"><div class="form-label">Invoice / Reference</div><input class="form-input" id="frec-inv" value="'+escHtml(r?r.invoiceRef||'':'')+'" placeholder="INV-2026-0001"></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Total Amount (₦) *</div><input class="form-input" id="frec-total" type="number" min="0" value="'+(r?r.totalAmount||'':'')+'" oninput="updateRecOutstanding()"></div>' +
+'<div class="form-field"><div class="form-label">Paid So Far (₦)</div><input class="form-input" id="frec-paid" type="number" min="0" value="'+(r?r.paidAmount||'0':'0')+'" oninput="updateRecOutstanding()"></div>' +
+'<div class="form-field"><div class="form-label">Outstanding (auto)</div><input class="form-input" id="frec-outstanding" readonly value="'+(r?r.outstandingAmount||'0':'0')+'" style="opacity:.7;"></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Due Date</div><input class="form-input" id="frec-due" type="date" value="'+(r?r.dueDate||'':'')+'"></div>' +
+'<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="frec-status">' +
+FIN_RECEIVABLE_STATUS.map(function(s){return'<option value="'+s+'"'+(r&&r.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>' +
+'</div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinReceivable(\''+(r?r.id:'')+'\')">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer(r?'Edit Receivable':'Add Receivable','Receivable',html);
+}
+
+  function updateRecOutstanding() {
+var total = parseFloat((document.getElementById('frec-total')||{}).value)||0;
+var paid  = parseFloat((document.getElementById('frec-paid') ||{}).value)||0;
+var el    = document.getElementById('frec-outstanding'); if (el) el.value = Math.max(0,total-paid);
+}
+
+  function saveFinReceivable(id) {
+var total = parseFloat((document.getElementById('frec-total')||{}).value)||0;
+if (!total) { toast('Total amount required','error'); return; }
+var paid  = parseFloat((document.getElementById('frec-paid')||{}).value)||0;
+var data  = {
+clientName:       (document.getElementById('frec-client')||{}).value||'',
+invoiceRef:       (document.getElementById('frec-inv')   ||{}).value||'',
+totalAmount:      total,
+paidAmount:       paid,
+outstandingAmount:Math.max(0,total-paid),
+dueDate:          (document.getElementById('frec-due')   ||{}).value||'',
+status:           (document.getElementById('frec-status')||{}).value||'Outstanding'
+};
+var fn = id?window._updateDoc('fin_receivables',id,data):window._saveDoc('fin_receivables',data);
+fn.then(function(){ toast('Receivable saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinReceivables); });
+}
+
+  // ── Payables ──────────────────────────────────────────────────
+function renderFinPayables() {
+var el = document.getElementById('fin-sub-payables'); if (!el) return;
+var pals = window._data ? window._data.fin_payables||[] : [];
+var canAdd = window._userRole==='founder'||window._userRole==='ops_lead'||window._userRole==='admin_finance_officer';
+var outstanding = pals.filter(function(p){return p.status!=='Paid';}).reduce(function(s,p){return s+(parseFloat(p.outstandingAmount)||0);},0);
+var today = new Date();
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div><div class="eyebrow" style="margin-bottom:2px;">Money We Owe</div><div style="font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--white);">Outstanding: <span style="color:var(--red);">₦'+outstanding.toLocaleString()+'</span></div></div>' +
+(canAdd?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinPayableDrawer(null)">+ Add Payable</button>':'') +
+'</div>' +
+(pals.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Vendor</th><th>Description</th><th>Amount</th><th>Paid</th><th>Outstanding</th><th>Due Date</th><th>Status</th><th></th></tr></thead><tbody>' +
+pals.map(function(p){
+var dueDate  = p.dueDate ? new Date(p.dueDate) : null;
+var isOverdue = dueDate && p.status!=='Paid' && today>dueDate;
+return '<tr style="'+(isOverdue?'background:rgba(239,68,68,.03);':'')+'">' +
+'<td style="font-weight:600;font-size:.82rem;">'+escHtml(p.vendorName||'—')+'</td>' +
+'<td style="font-size:.76rem;color:var(--dim);">'+escHtml(p.description||'—')+'</td>' +
+'<td style="font-family:var(--mono);font-weight:700;">₦'+(parseFloat(p.totalAmount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);color:var(--green);">₦'+(parseFloat(p.paidAmount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:var(--red);">₦'+(parseFloat(p.outstandingAmount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);font-size:.6rem;color:'+(isOverdue?'var(--red)':'var(--dimmer)')+';">'+(isOverdue?'⚠ ':'')+fmtDate(p.dueDate)+'</td>' +
+'<td>'+statusBadge(p.status||'Outstanding')+'</td>' +
+'<td><div class="row-actions">' +
+(canAdd?'<button class="action-btn" onclick="openFinPayableDrawer(window._data.fin_payables.find(function(x){return x.id===\''+p.id+'\'}))">Edit</button>':'') +
+(p.status!=='Paid'?'<button class="action-btn success" onclick="window._updateDoc(\'fin_payables\',\''+p.id+'\',{status:\'Paid\',paidAt:new Date().toISOString(),outstandingAmount:0}).then(function(){window._loadAll().then(renderFinPayables);})">Mark Paid</button>':'') +
+'<button class="action-btn danger" onclick="deleteRecord(\'fin_payables\',\''+p.id+'\')">🗑</button>' +
+'</div></td>' +
+'</tr>';
+}).join('')+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:48px;"><div class="empty-icon">📤</div><div>No payables recorded yet</div></div>'
+);
+}
+
+  function openFinPayableDrawer(p) {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Vendor / Payee *</div><input class="form-input" id="fpal-vendor" value="'+escHtml(p?p.vendorName||'':'')+'" placeholder="e.g. Vercel, developer name, tax authority"></div>' +
+'<div class="form-field"><div class="form-label">Description</div><input class="form-input" id="fpal-desc" value="'+escHtml(p?p.description||'':'')+'" placeholder="e.g. Monthly hosting, November salary"></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Total (₦) *</div><input class="form-input" id="fpal-total" type="number" min="0" value="'+(p?p.totalAmount||'':'')+'" oninput="updatePalOutstanding()"></div>' +
+'<div class="form-field"><div class="form-label">Paid So Far (₦)</div><input class="form-input" id="fpal-paid" type="number" min="0" value="'+(p?p.paidAmount||'0':'0')+'" oninput="updatePalOutstanding()"></div>' +
+'<div class="form-field"><div class="form-label">Outstanding (auto)</div><input class="form-input" id="fpal-outstanding" readonly value="'+(p?p.outstandingAmount||'0':'0')+'" style="opacity:.7;"></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Due Date</div><input class="form-input" id="fpal-due" type="date" value="'+(p?p.dueDate||'':'')+'"></div>' +
+'<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="fpal-status">' +
+FIN_PAYABLE_STATUS.map(function(s){return'<option value="'+s+'"'+(p&&p.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>' +
+'</div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinPayable(\''+(p?p.id:'')+'\')">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer(p?'Edit Payable':'Add Payable','Payable',html);
+}
+
+  function updatePalOutstanding() {
+var total = parseFloat((document.getElementById('fpal-total')||{}).value)||0;
+var paid  = parseFloat((document.getElementById('fpal-paid') ||{}).value)||0;
+var el    = document.getElementById('fpal-outstanding'); if (el) el.value = Math.max(0,total-paid);
+}
+
+  function saveFinPayable(id) {
+var total = parseFloat((document.getElementById('fpal-total')||{}).value)||0;
+if (!total) { toast('Total required','error'); return; }
+var paid  = parseFloat((document.getElementById('fpal-paid')||{}).value)||0;
+var data  = {
+vendorName:       (document.getElementById('fpal-vendor')||{}).value||'',
+description:      (document.getElementById('fpal-desc')  ||{}).value||'',
+totalAmount:      total,
+paidAmount:       paid,
+outstandingAmount:Math.max(0,total-paid),
+dueDate:          (document.getElementById('fpal-due')   ||{}).value||'',
+status:           (document.getElementById('fpal-status')||{}).value||'Outstanding'
+};
+var fn = id?window._updateDoc('fin_payables',id,data):window._saveDoc('fin_payables',data);
+fn.then(function(){ toast('Payable saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinPayables); });
+}
+
+  // ── Founder Withdrawals / Drawings ────────────────────────────
+function renderFinWithdrawals() {
+var el = document.getElementById('fin-sub-withdrawals'); if (!el) return;
+var entries = (window._data ? window._data.fin_equity||[] : []).filter(function(e){
+return e.type==='Drawings (Withdrawal)'||e.type==='Profit Distribution'||e.type==='Founder Capital';
+});
+var isFounder = window._userRole==='founder';
+var totalOut  = entries.filter(function(e){return e.type==='Drawings (Withdrawal)'||e.type==='Profit Distribution';}).reduce(function(s,e){return s+(parseFloat(e.amount)||0);},0);
+var totalIn   = entries.filter(function(e){return e.type==='Founder Capital';}).reduce(function(s,e){return s+(parseFloat(e.amount)||0);},0);
+
+  el.innerHTML =
+'<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px;">' +
+'<div class="kpi-card gold" style="min-height:90px;"><div class="kpi-icon">💰</div><div class="kpi-label">Founder Capital In</div><div class="kpi-value">₦'+totalIn.toLocaleString()+'</div></div>' +
+'<div class="kpi-card red"  style="min-height:90px;"><div class="kpi-icon">👤</div><div class="kpi-label">Total Drawn Out</div><div class="kpi-value">₦'+totalOut.toLocaleString()+'</div></div>' +
+'<div class="kpi-card '+(totalIn-totalOut>=0?'green':'amber')+'" style="min-height:90px;"><div class="kpi-icon">⬡</div><div class="kpi-label">Net Founder Position</div><div class="kpi-value">'+(totalIn-totalOut<0?'−':'')+'₦'+Math.abs(totalIn-totalOut).toLocaleString()+'</div></div>' +
+'</div>' +
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">' +
+'<div class="eyebrow" style="margin-bottom:0;">All Founder Transactions</div>' +
+(isFounder?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinWithdrawalDrawer()">+ Log Drawing / Capital</button>':'') +
+'</div>' +
+(entries.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Reason</th><th>Venture</th><th>Notes</th><th></th></tr></thead><tbody>' +
+entries.map(function(e){
+var v = V_MAP[e.ventureId]||{};
+var isIn = e.type==='Founder Capital';
+return '<tr><td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">'+fmtDate(e.date||e.createdAt)+'</td>' +
+'<td><span class="badge '+(isIn?'badge-green':'badge-amber')+'">'+escHtml(e.type||'—')+'</span></td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:'+(isIn?'var(--green)':'var(--gold))')+'">'+(isIn?'+':'−')+'₦'+(parseFloat(e.amount)||0).toLocaleString()+'</td>' +
+'<td style="font-size:.76rem;color:var(--dim);">'+escHtml(e.party||'—')+'</td>' +
+'<td>'+(e.ventureId?'<span class="venture-tag">'+escHtml(v.name||e.ventureId)+'</span>':'—')+'</td>' +
+'<td style="font-size:.74rem;color:var(--dim);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(e.notes||'—')+'</td>' +
+'<td><button class="action-btn danger" onclick="deleteRecord(\'fin_equity\',\''+e.id+'\')">🗑</button></td></tr>';
+}).join('')+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:48px;"><div class="empty-icon">👤</div><div>No founder transactions recorded yet</div></div>'
+);
+}
+
+  function openFinWithdrawalDrawer() {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Transaction Type *</div><select class="form-select" id="fwd-type">' +
+['Drawings (Withdrawal)','Profit Distribution','Founder Capital'].map(function(t){return'<option value="'+t+'">'+t+'</option>';}).join('')+
+'</select></div>' +
+'<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="fwd-amt" type="number" min="0" placeholder="0"></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="fwd-date" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div>' +
+'<div class="form-field"><div class="form-label">Reason</div><select class="form-select" id="fwd-reason">' +
+FIN_WITHDRAWAL_REASONS.map(function(r){return'<option value="'+r+'">'+r+'</option>';}).join('')+
+'</select></div>' +
+'</div>' +
+'<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Venture</div><select class="form-select" id="fwd-v">' +
+buildVentureDropdownOptions('',true,'Company-wide')+
+'</select></div>' +
+'<div class="form-field"><div class="form-label">Notes</div><textarea class="form-textarea" id="fwd-notes" style="min-height:60px;" placeholder="e.g. November founder salary, dividend Q3…"></textarea></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinWithdrawal()">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer('Log Founder Drawing / Capital','Founder Finance',html);
+}
+
+  function saveFinWithdrawal() {
+var amt = parseFloat((document.getElementById('fwd-amt')||{}).value)||0;
+if (!amt) { toast('Amount required','error'); return; }
+var data = {
+type:      (document.getElementById('fwd-type')  ||{}).value||'Drawings (Withdrawal)',
+amount:    amt,
+date:      (document.getElementById('fwd-date')  ||{}).value||new Date().toISOString().split('T')[0],
+party:     (document.getElementById('fwd-reason')||{}).value||'',
+ventureId: (document.getElementById('fwd-v')     ||{}).value||'',
+notes:     (document.getElementById('fwd-notes') ||{}).value||''
+};
+window._saveDoc('fin_equity',data).then(function(){ toast('Founder transaction saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinWithdrawals); });
+}
+
+  // ── Investments ───────────────────────────────────────────────
+function renderFinInvestments() {
+var el = document.getElementById('fin-sub-investments'); if (!el) return;
+var inv = window._data ? window._data.fin_investments||[] : [];
+var isFounder = window._userRole==='founder';
+var total = inv.reduce(function(s,i){return s+(parseFloat(i.amount)||0);},0);
+var byRound = {};
+inv.forEach(function(i){ byRound[i.round||'Other']=(byRound[i.round||'Other']||0)+(parseFloat(i.amount)||0); });
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div><div class="eyebrow" style="margin-bottom:2px;">Capital Raised</div><div style="font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--white);">Total Raised: <span style="color:var(--green);">₦'+total.toLocaleString()+'</span></div></div>' +
+(isFounder?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinInvestmentDrawer(null)">+ Add Investment</button>':'') +
+'</div>' +
+(inv.length
+? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Investor</th><th>Round</th><th>Amount</th><th>Equity %</th><th>Type</th><th>Date</th><th>Venture</th><th>Notes</th><th></th></tr></thead><tbody>' +
+inv.map(function(i){
+var v = V_MAP[i.ventureId]||{};
+return '<tr><td style="font-weight:600;font-size:.82rem;">'+escHtml(i.investorName||'—')+'</td>' +
+'<td><span class="badge badge-cyan">'+escHtml(i.round||'—')+'</span></td>' +
+'<td style="font-family:var(--mono);font-weight:700;color:var(--green);">₦'+(parseFloat(i.amount)||0).toLocaleString()+'</td>' +
+'<td style="font-family:var(--mono);font-size:.65rem;color:var(--gold);">'+(i.equityPct?i.equityPct+'%':'—')+'</td>' +
+'<td><span class="badge badge-dim">'+escHtml(i.type||'—')+'</span></td>' +
+'<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">'+fmtDate(i.date||i.createdAt)+'</td>' +
+'<td>'+(i.ventureId?'<span class="venture-tag">'+escHtml(v.name||i.ventureId)+'</span>':'—')+'</td>' +
+'<td style="font-size:.74rem;color:var(--dim);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(i.notes||'—')+'</td>' +
+'<td><div class="row-actions">'+(isFounder?'<button class="action-btn" onclick="openFinInvestmentDrawer(window._data.fin_investments.find(function(x){return x.id===\''+i.id+'\'}))">Edit</button>':'')+'<button class="action-btn danger" onclick="deleteRecord(\'fin_investments\',\''+i.id+'\')">🗑</button></div></td>' +
+'</tr>';
+}).join('')+'</tbody></table></div></div>'
+: '<div class="empty-state" style="padding:48px;"><div class="empty-icon">🌱</div><div>No investments recorded yet</div></div>'
+);
+}
+
+  function openFinInvestmentDrawer(i) {
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Investor Name *</div><input class="form-input" id="finv-investor" value="'+escHtml(i?i.investorName||'':'')+'" placeholder="Investor / fund name"></div>' +
+'<div class="form-field"><div class="form-label">Investment Round</div><select class="form-select" id="finv-round">' +
+FIN_INVESTMENT_ROUNDS.map(function(r){return'<option value="'+r+'"'+(i&&i.round===r?' selected':'')+'>'+r+'</option>';}).join('')+'</select></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="finv-amt" type="number" min="0" value="'+(i?i.amount||'':'')+'" placeholder="0"></div>' +
+'<div class="form-field"><div class="form-label">Equity %</div><input class="form-input" id="finv-eq" type="number" min="0" max="100" step="0.01" value="'+(i?i.equityPct||'':'')+'" placeholder="0.00"></div>' +
+'<div class="form-field"><div class="form-label">Type</div><select class="form-select" id="finv-type"><option value="Equity">Equity</option><option value="SAFE">SAFE</option><option value="Convertible Note">Convertible Note</option><option value="Grant">Grant</option><option value="Loan">Loan</option><option value="Other">Other</option></select></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="finv-date" type="date" value="'+(i?i.date||new Date().toISOString().split(\'T\')[0]:new Date().toISOString().split(\'T\')[0])+'"></div>' +
+'<div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="finv-v">'+buildVentureDropdownOptions(i?i.ventureId||'':'',true,'Company-wide')+'</select></div>' +
+'</div>' +
+'<div class="form-field"><div class="form-label">Notes / Terms</div><textarea class="form-textarea" id="finv-notes" style="min-height:60px;">'+escHtml(i?i.notes||'':'')+'</textarea></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinInvestment(\''+(i?i.id:'')+'\')">💾 Save</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer(i?'Edit Investment':'Add Investment','Investment Record',html);
+}
+
+  function saveFinInvestment(id) {
+var amt = parseFloat((document.getElementById('finv-amt')||{}).value)||0;
+if (!amt) { toast('Amount required','error'); return; }
+var data = {
+investorName: (document.getElementById('finv-investor')||{}).value||'',
+round:        (document.getElementById('finv-round')   ||{}).value||'Other',
+amount:       amt,
+equityPct:    parseFloat((document.getElementById('finv-eq')||{}).value)||0,
+type:         (document.getElementById('finv-type')    ||{}).value||'Equity',
+date:         (document.getElementById('finv-date')    ||{}).value||new Date().toISOString().split('T')[0],
+ventureId:    (document.getElementById('finv-v')       ||{}).value||'',
+notes:        (document.getElementById('finv-notes')   ||{}).value||''
+};
+var fn = id?window._updateDoc('fin_investments',id,data):window._saveDoc('fin_investments',data);
+fn.then(function(){ toast('Investment saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinInvestments); });
+}
+
+  // ── General Ledger ────────────────────────────────────────────
+function renderFinLedger() {
+var el = document.getElementById('fin-sub-ledger'); if (!el) return;
+var d   = window._data || {};
+var fin = d.financials || [];
+var pay = d.payments   || [];
+
+  // Auto-build ledger from financials + payments
+var entries = [];
+fin.forEach(function(f) {
+entries.push({
+date: f.date||f.createdAt, ref: f.finRef||f.invoiceRef||'—',
+description: f.description||f.category||'—',
+debit:  f.type==='expense' ? (parseFloat(f.amount)||0) : 0,
+credit: f.type==='income'  ? (parseFloat(f.amount)||0) : 0,
+venture: V_MAP[f.ventureId]&&V_MAP[f.ventureId].name || f.ventureId || '—',
+source: 'Transaction', autoCreated: f.autoCreated
+});
+});
+  
+entries.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+var runningBalance = 0;
+var withBalance = entries.slice().reverse().map(function(e){
+runningBalance += e.credit - e.debit;
+e.balance = runningBalance;
+return e;
+}).reverse();
+  
+var totDebit  = entries.reduce(function(s,e){return s+e.debit;},0);
+var totCredit = entries.reduce(function(s,e){return s+e.credit;},0);
+
+  el.innerHTML =
+'<div class="eyebrow" style="margin-bottom:8px;">Double-Entry Ledger (Auto-Generated)</div>' +
+'<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-bottom:16px;line-height:1.7;">Every transaction automatically generates a ledger entry. Debits reduce equity (expenses); Credits increase equity (income). This gives you a complete financial audit trail.</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">' +
+  '<div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:14px;text-align:center;">' +
+    '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Total Debits</div>' +
+    '<div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--red);">₦'+totDebit.toLocaleString()+'</div>' +
+  '</div>' +
+  '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:14px;text-align:center;">' +
+    '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Total Credits</div>' +
+    '<div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--green);">₦'+totCredit.toLocaleString()+'</div>' +
+  '</div>' +
+  '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:8px;padding:14px;text-align:center;">' +
+    '<div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Balance</div>' +
+    '<div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--gold);">₦'+(totCredit-totDebit).toLocaleString()+'</div>' +
+  '</div>' +
+'</div>' +
+
+(withBalance.length
+  ? '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Date</th><th>Reference</th><th>Description</th><th>Venture</th><th style="text-align:right;color:var(--red);">Debit</th><th style="text-align:right;color:var(--green);">Credit</th><th style="text-align:right;">Balance</th><th>Source</th></tr></thead><tbody>' +
+      withBalance.map(function(e){
+        return '<tr>' +
+          '<td style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);white-space:nowrap;">'+fmtDate(e.date)+'</td>' +
+          '<td style="font-family:var(--mono);font-size:.6rem;color:var(--gold);">'+escHtml(e.ref)+'</td>' +
+          '<td style="font-size:.76rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(e.description)+'</td>' +
+          '<td><span class="venture-tag" style="font-size:.5rem;">'+escHtml(e.venture)+'</span></td>' +
+          '<td style="font-family:var(--mono);font-size:.7rem;text-align:right;color:'+(e.debit?'var(--red)':'var(--dimmer)')+';">'+(e.debit?'₦'+e.debit.toLocaleString():'—')+'</td>' +
+          '<td style="font-family:var(--mono);font-size:.7rem;text-align:right;color:'+(e.credit?'var(--green)':'var(--dimmer)')+';">'+(e.credit?'₦'+e.credit.toLocaleString():'—')+'</td>' +
+          '<td style="font-family:var(--mono);font-size:.7rem;text-align:right;font-weight:700;color:'+(e.balance>=0?'var(--gold)':'var(--red)')+'">'+(e.balance<0?'−':'')+'₦'+Math.abs(e.balance).toLocaleString()+'</td>' +
+          '<td>'+(e.autoCreated?'<span class="badge badge-cyan" style="font-size:.5rem;">⚡ Auto</span>':'<span class="badge badge-dim" style="font-size:.5rem;">Manual</span>')+'</td>' +
+        '</tr>';
+      }).join('')+'</tbody></table></div></div>'
+  : '<div class="empty-state" style="padding:48px;"><div class="empty-icon">📒</div><div>No transactions yet — record your first income or expense to build the ledger.</div></div>'
+);
+}
+
+// ── Budget & Forecasting ──────────────────────────────────────
+function renderFinBudget() {
+var el = document.getElementById('fin-sub-budget'); if (!el) return;
+var budgets = window._data ? window._data.fin_budgets||[] : [];
+var fin     = window._data ? window._data.financials||[] : [];
+var isFounder = window._userRole==='founder';
+var canAdd    = isFounder || window._userRole==='ops_lead';
+var now       = new Date();
+var monthStart= new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // This month's actuals
+var monthFin = fin.filter(function(f){
+var d = new Date(f.date||f.createdAt);
+return d >= monthStart;
+});
+var monthRev = monthFin.filter(function(f){return f.type==='income';}).reduce(function(s,f){return s+(parseFloat(f.amount)||0);},0);
+var monthExp = monthFin.filter(function(f){return f.type==='expense';}).reduce(function(s,f){return s+(parseFloat(f.amount)||0);},0);
+
+  var activeBudget = budgets.find(function(b){
+return b.month === now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+});
+
+  el.innerHTML =
+'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">' +
+'<div><div class="eyebrow" style="margin-bottom:2px;">Budget vs. Actuals</div><div style="font-size:.76rem;color:var(--dimmer);">Set monthly targets and track performance against them.</div></div>' +
+(canAdd?'<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openFinBudgetDrawer()">+ Set Monthly Budget</button>':'') +
+'</div>' +
+
+  // This month
+'<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.18);border-radius:10px;padding:18px 20px;margin-bottom:20px;">' +
+  '<div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">This Month · '+now.toLocaleString('en-GB',{month:'long',year:'numeric'})+'</div>' +
+  '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">' +
+    '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em;">Revenue Actual</div><div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--green);">₦'+monthRev.toLocaleString()+'</div>'+(activeBudget&&activeBudget.revenueTarget?'<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Target: ₦'+Number(activeBudget.revenueTarget).toLocaleString()+'</div>':'')+'</div>' +
+    '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em;">Expenses Actual</div><div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--red);">₦'+monthExp.toLocaleString()+'</div>'+(activeBudget&&activeBudget.expenseBudget?'<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Budget: ₦'+Number(activeBudget.expenseBudget).toLocaleString()+'</div>':'')+'</div>' +
+    '<div><div style="font-family:var(--mono);font-size:.54rem;color:var(--dimmer);margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em;">Net</div><div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:'+(monthRev-monthExp>=0?'var(--gold)':'var(--red))')+'">'+(monthRev-monthExp<0?'−':'')+'₦'+Math.abs(monthRev-monthExp).toLocaleString()+'</div>'+(activeBudget&&activeBudget.revenueTarget?'<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Target: ₦'+(Number(activeBudget.revenueTarget||0)-Number(activeBudget.expenseBudget||0)).toLocaleString()+'</div>':'')+'</div>' +
+  '</div>' +
+  (activeBudget && activeBudget.revenueTarget
+    ? (function(){
+        var pct = Math.min(100,Math.round(monthRev/activeBudget.revenueTarget*100));
+        var color = pct>=90?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
+        return '<div style="margin-top:14px;"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-bottom:4px;"><span>Revenue Target Progress</span><span style="color:'+color+';">'+pct+'%</span></div><div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;"><div style="width:'+pct+'%;height:100%;background:'+color+';border-radius:3px;transition:width .6s ease;"></div></div></div>';
+      })()
+    : '<div style="margin-top:12px;font-family:var(--mono);font-size:.6rem;color:var(--amber);">⚠ No budget set for this month — click "Set Monthly Budget" above to add targets</div>') +
+'</div>' +
+
+(budgets.length
+  ? '<div class="eyebrow" style="margin-bottom:10px;">Budget History</div>' +
+    '<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Month</th><th>Revenue Target</th><th>Expense Budget</th><th>Net Target</th><th>Venture</th><th>Notes</th><th></th></tr></thead><tbody>' +
+      budgets.slice().sort(function(a,b){return(b.month||'').localeCompare(a.month||'');}).map(function(b){
+        var v = V_MAP[b.ventureId]||{};
+        var net = (parseFloat(b.revenueTarget)||0)-(parseFloat(b.expenseBudget)||0);
+        return '<tr><td style="font-family:var(--mono);font-weight:600;color:var(--white);">'+escHtml(b.month||'—')+'</td>' +
+          '<td style="font-family:var(--mono);color:var(--green);">₦'+(parseFloat(b.revenueTarget)||0).toLocaleString()+'</td>' +
+          '<td style="font-family:var(--mono);color:var(--red);">₦'+(parseFloat(b.expenseBudget)||0).toLocaleString()+'</td>' +
+          '<td style="font-family:var(--mono);font-weight:700;color:'+(net>=0?'var(--gold)':'var(--red)')+';">'+(net<0?'−':'')+'₦'+Math.abs(net).toLocaleString()+'</td>' +
+          '<td>'+(b.ventureId?'<span class="venture-tag">'+escHtml(v.name||b.ventureId)+'</span>':'<span class="badge badge-dim">All</span>')+'</td>' +
+          '<td style="font-size:.74rem;color:var(--dim);">'+escHtml(b.notes||'—')+'</td>' +
+          '<td><button class="action-btn danger" onclick="deleteRecord(\'fin_budgets\',\''+b.id+'\')">🗑</button></td></tr>';
+      }).join('')+'</tbody></table></div></div>'
+  : ''
+);
+}
+
+  function openFinBudgetDrawer() {
+var now = new Date();
+var defaultMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+var html = '<div class="drawer-form">' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Month (YYYY-MM) *</div><input class="form-input" id="fbgt-month" value="'+defaultMonth+'" placeholder="2026-01"></div>' +
+'<div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="fbgt-v">'+buildVentureDropdownOptions('',true,'All Ventures')+'</select></div>' +
+'</div>' +
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+'<div class="form-field"><div class="form-label">Revenue Target (₦)</div><input class="form-input" id="fbgt-rev" type="number" min="0" placeholder="0"></div>' +
+'<div class="form-field"><div class="form-label">Expense Budget (₦)</div><input class="form-input" id="fbgt-exp" type="number" min="0" placeholder="0"></div>' +
+'</div>' +
+'<div class="form-field"><div class="form-label">Notes / Goals</div><textarea class="form-textarea" id="fbgt-notes" style="min-height:60px;" placeholder="Key targets or focus areas for this month…"></textarea></div>' +
+'<div class="btn-row"><button class="btn-primary" onclick="saveFinBudget()">💾 Save Budget</button><button class="btn-secondary" onclick="closeDrawer()">Cancel</button></div>' +
+'</div>';
+openDrawer('Set Monthly Budget','Budget Target',html);
+}
+
+  function saveFinBudget() {
+var month = (document.getElementById('fbgt-month')||{}).value||'';
+if (!month) { toast('Month is required (format: 2026-01)','error'); return; }
+var data = {
+month:         month,
+ventureId:     (document.getElementById('fbgt-v')    ||{}).value||'',
+revenueTarget: parseFloat((document.getElementById('fbgt-rev') ||{}).value)||0,
+expenseBudget: parseFloat((document.getElementById('fbgt-exp') ||{}).value)||0,
+notes:         (document.getElementById('fbgt-notes')||{}).value||''
+};
+window._saveDoc('fin_budgets',data).then(function(){ toast('Budget saved ✓','success'); closeDrawer(); window._loadAll().then(renderFinBudget); });
+}
+
 // ═══════════════════════════════════════
 // OS PANEL HTML TEMPLATES
 // ═══════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
 //  CRM AUTO-SYNC — builds CRM records from other collections
 // ═══════════════════════════════════════════════════════════════
-function crmFromIntake(l) {
+    function crmFromIntake(l) {
   var r   = l.responses || {};
   var q1  = r.q1_identity  && r.q1_identity[0]  || '';
   var q3  = r.q3_revenue   && r.q3_revenue[0]   || '';
@@ -4245,94 +5309,102 @@ function toggleVenturePL() {
 }
 
 function _panelFinance() {
-  var canAdd = window._userRole==='founder'||window._userRole==='ops_lead'||window._userRole==='admin_finance_officer'||canAccess('settings');
-  
+var canAdd    = window._userRole==='founder'||window._userRole==='ops_lead'||window._userRole==='admin_finance_officer';
+var isFounder = window._userRole==='founder';
+
+  var TABS = [
+{k:'dashboard',   l:'Dashboard',   i:'⬡'},
+{k:'pl',          l:'P&L',         i:'📈'},
+{k:'cashflow',    l:'Cash Flow',   i:'💸'},
+{k:'accounts',    l:'Accounts',    i:'🏦'},
+{k:'transfers',   l:'Transfers',   i:'🔄'},
+{k:'assets',      l:'Assets',      i:'🏗️'},
+{k:'liabilities', l:'Liabilities', i:'⚠️'},
+{k:'equity',      l:'Equity',      i:'💎'},
+{k:'receivables', l:'Receivables', i:'📥'},
+{k:'payables',    l:'Payables',    i:'📤'},
+{k:'withdrawals', l:'Drawings',    i:'👤'},
+{k:'investments', l:'Investments', i:'🌱'},
+{k:'ledger',      l:'Ledger',      i:'📒'},
+{k:'budget',      l:'Budget',      i:'🎯'}
+];
+
+  var tabBar = '<div style="display:flex;gap:2px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:3px;">' +
+TABS.map(function(t){
+return '<button class="fin-tab-btn tab-btn'+(t.k==='dashboard'?' active':'')+'" data-tab="'+t.k+'" onclick="switchFinTab(\''+t.k+'\')" style="white-space:nowrap;">'+t.i+' '+t.l+'</button>';
+}).join('') +
+'</div>';
+
+  // ── P&L tab inner content (preserved from original) ──────
+var plContent =
+'<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">' +
+'<select class="tbl-filter" style="min-width:120px;" onchange="applyFinDateQuick(this.value);this.value=\'\'">' +
+'<option value="">Quick date…</option>' +
+'<option value="today">Today</option><option value="week">This Week</option>' +
+'<option value="month">This Month</option><option value="lastmonth">Last Month</option>' +
+'<option value="3months">Last 3 Months</option><option value="year">This Year</option>' +
+'</select>' +
+'<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
+'<input type="date" class="tbl-filter" id="fin-f-from" style="min-width:130px;" onchange="applyFinFilters()">' +
+'<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
+'<input type="date" class="tbl-filter" id="fin-f-to" style="min-width:130px;" onchange="applyFinFilters()">' +
+'<button onclick="document.getElementById(\'fin-f-from\').value=\'\';document.getElementById(\'fin-f-to\').value=\'\';applyFinFilters();" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+'</div>' +
+'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+'<select class="tbl-filter" id="fin-f-type" onchange="applyFinFilters()"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>' +
+'<select class="tbl-filter venture-filter-select" id="fin-f-venture" onchange="applyFinFilters()">' + buildVentureDropdownOptions('', true, 'All Ventures') + '</select>' +
+'<select class="tbl-filter" id="fin-f-cat" onchange="applyFinFilters()"><option value="">All Categories</option>' +
+'<optgroup label="── Income ──">' + INCOME_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
+'<optgroup label="── Expense ──">' + EXPENSE_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
+'</select>' +
+'<select class="tbl-filter" id="fin-f-method" onchange="applyFinFilters()"><option value="">All Methods</option><option value="bank_transfer">Bank Transfer</option><option value="card">Card</option><option value="cash">Cash</option><option value="crypto">Crypto</option><option value="ussd">USSD</option><option value="mobile_money">Mobile Money</option><option value="flutterwave">Flutterwave</option><option value="paystack">Paystack</option></select>' +
+'<input class="tbl-search" id="fin-f-search" style="width:180px;" placeholder="Search description, ref, FIN#…" oninput="applyFinFilters()">' +
+'</div>' +
+'</div>' +
+'<div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px;">' +
+'<div class="kpi-card gold"  style="padding:22px 24px;min-height:110px;"><div class="kpi-icon">📈</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="fin-stat-rev">—</div><div class="kpi-meta" id="fin-stat-rev-meta">all income logged</div></div>' +
+'<div class="kpi-card red"   style="padding:22px 24px;min-height:110px;"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="fin-stat-exp">—</div><div class="kpi-meta" id="fin-stat-exp-meta">all outgoings</div></div>' +
+'<div class="kpi-card green" style="padding:22px 24px;min-height:110px;" id="fin-profit-card"><div class="kpi-icon">💰</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="fin-stat-profit">—</div><div class="kpi-meta" id="fin-stat-margin">net margin</div></div>' +
+'<div class="kpi-card amber" style="padding:22px 24px;min-height:110px;"><div class="kpi-icon">⚠️</div><div class="kpi-label">Outstanding / Liability</div><div class="kpi-value" id="fin-stat-liability">—</div><div class="kpi-meta" id="fin-stat-liability-meta">uncollected</div></div>' +
+'</div>' +
+'<div class="table-wrap" style="margin-bottom:16px;">' +
+'<div class="table-toolbar"><div class="table-toolbar-title">Per-Venture P&L</div>' +
+'<button id="vpl-toggle" onclick="toggleVenturePL()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:4px 12px;font-family:var(--mono);font-size:.6rem;cursor:pointer;">▲ Collapse</button>' +
+'</div>' +
+'<div id="fin-venture-pl" style="padding:14px;"><div class="loading-row"><div class="spinner"></div></div></div>' +
+'</div>' +
+'<div class="table-wrap">' +
+'<div class="table-toolbar"><div class="table-toolbar-title">Transactions</div><span id="fin-tx-count" style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">—</span></div>' +
+'<div class="table-scroll"><table><thead><tr><th>Date</th><th>Venture</th><th>Type</th><th>Category</th><th>Description</th><th>Amount</th><th>Method</th><th>FIN Ref</th><th>Docs</th><th>Actions</th></tr></thead>' +
+'<tbody id="finance-tbody"><tr><td colspan="10" class="loading-row"><div class="spinner"></div></td></tr></tbody></table></div>' +
+'</div>';
+
+  var subPanels = TABS.map(function(t) {
+var inner;
+if (t.k === 'pl')         inner = plContent;
+else                       inner = '<div id="fin-sub-'+t.k+'"><div class="loading-row"><div class="spinner"></div></div></div>';
+return '<div class="fin-sub-panel" data-panel="'+t.k+'" style="'+(t.k==='dashboard'?'':'display:none;')+'">' + inner + '</div>';
+}).join('');
+
   return '<div class="panel" id="panel-finance">' +
-
-    // ── STICKY STATS BAR ─────────────────────────────────────
-    '<div style="position:sticky;top:0;z-index:10;background:var(--bg);padding-bottom:14px;margin-bottom:4px;border-bottom:1px solid var(--border);">' +
-      '<div class="eyebrow" style="margin-bottom:10px;">P&amp;L Intelligence</div>' +
-      '<div class="panel-header" style="margin-bottom:12px;">' +
-        '<div class="panel-title">Finance</div>' +
-        '<div style="display:flex;gap:8px;">' +
-          (canAdd ? '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddTransaction()">+ Record Transaction</button>' : '') +
-        '</div>' +
-      '</div>' +
-     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">' +
-        '<div class="kpi-card gold" style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">📈</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="fin-stat-rev">—</div><div class="kpi-meta" id="fin-stat-rev-meta">all income logged</div></div>' +
-        '<div class="kpi-card red"  style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="fin-stat-exp">—</div><div class="kpi-meta" id="fin-stat-exp-meta">all outgoings</div></div>' +
-        '<div class="kpi-card green" id="fin-profit-card" style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">💰</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="fin-stat-profit">—</div><div class="kpi-meta" id="fin-stat-margin">net margin</div></div>' +
-        '<div class="kpi-card amber" style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">⚠️</div><div class="kpi-label">Outstanding / Liability</div><div class="kpi-value" id="fin-stat-liability">—</div><div class="kpi-meta" id="fin-stat-liability-meta">uncollected</div></div>' +
-      '</div>' +
-      '</div>' +
-    '</div>' +
-
-    // ── FILTER BAR ────────────────────────────────────────────
-    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">' +
-        '<select class="tbl-filter" style="min-width:120px;" onchange="applyFinDateQuick(this.value);this.value=\'\'">'+
-          '<option value="">Quick date…</option>' +
-          '<option value="today">Today</option><option value="week">This Week</option>' +
-          '<option value="month">This Month</option><option value="lastmonth">Last Month</option>' +
-          '<option value="3months">Last 3 Months</option><option value="year">This Year</option>' +
-        '</select>' +
-        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">From</span>' +
-        '<input type="date" class="tbl-filter" id="fin-f-from" style="min-width:130px;" onchange="applyFinFilters()">' +
-        '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">To</span>' +
-        '<input type="date" class="tbl-filter" id="fin-f-to"   style="min-width:130px;" onchange="applyFinFilters()">' +
-        '<button onclick="document.getElementById(\'fin-f-from\').value=\'\';document.getElementById(\'fin-f-to\').value=\'\';applyFinFilters();" '+
-          'style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
-      '</div>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
-        '<select class="tbl-filter" id="fin-f-type" onchange="applyFinFilters()"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>' +
-       '<select class="tbl-filter venture-filter-select" id="fin-f-venture" onchange="applyFinFilters()">' +
-          buildVentureDropdownOptions('', true, 'All Ventures') +
-        '</select>' +
-        '<select class="tbl-filter" id="fin-f-cat" onchange="applyFinFilters()">' +
-          '<option value="">All Categories</option>' +
-          '<optgroup label="── Income ──">' + INCOME_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
-          '<optgroup label="── Expense ──">' + EXPENSE_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
-        '</select>' +
-        '<select class="tbl-filter" id="fin-f-method" onchange="applyFinFilters()">' +
-          '<option value="">All Methods</option>' +
-          '<option value="bank_transfer">Bank Transfer</option>' +
-          '<option value="card">Card</option>' +
-          '<option value="cash">Cash</option>' +
-          '<option value="crypto">Crypto</option>' +
-          '<option value="ussd">USSD</option>' +
-          '<option value="mobile_money">Mobile Money</option>' +
-          '<option value="flutterwave">Flutterwave</option>' +
-          '<option value="paystack">Paystack</option>' +
-        '</select>' +
-        '<input class="tbl-search" id="fin-f-search" style="width:180px;" placeholder="Search description, ref, FIN#…" oninput="applyFinFilters()">' +
-      '</div>' +
-    '</div>' +
-
-    // ── PER-VENTURE P&L ───────────────────────────────────────
-    '<div class="table-wrap" style="margin-bottom:16px;">' +
-      '<div class="table-toolbar"><div class="table-toolbar-title">Per-Venture P&amp;L</div>' +
-        '<button id="vpl-toggle" onclick="toggleVenturePL()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:4px 12px;font-family:var(--mono);font-size:.6rem;cursor:pointer;">▲ Collapse</button>' +
-      '</div>' +
-      '<div id="fin-venture-pl" style="padding:14px;"><div class="loading-row"><div class="spinner"></div></div></div>' +
-    '</div>' +
-
-    // ── TRANSACTIONS TABLE ────────────────────────────────────
-    '<div class="table-wrap">' +
-      '<div class="table-toolbar"><div class="table-toolbar-title">Transactions</div>' +
-        '<span id="fin-tx-count" style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);">—</span>' +
-      '</div>' +
-      '<div class="table-scroll"><table><thead><tr>' +
-        '<th>Date</th><th>Venture</th><th>Type</th><th>Category</th>' +
-        '<th>Description</th><th>Amount</th><th>Method</th><th>Ref</th><th>Docs</th><th>Actions</th>' +
-      '</tr></thead>' +
-      '<tbody id="finance-tbody"><tr><td colspan="10" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
-      '</table></div>' +
-    '</div>' +
-
-  '</div>';
+'<div style="position:sticky;top:0;z-index:12;background:var(--bg);padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:16px;">' +
+'<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;flex-wrap:wrap;gap:8px;">' +
+'<div style="font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--white);">Finance <span style="color:var(--gold);">OS</span></div>' +
+'<div style="display:flex;gap:7px;flex-wrap:wrap;">' +
+(canAdd ? '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openTransactionDrawer(null)">+ Record Transaction</button>' : '') +
+(canAdd ? '<button class="topbar-btn" style="padding:7px 12px;font-size:.62rem;" onclick="openFinAccountDrawer(null)">+ Add Account</button>' : '') +
+'<button class="topbar-btn" style="padding:7px 12px;font-size:.62rem;" onclick="openReceiptRepo()">🧾 Receipts</button>' +
+'<button class="topbar-btn" style="padding:7px 12px;font-size:.62rem;" onclick="openInvoiceRepo()">📄 Invoices</button>' +
+'</div>' +
+'</div>' +
+tabBar +
+'</div>' +
+subPanels +
+'</div>';
 }
 
-function _panelReports() {
+  function _panelReports() {
   var role = window._userRole || 'developer';
   var tmpl = REPORT_TEMPLATES[role] || {title:'Daily Report',fields:[
     {id:'done',label:'What did you complete today?',type:'textarea'},
@@ -4730,7 +5802,22 @@ if (ovVen) {
   if(canAccess('ventures'))renderVentures(d.ventures||[],d.tasks||[],d.crm_leads||[],d.clients||[],d.financials||[]);
   if(canAccess('tasks'))renderTasks(d.tasks||[],d.team_members||[]);
   if(canAccess('clients')){renderClients(d.clients||[],d.team_members||[]);}
-  if(canAccess('finance'))renderFinance(d.financials||[],d.clients||[]);
+  if(canAccess('finance')){
+renderFinance(d.financials||[],d.clients||[]);
+if(_finTab==='dashboard')renderFinDashboard();
+if(_finTab==='accounts')renderFinAccounts();
+if(_finTab==='transfers')renderFinTransfers();
+if(_finTab==='assets')renderFinAssets();
+if(_finTab==='liabilities')renderFinLiabilities();
+if(_finTab==='equity')renderFinEquity();
+if(_finTab==='cashflow')renderFinCashFlow();
+if(_finTab==='receivables')renderFinReceivables();
+if(_finTab==='payables')renderFinPayables();
+if(_finTab==='withdrawals')renderFinWithdrawals();
+if(_finTab==='investments')renderFinInvestments();
+if(_finTab==='ledger')renderFinLedger();
+if(_finTab==='budget')renderFinBudget();
+}
   if(canAccess('reports'))renderReports(d.daily_reports||[]);
 };
 
@@ -11836,69 +12923,39 @@ function filterClientsByStatus(status) {
 var _finTxFilter='';
 function filterTransactions(type){_finTxFilter=type;renderFinance(window._data.financials||[],window._data.clients||[]);}
 // ═══════════════════════════════════════════════════════════════
-
 //  FINANCE OS — CONSTANTS
-
 // ═══════════════════════════════════════════════════════════════
-
 var FIN_ACCOUNT_TYPES = [
-
 'Bank Account', 'Digital Wallet', 'Crypto Wallet', 'Cash', 'Mobile Money',
-
 'Payment Gateway', 'Investment Account', 'Reserve Fund'
-
 ];
-
 var FIN_CURRENCIES = ['NGN', 'USD', 'USDT', 'ETH', 'BTC', 'GBP', 'EUR'];
-
 var FIN_ASSET_TYPES = [
-
 'Cash & Bank', 'Accounts Receivable', 'Crypto / Digital Asset', 'Equipment & Hardware',
-
 'Software License', 'Domain & IP', 'Investment', 'Prepaid Expense', 'Other Asset'
-
 ];
-
 var FIN_LIABILITY_TYPES = [
-
 'Salary Payable', 'Tax Payable', 'Vendor Payable', 'Loan', 'Credit Card',
-
 'Customer Refund', 'Investor Convertible Note', 'Other Liability'
-
 ];
-
 var FIN_EQUITY_TYPES = [
-
 'Founder Capital', 'Retained Earnings', 'Investor Equity', 'Drawings (Withdrawal)',
-
 'Profit Distribution', 'Share Issuance', 'Other Equity'
-
 ];
-
 var FIN_RECEIVABLE_STATUS = ['Outstanding', 'Partial', 'Paid', 'Overdue', 'Written Off'];
-
 var FIN_PAYABLE_STATUS    = ['Outstanding', 'Partial', 'Paid', 'Overdue', 'Disputed'];
-
 var FIN_INVESTMENT_ROUNDS = ['Pre-Seed', 'Seed', 'Series A', 'SAFE', 'Convertible Note',
-
 'Equity', 'Grant', 'Loan', 'Crowdfunding', 'Other'];
-
 var FIN_WITHDRAWAL_REASONS = ['Founder Salary', 'Dividend', 'Expense Reimbursement',
-
 'Personal Draw', 'Profit Share', 'Loan Repayment', 'Other'];
 var _finTab = 'dashboard'; // active Finance OS sub-tab
-function switchFinTab(tab) {
 
+  function switchFinTab(tab) {
 _finTab = tab;
-
 document.querySelectorAll('.fin-tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === tab); });
-
 document.querySelectorAll('.fin-sub-panel').forEach(function(p){ p.style.display = p.dataset.panel === tab ? '' : 'none'; });
-
 if (tab === 'pl')         renderFinance(window._data?window._data.financials||[]:[], window._data?window._data.clients||[]:[]);
-
 if (tab === 'dashboard')  renderFinDashboard();
-
 if (tab === 'accounts')   renderFinAccounts();
 if (tab === 'transfers')  renderFinTransfers();
 if (tab === 'assets')     renderFinAssets();
