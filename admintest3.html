@@ -4009,7 +4009,7 @@ var html = '<div class="drawer-form">' +
 '</div>' +
 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
 '<div class="form-field"><div class="form-label">Amount *</div><input class="form-input" id="ftr-amt" type="number" min="0" placeholder="0"></div>' +
-'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="ftr-date" type="date" value="'+new Date().toISOString().split(\'T\')[0]+'"></div>' +
+'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="ftr-date" type="date" value="'+new Date().toISOString().split("T")[0]+'"></div>' +
 '</div>' +
 '<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="ftr-status"><option value="completed">Completed</option><option value="pending">Pending</option></select></div>' +
 '<div class="form-field" style="margin-top:10px;"><div class="form-label">Note</div><input class="form-input" id="ftr-note" placeholder="e.g. Flutterwave sweep to operating account"></div>' +
@@ -4248,7 +4248,7 @@ FIN_EQUITY_TYPES.map(function(t){return'<option value="'+t+'"'+(e&&e.type===t?' 
 '<div class="form-field"><div class="form-label">Amount (₦) *</div><input class="form-input" id="feq-amt" type="number" min="0" value="'+(e?e.amount||'':'')+'" placeholder="0"></div>' +
 '</div>' +
 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="feq-date" type="date" value="'+(e?e.date||new Date().toISOString().split(\'T\')[0]:new Date().toISOString().split(\'T\')[0])+'"></div>' +
+'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="feq-date" type="date" value="'+(e?e.date||new Date().toISOString().split("T")[0]:new Date().toISOString().split("T")[0])+'"></div>' +
 '<div class="form-field"><div class="form-label">Party (Investor / Founder name)</div><input class="form-input" id="feq-party" value="'+escHtml(e?e.party||'':'')+'" placeholder="e.g. Naza Raymond, Investor X"></div>' +
 '</div>' +
 '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Venture</div><select class="form-select" id="feq-v">' +
@@ -4616,7 +4616,7 @@ FIN_INVESTMENT_ROUNDS.map(function(r){return'<option value="'+r+'"'+(i&&i.round=
 '<div class="form-field"><div class="form-label">Type</div><select class="form-select" id="finv-type"><option value="Equity">Equity</option><option value="SAFE">SAFE</option><option value="Convertible Note">Convertible Note</option><option value="Grant">Grant</option><option value="Loan">Loan</option><option value="Other">Other</option></select></div>' +
 '</div>' +
 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="finv-date" type="date" value="'+(i?i.date||new Date().toISOString().split(\'T\')[0]:new Date().toISOString().split(\'T\')[0])+'"></div>' +
+'<div class="form-field"><div class="form-label">Date</div><input class="form-input" id="finv-date" type="date" value="'+(i?i.date||new Date().toISOString().split("T")[0]:new Date().toISOString().split("T")[0])+'"></div>' +
 '<div class="form-field"><div class="form-label">Venture</div><select class="form-select" id="finv-v">'+buildVentureDropdownOptions(i?i.ventureId||'':'',true,'Company-wide')+'</select></div>' +
 '</div>' +
 '<div class="form-field"><div class="form-label">Notes / Terms</div><textarea class="form-textarea" id="finv-notes" style="min-height:60px;">'+escHtml(i?i.notes||'':'')+'</textarea></div>' +
