@@ -4172,7 +4172,7 @@ var EXPENSE_CATEGORIES = [
   'Utilities & Internet','Insurance','Tax & Levies','R&D / Product Dev',
   'Customer Refund','Bank Charges','Miscellaneous'
 ];
-var _finFilters = { type:'', venture:'', category:'', from:'', to:'', search:'' };
+var _finFilters = { type:'', venture:'', category:'', method:'', from:'', to:'', search:'' };
 var _vplCollapsed = false;
 var _editingTxId  = null;
 
@@ -4217,6 +4217,7 @@ function applyFinFilters() {
   _finFilters.type     = (document.getElementById('fin-f-type')    ||{}).value||'';
   _finFilters.venture  = (document.getElementById('fin-f-venture') ||{}).value||'';
   _finFilters.category = (document.getElementById('fin-f-cat')     ||{}).value||'';
+  _finFilters.method   = (document.getElementById('fin-f-method')  ||{}).value||'';
   _finFilters.from     = (document.getElementById('fin-f-from')    ||{}).value||'';
   _finFilters.to       = (document.getElementById('fin-f-to')      ||{}).value||'';
   _finFilters.search   = ((document.getElementById('fin-f-search') ||{}).value||'').toLowerCase().trim();
@@ -4250,11 +4251,12 @@ function _panelFinance() {
           (canAdd ? '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddTransaction()">+ Record Transaction</button>' : '') +
         '</div>' +
       '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">' +
-        '<div class="kpi-card gold" style="margin-bottom:0;"><div class="kpi-icon">📈</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="fin-stat-rev">—</div><div class="kpi-meta" id="fin-stat-rev-meta">all income</div></div>' +
-        '<div class="kpi-card red"  style="margin-bottom:0;"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="fin-stat-exp">—</div><div class="kpi-meta" id="fin-stat-exp-meta">all outgoings</div></div>' +
-        '<div class="kpi-card green" id="fin-profit-card" style="margin-bottom:0;"><div class="kpi-icon">💰</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="fin-stat-profit">—</div><div class="kpi-meta" id="fin-stat-margin">net margin</div></div>' +
-        '<div class="kpi-card amber" style="margin-bottom:0;"><div class="kpi-icon">⚠️</div><div class="kpi-label">Outstanding / Liability</div><div class="kpi-value" id="fin-stat-liability">—</div><div class="kpi-meta" id="fin-stat-liability-meta">uncollected</div></div>' +
+     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">' +
+        '<div class="kpi-card gold" style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">📈</div><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="fin-stat-rev">—</div><div class="kpi-meta" id="fin-stat-rev-meta">all income logged</div></div>' +
+        '<div class="kpi-card red"  style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">📉</div><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="fin-stat-exp">—</div><div class="kpi-meta" id="fin-stat-exp-meta">all outgoings</div></div>' +
+        '<div class="kpi-card green" id="fin-profit-card" style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">💰</div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="fin-stat-profit">—</div><div class="kpi-meta" id="fin-stat-margin">net margin</div></div>' +
+        '<div class="kpi-card amber" style="margin-bottom:0;padding:22px 24px;min-height:110px;"><div class="kpi-icon">⚠️</div><div class="kpi-label">Outstanding / Liability</div><div class="kpi-value" id="fin-stat-liability">—</div><div class="kpi-meta" id="fin-stat-liability-meta">uncollected</div></div>' +
+      '</div>' +
       '</div>' +
     '</div>' +
 
@@ -4284,7 +4286,18 @@ function _panelFinance() {
           '<optgroup label="── Income ──">' + INCOME_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
           '<optgroup label="── Expense ──">' + EXPENSE_CATEGORIES.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('') + '</optgroup>' +
         '</select>' +
-        '<input class="tbl-search" id="fin-f-search" style="width:180px;" placeholder="Search description, ref…" oninput="applyFinFilters()">' +
+        '<select class="tbl-filter" id="fin-f-method" onchange="applyFinFilters()">' +
+          '<option value="">All Methods</option>' +
+          '<option value="bank_transfer">Bank Transfer</option>' +
+          '<option value="card">Card</option>' +
+          '<option value="cash">Cash</option>' +
+          '<option value="crypto">Crypto</option>' +
+          '<option value="ussd">USSD</option>' +
+          '<option value="mobile_money">Mobile Money</option>' +
+          '<option value="flutterwave">Flutterwave</option>' +
+          '<option value="paystack">Paystack</option>' +
+        '</select>' +
+        '<input class="tbl-search" id="fin-f-search" style="width:180px;" placeholder="Search description, ref, FIN#…" oninput="applyFinFilters()">' +
       '</div>' +
     '</div>' +
 
@@ -11878,9 +11891,10 @@ function renderFinance(financials, clients) {
     if (!canAccessVentureData(f.ventureId)) return false;
     if (_finFilters.type     && f.type       !== _finFilters.type)     return false;
     if (_finFilters.venture  && f.ventureId  !== _finFilters.venture)  return false;
-    if (_finFilters.category && f.category   !== _finFilters.category) return false;
+   if (_finFilters.category && f.category      !== _finFilters.category) return false;
+    if (_finFilters.method   && f.paymentMethod !== _finFilters.method)   return false;
     if (_finFilters.search) {
-      var hay = ((f.description||'')+(f.category||'')+(f.invoiceRef||'')+(f.notes||'')).toLowerCase();
+      var hay = ((f.description||'')+(f.category||'')+(f.invoiceRef||'')+(f.finRef||'')+(f.notes||'')).toLowerCase();
       if (!hay.includes(_finFilters.search)) return false;
     }
     if (_finFilters.from) {
@@ -11945,6 +11959,34 @@ function openEditTransaction(id) {
   if (f) openTransactionDrawer(f); else toast('Record not found','error');
 }
 
+function onTxPaymentLinkChange() {
+  var payId = (document.getElementById('tx-pay-link')||{}).value || '';
+  var infoEl = document.getElementById('tx-pay-linked-info');
+  if (!payId) { if (infoEl) infoEl.style.display = 'none'; return; }
+  var pay = (window._data ? window._data.payments||[] : []).find(function(p){return p.id===payId;});
+  if (!pay) return;
+  // Auto-populate
+  var amtEl  = document.getElementById('tx-amt');    if (amtEl  && !amtEl.value)  amtEl.value  = pay.amount||'';
+  var dateEl = document.getElementById('tx-date');   if (dateEl && !dateEl.value) dateEl.value = pay.paidAt||'';
+  var methEl = document.getElementById('tx-method'); if (methEl && !methEl.value) methEl.value = pay.paymentMethod||'';
+  var vEl    = document.getElementById('tx-v');      if (vEl    && !vEl.value)    vEl.value    = pay.ventureId||'';
+  var descEl = document.getElementById('tx-desc');   if (descEl && !descEl.value) descEl.value = (pay.service||pay.serviceId||'Client Payment') + (pay.personName?' — '+pay.personName:'');
+  var refEl  = document.getElementById('tx-ref');    if (refEl  && !refEl.value)  refEl.value  = pay.invoiceRef||pay.fwRef||'';
+  // Carry over proof from payment record if present
+  if (pay.proofFile) {
+    var keepEl = document.getElementById('tx-rct-keep'); if (keepEl) keepEl.value = '1';
+    var fdEl   = document.getElementById('tx-rct-file-data'); if (fdEl) fdEl.value = pay.proofFile;
+    var fnEl   = document.getElementById('tx-rct-file-name'); if (fnEl) fnEl.value = pay.proofFileName||'proof';
+  }
+  if (infoEl) {
+    infoEl.style.display = 'block';
+    infoEl.innerHTML = '<div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:9px 13px;font-family:var(--mono);font-size:.6rem;color:var(--green);">' +
+      '✅ Auto-filled from payment · ₦'+Number(pay.amount||0).toLocaleString()+' · '+escHtml(pay.personName||'—')+'<br>' +
+      (pay.proofFile||pay.proofRef||pay.proofLink?'📎 Proof of payment auto-attached from original record':'⚠ No proof on that payment — attach one below') +
+    '</div>';
+  }
+}
+
 function openTransactionDrawer(f) {
   _editingTxId = f ? f.id : null;
   var type   = f ? f.type || 'income' : 'income';
@@ -11957,7 +11999,7 @@ function openTransactionDrawer(f) {
       ? '<div style="background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.2);border-radius:6px;padding:9px 13px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);">⚡ Auto-reconciled from verified payment — editing live finance data</div>'
       : '') +
 
-    '<div class="detail-section"><h4>📋 Transaction Details</h4>' +
+    // ── Link to verified payment (income entries — auto
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Type *</div>' +
         '<select class="form-select" id="tx-type" onchange="onFinTypeChange()">' +
