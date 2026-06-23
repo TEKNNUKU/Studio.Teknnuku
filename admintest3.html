@@ -1211,17 +1211,17 @@ var PROBATION_PHASES = [
 var ROLE_PERMISSIONS = {
   founder:                  ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','finance','team','vacancies','reports','sops','settings'],
   ops_lead:                 ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','team','reports','sops'],
-  sales_manager:            ['overview','leads','inquiries','crm','people','proposals','payments','assignments','tasks','reports','sops'],
-  inbound_closer:           ['overview','crm','assignments','tasks','reports'],
-  outbound_closer:          ['overview','crm','assignments','tasks','reports'],
-  content_lead:             ['overview','crm','assignments','ventures','tasks','reports','sops'],
-  content_creator:          ['overview','assignments','tasks','reports'],
-  outreach_lead_gen:        ['overview','crm','assignments','tasks','reports'],
-  tech_product_lead:        ['overview','ventures','tasks','assignments','clients','reports','sops'],
-  developer:                ['overview','tasks','assignments','reports'],
-  onboarding_specialist:    ['overview','tasks','assignments','clients','reports'],
-  customer_success_manager: ['overview','people','clients','assignments','reports','sops'],
-  admin_finance_officer:    ['overview','payments','proposals','finance','reports']
+  sales_manager:            ['overview','leads','inquiries','crm','people','proposals','payments','assignments','tasks','team','reports','sops'],
+  inbound_closer:           ['overview','crm','assignments','tasks','team','reports'],
+  outbound_closer:          ['overview','crm','assignments','tasks','team','reports'],
+  content_lead:             ['overview','crm','assignments','ventures','tasks','team','reports','sops'],
+  content_creator:          ['overview','assignments','tasks','team','reports'],
+  outreach_lead_gen:        ['overview','crm','assignments','tasks','team','reports'],
+  tech_product_lead:        ['overview','ventures','tasks','assignments','clients','team','reports','sops'],
+  developer:                ['overview','tasks','assignments','team','reports'],
+  onboarding_specialist:    ['overview','tasks','assignments','clients','team','reports'],
+  customer_success_manager: ['overview','people','clients','assignments','team','reports','sops'],
+  admin_finance_officer:    ['overview','payments','proposals','finance','team','reports']
 };
 
 var NAV_ITEMS = [
@@ -3570,31 +3570,34 @@ function buildPhaseTimeline(phaseHistory, currentPhase) {
 }
   
 function _panelTeam() {
+  var isFounder = window._userRole === 'founder';
+  var canManage = isFounder || window._userRole === 'ops_lead';
   return '<div class="panel" id="panel-team">' +
-    '<div class="eyebrow">Active Staff</div>' +
+    '<div class="eyebrow">' + (canManage ? 'Active Staff' : 'Team Directory') + '</div>' +
     '<div class="panel-header">' +
       '<div class="panel-title">Team Members</div>' +
-      '<div style="display:flex;gap:8px;align-items:center;">' +
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
         '<div id="team-count-label" style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);padding:6px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;">— members</div>' +
-        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddTeamMember()">+ Add Member</button>' +
+        (isFounder ? '<div id="team-edit-req-badge" style="display:none;"></div>' : '') +
+        (isFounder ? '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openAddTeamMember()">+ Add Member</button>' : '') +
       '</div>' +
     '</div>' +
 
-    // ── KPIs ─────────────────────────────────────────────────
-    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px;">' +
-      '<div class="kpi-card green" ><div class="kpi-icon">👥</div><div class="kpi-label">Total Active</div><div class="kpi-value" id="team-kpi-total">—</div><div class="kpi-meta">all roles</div></div>' +
-      '<div class="kpi-card amber" ><div class="kpi-icon">🔄</div><div class="kpi-label">On Probation</div><div class="kpi-value" id="team-kpi-probation">—</div><div class="kpi-meta">phases 1-3</div></div>' +
-      '<div class="kpi-card cyan"  ><div class="kpi-icon">✅</div><div class="kpi-label">Confirmed</div><div class="kpi-value" id="team-kpi-confirmed">—</div><div class="kpi-meta">full employees</div></div>' +
-      '<div class="kpi-card purple"><div class="kpi-icon">🏢</div><div class="kpi-label">Multi-Venture</div><div class="kpi-value" id="team-kpi-multiventure">—</div><div class="kpi-meta">assigned 2+ ventures</div></div>' +
-    '</div>' +
+    (canManage ?
+      '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:16px;">' +
+        '<div class="kpi-card green" ><div class="kpi-icon">👥</div><div class="kpi-label">Total Active</div><div class="kpi-value" id="team-kpi-total">—</div><div class="kpi-meta">all roles</div></div>' +
+        '<div class="kpi-card amber" ><div class="kpi-icon">🔄</div><div class="kpi-label">On Probation</div><div class="kpi-value" id="team-kpi-probation">—</div><div class="kpi-meta">phases 1-3</div></div>' +
+        '<div class="kpi-card cyan"  ><div class="kpi-icon">✅</div><div class="kpi-label">Confirmed</div><div class="kpi-value" id="team-kpi-confirmed">—</div><div class="kpi-meta">full employees</div></div>' +
+        '<div class="kpi-card purple"><div class="kpi-icon">🏢</div><div class="kpi-label">Multi-Venture</div><div class="kpi-value" id="team-kpi-multiventure">—</div><div class="kpi-meta">assigned 2+ ventures</div></div>' +
+      '</div>' :
+      '<div style="background:rgba(0,188,212,.06);border:1px solid rgba(0,188,212,.18);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-family:var(--mono);font-size:.6rem;color:var(--cyan);line-height:1.7;">📋 Team directory — you can see all members\' contact details, roles and status. Click your own card to view your profile and access your onboarding package.</div>'
+    ) +
 
-    // ── Search ────────────────────────────────────────────────
-    '<input class="tbl-search" style="width:100%;margin-bottom:16px;padding:10px 14px;" placeholder="Search by name, role, email or venture…" oninput="filterTeam(this.value)">' +
-
+    '<input class="tbl-search" style="width:100%;margin-bottom:16px;padding:10px 14px;" placeholder="Search by name, role or email…" oninput="filterTeam(this.value)">' +
     '<div id="team-list"><div class="loading-row"><div class="spinner"></div></div></div>' +
   '</div>';
 }
-
+  
 // ═══════════════════════════════════════════════════════════════
 //  VACANCY MANAGEMENT — CONSTANTS + HELPERS
 // ═══════════════════════════════════════════════════════════════
@@ -6763,22 +6766,36 @@ function advancePhase(id,currentPhase){
 function promoteToTeamMember(a){
   var info=a.personalInfo||{};
   var data={
-    name:info.name||a.name||'',
-    email:info.email||a.email||'',
-    phone:info.phone||a.phone||'',
-    role:a.positionApplied,
-    roleLabel:ROLE_LABELS[a.positionApplied]||a.positionTitle||'',
-    team:TEAM_FOR_ROLE[a.positionApplied]||'',
-    status:'probation',
-    employmentStage:'employed',
-    applicantId:a.id,
-    portfolioURL:(info.portfolioURL||''),
-    cvLink:(info.cvLink||''),
-    score:a.score,
-    joinedAt:new Date().toISOString()
+    name:            info.name||a.name||'',
+    email:           info.email||a.email||'',
+    phone:           info.phone||a.phone||'',
+    role:            a.positionApplied,
+    roleLabel:       ROLE_LABELS[a.positionApplied]||a.positionTitle||'',
+    team:            TEAM_FOR_ROLE[a.positionApplied]||'',
+    status:          'probation',
+    employmentStage: 'probation',
+    employmentPhase: 'phase1',
+    phaseHistory:    [{phase:'phase1',label:'Phase 1 · Activation',startedAt:new Date().toISOString(),note:'Promoted from applicant pool'}],
+    applicantId:     a.id,
+    // ── Carry over applicant profile data ─────────────────────
+    portfolioURL:    (info.portfolioURL||a.portfolioURL||''),
+    linkedinURL:     (info.linkedinURL||info.portfolioURL||a.portfolioURL||''),
+    cvLink:          (info.cvLink||a.cvLink||''),
+    cvFile:          (info.cvFile||a.cvFile||''),
+    cvFileName:      (info.cvFileName||a.cvFileName||''),
+    skills:          Array.isArray(a.skills)?(a.skills.join(', ')):(a.skills||''),
+    coverLetter:     (a.coverLetter||info.coverLetter||''),
+    score:           a.score||0,
+    scoreTier:       a.scoreTier||'',
+    // ── Profile protection (applicant carry-over) ──────────────
+    editProtected:   true,
+    profileLockedAt: new Date().toISOString(),
+    profileSource:   'applicant',
+    editRequests:    [],
+    joinedAt:        new Date().toISOString()
   };
   window._saveDoc('team_members',data).then(function(){
-    toast('✅ Added to Team Members','success');
+    toast('✅ Added to Team Members — CV, portfolio & skills carried over · Profile locked','success');
   }).catch(function(e){toast('Team member add failed: '+(e.message||e),'error');});
 }
 
@@ -6909,41 +6926,47 @@ function renderRecycleBin(recycled) {
 // TEAM MEMBERS
 // ═══════════════════════════════════════
 function renderTeam(members) {
-  var total     = members.length;
-  var probation = members.filter(function(m){
-    return ['phase1','phase2','phase3','onboarding'].indexOf(m.employmentPhase||m.status||'') !== -1
-      || (m.employmentStage === 'probation');
-  }).length;
-  var confirmed = members.filter(function(m){
-    return m.employmentPhase === 'employed' || m.employmentPhase === 'promoted'
-      || m.employmentStage === 'employed';
-  }).length;
-  var multiV = members.filter(function(m){
-    return m.ventures && m.ventures.length >= 2;
-  }).length;
+  var isFounder  = window._userRole === 'founder';
+  var canManage  = isFounder || window._userRole === 'ops_lead';
 
-  setText('team-kpi-total',        total);
-  setText('team-kpi-probation',    probation);
-  setText('team-kpi-confirmed',    confirmed);
-  setText('team-kpi-multiventure', multiV);
+  var total      = members.length;
+  var probation  = members.filter(function(m){ return ['phase1','phase2','phase3','onboarding'].indexOf(m.employmentPhase||m.status||'')!==-1||(m.employmentStage==='probation'); }).length;
+  var confirmed  = members.filter(function(m){ return m.employmentPhase==='employed'||m.employmentPhase==='promoted'||m.employmentStage==='employed'; }).length;
+  var multiV     = members.filter(function(m){ return m.ventures&&m.ventures.length>=2; }).length;
 
-  var lbl = document.getElementById('team-count-label');
-  if (lbl) lbl.textContent = total + ' member' + (total!==1?'s':'');
+  // Pending edit-request badge (founder only)
+  if (isFounder) {
+    var totalReqs = members.reduce(function(s,m){ return s+((m.editRequests||[]).filter(function(r){return r.status==='pending';}).length); },0);
+    var badgeEl   = document.getElementById('team-edit-req-badge');
+    if (badgeEl) {
+      badgeEl.style.display = totalReqs ? 'inline-flex' : 'none';
+      badgeEl.innerHTML = totalReqs ? '<span class="badge badge-red" style="font-size:.58rem;">⚠ '+totalReqs+' edit request'+(totalReqs!==1?'s':'')+'</span>' : '';
+    }
+  }
+
+  if (canManage) {
+    setText('team-kpi-total',        total);
+    setText('team-kpi-probation',    probation);
+    setText('team-kpi-confirmed',    confirmed);
+    setText('team-kpi-multiventure', multiV);
+    var lbl = document.getElementById('team-count-label');
+    if (lbl) lbl.textContent = total + ' member' + (total!==1?'s':'');
+  }
 
   window._teamCache = members;
   displayTeam(members);
 }
 
-function displayTeam(members) {
+// ── Full management view (Founder / Ops Lead) ─────────────────
+function displayTeamFull(members) {
   var el = document.getElementById('team-list'); if (!el) return;
+  var isFounder = window._userRole === 'founder';
 
   if (!members.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏢</div>' +
-      'No team members yet. Hire applicants to add them.</div>';
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏢</div>No team members yet. Hire applicants to add them.</div>';
     return;
   }
 
-  // Group by team
   var teams = {};
   members.forEach(function(m) {
     var t = m.team || 'Other';
@@ -6952,9 +6975,9 @@ function displayTeam(members) {
   });
 
   var PHASE_BADGE = {
-    onboarding:'badge-cyan',  phase1:'badge-amber', phase2:'badge-blue',
-    phase3:'badge-green',     employed:'badge-green', promoted:'badge-purple',
-    on_leave:'badge-orange',  suspended:'badge-red', terminated:'badge-red'
+    onboarding:'badge-cyan', phase1:'badge-amber', phase2:'badge-blue',
+    phase3:'badge-green',    employed:'badge-green', promoted:'badge-purple',
+    on_leave:'badge-orange', suspended:'badge-red',  terminated:'badge-red'
   };
 
   var html = '';
@@ -6971,37 +6994,32 @@ function displayTeam(members) {
       var phase     = m.employmentPhase || m.employmentStage || 'phase1';
       var phaseCfg  = getPhaseConfig(phase);
       var ventures  = m.ventures || [];
-      var phaseBadge = PHASE_BADGE[phase] || 'badge-dim';
+      var phaseBadgeClass = PHASE_BADGE[phase] || 'badge-dim';
+      var pendingReqs = (m.editRequests||[]).filter(function(r){return r.status==='pending';}).length;
 
       html += '<div class="team-card">' +
-        // Avatar
         '<div class="team-avatar">' + initials(m.name||m.email||'?') + '</div>' +
-
-        // Info
         '<div class="team-info" style="flex:1;">' +
-          '<div class="team-name">' + escHtml(m.name||'—') + '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+            '<div class="team-name">' + escHtml(m.name||'—') + '</div>' +
+            (m.editProtected ? '<span class="badge badge-dim" style="font-size:.46rem;">🔒</span>' : '') +
+            (pendingReqs && isFounder ? '<span class="badge badge-red" style="font-size:.48rem;">'+pendingReqs+' edit req</span>' : '') +
+          '</div>' +
           '<div class="team-role-label">' + escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—') + '</div>' +
           '<div class="team-email">' + escHtml(m.email||'—') + '</div>' +
-          // Ventures
+          (m.phone ? '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">' + escHtml(m.phone) + '</div>' : '') +
           (ventures.length
             ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">' +
-                ventures.map(function(vId) {
-                  var v = V_MAP[vId] || {};
-                  return '<span class="venture-tag" style="font-size:.5rem;">' + escHtml(v.name||vId) + '</span>';
-                }).join('') +
+                ventures.map(function(vId){ var v=V_MAP[vId]||{}; return '<span class="venture-tag" style="font-size:.5rem;">'+escHtml(v.name||vId)+'</span>'; }).join('') +
               '</div>'
-            : '<div style="font-family:var(--mono);font-size:.52rem;color:var(--dimmer);margin-top:4px;">No ventures assigned</div>') +
+            : '') +
         '</div>' +
-
-        // Right side
         '<div style="text-align:right;flex-shrink:0;">' +
-          '<span class="badge ' + phaseBadge + '" style="font-size:.52rem;">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span>' +
+          '<span class="badge ' + phaseBadgeClass + '" style="font-size:.52rem;">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span>' +
           '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);margin-top:5px;">Joined: ' + fmtDate(m.joinedAt||m.createdAt) + '</div>' +
         '</div>' +
-
-        // Manage button
         '<div class="row-actions" style="margin-left:12px;">' +
-          '<button class="action-btn" onclick="openTeamMemberDrawer(window._data.team_members.find(function(x){return x.id===\'' + m.id + '\'}))">Manage</button>' +
+          '<button class="action-btn" onclick="openTeamMemberDrawer(window._data.team_members.find(function(x){return x.id===\''+m.id+'\'}))">Manage</button>' +
         '</div>' +
       '</div>';
     });
@@ -7012,58 +7030,120 @@ function displayTeam(members) {
   el.innerHTML = html;
 }
 
+// ── Limited directory view (all other roles) ─────────────────
+function displayTeamDirectory(members) {
+  var el = document.getElementById('team-list'); if (!el) return;
+  var myId = getMyMemberId();
+
+  if (!members.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>No team members found</div>';
+    return;
+  }
+
+  var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">';
+  members.forEach(function(m) {
+    var phase    = m.employmentPhase || m.employmentStage || 'phase1';
+    var phaseCfg = getPhaseConfig(phase);
+    var isSelf   = myId && myId === m.id;
+
+    html += '<div style="background:var(--card);border:1px solid '+(isSelf?'rgba(200,155,20,.3)':'var(--border)')+';border-radius:10px;padding:16px 18px;transition:border-color .15s;" ' +
+      (isSelf ? 'onmouseover="this.style.borderColor=\'rgba(200,155,20,.5)\'" onmouseout="this.style.borderColor=\'rgba(200,155,20,.3)\'"' : 'onmouseover="this.style.borderColor=\'rgba(242,237,228,.18)\'" onmouseout="this.style.borderColor=\'var(--border)\'"') + '>' +
+      '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">' +
+        '<div class="team-avatar" style="width:40px;height:40px;font-size:15px;flex-shrink:0;">' + initials(m.name||'?') + '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--white);">' + escHtml(m.name||'—') + '</div>' +
+          '<div style="font-family:var(--mono);font-size:.6rem;color:var(--gold);margin-top:1px;">' + escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—') + '</div>' +
+        '</div>' +
+        (isSelf ? '<span class="badge badge-gold" style="font-size:.48rem;">You</span>' : '') +
+      '</div>' +
+      // Only public info visible to other team members
+      '<div style="display:flex;flex-direction:column;gap:5px;font-family:var(--mono);font-size:.62rem;color:var(--dimmer);margin-bottom:12px;">' +
+        (m.email ? '<div>✉ ' + escHtml(m.email) + '</div>' : '') +
+        (m.phone ? '<div>📱 ' + escHtml(m.phone) + '</div>' : '') +
+        '<div style="margin-top:4px;"><span class="badge ' + (getPhaseConfig(phase).key==='employed'||getPhaseConfig(phase).key==='promoted'?'badge-green':'badge-amber') + '" style="font-size:.52rem;">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span></div>' +
+      '</div>' +
+      (isSelf
+        ? '<button class="btn-primary" style="width:100%;padding:8px;font-size:.72rem;" onclick="openTeamMemberDrawer(window._data.team_members.find(function(x){return x.id===\''+m.id+'\'}))">👤 My Profile & Onboarding</button>'
+        : '') +
+    '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function displayTeam(members) {
+  var canManage = window._userRole === 'founder' || window._userRole === 'ops_lead';
+  if (canManage) displayTeamFull(members);
+  else           displayTeamDirectory(members);
+}
+
 function filterTeam(q) {
   var ql = (q||'').toLowerCase();
-  var filtered = (window._teamCache||[]).filter(function(m) {
-    var vNames = (m.ventures||[]).map(function(vId){ return (V_MAP[vId]||{}).name||''; }).join(' ');
-    return (m.name||'').toLowerCase().includes(ql) ||
-           (m.email||'').toLowerCase().includes(ql) ||
-           (m.roleLabel||'').toLowerCase().includes(ql) ||
-           (m.team||'').toLowerCase().includes(ql) ||
-           vNames.toLowerCase().includes(ql);
-  });
+  var filtered = ql
+    ? (window._teamCache||[]).filter(function(m) {
+        var vNames = (m.ventures||[]).map(function(vId){ return (V_MAP[vId]||{}).name||''; }).join(' ');
+        return (m.name||'').toLowerCase().includes(ql) ||
+               (m.email||'').toLowerCase().includes(ql) ||
+               (m.roleLabel||'').toLowerCase().includes(ql) ||
+               (m.team||'').toLowerCase().includes(ql) ||
+               vNames.toLowerCase().includes(ql);
+      })
+    : (window._teamCache||[]);
   displayTeam(filtered);
 }
 
 function openAddTeamMember() {
   var html =
+    '<div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.18);border-left:3px solid var(--red);border-radius:8px;padding:14px 16px;margin-bottom:16px;">' +
+      '<div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:6px;">🔒 Profile Protection Notice</div>' +
+      '<div style="font-size:.78rem;color:var(--dim);line-height:1.8;">Once saved, this profile is <strong style="color:var(--white);">edit-protected</strong>. CV, portfolio, skills and cover letter can only be changed via a Founder-approved change request. Ensure all details are accurate before saving.</div>' +
+    '</div>' +
 
-    // ── Section 1: Personal ──────────────────────────────────
     '<div class="detail-section"><h4>👤 Personal Information</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-      '<div class="form-field"><div class="form-label">Full Name *</div><input class="form-input" id="tm-name" placeholder="Team member name"></div>' +
+      '<div class="form-field"><div class="form-label">Full Name *</div><input class="form-input" id="tm-name" placeholder="Team member full name"></div>' +
       '<div class="form-field"><div class="form-label">Email (Login) *</div><input class="form-input" id="tm-email" type="email" placeholder="member@teknnuku.xyz"></div>' +
     '</div>' +
-    '<div class="form-field"><div class="form-label">Phone</div><input class="form-input" id="tm-phone" placeholder="+234 xxx xxx xxxx"></div>' +
+    '<div class="form-field"><div class="form-label">Phone / WhatsApp</div><input class="form-input" id="tm-phone" placeholder="+234 xxx xxx xxxx"></div>' +
     '</div>' +
 
-    // ── Section 2: Role ──────────────────────────────────────
-    '<div class="detail-section"><h4>💼 Role & Stage</h4>' +
+    '<div class="detail-section"><h4>💼 Role & Phase</h4>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
       '<div class="form-field"><div class="form-label">Role *</div>' +
         '<select class="form-select" id="tm-role">' +
-          Object.entries(ROLE_LABELS).map(function(e){
-            return '<option value="' + e[0] + '">' + e[1] + '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
+          Object.entries(ROLE_LABELS).map(function(e){return'<option value="'+e[0]+'">'+e[1]+'</option>';}).join('') +
+        '</select></div>' +
       '<div class="form-field"><div class="form-label">Starting Employment Phase</div>' +
         '<select class="form-select" id="tm-phase">' +
-          TEKNNUKU_EMPLOYMENT_PHASES.map(function(p){
-            return '<option value="' + p.key + '"' + (p.key==='onboarding'?' selected':'') + '>' + p.icon + ' ' + p.label + '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
+          TEKNNUKU_EMPLOYMENT_PHASES.map(function(p){return'<option value="'+p.key+'"'+(p.key==='onboarding'?' selected':'')+'>'+p.icon+' '+p.label+'</option>';}).join('') +
+        '</select></div>' +
     '</div></div>' +
 
-    // ── Section 3: Ventures ──────────────────────────────────
+    '<div class="detail-section"><h4>🔗 Professional Profile</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">LinkedIn URL</div><input class="form-input" id="tm-linkedin" type="url" placeholder="https://linkedin.com/in/username"></div>' +
+      '<div class="form-field"><div class="form-label">Portfolio / Website URL</div><input class="form-input" id="tm-portfolio" type="url" placeholder="https://yoursite.com"></div>' +
+    '</div>' +
+    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Skills (comma-separated)</div>' +
+      '<input class="form-input" id="tm-skills" placeholder="e.g. Sales, CRM, WhatsApp Marketing, Copywriting"></div>' +
+    '</div>' +
+
+    '<div class="detail-section"><h4>📄 CV / Resume</h4>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">CV Link (Google Drive, Dropbox…)</div><input class="form-input" id="tm-cv-link" type="url" placeholder="https://drive.google.com/..."></div>' +
+      '<div class="form-field"><div class="form-label">Upload CV (PDF/DOC, max 200KB)</div>' +
+        '<input type="file" id="tm-cv-file" accept=".pdf,.doc,.docx" style="color:var(--dim);font-size:.75rem;width:100%;"></div>' +
+    '</div>' +
+    '<div class="form-field"><div class="form-label">Cover Letter / Introduction</div>' +
+      '<textarea class="form-textarea" id="tm-cover" style="min-height:90px;" placeholder="Brief professional introduction or cover letter…"></textarea>' +
+    '</div></div>' +
+
     '<div class="detail-section"><h4>🏢 Venture Assignments</h4>' +
-    '<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:10px;line-height:1.6;">Select which ventures this team member can access. Assigning ventures restricts their data view to only those ventures across CRM, Clients, and Finance panels.</div>' +
+    '<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:10px;line-height:1.6;">Restricts data view to selected ventures. Leave all unchecked for unrestricted access.</div>' +
     buildVentureCheckboxes([]) +
     '</div>' +
 
-    // ── Section 4: Phase Note ────────────────────────────────
-    '<div class="detail-section"><h4>📝 Onboarding Note (optional)</h4>' +
+    '<div class="detail-section"><h4>📝 Onboarding Note</h4>' +
     '<textarea class="form-textarea" id="tm-phase-note" style="min-height:56px;" placeholder="Any notes for this team member\'s start…"></textarea>' +
     '</div>' +
 
@@ -7075,20 +7155,33 @@ function openAddTeamMember() {
   openDrawer('Add Team Member', 'New Team Member', html);
 }
 
-function saveTeamMember() {
-  var name  = (document.getElementById('tm-name')  ||{}).value||'';
-  var email = (document.getElementById('tm-email') ||{}).value||'';
-  var role  = (document.getElementById('tm-role')  ||{}).value||'';
-  var phase = (document.getElementById('tm-phase') ||{}).value||'onboarding';
-  var note  = (document.getElementById('tm-phase-note')||{}).value||'';
-  var phone = (document.getElementById('tm-phone') ||{}).value||'';
+async function saveTeamMember() {
+  var name      = (document.getElementById('tm-name')      ||{}).value||'';
+  var email     = (document.getElementById('tm-email')     ||{}).value||'';
+  var role      = (document.getElementById('tm-role')      ||{}).value||'';
+  var phase     = (document.getElementById('tm-phase')     ||{}).value||'onboarding';
+  var note      = (document.getElementById('tm-phase-note')||{}).value||'';
+  var phone     = (document.getElementById('tm-phone')     ||{}).value||'';
+  var linkedin  = (document.getElementById('tm-linkedin')  ||{}).value||'';
+  var portfolio = (document.getElementById('tm-portfolio') ||{}).value||'';
+  var skills    = (document.getElementById('tm-skills')    ||{}).value||'';
+  var cvLink    = (document.getElementById('tm-cv-link')   ||{}).value||'';
+  var cover     = (document.getElementById('tm-cover')     ||{}).value||'';
 
-  if (!name.trim())  { toast('Name is required', 'error');  return; }
-  if (!email.trim()) { toast('Email is required', 'error'); return; }
-  if (!role)         { toast('Role is required', 'error');  return; }
+  if (!name.trim())  { toast('Name is required','error');  return; }
+  if (!email.trim()) { toast('Email is required','error'); return; }
+  if (!role)         { toast('Role is required','error');  return; }
+
+  var cvFile = '', cvFileName = '';
+  var cvInput = document.getElementById('tm-cv-file');
+  if (cvInput && cvInput.files && cvInput.files[0]) {
+    var res = await readFileAsBase64(cvInput.files[0]);
+    if (res.tooBig) { toast('CV file too large (max 200KB) — use a link instead','error'); return; }
+    cvFile = res.data; cvFileName = res.name;
+  }
 
   var ventures = getSelectedVentures();
-  var phaseCfg = getPhaseConfig(phase);
+  var phaseCfg  = getPhaseConfig(phase);
   var isConfirmed = phase === 'employed' || phase === 'promoted';
 
   var data = {
@@ -7102,113 +7195,684 @@ function saveTeamMember() {
     employmentStage: isConfirmed ? 'employed' : 'probation',
     status:          isConfirmed ? 'employed' : 'probation',
     ventures:        ventures,
-    phaseHistory:    [{ phase:phase, label:phaseCfg.label, startedAt:new Date().toISOString(), note:note }],
+    // Professional profile
+    linkedinURL:     linkedin.trim(),
+    portfolioURL:    portfolio.trim(),
+    skills:          skills.trim(),
+    cvLink:          cvLink.trim(),
+    cvFile:          cvFile,
+    cvFileName:      cvFileName,
+    coverLetter:     cover.trim(),
+    // Profile protection
+    editProtected:   true,
+    profileLockedAt: new Date().toISOString(),
+    profileSource:   'manual',
+    editRequests:    [],
+    phaseHistory:    [{phase:phase, label:phaseCfg.label, startedAt:new Date().toISOString(), note:note}],
     joinedAt:        new Date().toISOString()
   };
 
   window._saveDoc('team_members', data).then(function() {
-    toast('Team member added ✓', 'success');
+    toast('Team member added ✓ · Profile locked (edit protection active)', 'success');
     closeDrawer();
     window._loadAll();
   }).catch(function(e){ toast('Failed: ' + (e.message||e), 'error'); });
 }
-
 function openTeamMemberDrawer(m) {
   if (!m) return;
-  var comp     = COMP_DATA[m.role]  || {};
-  var phase    = m.employmentPhase  || m.employmentStage || 'phase1';
-  var phaseCfg = getPhaseConfig(phase);
-  var ventures = m.ventures || [];
+  var isFounder  = window._userRole === 'founder';
+  var myId       = getMyMemberId();
+  var isSelf     = !!(myId && myId === m.id);
+  var canManage  = isFounder || window._userRole === 'ops_lead';
+  var comp       = COMP_DATA[m.role] || {};
+  var phase      = m.employmentPhase || m.employmentStage || 'phase1';
+  var phaseCfg   = getPhaseConfig(phase);
+  var ventures   = m.ventures || [];
+  var isConfirmedEmployee = phase === 'employed' || phase === 'promoted' || m.employmentStage === 'employed';
+  var pendingReqs = (m.editRequests||[]).filter(function(r){ return r.status==='pending'; });
 
+  // ── Header (always shown) ─────────────────────────────────
   var html =
-
-    // ── Header ───────────────────────────────────────────────
     '<div class="detail-section">' +
-      '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
-        '<div class="team-avatar" style="width:52px;height:52px;font-size:20px;">' + initials(m.name||'?') + '</div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-family:var(--display);font-weight:700;font-size:1.1rem;">' + escHtml(m.name||'—') + '</div>' +
-          '<div style="font-family:var(--mono);font-size:.62rem;color:var(--gold);">' + escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—') + '</div>' +
-          '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(m.team||'—') + ' · ' + escHtml(m.email||'—') + '</div>' +
-          (m.phone ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(m.phone) + '</div>' : '') +
-          '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
-            '<span class="badge" style="background:rgba(255,255,255,.06);color:' + phaseCfg.color + ';font-size:.54rem;">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span>' +
-            (m.employmentStage==='employed' || m.employmentPhase==='employed' || m.employmentPhase==='promoted'
-              ? '<span class="badge badge-green" style="font-size:.52rem;">✅ Confirmed</span>' : '') +
-          '</div>' +
+    '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;">' +
+      '<div class="team-avatar" style="width:52px;height:52px;font-size:20px;">' + initials(m.name||'?') + '</div>' +
+      '<div style="flex:1;">' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:1.1rem;">' + escHtml(m.name||'—') + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--gold);">' + escHtml(m.roleLabel||ROLE_LABELS[m.role]||m.role||'—') + '</div>' +
+        '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(m.team||'—') + ' · ' + escHtml(m.email||'—') + '</div>' +
+        (m.phone ? '<div style="font-family:var(--mono);font-size:.6rem;color:var(--dimmer);">' + escHtml(m.phone) + '</div>' : '') +
+        '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+          '<span class="badge" style="background:rgba(255,255,255,.06);color:' + phaseCfg.color + ';font-size:.54rem;">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span>' +
+          (isConfirmedEmployee ? '<span class="badge badge-green" style="font-size:.52rem;">✅ Confirmed</span>' : '') +
+          (m.editProtected ? '<span class="badge badge-dim" style="font-size:.5rem;">🔒 Profile Protected</span>' : '') +
+          (isSelf && !canManage ? '<span class="badge badge-gold" style="font-size:.5rem;">You</span>' : '') +
         '</div>' +
       '</div>' +
-      '<div class="detail-grid">' +
-        '<div class="detail-item"><div class="detail-label">Joined</div><div class="detail-val">' + fmtDate(m.joinedAt||m.createdAt) + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">Login Email</div><div class="detail-val" style="color:var(--cyan);">' + escHtml(m.email||'—') + '</div></div>' +
-      '</div>' +
     '</div>' +
 
-    // ── Venture Assignments ───────────────────────────────────
-    '<div class="detail-section"><h4>🏢 Venture Assignments</h4>' +
-      '<div style="font-size:.74rem;color:var(--dimmer);margin-bottom:10px;line-height:1.6;">Checked ventures determine which records this member can access in CRM, Clients, and Finance. Uncheck all to grant unrestricted access.</div>' +
-      buildVentureCheckboxes(ventures) +
-      '<div class="btn-row" style="margin-top:10px;">' +
-        '<button class="btn-secondary" style="font-size:.68rem;padding:6px 14px;" onclick="updateTeamVentures(\'' + m.id + '\')">💾 Save Venture Access</button>' +
-      '</div>' +
-    '</div>' +
+    '<div class="detail-grid">' +
+      '<div class="detail-item"><div class="detail-label">Joined</div><div class="detail-val">' + fmtDate(m.joinedAt||m.createdAt) + '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Login Email</div><div class="detail-val" style="color:var(--cyan);">' + escHtml(m.email||'—') + '</div></div>' +
+    '</div></div>';
 
-    // ── Employment Phase Timeline ─────────────────────────────
-    '<div class="detail-section"><h4>📅 Employment Phase History</h4>' +
-      buildPhaseTimeline(m.phaseHistory, phase) +
-    '</div>' +
+  // ══════════════════════════════════════════════════════════
+  //  FOUNDER VIEW — full management + role switch + approvals
+  // ══════════════════════════════════════════════════════════
+  if (isFounder) {
 
-    // ── Update Phase ──────────────────────────────────────────
-    '<div class="detail-section"><h4>⚡ Update Phase</h4>' +
-      '<div class="form-field" style="margin-bottom:10px;">' +
-        '<div class="form-label">New Phase</div>' +
-        '<select class="form-select" id="tm-new-phase">' +
-          TEKNNUKU_EMPLOYMENT_PHASES.map(function(p) {
-            return '<option value="' + p.key + '"' + (p.key===phase?' selected':'') + '>' + p.icon + ' ' + p.label + ' — ' + escHtml(p.desc) + '</option>';
-          }).join('') +
-        '</select>' +
-      '</div>' +
-      '<div class="form-field" style="margin-bottom:10px;">' +
-        '<div class="form-label">Phase Note (optional)</div>' +
-        '<textarea class="form-textarea" id="tm-phase-note" style="min-height:60px;" placeholder="Performance note, reason for change…"></textarea>' +
-      '</div>' +
-      '<button class="btn-primary" style="font-size:.75rem;padding:9px 18px;" onclick="updateTeamPhase(\'' + m.id + '\')">Update Phase</button>' +
-    '</div>' +
-
-    // ── Compensation ──────────────────────────────────────────
-    '<div class="detail-section"><h4>💰 Compensation by Phase</h4>' +
-      '<div style="display:flex;flex-direction:column;gap:6px;">' +
-        PROBATION_PHASES.map(function(ph) {
-          var pay    = comp[ph.key] || '—';
-          var isCurr = (m.employmentPhase||m.employmentStage) === ph.key;
-          return '<div style="background:' + (isCurr?'rgba(200,155,20,.08)':'rgba(0,0,0,.2)') + ';border:1px solid ' + (isCurr?'rgba(200,155,20,.25)':'transparent') + ';border-radius:6px;padding:10px 12px;">' +
-            '<div style="font-family:var(--mono);font-size:.56rem;text-transform:uppercase;letter-spacing:.12em;color:' + ph.color + ';margin-bottom:3px;">' + escHtml(ph.label) + (isCurr?' · CURRENT':'') + '</div>' +
-            '<div style="font-size:.78rem;color:var(--white);">' + escHtml(pay) + '</div>' +
+    // Pending edit requests
+    if (pendingReqs.length) {
+      html += '<div class="detail-section"><h4>⚠ Pending Edit Requests (' + pendingReqs.length + ')</h4>' +
+        pendingReqs.map(function(req, i) {
+          return '<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:12px 14px;margin-bottom:8px;">' +
+            '<div style="font-family:var(--mono);font-size:.56rem;color:var(--dimmer);margin-bottom:5px;">Field: <strong style="color:var(--white);">' + escHtml(req.label||req.field) + '</strong> · Requested by: ' + escHtml(req.requestedBy||'—') + ' · ' + fmtDate(req.requestedAt) + '</div>' +
+            '<div style="font-size:.78rem;color:var(--dim);margin-bottom:4px;">Current: <span style="color:var(--dimmer);">' + escHtml(String(req.oldValue||'—').substring(0,60)) + '</span></div>' +
+            '<div style="font-size:.78rem;color:var(--white);margin-bottom:10px;">Requested: <strong>' + escHtml(String(req.newValue||'—').substring(0,80)) + '</strong></div>' +
+            '<div style="display:flex;gap:8px;">' +
+              '<button class="btn-success" style="font-size:.68rem;padding:6px 14px;" onclick="approveEditRequest(\''+m.id+'\','+i+')">✓ Approve & Apply</button>' +
+              '<button class="btn-secondary" style="font-size:.68rem;padding:6px 12px;border-color:rgba(239,68,68,.3);color:var(--red);" onclick="rejectEditRequest(\''+m.id+'\','+i+')">✕ Reject</button>' +
+            '</div>' +
           '</div>';
         }).join('') +
-      '</div>' +
-    '</div>' +
+      '</div>';
+    }
 
-    // ── Permissions ───────────────────────────────────────────
-    '<div class="detail-section"><h4>🔐 Role Permissions</h4>' +
-      '<div style="font-size:.76rem;color:var(--dim);line-height:1.8;margin-bottom:8px;">' +
-        'Panel access: <span style="color:var(--cyan);">' + (ROLE_PERMISSIONS[m.role]||['overview']).join(', ') + '</span>' +
-      '</div>' +
-      (ventures.length
-        ? '<div style="font-size:.74rem;color:var(--dim);line-height:1.8;">' +
-            'Venture data restricted to: ' +
-            ventures.map(function(vId){ return '<span class="venture-tag" style="font-size:.52rem;">' + escHtml((V_MAP[vId]||{}).name||vId) + '</span>'; }).join(' ') +
-          '</div>'
-        : '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">No venture restriction — full data access</div>') +
-    '</div>' +
+    // Role switch (founder only)
+    html += '<div class="detail-section"><h4>🔄 Switch Role</h4>' +
+      '<div style="background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:7px;padding:12px 14px;">' +
+        '<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:10px;">Changing the role updates panel permissions on their next login.</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">' +
+          '<div class="form-field" style="flex:1;margin:0;"><select class="form-select" id="tm-role-switch">' +
+            Object.entries(ROLE_LABELS).map(function(e){return'<option value="'+e[0]+'"'+(m.role===e[0]?' selected':'')+'>'+e[1]+'</option>';}).join('') +
+          '</select></div>' +
+          '<button class="btn-primary" style="padding:9px 16px;font-size:.72rem;" onclick="switchTeamMemberRole(\''+m.id+'\')">Apply Role Change</button>' +
+        '</div>' +
+      '</div></div>';
 
-    // ── Actions ───────────────────────────────────────────────
-    '<div class="btn-row">' +
-      (m.email ? '<a href="mailto:' + escHtml(m.email) + '" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉ Email</a>' : '') +
-      '<button class="action-btn danger" onclick="deleteRecord(\'team_members\',\'' + m.id + '\');closeDrawer();">🗑 Remove Member</button>' +
+    // Professional profile (full view)
+    html += '<div class="detail-section"><h4>🔗 Professional Profile</h4>' +
+      '<div class="detail-grid">' +
+        (m.linkedinURL ? '<div class="detail-item"><div class="detail-label">LinkedIn</div><div class="detail-val"><a href="'+escHtml(m.linkedinURL)+'" target="_blank" style="color:var(--cyan);">'+escHtml(m.linkedinURL.substring(0,40))+'</a></div></div>' : '') +
+        (m.portfolioURL ? '<div class="detail-item"><div class="detail-label">Portfolio</div><div class="detail-val"><a href="'+escHtml(m.portfolioURL)+'" target="_blank" style="color:var(--cyan);">'+escHtml(m.portfolioURL.substring(0,40))+'</a></div></div>' : '') +
+        (m.skills ? '<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Skills</div><div class="detail-val">' + escHtml(m.skills) + '</div></div>' : '') +
+      '</div>' +
+      (m.cvLink ? '<div style="margin-top:10px;"><a href="'+escHtml(m.cvLink)+'" target="_blank" class="topbar-btn" style="display:inline-flex;text-decoration:none;font-size:.62rem;padding:7px 14px;">📄 View CV / Resume</a></div>' : '') +
+      (m.cvFile ? '<div style="margin-top:10px;"><a href="'+escHtml(m.cvFile)+'" download="'+(m.cvFileName||'cv')+'" class="topbar-btn" style="display:inline-flex;text-decoration:none;font-size:.62rem;padding:7px 14px;">⬇ Download CV</a></div>' : '') +
+      (m.coverLetter ? '<div style="margin-top:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;font-size:.78rem;color:var(--dim);line-height:1.7;white-space:pre-wrap;max-height:120px;overflow-y:auto;">'+escHtml(m.coverLetter)+'</div>' : '') +
     '</div>';
 
+    // Venture access
+    html += '<div class="detail-section"><h4>🏢 Venture Assignments</h4>' +
+      buildVentureCheckboxes(ventures) +
+      '<div class="btn-row" style="margin-top:10px;"><button class="btn-secondary" style="font-size:.68rem;padding:6px 14px;" onclick="updateTeamVentures(\''+m.id+'\')">💾 Save Venture Access</button></div>' +
+    '</div>';
+
+    // Phase update
+    html += '<div class="detail-section"><h4>⚡ Update Employment Phase</h4>' +
+      '<div class="form-field" style="margin-bottom:10px;"><select class="form-select" id="tm-new-phase">' +
+        TEKNNUKU_EMPLOYMENT_PHASES.map(function(p){ return '<option value="'+p.key+'"'+(p.key===phase?' selected':'')+'>'+p.icon+' '+p.label+' — '+escHtml(p.desc)+'</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="form-field" style="margin-bottom:10px;"><textarea class="form-textarea" id="tm-phase-note" style="min-height:60px;" placeholder="Reason or note…"></textarea></div>' +
+      '<button class="btn-primary" style="font-size:.75rem;padding:9px 18px;" onclick="updateTeamPhase(\''+m.id+'\')">Update Phase</button>' +
+    '</div>';
+
+    // Phase history
+    html += '<div class="detail-section"><h4>📅 Employment Phase History</h4>' + buildPhaseTimeline(m.phaseHistory, phase) + '</div>';
+
+    // Compensation
+    html += '<div class="detail-section"><h4>💰 Compensation by Phase</h4>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;">' +
+        PROBATION_PHASES.map(function(ph) {
+          var pay = comp[ph.key]||'—';
+          var isCurr = phase === ph.key;
+          return '<div style="background:'+(isCurr?'rgba(200,155,20,.08)':'rgba(0,0,0,.2)')+';border:1px solid '+(isCurr?'rgba(200,155,20,.25)':'transparent')+';border-radius:6px;padding:10px 12px;">' +
+            '<div style="font-family:var(--mono);font-size:.54rem;text-transform:uppercase;letter-spacing:.12em;color:'+ph.color+';margin-bottom:3px;">'+escHtml(ph.label)+(isCurr?' · CURRENT':'')+'</div>' +
+            '<div style="font-size:.78rem;color:var(--white);">'+escHtml(pay)+'</div>' +
+          '</div>';
+        }).join('') +
+      '</div></div>';
+
+    // Onboarding package review (founder)
+    if (m.onboardingPackage && m.onboardingPackage.submitted) {
+      var pkg = m.onboardingPackage;
+      html += '<div class="detail-section"><h4>📋 Onboarding Package ' +
+        (pkg.acceptedByFounder ? '<span class="badge badge-green" style="font-size:.52rem;">✅ Accepted</span>' : '<span class="badge badge-amber" style="font-size:.52rem;">⏳ Awaiting Review</span>') +
+        '</h4>' +
+        '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:14px;">' +
+          '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);margin-bottom:10px;">Submitted: ' + fmtDate(pkg.submittedAt) + '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">' +
+            '<div style="text-align:center;padding:8px;background:rgba(255,255,255,.03);border-radius:6px;"><div style="font-size:.62rem;color:var(--dimmer);">Personal Info</div><div style="font-size:.8rem;color:'+(pkg.personalInfo?'var(--green)':'var(--dimmer)')+'">'+(pkg.personalInfo?'✓ Done':'Pending')+'</div></div>' +
+            '<div style="text-align:center;padding:8px;background:rgba(255,255,255,.03);border-radius:6px;"><div style="font-size:.62rem;color:var(--dimmer);">Documents</div><div style="font-size:.8rem;color:'+(pkg.documents&&pkg.documents.length?'var(--green)':'var(--dimmer)')+'">'+(pkg.documents&&pkg.documents.length?pkg.documents.length+' Signed':'Pending')+'</div></div>' +
+            '<div style="text-align:center;padding:8px;background:rgba(255,255,255,.03);border-radius:6px;"><div style="font-size:.62rem;color:var(--dimmer);">Video</div><div style="font-size:.8rem;color:'+(pkg.videoAcknowledgment&&pkg.videoAcknowledgment.videoLink?'var(--green)':'var(--dimmer)')+'">'+(pkg.videoAcknowledgment&&pkg.videoAcknowledgment.videoLink?'✓ Done':'Pending')+'</div></div>' +
+          '</div>' +
+          (pkg.videoAcknowledgment && pkg.videoAcknowledgment.videoLink
+            ? '<div style="margin-bottom:10px;"><a href="'+escHtml(pkg.videoAcknowledgment.videoLink)+'" target="_blank" class="topbar-btn" style="display:inline-flex;text-decoration:none;font-size:.62rem;padding:7px 14px;">▶ View Video Acknowledgment</a></div>' : '') +
+          (!pkg.acceptedByFounder
+            ? '<button class="btn-success" style="font-size:.72rem;padding:8px 18px;" onclick="founderAcceptOnboarding(\''+m.id+'\')">✅ Accept Onboarding Package</button>'
+            : '<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Accepted on '+fmtDate(pkg.acceptedAt)+'</div>') +
+        '</div></div>';
+    } else if (isConfirmedEmployee) {
+      html += '<div class="detail-section"><h4>📋 Onboarding Package</h4>' +
+        '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);padding:10px 0;">Not yet submitted by this team member.</div>' +
+      '</div>';
+    }
+
+    // Permissions
+    html += '<div class="detail-section"><h4>🔐 Role Permissions</h4>' +
+      '<div style="font-size:.76rem;color:var(--dim);line-height:1.8;margin-bottom:8px;">Panel access: <span style="color:var(--cyan);">' + (ROLE_PERMISSIONS[m.role]||['overview']).join(', ') + '</span></div>' +
+    '</div>';
+
+    // Actions
+    html += '<div class="btn-row">' +
+      (m.email ? '<a href="mailto:'+escHtml(m.email)+'" class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">✉ Email</a>' : '') +
+      '<button class="action-btn danger" onclick="deleteRecord(\'team_members\',\''+m.id+'\');closeDrawer();">🗑 Remove Member</button>' +
+    '</div>';
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  SELF VIEW (non-founder viewing own profile)
+  // ══════════════════════════════════════════════════════════
+  else if (isSelf) {
+    // Professional profile (read-only, with edit request buttons)
+    html += '<div class="detail-section"><h4>🔗 My Professional Profile <span style="font-weight:400;font-size:.6rem;color:var(--dimmer);">(🔒 Protected — submit change requests below)</span></h4>' +
+      '<div class="detail-grid">' +
+        '<div class="detail-item"><div class="detail-label">LinkedIn</div><div class="detail-val">' + (m.linkedinURL?'<a href="'+escHtml(m.linkedinURL)+'" target="_blank" style="color:var(--cyan);">'+escHtml(m.linkedinURL.substring(0,40))+'</a>':'—') + '</div></div>' +
+        '<div class="detail-item"><div class="detail-label">Portfolio</div><div class="detail-val">' + (m.portfolioURL?'<a href="'+escHtml(m.portfolioURL)+'" target="_blank" style="color:var(--cyan);">'+escHtml(m.portfolioURL.substring(0,40))+'</a>':'—') + '</div></div>' +
+        (m.skills ? '<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Skills</div><div class="detail-val">'+escHtml(m.skills)+'</div></div>' : '') +
+      '</div>' +
+      (m.cvLink ? '<div style="margin-top:10px;"><a href="'+escHtml(m.cvLink)+'" target="_blank" class="topbar-btn" style="display:inline-flex;text-decoration:none;font-size:.62rem;padding:7px 14px;">📄 My CV / Resume</a></div>' : '') +
+      (m.cvFile ? '<div style="margin-top:6px;"><a href="'+escHtml(m.cvFile)+'" download="'+(m.cvFileName||'cv')+'" class="topbar-btn" style="display:inline-flex;text-decoration:none;font-size:.62rem;padding:7px 14px;">⬇ Download My CV</a></div>' : '') +
+
+      // Edit request buttons
+      (m.editProtected ? '<div style="margin-top:14px;background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:12px 14px;">' +
+        '<div style="font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">Request Profile Change</div>' +
+        '<div style="font-size:.76rem;color:var(--dim);line-height:1.6;margin-bottom:10px;">To update your LinkedIn, portfolio, skills or CV, submit a change request. The Founder will review and approve.</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+          '<button class="action-btn" onclick="requestProfileEdit(\''+m.id+'\',\'linkedinURL\',\'LinkedIn URL\',\''+escHtml(m.linkedinURL||'')+'\')">✏ LinkedIn</button>' +
+          '<button class="action-btn" onclick="requestProfileEdit(\''+m.id+'\',\'portfolioURL\',\'Portfolio URL\',\''+escHtml(m.portfolioURL||'')+'\')">✏ Portfolio</button>' +
+          '<button class="action-btn" onclick="requestProfileEdit(\''+m.id+'\',\'skills\',\'Skills\',\''+escHtml(m.skills||'')+'\')">✏ Skills</button>' +
+          '<button class="action-btn" onclick="requestProfileEdit(\''+m.id+'\',\'cvLink\',\'CV Link\',\''+escHtml(m.cvLink||'')+'\')">✏ CV Link</button>' +
+        '</div>' +
+        (pendingReqs.length ? '<div style="font-family:var(--mono);font-size:.58rem;color:var(--amber);margin-top:8px;">⏳ '+pendingReqs.length+' pending request'+(pendingReqs.length!==1?'s':'')+' awaiting Founder review</div>' : '') +
+      '</div>' : '') +
+    '</div>';
+
+    // Phase history for self
+    html += '<div class="detail-section"><h4>📅 My Employment History</h4>' + buildPhaseTimeline(m.phaseHistory, phase) + '</div>';
+
+    // Onboarding package (confirmed employees only)
+    if (isConfirmedEmployee) {
+      var pkg = m.onboardingPackage || {};
+      html += '<div class="detail-section"><h4>📋 My Onboarding Package' +
+        (pkg.submitted && pkg.acceptedByFounder ? ' <span class="badge badge-green" style="font-size:.52rem;">✅ Complete</span>' : '') +
+        (pkg.submitted && !pkg.acceptedByFounder ? ' <span class="badge badge-amber" style="font-size:.52rem;">⏳ Under Review</span>' : '') +
+      '</h4>';
+      if (!pkg.submitted) {
+        html += '<div style="background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.18);border-radius:8px;padding:14px 16px;margin-bottom:12px;">' +
+          '<div style="font-family:var(--mono);font-size:.6rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Action Required</div>' +
+          '<div style="font-size:.8rem;color:var(--dim);line-height:1.7;margin-bottom:12px;">As a confirmed team member, you must complete your onboarding package. This includes: emergency contact info, signed agreements (NDA, Privacy Notice, etc.), a video acknowledgment statement, and a final digital acceptance.</div>' +
+          '<button class="btn-primary" style="font-size:.75rem;padding:10px 20px;" onclick="openOnboardingPackageDrawer(\''+m.id+'\')">🚀 Start Onboarding Package</button>' +
+        '</div>';
+      } else if (pkg.submitted && !pkg.acceptedByFounder) {
+        html += '<div style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:.62rem;color:var(--amber);">⏳ Your onboarding package was submitted on '+fmtDate(pkg.submittedAt)+' and is currently under Founder review. You will be notified once accepted.</div>';
+      } else {
+        html += '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Onboarding package accepted on '+fmtDate(pkg.acceptedAt)+'.</div>' +
+          '<button class="action-btn" style="margin-top:10px;" onclick="openOnboardingPackageDrawer(\''+m.id+'\')">View My Onboarding Records</button>';
+      }
+      html += '</div>';
+    }
+
+    html += '<div class="btn-row"><button class="btn-secondary" onclick="closeDrawer()">Close</button></div>';
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  OPS LEAD — slightly more info than directory
+  // ══════════════════════════════════════════════════════════
+  else if (window._userRole === 'ops_lead') {
+    html += '<div class="detail-section"><h4>Employment Details</h4>' +
+      '<div class="detail-grid">' +
+        '<div class="detail-item"><div class="detail-label">Team</div><div class="detail-val">' + escHtml(m.team||'—') + '</div></div>' +
+        '<div class="detail-item"><div class="detail-label">Phase</div><div class="detail-val"><span class="badge" style="color:' + phaseCfg.color + ';">' + phaseCfg.icon + ' ' + escHtml(phaseCfg.label) + '</span></div></div>' +
+        '<div class="detail-item"><div class="detail-label">Joined</div><div class="detail-val">' + fmtDate(m.joinedAt) + '</div></div>' +
+        '<div class="detail-item"><div class="detail-label">Ventures</div><div class="detail-val">' + (ventures.length ? ventures.map(function(vId){return escHtml((V_MAP[vId]||{}).name||vId);}).join(', ') : 'All') + '</div></div>' +
+      '</div></div>';
+
+    // Phase update (ops lead can update phases)
+    html += '<div class="detail-section"><h4>⚡ Update Phase</h4>' +
+      '<div class="form-field" style="margin-bottom:10px;"><select class="form-select" id="tm-new-phase">' +
+        TEKNNUKU_EMPLOYMENT_PHASES.map(function(p){ return '<option value="'+p.key+'"'+(p.key===phase?' selected':'')+'>'+p.icon+' '+p.label+'</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="form-field" style="margin-bottom:10px;"><textarea class="form-textarea" id="tm-phase-note" style="min-height:56px;" placeholder="Phase note…"></textarea></div>' +
+      '<button class="btn-primary" style="font-size:.72rem;padding:8px 16px;" onclick="updateTeamPhase(\''+m.id+'\')">Update Phase</button>' +
+    '</div>';
+
+    html += '<div class="btn-row">' +
+      (m.email ? '<a href="mailto:'+escHtml(m.email)+'" class="btn-secondary" style="display:inline-flex;text-decoration:none;gap:6px;align-items:center;">✉ Email</a>' : '') +
+    '</div>';
+  }
+
   openDrawer('Team Member', escHtml(m.name||'—'), html);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  TEAM MEMBERS — HELPER FUNCTIONS
+// ─────────────────────────────────────────────────────────────
+
+function switchTeamMemberRole(memberId) {
+  if (window._userRole !== 'founder') { toast('Only the Founder can switch roles','error'); return; }
+  var newRole = (document.getElementById('tm-role-switch')||{}).value||'';
+  if (!newRole) { toast('Select a role','error'); return; }
+  var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+  if (!m) return;
+  if (m.role === newRole) { toast('Role is unchanged','error'); return; }
+  if (!confirm('Switch '+escHtml(m.name||'this member')+' from '+escHtml(ROLE_LABELS[m.role]||m.role)+' to '+escHtml(ROLE_LABELS[newRole]||newRole)+'? Permissions update on their next login.')) return;
+  window._updateDoc('team_members', memberId, {
+    role:            newRole,
+    roleLabel:       ROLE_LABELS[newRole] || newRole,
+    team:            TEAM_FOR_ROLE[newRole] || 'Other',
+    roleChangedAt:   new Date().toISOString(),
+    roleChangedBy:   window._currentUser ? window._currentUser.email : 'founder'
+  }).then(function(){
+    toast('Role changed to '+escHtml(ROLE_LABELS[newRole]||newRole)+' ✓','success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Role switch failed: '+(e.message||e),'error'); });
+}
+
+function requestProfileEdit(memberId, field, label, currentValue) {
+  var newValue = prompt('Request change for: ' + label + '\n\nNew value:', currentValue);
+  if (newValue === null || newValue.trim() === currentValue) return;
+  if (!newValue.trim()) { toast('Value cannot be empty','error'); return; }
+  var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+  if (!m) return;
+  var cu = window._currentUser;
+  var requests = (m.editRequests||[]).slice();
+  // Only one pending request per field allowed
+  var existing = requests.findIndex(function(r){ return r.field===field && r.status==='pending'; });
+  if (existing !== -1) requests.splice(existing, 1);
+  requests.push({
+    field:          field,
+    label:          label,
+    newValue:       newValue.trim(),
+    oldValue:       currentValue,
+    requestedAt:    new Date().toISOString(),
+    requestedBy:    cu ? cu.email : '',
+    requestedById:  getMyMemberId()||'',
+    status:         'pending'
+  });
+  window._updateDoc('team_members', memberId, {editRequests: requests})
+    .then(function(){
+      toast('Change request submitted — awaiting Founder approval ✓','success');
+      closeDrawer();
+      window._loadAll();
+    }).catch(function(e){ toast('Request failed: '+(e.message||e),'error'); });
+}
+
+function approveEditRequest(memberId, reqIndex) {
+  var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+  if (!m) return;
+  var requests = (m.editRequests||[]).slice();
+  var req = requests[reqIndex]; if (!req) return;
+  var update = { editRequests: requests.filter(function(_,i){return i!==reqIndex;}) };
+  update[req.field] = req.newValue;
+  window._updateDoc('team_members', memberId, update).then(function(){
+    toast('Edit approved — '+escHtml(req.label||req.field)+' updated ✓','success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Approve failed: '+(e.message||e),'error'); });
+}
+
+function rejectEditRequest(memberId, reqIndex) {
+  var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+  if (!m) return;
+  var requests = (m.editRequests||[]).filter(function(_,i){return i!==reqIndex;});
+  window._updateDoc('team_members', memberId, {editRequests: requests}).then(function(){
+    toast('Edit request rejected','success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Reject failed: '+(e.message||e),'error'); });
+}
+
+function founderAcceptOnboarding(memberId) {
+  if (!confirm('Accept this team member\'s onboarding package? This action is permanent and logged.')) return;
+  window._updateDoc('team_members', memberId, {
+    'onboardingPackage.acceptedByFounder': true,
+    'onboardingPackage.acceptedAt':        new Date().toISOString(),
+    'onboardingPackage.acceptedBy':        window._currentUser ? window._currentUser.email : 'founder'
+  }).then(function(){
+    toast('Onboarding package accepted ✓','success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Accept failed: '+(e.message||e),'error'); });
+}
+
+// ═════════════════════════════════════════════════════════════
+//  ONBOARDING PACKAGE — multi-step drawer
+// ═════════════════════════════════════════════════════════════
+var _onboardingStep = 'consent';
+
+function openOnboardingPackageDrawer(memberId) {
+  var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+  if (!m) return;
+  _onboardingStep = 'consent';
+  renderOnboardingStep(m);
+}
+
+function switchOnboardingStep(step, memberId) {
+  _onboardingStep = step;
+  var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+  if (m) renderOnboardingStep(m);
+}
+
+function renderOnboardingStep(m) {
+  var pkg = m.onboardingPackage || {};
+  var isFounder = window._userRole === 'founder';
+  var isLocked  = !!(pkg.submitted && pkg.acceptedByFounder);
+
+  var STEPS = [
+    {k:'consent',    l:'Consent',       i:'📋'},
+    {k:'personal',   l:'Personal Info', i:'👤'},
+    {k:'documents',  l:'Documents',     i:'📄'},
+    {k:'video',      l:'Video',         i:'🎥'},
+    {k:'acceptance', l:'Final Accept',  i:'✍️'}
+  ];
+
+  var stepBar = '<div style="display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:3px;margin-bottom:18px;overflow-x:auto;">' +
+    STEPS.map(function(s){
+      var done = stepCompleted(s.k, pkg);
+      return '<button class="tab-btn'+(s.k===_onboardingStep?' active':'')+'" onclick="switchOnboardingStep(\''+s.k+'\',\''+m.id+'\')" style="white-space:nowrap;font-size:.58rem;">' +
+        (done?'✅ ':s.i+' ') + s.l +
+      '</button>';
+    }).join('') +
+  '</div>';
+
+  var content = '';
+
+  if (_onboardingStep === 'consent') {
+    content =
+      '<div style="background:rgba(200,155,20,.06);border:1px solid rgba(200,155,20,.2);border-radius:10px;padding:20px 22px;margin-bottom:16px;">' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:1rem;color:var(--white);margin-bottom:12px;">Important Notice Before You Begin</div>' +
+        '<div style="font-size:.82rem;color:var(--dim);line-height:1.9;">' +
+          'By completing this onboarding package, you acknowledge and consent to the following:<br><br>' +
+          '<strong style="color:var(--white);">1. Data Collection</strong><br>TEKNNUKU Studio will collect your personal information, emergency contacts, banking details, digital signatures, and a video acknowledgment recording.<br><br>' +
+          '<strong style="color:var(--white);">2. Video Recording</strong><br>Your video acknowledgment will be recorded or uploaded and stored securely by the organisation. It may be used as evidence of your voluntary agreement and understanding of all attached legal documents.<br><br>' +
+          '<strong style="color:var(--white);">3. Retention Period</strong><br>Your records will be retained for the duration of your engagement and for a minimum of 7 years thereafter, in compliance with applicable law.<br><br>' +
+          '<strong style="color:var(--white);">4. Access</strong><br>These records are viewable by you and the Founder. Once submitted and accepted, records cannot be altered or deleted.<br><br>' +
+          '<strong style="color:var(--white);">5. Video Declaration Statement</strong><br>You will be asked to record or upload a short video in which you state your full name, the current date, the organisation name (TEKNNUKU Studio), and confirm you have read and voluntarily agree to all documents.' +
+        '</div>' +
+      '</div>' +
+      '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:.82rem;color:var(--dim);padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.2);border-radius:8px;margin-bottom:16px;">' +
+        '<input type="checkbox" id="ob-consent-cb" style="accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;margin-top:2px;">' +
+        'I have read and understood the above notice. I voluntarily consent to the collection, storage, and use of my data as described, including the video acknowledgment recording.' +
+      '</label>' +
+      '<button class="btn-primary" style="font-size:.78rem;padding:10px 20px;" onclick="proceedOnboarding(\'personal\',\''+m.id+'\')">I Agree — Continue to Personal Info →</button>';
+  }
+
+  else if (_onboardingStep === 'personal') {
+    var pi = pkg.personalInfo || {};
+    content =
+      '<div class="eyebrow" style="margin-bottom:12px;">Emergency Contact & Contact Details</div>' +
+      (isLocked ? '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:7px;padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:.6rem;color:var(--green);">🔒 Submitted and accepted — read-only</div>' : '') +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+        '<div class="form-field"><div class="form-label">Emergency Contact Name *</div><input class="form-input" id="ob-ec-name" value="'+escHtml(pi.emergencyContactName||'')+'" placeholder="Full name" '+(isLocked?'readonly':'')+'></div>' +
+        '<div class="form-field"><div class="form-label">Emergency Contact Phone *</div><input class="form-input" id="ob-ec-phone" value="'+escHtml(pi.emergencyContactPhone||'')+'" placeholder="+234 xxx xxx" '+(isLocked?'readonly':'')+'></div>' +
+      '</div>' +
+      '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Home Address</div><input class="form-input" id="ob-address" value="'+escHtml(pi.address||'')+'" placeholder="Full home address" '+(isLocked?'readonly':'')+'></div>' +
+      '<div class="eyebrow" style="margin:14px 0 10px;">Banking Details (for payroll)</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">' +
+        '<div class="form-field"><div class="form-label">Bank Name *</div><input class="form-input" id="ob-bank-name" value="'+escHtml(pi.bankName||'')+'" placeholder="e.g. GTBank" '+(isLocked?'readonly':'')+'></div>' +
+        '<div class="form-field"><div class="form-label">Account Number *</div><input class="form-input" id="ob-bank-accno" value="'+escHtml(pi.bankAccountNumber||'')+'" placeholder="0123456789" '+(isLocked?'readonly':'')+'></div>' +
+        '<div class="form-field"><div class="form-label">Account Name *</div><input class="form-input" id="ob-bank-accnm" value="'+escHtml(pi.bankAccountName||'')+'" placeholder="As on bank account" '+(isLocked?'readonly':'')+'></div>' +
+      '</div>' +
+      (!isLocked
+        ? '<button class="btn-primary" style="font-size:.78rem;padding:10px 20px;" onclick="saveOnboardingPersonalInfo(\''+m.id+'\')">Save & Continue to Documents →</button>'
+        : '');
+  }
+
+  else if (_onboardingStep === 'documents') {
+    var DOCS = [
+      {id:'nda',      title:'Non-Disclosure Agreement (NDA)',     summary:'You agree to keep all TEKNNUKU Studio business information, client data, trade secrets, and internal processes strictly confidential, both during and after your engagement.'},
+      {id:'agreement',title:'Employment / Service Agreement',     summary:'You agree to the terms of your role, compensation structure, probation phases, performance requirements, and the conditions under which your engagement may be terminated.'},
+      {id:'privacy',  title:'Privacy Notice & Data Consent',       summary:'You consent to TEKNNUKU Studio collecting, storing, and processing your personal data for operational, legal, and contractual purposes, in accordance with applicable privacy legislation.'},
+      {id:'conduct',  title:'Code of Conduct & Acceptable Use',   summary:'You agree to uphold TEKNNUKU Studio\'s standards of professionalism, respect, integrity, and ethical behaviour in all communications, actions, and decisions related to your role.'},
+      {id:'ip',       title:'Intellectual Property Assignment',    summary:'All work, code, content, designs, and ideas created during your engagement are assigned to TEKNNUKU Studio as the sole and exclusive owner.'}
+    ];
+    var signedDocs = (pkg.documents||[]).map(function(d){return d.docId;});
+
+    content = '<div class="eyebrow" style="margin-bottom:12px;">Read & Digitally Sign Each Document</div>' +
+      '<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:14px;line-height:1.6;">Type your full legal name as your digital signature after reading each document summary. Full document text will be provided separately by the Founder.</div>' +
+      DOCS.map(function(doc) {
+        var isSigned = signedDocs.indexOf(doc.id) !== -1;
+        var signedEntry = (pkg.documents||[]).find(function(d){return d.docId===doc.id;});
+        return '<div style="background:rgba(255,255,255,.03);border:1px solid '+(isSigned?'rgba(34,197,94,.25)':'var(--border)')+';border-radius:8px;padding:14px 16px;margin-bottom:10px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+            (isSigned?'<span style="color:var(--green);">✅</span>':'<span style="color:var(--dimmer);">📄</span>') +
+            '<div style="font-weight:600;font-size:.88rem;color:var(--white);">'+escHtml(doc.title)+'</div>' +
+          '</div>' +
+          '<div style="font-size:.78rem;color:var(--dim);line-height:1.7;margin-bottom:12px;padding:10px 12px;background:rgba(0,0,0,.2);border-radius:6px;">'+escHtml(doc.summary)+'</div>' +
+          (isSigned
+            ? '<div style="font-family:var(--mono);font-size:.62rem;color:var(--green);">✅ Signed by: <em style="color:var(--white);">'+escHtml(signedEntry?signedEntry.digitalSignature||'—':'—')+'</em> on '+fmtDate(signedEntry?signedEntry.signedAt:'')+'</div>'
+            : (!isLocked
+                ? '<div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">' +
+                    '<div class="form-field" style="flex:1;margin:0;"><div class="form-label">Type your full name to sign *</div><input class="form-input" id="ob-sig-'+doc.id+'" placeholder="e.g. Naza Raymond"></div>' +
+                    '<button class="action-btn success" onclick="signOnboardingDocument(\''+m.id+'\',\''+doc.id+'\',\''+escHtml(doc.title)+'\')">✍ Sign</button>' +
+                  '</div>'
+                : '')) +
+        '</div>';
+      }).join('') +
+      (!isLocked && signedDocs.length === DOCS.length
+        ? '<button class="btn-primary" style="margin-top:8px;font-size:.78rem;padding:10px 20px;" onclick="switchOnboardingStep(\'video\',\''+m.id+'\')">All Signed — Continue to Video →</button>'
+        : (signedDocs.length < DOCS.length && !isLocked
+            ? '<div style="font-family:var(--mono);font-size:.62rem;color:var(--amber);margin-top:8px;">⏳ Sign all '+DOCS.length+' documents to proceed ('+signedDocs.length+'/'+DOCS.length+' done)</div>'
+            : ''));
+  }
+
+  else if (_onboardingStep === 'video') {
+    var va = pkg.videoAcknowledgment || {};
+    content =
+      '<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-left:3px solid var(--red);border-radius:8px;padding:14px 16px;margin-bottom:16px;">' +
+        '<div style="font-family:var(--mono);font-size:.58rem;color:var(--red);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">🎥 Video Acknowledgment — Required</div>' +
+        '<div style="font-size:.8rem;color:var(--dim);line-height:1.9;">' +
+          'Record or upload a short video (under 3 minutes) in which you clearly:<br>' +
+          '• Show your face<br>• State your full legal name<br>• State today\'s date<br>• State the organisation: <strong style="color:var(--white);">TEKNNUKU Studio</strong><br>' +
+          '• Confirm you have read and understood the NDA, Employment Agreement, Privacy Notice, Code of Conduct, and IP Assignment<br>' +
+          '• Confirm you voluntarily agree to all documents and your responsibilities<br>' +
+          '• Confirm all information submitted is accurate to the best of your knowledge' +
+        '</div>' +
+      '</div>' +
+      '<div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.18);border-radius:8px;padding:12px 16px;margin-bottom:16px;">' +
+        '<div style="font-family:var(--mono);font-size:.6rem;color:var(--amber);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;">Sample Statement Script</div>' +
+        '<div style="font-size:.8rem;color:var(--dim);line-height:1.9;font-style:italic;">"My name is [Your Full Name]. Today is [Date]. I am joining the TEKNNUKU Studio team. I confirm that I have read and understood the NDA, Terms and Conditions, Employment Agreement, Privacy Notice, Code of Conduct, and all related documents. I confirm that all information I submitted is true and accurate. I voluntarily agree to comply with these agreements and understand my responsibilities."</div>' +
+      '</div>' +
+      (va.videoLink
+        ? '<div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:12px 14px;margin-bottom:12px;">' +
+            '<div style="font-family:var(--mono);font-size:.58rem;color:var(--green);margin-bottom:6px;">✅ Video Submitted</div>' +
+            '<a href="'+escHtml(va.videoLink)+'" target="_blank" class="topbar-btn" style="display:inline-flex;text-decoration:none;font-size:.62rem;padding:7px 14px;margin-bottom:8px;">▶ View Video</a>' +
+            '<div style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">Recorded/Uploaded: '+fmtDate(va.recordedAt)+'</div>' +
+          '</div>'
+        : '') +
+      (!isLocked
+        ? '<div class="detail-section"><h4>Upload Your Video Acknowledgment</h4>' +
+            '<div style="font-size:.76rem;color:var(--dimmer);margin-bottom:12px;line-height:1.6;">After recording your video, upload it to Google Drive, Dropbox, or another cloud service (set access to "Anyone with the link can view"), then paste the link below. Alternatively, upload directly if small enough.</div>' +
+            '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Video Link (Google Drive, Dropbox, YouTube unlisted…) *</div><input class="form-input" id="ob-video-link" value="'+escHtml(va.videoLink||'')+'" type="url" placeholder="https://drive.google.com/file/d/..."></div>' +
+            '<div class="form-field" style="margin-bottom:14px;"><div class="form-label">Written Statement (confirm what you said in the video)</div>' +
+              '<textarea class="form-textarea" id="ob-video-stmt" style="min-height:80px;" placeholder="I, [Your Full Name], confirm that I have read and understood...">' + escHtml(va.statement||'') + '</textarea>' +
+            '</div>' +
+            '<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:.78rem;color:var(--dim);padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.2);border-radius:7px;margin-bottom:14px;">' +
+              '<input type="checkbox" id="ob-video-consent" style="accent-color:var(--gold);flex-shrink:0;margin-top:2px;width:15px;height:15px;"'+(va.consentGiven?' checked':'')+' '+(isLocked?'disabled':'')+'>'+
+              ' I confirm that I am the person in the video, the video was recorded voluntarily, and I consent to TEKNNUKU Studio storing this recording as evidence of my acknowledgment and agreement.' +
+            '</label>' +
+            '<button class="btn-primary" style="font-size:.78rem;padding:10px 20px;" onclick="saveVideoAcknowledgment(\''+m.id+'\')">Save Video & Continue →</button>' +
+          '</div>'
+        : '') ;
+  }
+
+  else if (_onboardingStep === 'acceptance') {
+    var da = pkg.digitalAcceptance || {};
+    var allDocsOk = (pkg.documents||[]).length >= 5;
+    var videoOk   = !!(pkg.videoAcknowledgment && pkg.videoAcknowledgment.videoLink);
+    var piOk      = !!(pkg.personalInfo && pkg.personalInfo.emergencyContactName);
+    var allGood   = allDocsOk && videoOk && piOk;
+
+    content =
+      '<div class="eyebrow" style="margin-bottom:14px;">Completion Checklist</div>' +
+      '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid '+(piOk?'rgba(34,197,94,.2)':'rgba(239,68,68,.2)')+';border-radius:7px;">' +
+          '<span style="font-size:1.1rem;">'+(piOk?'✅':'❌')+'</span>' +
+          '<span style="font-size:.8rem;color:var(--white);">Personal & emergency contact information</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid '+(allDocsOk?'rgba(34,197,94,.2)':'rgba(239,68,68,.2)')+';border-radius:7px;">' +
+          '<span style="font-size:1.1rem;">'+(allDocsOk?'✅':'❌')+'</span>' +
+          '<span style="font-size:.8rem;color:var(--white);">All 5 documents signed</span>' +
+          (!allDocsOk ? '<span class="badge badge-red" style="font-size:.5rem;margin-left:auto;">'+((pkg.documents||[]).length)+'/5</span>' : '') +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid '+(videoOk?'rgba(34,197,94,.2)':'rgba(239,68,68,.2)')+';border-radius:7px;">' +
+          '<span style="font-size:1.1rem;">'+(videoOk?'✅':'❌')+'</span>' +
+          '<span style="font-size:.8rem;color:var(--white);">Video acknowledgment uploaded</span>' +
+        '</div>' +
+      '</div>' +
+      (allGood && !pkg.submitted
+        ? '<div class="detail-section"><h4>✍️ Final Digital Acceptance</h4>' +
+            '<div style="font-size:.8rem;color:var(--dim);line-height:1.8;margin-bottom:14px;">By providing your digital signature below, you confirm that:<br>• All information submitted is accurate<br>• You have voluntarily signed all documents<br>• You understand your obligations to TEKNNUKU Studio<br>• This constitutes your legally binding digital acceptance</div>' +
+            '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Digital Signature — Type your full legal name *</div><input class="form-input" id="ob-final-sig" placeholder="e.g. Naza Raymond" value="'+escHtml(da.signature||'')+'"></div>' +
+            '<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:.78rem;color:var(--dim);padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.2);border-radius:7px;margin-bottom:14px;">' +
+              '<input type="checkbox" id="ob-final-accept" style="accent-color:var(--gold);flex-shrink:0;margin-top:2px;width:15px;height:15px;">' +
+              ' I confirm that all information submitted is accurate and complete. I voluntarily accept all agreements and understand my rights and responsibilities as a TEKNNUKU Studio team member.' +
+            '</label>' +
+            '<button class="btn-primary" style="font-size:.8rem;padding:12px 24px;" onclick="submitOnboardingPackage(\''+m.id+'\')">🚀 Submit Onboarding Package</button>' +
+          '</div>'
+        : (pkg.submitted
+            ? '<div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:16px;text-align:center;">' +
+                '<div style="font-size:1.4rem;margin-bottom:8px;">🎉</div>' +
+                '<div style="font-family:var(--display);font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px;">Onboarding Package Submitted</div>' +
+                '<div style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">Submitted on '+fmtDate(pkg.submittedAt)+' · Awaiting Founder review</div>' +
+              '</div>'
+            : (!allGood
+                ? '<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:8px;padding:14px;font-family:var(--mono);font-size:.62rem;color:var(--red);">⚠ Complete all steps above before final submission.</div>'
+                : '')));
+  }
+
+  var body = '<div>' +
+    stepBar +
+    content +
+    (isFounder && _onboardingStep !== 'acceptance'
+      ? '' : '') +
+    '<div class="btn-row" style="margin-top:20px;">' +
+      '<button class="btn-secondary" onclick="closeDrawer()">Close</button>' +
+    '</div></div>';
+
+  openDrawer('Onboarding Package', escHtml(m.name||'—'), body);
+}
+
+function stepCompleted(step, pkg) {
+  if (step === 'consent')    return true; // considered done if they got past it
+  if (step === 'personal')   return !!(pkg.personalInfo && pkg.personalInfo.emergencyContactName);
+  if (step === 'documents')  return (pkg.documents||[]).length >= 5;
+  if (step === 'video')      return !!(pkg.videoAcknowledgment && pkg.videoAcknowledgment.videoLink);
+  if (step === 'acceptance') return !!pkg.submitted;
+  return false;
+}
+
+function proceedOnboarding(nextStep, memberId) {
+  var cb = document.getElementById('ob-consent-cb');
+  if (!cb || !cb.checked) { toast('You must agree to the notice before proceeding','error'); return; }
+  switchOnboardingStep(nextStep, memberId);
+}
+
+function saveOnboardingPersonalInfo(memberId) {
+  var name  = (document.getElementById('ob-ec-name') ||{}).value||'';
+  var phone = (document.getElementById('ob-ec-phone')||{}).value||'';
+  var addr  = (document.getElementById('ob-address') ||{}).value||'';
+  var bname = (document.getElementById('ob-bank-name') ||{}).value||'';
+  var baccno= (document.getElementById('ob-bank-accno')||{}).value||'';
+  var baccnm= (document.getElementById('ob-bank-accnm')||{}).value||'';
+  if (!name||!phone) { toast('Emergency contact name and phone are required','error'); return; }
+  if (!bname||!baccno||!baccnm) { toast('Complete banking details are required for payroll','error'); return; }
+  var update = {
+    'onboardingPackage.personalInfo': {
+      emergencyContactName: name.trim(),
+      emergencyContactPhone: phone.trim(),
+      address: addr.trim(),
+      bankName: bname.trim(),
+      bankAccountNumber: baccno.trim(),
+      bankAccountName: baccnm.trim(),
+      savedAt: new Date().toISOString()
+    }
+  };
+  window._updateDoc('team_members', memberId, update).then(function(){
+    toast('Personal info saved ✓','success');
+    window._loadAll().then(function(){
+      var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+      if (m) { _onboardingStep = 'documents'; renderOnboardingStep(m); }
+    });
+  }).catch(function(e){ toast('Save failed: '+(e.message||e),'error'); });
+}
+
+function signOnboardingDocument(memberId, docId, docTitle) {
+  var sig = (document.getElementById('ob-sig-'+docId)||{}).value||'';
+  if (!sig.trim()) { toast('Type your full name to sign','error'); return; }
+  var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+  if (!m) return;
+  var docs = ((m.onboardingPackage||{}).documents||[]).filter(function(d){return d.docId!==docId;});
+  docs.push({
+    docId:            docId,
+    docTitle:         docTitle,
+    digitalSignature: sig.trim(),
+    signedAt:         new Date().toISOString(),
+    memberId:         memberId
+  });
+  window._updateDoc('team_members', memberId, {'onboardingPackage.documents': docs}).then(function(){
+    toast(escHtml(docTitle)+' signed ✓','success');
+    window._loadAll().then(function(){
+      var mu = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+      if (mu) { _onboardingStep = 'documents'; renderOnboardingStep(mu); }
+    });
+  }).catch(function(e){ toast('Sign failed: '+(e.message||e),'error'); });
+}
+
+function saveVideoAcknowledgment(memberId) {
+  var link    = (document.getElementById('ob-video-link')   ||{}).value||'';
+  var stmt    = (document.getElementById('ob-video-stmt')   ||{}).value||'';
+  var consent = (document.getElementById('ob-video-consent')||{}).checked;
+  if (!link)    { toast('Paste your video link (Google Drive, etc.)','error'); return; }
+  if (!consent) { toast('You must consent to the recording being stored','error'); return; }
+  window._updateDoc('team_members', memberId, {
+    'onboardingPackage.videoAcknowledgment': {
+      videoLink:       link.trim(),
+      statement:       stmt.trim(),
+      consentGiven:    true,
+      recordedAt:      new Date().toISOString(),
+      acknowledgedDocs:['NDA','Employment Agreement','Privacy Notice','Code of Conduct','IP Assignment']
+    }
+  }).then(function(){
+    toast('Video acknowledgment saved ✓','success');
+    window._loadAll().then(function(){
+      var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+      if (m) { _onboardingStep = 'acceptance'; renderOnboardingStep(m); }
+    });
+  }).catch(function(e){ toast('Save failed: '+(e.message||e),'error'); });
+}
+
+function submitOnboardingPackage(memberId) {
+  var sig    = (document.getElementById('ob-final-sig')    ||{}).value||'';
+  var accept = (document.getElementById('ob-final-accept') ||{}).checked;
+  if (!sig.trim()) { toast('Type your full name as your digital signature','error'); return; }
+  if (!accept)     { toast('You must check the acceptance box to submit','error'); return; }
+  if (!confirm('Submit your onboarding package? Once submitted, it cannot be edited or deleted.')) return;
+  var now = new Date().toISOString();
+  window._updateDoc('team_members', memberId, {
+    'onboardingPackage.submitted':          true,
+    'onboardingPackage.submittedAt':        now,
+    'onboardingPackage.digitalAcceptance':  { signature:sig.trim(), acceptedAt:now },
+    'onboardingPackage.acceptedByFounder':  false,
+    'onboardingPackage.systemLog':          [{action:'Package submitted', timestamp:now, by:window._currentUser?window._currentUser.email:'member'}]
+  }).then(function(){
+    toast('✅ Onboarding package submitted — awaiting Founder review','success');
+    window._loadAll().then(function(){
+      var m = (window._data.team_members||[]).find(function(x){return x.id===memberId;});
+      if (m) { _onboardingStep = 'acceptance'; renderOnboardingStep(m); }
+    });
+  }).catch(function(e){ toast('Submit failed: '+(e.message||e),'error'); });
 }
 
 function updateTeamStage(id) {
