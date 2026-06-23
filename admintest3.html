@@ -3603,6 +3603,7 @@ function _panelTeam() {
 // ═══════════════════════════════════════════════════════════════
 var VACANCY_TYPES     = ['Full-Time','Part-Time','Contract','Freelance','Internship','Commission-Only'];
 var VACANCY_LOCATIONS = ['Remote','On-Site (Lagos)','Hybrid','Field-Based','Flexible'];
+var VACANCY_TEAMS     = ['Operations','Sales','Lead Generation','Delivery','Customer Success','Admin & Finance','Other'];
 
 // Seed role definitions — used as defaults when no Firestore vacancy exists
 var SEED_ROLE_DETAILS = {
@@ -3682,13 +3683,17 @@ var SEED_ROLE_DETAILS = {
 
 function getVacancyDetails(roleId, vacancyDoc) {
   var seed = SEED_ROLE_DETAILS[roleId] || {};
+  var savedComp = vacancyDoc && vacancyDoc.compensation && Object.keys(vacancyDoc.compensation).length
+    ? vacancyDoc.compensation
+    : null;
   return {
     summary:          (vacancyDoc && vacancyDoc.summary)          || seed.summary          || '',
     requirements:     (vacancyDoc && vacancyDoc.requirements)     || seed.requirements     || [],
     responsibilities: (vacancyDoc && vacancyDoc.responsibilities) || seed.responsibilities || [],
     type:             (vacancyDoc && vacancyDoc.type)             || 'Full-Time',
     location:         (vacancyDoc && vacancyDoc.location)         || 'Remote',
-    compensation:     seed.compensation || {}
+    team:             (vacancyDoc && vacancyDoc.team)             || TEAM_FOR_ROLE[roleId] || 'Other',
+    compensation:     savedComp || seed.compensation || {}
   };
 }
 
@@ -8125,23 +8130,42 @@ function buildVacancyApplicantList(roleId) {
 }
 
 function buildVacancyEditForm(roleId, label, cfg, details, slots, isCustom) {
+  var compEditor = '<div style="display:flex;flex-direction:column;gap:8px;">' +
+    PROBATION_PHASES.map(function(ph) {
+      var val = (details.compensation && details.compensation[ph.key]) || '';
+      return '<div class="form-field">' +
+        '<div class="form-label" style="color:' + ph.color + ';">' + ph.icon + ' ' + escHtml(ph.label) + '</div>' +
+        '<input class="form-input vedit-comp-' + roleId + '" data-phase="' + ph.key + '" value="' + escHtml(val) + '" placeholder="e.g. 100% commission, ₦30k–₦60k + bonus, ₦80k–₦150k/month…">' +
+      '</div>';
+    }).join('') +
+  '</div>';
+
+  var currentTeam = details.team || (cfg && cfg.team) || TEAM_FOR_ROLE[roleId] || 'Other';
+
   return '<div style="display:flex;flex-direction:column;gap:14px;">' +
 
-    // Basic info
-    (isCustom ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-      '<div class="form-field"><div class="form-label">Role Title *</div><input class="form-input" id="vedit-title-' + roleId + '" value="' + escHtml(label) + '"></div>' +
-      '<div class="form-field"><div class="form-label">Number of Slots</div><input class="form-input" id="vedit-slots-' + roleId + '" type="number" min="1" value="' + slots + '"></div>' +
-    '</div>' : '') +
+    // Row 1: Team + Slots (slots for custom only; seed roles show team only)
+    '<div style="display:grid;grid-template-columns:' + (isCustom?'1fr 1fr':'1fr') + ';gap:10px;">' +
+      '<div class="form-field"><div class="form-label">Sub-Team *</div>' +
+        '<select class="form-select" id="vedit-team-' + roleId + '">' +
+          VACANCY_TEAMS.map(function(t){ return '<option value="'+t+'"'+(t===currentTeam?' selected':'')+'>'+t+'</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+      (isCustom ? '<div class="form-field"><div class="form-label">Slots Available</div><input class="form-input" id="vedit-slots-' + roleId + '" type="number" min="1" value="' + slots + '"></div>' : '') +
+    '</div>' +
+
+    // Title (custom only)
+    (isCustom ? '<div class="form-field"><div class="form-label">Role Title *</div><input class="form-input" id="vedit-title-' + roleId + '" value="' + escHtml(label) + '"></div>' : '') +
 
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
       '<div class="form-field"><div class="form-label">Employment Type</div>' +
         '<select class="form-select" id="vedit-type-' + roleId + '">' +
-          VACANCY_TYPES.map(function(t){ return '<option value="' + t + '"' + (t===(details.type||'Full-Time')?' selected':'') + '>' + t + '</option>'; }).join('') +
+          VACANCY_TYPES.map(function(t){ return '<option value="'+t+'"'+(t===(details.type||'Full-Time')?' selected':'')+'>'+t+'</option>'; }).join('') +
         '</select>' +
       '</div>' +
       '<div class="form-field"><div class="form-label">Location</div>' +
         '<select class="form-select" id="vedit-loc-' + roleId + '">' +
-          VACANCY_LOCATIONS.map(function(l){ return '<option value="' + l + '"' + (l===(details.location||'Remote')?' selected':'') + '>' + l + '</option>'; }).join('') +
+          VACANCY_LOCATIONS.map(function(l){ return '<option value="'+l+'"'+(l===(details.location||'Remote')?' selected':'')+'>'+l+'</option>'; }).join('') +
         '</select>' +
       '</div>' +
     '</div>' +
@@ -8156,6 +8180,10 @@ function buildVacancyEditForm(roleId, label, cfg, details, slots, isCustom) {
 
     '<div class="form-field"><div class="form-label" style="margin-bottom:8px;">Responsibilities</div>' +
       buildRequirementsEditor(details.responsibilities, 'vedit-resp-' + roleId) +
+    '</div>' +
+
+    '<div class="form-field"><div class="form-label" style="margin-bottom:10px;">💰 Compensation by Phase</div>' +
+      compEditor +
     '</div>' +
 
     '<div class="btn-row">' +
@@ -8210,10 +8238,18 @@ function saveVacancyDetails(roleId, isCustom) {
   var summary  = (document.getElementById('vedit-summary-' + roleId) ||{}).value||'';
   var type     = (document.getElementById('vedit-type-'    + roleId) ||{}).value||'Full-Time';
   var location = (document.getElementById('vedit-loc-'     + roleId) ||{}).value||'Remote';
+  var team     = (document.getElementById('vedit-team-'    + roleId) ||{}).value||'Other';
   var reqs     = getListItems('vedit-req-'  + roleId + '-item');
   var resps    = getListItems('vedit-resp-' + roleId + '-item');
 
-  var d       = window._data || {};
+  // Collect compensation inputs
+  var comp = {};
+  document.querySelectorAll('.vedit-comp-' + roleId).forEach(function(el) {
+    var ph = el.getAttribute('data-phase');
+    if (ph && el.value.trim()) comp[ph] = el.value.trim();
+  });
+
+  var d        = window._data || {};
   var existing = (d.careers_config||[]).find(function(c){ return c.roleId === roleId; });
   var data     = {
     roleId:           roleId,
@@ -8221,11 +8257,12 @@ function saveVacancyDetails(roleId, isCustom) {
     summary:          summary,
     type:             type,
     location:         location,
+    team:             team,
+    compensation:     comp,
     requirements:     reqs,
     responsibilities: resps
   };
 
-  // Extra fields for custom roles
   if (isCustom) {
     data.title  = (document.getElementById('vedit-title-' + roleId)||{}).value || roleId;
     data.slots  = parseInt((document.getElementById('vedit-slots-' + roleId)||{}).value)||1;
@@ -8237,7 +8274,7 @@ function saveVacancyDetails(roleId, isCustom) {
     : window._saveDoc('careers_config', data);
 
   fn.then(function() {
-    toast('Role details saved ✓', 'success');
+    toast('Role details saved ✓ · Changes will appear on the careers page', 'success');
     window._loadAll();
   }).catch(function(e){ toast('Save failed: ' + (e.message||e), 'error'); });
 }
@@ -8250,34 +8287,37 @@ function openAddCustomVacancy() {
       '<div class="form-field"><div class="form-label">Role ID (no spaces) *</div><input class="form-input" id="newv-id" placeholder="e.g. brand_designer" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,\'_\')"></div>' +
     '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">' +
+      '<div class="form-field"><div class="form-label">Sub-Team *</div>' +
+        '<select class="form-select" id="newv-team">' +
+          VACANCY_TEAMS.map(function(t){return'<option value="'+t+'">'+t+'</option>';}).join('') +
+        '</select></div>' +
       '<div class="form-field"><div class="form-label">Slots Available</div><input class="form-input" id="newv-slots" type="number" min="1" value="1"></div>' +
+      '<div class="form-field"><div class="form-label">Initial Status</div>' +
+        '<select class="form-select" id="newv-status"><option value="open">🟢 Open</option><option value="trial">🟡 On Trial</option><option value="closed">⚫ Closed</option></select></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
       '<div class="form-field"><div class="form-label">Employment Type</div>' +
-        '<select class="form-select" id="newv-type">' + VACANCY_TYPES.map(function(t){ return '<option>' + t + '</option>'; }).join('') + '</select>' +
-      '</div>' +
+        '<select class="form-select" id="newv-type">'+VACANCY_TYPES.map(function(t){return'<option>'+t+'</option>';}).join('')+'</select></div>' +
       '<div class="form-field"><div class="form-label">Location</div>' +
-        '<select class="form-select" id="newv-loc">' + VACANCY_LOCATIONS.map(function(l){ return '<option>' + l + '</option>'; }).join('') + '</select>' +
-      '</div>' +
+        '<select class="form-select" id="newv-loc">'+VACANCY_LOCATIONS.map(function(l){return'<option>'+l+'</option>';}).join('')+'</select></div>' +
     '</div>' +
-    '<div class="form-field" style="margin-bottom:10px;"><div class="form-label">Role Summary *</div>' +
+    '<div class="form-field" style="margin-bottom:4px;"><div class="form-label">Role Summary *</div>' +
       '<textarea class="form-textarea" id="newv-summary" style="min-height:70px;" placeholder="Describe what this role does and why it matters…"></textarea>' +
-    '</div>' +
-    '</div>' +
+    '</div></div>' +
+
+    '<div class="detail-section"><h4>💰 Compensation by Phase <span style="font-weight:400;font-size:.6rem;color:var(--dimmer);">(displayed on careers page)</span></h4>' +
+    '<div style="display:flex;flex-direction:column;gap:8px;">' +
+    PROBATION_PHASES.map(function(ph){
+      return '<div class="form-field"><div class="form-label" style="color:'+ph.color+';">'+ph.icon+' '+escHtml(ph.label)+'</div>' +
+        '<input class="form-input" id="newv-comp-'+ph.key+'" placeholder="e.g. 100% commission, ₦30k–₦60k + bonus, ₦80k–₦150k/month…"></div>';
+    }).join('') +
+    '</div></div>' +
 
     '<div class="detail-section"><h4>✅ Requirements</h4>' +
-    buildRequirementsEditor([''], 'newv-req') +
-    '</div>' +
+    buildRequirementsEditor([''], 'newv-req') + '</div>' +
 
     '<div class="detail-section"><h4>📌 Responsibilities</h4>' +
-    buildRequirementsEditor([''], 'newv-resp') +
-    '</div>' +
-
-    '<div class="detail-section"><h4>📌 Initial Status</h4>' +
-    '<select class="form-select" id="newv-status" style="max-width:200px;">' +
-      '<option value="open">🟢 Open — Accepting Applications</option>' +
-      '<option value="trial">🟡 On Trial</option>' +
-      '<option value="closed">⚫ Closed</option>' +
-    '</select>' +
-    '</div>' +
+    buildRequirementsEditor([''], 'newv-resp') + '</div>' +
 
     '<div class="btn-row">' +
       '<button class="btn-primary" onclick="saveNewCustomVacancy()">🚀 Publish Role</button>' +
@@ -8295,17 +8335,24 @@ function saveNewCustomVacancy() {
   var type    = (document.getElementById('newv-type')   ||{}).value||'Full-Time';
   var loc     = (document.getElementById('newv-loc')    ||{}).value||'Remote';
   var status  = (document.getElementById('newv-status') ||{}).value||'open';
+  var team    = (document.getElementById('newv-team')   ||{}).value||'Other';
 
-  if (!title.trim())  { toast('Role title is required', 'error');        return; }
-  if (!roleId.trim()) { toast('Role ID is required (no spaces)', 'error'); return; }
-  if (!summary.trim()){ toast('Role summary is required', 'error');      return; }
+  if (!title.trim())  { toast('Role title is required','error');         return; }
+  if (!roleId.trim()) { toast('Role ID is required (no spaces)','error'); return; }
+  if (!summary.trim()){ toast('Role summary is required','error');       return; }
+
+  // Collect compensation
+  var comp = {};
+  PROBATION_PHASES.forEach(function(ph) {
+    var val = (document.getElementById('newv-comp-'+ph.key)||{}).value||'';
+    if (val.trim()) comp[ph.key] = val.trim();
+  });
 
   var reqs  = getListItems('newv-req-item');
   var resps = getListItems('newv-resp-item');
 
-  // Check for duplicate ID
   var exists = (window._data ? window._data.careers_config||[] : []).find(function(c){ return c.roleId === roleId; });
-  if (exists) { toast('A role with this ID already exists', 'error'); return; }
+  if (exists) { toast('A role with this ID already exists','error'); return; }
 
   window._saveDoc('careers_config', {
     roleId:           roleId,
@@ -8315,16 +8362,18 @@ function saveNewCustomVacancy() {
     type:             type,
     location:         loc,
     status:           status,
+    team:             team,
+    compensation:     comp,
     requirements:     reqs,
     responsibilities: resps,
     custom:           true
   }).then(function() {
-    toast('New role published ✓', 'success');
+    toast('New role published ✓ · Now visible on the careers page','success');
     closeDrawer();
     window._loadAll();
-  }).catch(function(e){ toast('Save failed: ' + (e.message||e), 'error'); });
+  }).catch(function(e){ toast('Save failed: '+(e.message||e),'error'); });
 }
-
+  
 function deleteCustomVacancy(configId) {
   if (!configId) { toast('Cannot delete — record not found', 'error'); return; }
   if (!confirm('Delete this custom role? This cannot be undone.')) return;
