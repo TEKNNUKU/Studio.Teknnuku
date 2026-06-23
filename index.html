@@ -69,6 +69,223 @@
   };
 </script>
 
+<!-- ═══ TEKNNUKU CAREERS LOADER — paste after Firebase init ═══ -->
+<script>
+(function() {
+  'use strict';
+
+  /* ── Team accent colours (match admin) ── */
+  var TEAM_COLORS = {
+    'Operations':     '#C89B14',
+    'Sales':          '#22c55e',
+    'Lead Generation':'#00BCD4',
+    'Delivery':       '#a855f7',
+    'Customer Success':'#f97316',
+    'Admin & Finance':'#3b82f6',
+    'Other':          'rgba(242,237,228,.35)'
+  };
+
+  /* ── Seed labels for roles that exist in the system but may
+        not have a custom careers_config doc yet ── */
+  var SEED_LABELS = {
+    ops_lead:'Operations Lead', sales_manager:'Sales Manager',
+    inbound_closer:'Inbound Closer', outbound_closer:'Outbound Closer',
+    content_lead:'Content Lead', content_creator:'Content Creator',
+    outreach_lead_gen:'Outreach Lead Gen', tech_product_lead:'Tech / Product Lead',
+    developer:'Developer', onboarding_specialist:'Onboarding Specialist',
+    customer_success_manager:'Customer Success Manager',
+    admin_finance_officer:'Admin / Finance Officer'
+  };
+
+  var SEED_TEAMS = {
+    ops_lead:'Operations', sales_manager:'Sales',
+    inbound_closer:'Sales', outbound_closer:'Sales',
+    content_lead:'Lead Generation', content_creator:'Lead Generation',
+    outreach_lead_gen:'Lead Generation', tech_product_lead:'Delivery',
+    developer:'Delivery', onboarding_specialist:'Delivery',
+    customer_success_manager:'Customer Success',
+    admin_finance_officer:'Admin & Finance'
+  };
+
+  /* ── HTML escape helper ── */
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Main render ── */
+  function renderCareers(container) {
+    container.innerHTML =
+      '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Loading open positions…</div>';
+
+    // Use the global Firestore instance already initialised on this page
+    var db = firebase.firestore ? firebase.firestore() : (window.db || null);
+    if (!db) {
+      container.innerHTML =
+        '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Careers unavailable — check console.</div>';
+      console.error('TEKNNUKU Careers: Firebase Firestore not found. Ensure Firebase is initialised before this script.');
+      return;
+    }
+
+    db.collection('careers_config').get().then(function(snap) {
+      var allDocs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+
+      /* Only show open or on-trial roles */
+      var open = allDocs.filter(function(d){ return d.status === 'open' || d.status === 'trial'; });
+
+      if (!open.length) {
+        container.innerHTML =
+          '<div style="text-align:center;padding:48px;">' +
+            '<div style="font-size:2rem;margin-bottom:12px;">🏗️</div>' +
+            '<div style="font-family:monospace;font-size:.82rem;color:rgba(255,255,255,.3);">No open positions right now.</div>' +
+            '<div style="font-family:monospace;font-size:.7rem;color:rgba(255,255,255,.2);margin-top:6px;">Check back soon — we grow fast.</div>' +
+          '</div>';
+        return;
+      }
+
+      /* Group by team */
+      var groups = {};
+      open.forEach(function(role) {
+        var team  = role.team || SEED_TEAMS[role.roleId] || 'Other';
+        var label = role.title || SEED_LABELS[role.roleId] || (role.roleId||'').replace(/_/g,' ');
+        if (!groups[team]) groups[team] = [];
+        groups[team].push({ label:label, role:role });
+      });
+
+      var html = '';
+      var PHASE_LABELS = {phase1:'Days 1–14', phase2:'Days 15–30', phase3:'Days 30–60', employed:'Confirmed'};
+
+      Object.keys(groups).sort().forEach(function(team) {
+        var color = TEAM_COLORS[team] || 'rgba(200,155,20,.8)';
+        html +=
+          '<div style="margin-bottom:48px;">' +
+
+          /* Team header */
+          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">' +
+            '<div style="font-family:monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:'+color+';">'+esc(team)+'</div>' +
+            '<div style="flex:1;height:1px;background:rgba(255,255,255,.07);"></div>' +
+            '<div style="font-family:monospace;font-size:.58rem;color:rgba(255,255,255,.25);">'+groups[team].length+' opening'+(groups[team].length!==1?'s':'')+'</div>' +
+          '</div>' +
+
+          '<div style="display:grid;gap:14px;">' +
+          groups[team].map(function(item) {
+            var r    = item.role;
+            var comp = r.compensation || {};
+            var hasComp = Object.keys(comp).some(function(k){return comp[k];});
+            var isOnTrial = r.status === 'trial';
+
+            return '<div style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:22px 24px;transition:border-color .2s,background .2s;" ' +
+              'onmouseover="this.style.borderColor=\''+color+'\';this.style.background=\'rgba(255,255,255,.04)\'" ' +
+              'onmouseout="this.style.borderColor=\'rgba(255,255,255,.06)\';this.style.background=\'rgba(255,255,255,.025)\'">' +
+
+              /* Title row */
+              '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:10px;flex-wrap:wrap;">' +
+                '<div>' +
+                  '<div style="font-weight:700;font-size:1.05rem;color:#fff;margin-bottom:7px;">'+esc(item.label)+'</div>' +
+                  '<div style="display:flex;gap:7px;flex-wrap:wrap;">' +
+                    '<span style="font-family:monospace;font-size:.58rem;background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);padding:3px 10px;border-radius:20px;">'+esc(r.type||'Full-Time')+'</span>' +
+                    '<span style="font-family:monospace;font-size:.58rem;background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);padding:3px 10px;border-radius:20px;">📍 '+esc(r.location||'Remote')+'</span>' +
+                    (r.slots ? '<span style="font-family:monospace;font-size:.58rem;background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);padding:3px 10px;border-radius:20px;">'+r.slots+' slot'+(r.slots!==1?'s':'')+'</span>' : '') +
+                    (isOnTrial ? '<span style="font-family:monospace;font-size:.58rem;background:rgba(245,158,11,.15);color:#f59e0b;padding:3px 10px;border-radius:20px;">🔄 Trial Open</span>' : '') +
+                  '</div>' +
+                '</div>' +
+                '<button onclick="window.teknnukuApply && window.teknnukuApply(\''+esc(r.roleId)+'\',\''+esc(item.label)+'\')" ' +
+                  'style="flex-shrink:0;background:linear-gradient(135deg,#C89B14,#daa820);color:#080808;border:none;border-radius:7px;padding:10px 20px;font-family:monospace;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:opacity .15s;" ' +
+                  'onmouseover="this.style.opacity=\'.88\'" onmouseout="this.style.opacity=\'1\'">Apply Now →</button>' +
+              '</div>' +
+
+              /* Summary */
+              (r.summary ? '<div style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.75;margin-bottom:14px;">'+esc(r.summary)+'</div>' : '') +
+
+              /* Compensation grid */
+              (hasComp ?
+                '<div style="background:rgba(200,155,20,.04);border:1px solid rgba(200,155,20,.14);border-radius:8px;padding:13px 15px;margin-bottom:14px;">' +
+                  '<div style="font-family:monospace;font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:#C89B14;margin-bottom:10px;">💰 Compensation</div>' +
+                  '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;">' +
+                  ['phase1','phase2','phase3','employed'].filter(function(k){return comp[k];}).map(function(k){
+                    return '<div><div style="font-family:monospace;font-size:.52rem;color:rgba(255,255,255,.28);margin-bottom:3px;">'+esc(PHASE_LABELS[k])+'</div>' +
+                      '<div style="font-size:.78rem;color:rgba(255,255,255,.65);">'+esc(comp[k])+'</div></div>';
+                  }).join('') +
+                  '</div>' +
+                '</div>'
+              : '') +
+
+              /* Requirements preview tags */
+              (r.requirements && r.requirements.length ?
+                '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+                  r.requirements.slice(0,4).map(function(req){
+                    return '<span style="font-family:monospace;font-size:.56rem;background:rgba(255,255,255,.04);color:rgba(255,255,255,.35);padding:3px 9px;border-radius:4px;border:1px solid rgba(255,255,255,.06);">' +
+                      esc(req.length > 44 ? req.substring(0,44)+'…' : req) + '</span>';
+                  }).join('') +
+                  (r.requirements.length > 4 ? '<span style="font-family:monospace;font-size:.56rem;color:rgba(255,255,255,.2);padding:3px 9px;">+' + (r.requirements.length-4) + ' more</span>' : '') +
+                '</div>'
+              : '') +
+
+            '</div>';
+          }).join('') +
+          '</div></div>';
+      });
+
+      container.innerHTML = html;
+
+    }).catch(function(err) {
+      console.error('TEKNNUKU Careers load error:', err);
+      container.innerHTML =
+        '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Unable to load positions. Please try again.</div>';
+    });
+  }
+
+  /* ── Init on DOM ready ── */
+  function init() {
+    var container = document.getElementById('teknnuku-careers');
+    if (container) renderCareers(container);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  /* ── Public API ── */
+
+  /** Manually refresh the careers list */
+  window.loadTeknnukuCareers = function() {
+    var container = document.getElementById('teknnuku-careers');
+    if (container) renderCareers(container);
+  };
+
+  /**
+   * Override this function in your own script to connect the
+   * "Apply Now" button to your existing application form/modal.
+   *
+   * @param {string} roleId   - e.g. 'inbound_closer'
+   * @param {string} roleName - e.g. 'Inbound Closer'
+   *
+   * Example:
+   *   window.teknnukuApply = function(roleId, roleName) {
+   *     document.getElementById('apply-role').value = roleId;
+   *     document.getElementById('apply-role-label').textContent = roleName;
+   *     document.getElementById('apply-modal').style.display = 'flex';
+   *   };
+   */
+  window.teknnukuApply = window.teknnukuApply || function(roleId, roleName) {
+    // Default fallback — replace with your modal/form logic
+    alert('Applications for "' + roleName + '" are open.\nPlease contact careers@teknnuku.xyz and quote role: ' + roleId);
+  };
+
+})();
+</script>
+
+<script>
+  // Add this AFTER the careers loader script above
+  window.teknnukuApply = function(roleId, roleName) {
+    // If you have an existing modal with id="careers-modal":
+    var modal = document.getElementById('careers-modal');
+    var roleInput = document.getElementById('positionApplied') // or whatever your form field is called
+    if (roleInput) roleInput.value = roleId;
+    var roleDisplay = document.getElementById('apply-role-name');
+    if (roleDisplay) roleDisplay.textContent = roleName;
+    if (modal) modal.style.display = 'flex';
+  };
+</script>
+
 <style>
 /* ============================================
    RESET & ROOT
@@ -5850,6 +6067,8 @@ window.submitServiceInquiry = async function() {
           If you're sharp, driven, and want to work at the edge — check the roles below.
         </div>
       </div>
+
+      <div id="teknnuku-careers"></div>
 
       <!-- Role Cards Grid -->
       <div id="car-roles-grid" style="display:grid;gap:12px;"></div>
