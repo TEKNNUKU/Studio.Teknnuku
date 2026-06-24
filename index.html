@@ -12,7 +12,7 @@
 <!-- Firebase SDK (for intake form) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyAjovgyVtPJOWwyte8gwdesEHesF9AzJlM",
@@ -25,6 +25,11 @@
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
+
+ // ── Expose Firestore globals for non-module scripts ──
+  window.__firestoreDB = db;
+  window.__firestoreGetDocs = getDocs;
+  window.__firestoreCollection = collection;
 
   window.__saveToFirebase = async function(payload) {
     try {
@@ -118,17 +123,24 @@
     container.innerHTML =
       '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Loading open positions…</div>';
 
-    // Use the global Firestore instance already initialised on this page
-    var db = firebase.firestore ? firebase.firestore() : (window.db || null);
-    if (!db) {
-      container.innerHTML =
-        '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Careers unavailable — check console.</div>';
-      console.error('TEKNNUKU Careers: Firebase Firestore not found. Ensure Firebase is initialised before this script.');
-      return;
-    }
+     // Wait for modular Firestore to be exposed by the module script (up to 5s)
+    function _runQuery(attempt) {
+      var db = window.__firestoreDB || null;
+      var _getDocs = window.__firestoreGetDocs || null;
+      var _col = window.__firestoreCollection || null;
 
-    db.collection('careers_config').get().then(function(snap) {
-      var allDocs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      if (!db || !_getDocs || !_col) {
+        if (attempt < 25) {
+          setTimeout(function() { _runQuery(attempt + 1); }, 200);
+        } else {
+          container.innerHTML =
+            '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Careers unavailable — Firebase not ready.</div>';
+          console.error('TEKNNUKU Careers: Firebase Firestore not found after 5s.');
+        }
+        return;
+      }
+
+      _getDocs(_col(db, 'careers_config')).then(function(snap) {      var allDocs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
 
       /* Only show open or on-trial roles */
       var open = allDocs.filter(function(d){ return d.status === 'open' || d.status === 'trial'; });
@@ -228,11 +240,13 @@
 
       container.innerHTML = html;
 
-    }).catch(function(err) {
-      console.error('TEKNNUKU Careers load error:', err);
-      container.innerHTML =
-        '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Unable to load positions. Please try again.</div>';
-    });
+     }).catch(function(err) {
+        console.error('TEKNNUKU Careers load error:', err);
+        container.innerHTML =
+          '<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">Unable to load positions. Please try again.</div>';
+      });
+    } // end _runQuery
+    _runQuery(0);
   }
 
   /* ── Init on DOM ready ── */
@@ -754,10 +768,30 @@ section { padding:clamp(72px,10vw,120px) 0; }
   color:var(--dimmer);
 }
 
-/* ── Hero image column — hide on mobile ── */
+/* ── Hero image column — show on mobile below text ── */
 @media (max-width: 860px) {
-  .hero-inner { grid-template-columns: 1fr !important; }
-  .hero-img-col { display: none; }
+  .hero-inner {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+  .hero-img-col {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+  }
+  .hero-img-col > div {
+    width: 100%;
+    max-width: 480px;
+  }
+  .hero-img-col img {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 12px !important;
+  }
+}
+@media (max-width: 480px) {
+  .hero-img-col > div { max-width: 340px; }
+  .hero-img-col img { border-radius: 10px !important; }
 }
 
 /* ============================================
@@ -4222,7 +4256,7 @@ body { overflow-x: clip; }
     </a>
     <nav class="nav-links" aria-label="Main navigation">
       <a href="#engines">What We Do</a>
-      <a href="#" onclick="openServicesModal();return false;">Services & Pricing</a>
+      <a href="#" onclick="openServicesModal();return false;">What we Offer</a>
       <a href="#ventures">Ventures</a>
       <a href="#process">Process</a>
       <a href="https://globalbizhub.teknnuku.xyz" target="_blank" style="color:var(--gold);">List Free 🌐</a><a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
@@ -4240,7 +4274,7 @@ body { overflow-x: clip; }
 
 <nav id="mobile-nav" aria-label="Mobile navigation">
   <a href="#engines"  class="mob-link">What We Do</a>
-  <a href="#" class="mob-link" onclick="closeMenu();openServicesModal();return false;">Services & Pricing</a>
+  <a href="#" class="mob-link" onclick="closeMenu();openServicesModal();return false;">What we Offer</a>
   <a href="#ventures" class="mob-link">Active Ventures</a>
   <a href="#process"  class="mob-link">Our Process</a>
   <a href="#contact" class="mob-link" onclick="closeMenu();openContactModal();return false;">Contact</a>
@@ -4255,7 +4289,7 @@ body { overflow-x: clip; }
   <div class="hero-bg" aria-hidden="true"></div>
   <div class="hero-particles" aria-hidden="true" id="heroParticles"></div>
   <div class="wrap">
-    <div class="hero-inner" style="display:grid;grid-template-columns:1fr auto;gap:clamp(24px,5vw,64px);align-items:center;">
+    <div class="hero-inner" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(24px,5vw,64px);align-items:center;">
 
       <!-- LEFT: existing copy -->
       <div>
@@ -4312,12 +4346,7 @@ body { overflow-x: clip; }
             alt="TEKNNUKU Studio — Digital Business Systems"
             width="460"
             style="position:relative;z-index:1;
-              width:clamp(260px,32vw,460px);
-              height:auto;
-              border-radius:16px;
-              box-shadow:0 32px 80px rgba(0,0,0,.55),
-                         0 0 0 1px rgba(200,155,20,.12);
-              display:block;"
+              display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(24px,5vw,64px);align-items:center;
             loading="eager"
             decoding="async"
           >
