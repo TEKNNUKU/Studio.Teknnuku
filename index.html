@@ -288,15 +288,13 @@
 </script>
 
 <script>
-  // Add this AFTER the careers loader script above
+  // Placeholder — real implementation is in the patch script before </body>
   window.teknnukuApply = function(roleId, roleName) {
-    // If you have an existing modal with id="careers-modal":
     var modal = document.getElementById('careers-modal');
-    var roleInput = document.getElementById('positionApplied') // or whatever your form field is called
-    if (roleInput) roleInput.value = roleId;
-    var roleDisplay = document.getElementById('apply-role-name');
-    if (roleDisplay) roleDisplay.textContent = roleName;
-    if (modal) modal.style.display = 'flex';
+    if (modal && modal.style.display === 'none') {
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
   };
 </script>
 
@@ -3271,6 +3269,156 @@ body { overflow-x: clip; }
   .svm-choose-card { padding:16px; }
   .svm-problems-strip { padding:12px 16px; }
 }
+/* ════════════════════════════════════════════════════════════════
+   HERO — FULL-BLEED BACKGROUND IMAGE + ANIMATIONS
+════════════════════════════════════════════════════════════════ */
+
+/* Background image container — direct child of .hero */
+.hero-img-bg {
+  position: absolute;
+  inset: -40px;           /* overshoot so Ken-Burns zoom never shows edges */
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-img-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  opacity: 0.15;
+  display: block;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  animation: heroKenBurns 34s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes heroKenBurns {
+  0%   { transform: scale(1)    translate(0,     0);    }
+  33%  { transform: scale(1.06) translate(-1.5%, 0.8%); }
+  66%  { transform: scale(1.10) translate( 1.2%,-0.6%); }
+  100% { transform: scale(1.14) translate(-0.4%, 1.2%); }
+}
+
+/* Gradient overlay — left-heavy so all text stays crisp */
+.hero-img-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 80% at 42% 55%,
+      rgba(8,8,8,.12) 0%, rgba(8,8,8,.72) 100%),
+    linear-gradient(148deg,
+      rgba(8,8,8,.90)  0%,
+      rgba(8,8,8,.22) 38%,
+      rgba(8,8,8,.14) 56%,
+      rgba(8,8,8,.80) 100%);
+}
+
+/* Periodic gold light-beam sweep */
+.hero-img-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent          20%,
+    rgba(200,155,20,.03) 38%,
+    rgba(200,155,20,.10) 50%,
+    rgba(200,155,20,.03) 62%,
+    transparent          80%
+  );
+  background-size: 220% 100%;
+  animation: heroBeamSweep 14s ease-in-out 4s infinite;
+  pointer-events: none;
+}
+@keyframes heroBeamSweep {
+  0%,18%  { background-position:-220% 0; opacity:0; }
+  22%     { opacity:1; }
+  78%     { opacity:1; }
+  82%,100%{ background-position:320% 0;  opacity:0; }
+}
+
+/* Force hero-inner to single column (overrides the inline grid style) */
+.hero-inner {
+  display:   block !important;
+  position:  relative;
+  z-index:   2;
+  padding:   clamp(56px,10vw,110px) 0;
+  max-width: 780px;
+}
+
+/* Hide the old right-column image element */
+.hero-img-col { display: none !important; }
+
+/* ── Headline 3-line staggered entrance ── */
+.hero-line-1 {
+  display: inline-block;
+  animation: heroLineReveal 1.05s cubic-bezier(.22,1,.36,1) .08s both;
+}
+.hero-line-2 {
+  display: inline-block;
+  animation: heroLineReveal 1.05s cubic-bezier(.22,1,.36,1) .28s both;
+}
+.hero-line-3 {
+  display: inline-block;
+  animation: heroLineReveal 1.05s cubic-bezier(.22,1,.36,1) .48s both;
+}
+@keyframes heroLineReveal {
+  from {
+    opacity: 0;
+    transform: translateY(46px) skewY(2.5deg);
+    filter: blur(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) skewY(0);
+    filter: blur(0);
+  }
+}
+
+/* Gold shimmer on "Get Customers." */
+.hero-gold-sweep {
+  background: linear-gradient(
+    90deg, #C89B14 0%, #f5dc74 28%, #E2C16A 54%, #C89B14 100%
+  );
+  background-size: 260% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: heroSweepCycle 5.5s linear 1.4s infinite;
+}
+/* Cyan shimmer on "Real Online Business" */
+.hero-cyan-sweep {
+  background: linear-gradient(
+    90deg, #00BCD4 0%, #7ffffe 35%, #00acc1 62%, #00BCD4 100%
+  );
+  background-size: 260% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: heroSweepCycle 7s linear 2s infinite;
+}
+@keyframes heroSweepCycle {
+  0%   { background-position: 260% center; }
+  100% { background-position:-260% center; }
+}
+
+/* Light-mode tweaks */
+[data-theme="light"] .hero-img-bg img { opacity: 0.07; }
+[data-theme="light"] .hero-img-overlay {
+  background:
+    radial-gradient(ellipse 80% 80% at 42% 55%,
+      rgba(240,237,232,.10) 0%, rgba(240,237,232,.80) 100%),
+    linear-gradient(148deg,
+      rgba(240,237,232,.92) 0%,
+      rgba(240,237,232,.22) 40%,
+      rgba(240,237,232,.80) 100%);
+}
+
+@media (max-width:860px) {
+  .hero-inner { max-width:100%; }
+  .hero-img-bg img { object-position: center 20%; }
+}
 </style>
 </head>
 <body>
@@ -4286,7 +4434,20 @@ body { overflow-x: clip; }
      HERO — PATCH 1 APPLIED
 ============================================ -->
 <section class="hero" id="home">
-  <div class="hero-bg" aria-hidden="true"></div>
+   <div class="hero-bg" aria-hidden="true"></div>
+
+  <!-- ── Full-bleed background image (Ken Burns + gradient overlay) ── -->
+  <div class="hero-img-bg" aria-hidden="true">
+    <img
+      src="https://pink-quiet-wolf-922.mypinata.cloud/ipfs/bafybeibrzgueosb5prt7zlaq2xsvramykv3oljj7m2e7us2bxjrlvlexga"
+      alt=""
+      role="presentation"
+      decoding="async"
+      loading="eager"
+    >
+    <div class="hero-img-overlay"></div>
+  </div>
+
   <div class="hero-particles" aria-hidden="true" id="heroParticles"></div>
   <div class="wrap">
     <div class="hero-inner" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(24px,5vw,64px);align-items:center;">
@@ -4295,9 +4456,10 @@ body { overflow-x: clip; }
       <div>
         <div class="t-eyebrow hero-tag">TEKNNUKU Studio — Venture Factory</div>
 
-        <h1>
-          Add Your Business. <span class="g">Get Customers.</span><br>
-          Build a <span class="c">Real Online Business</span> System.
+         <h1>
+          <span class="hero-line-1">Add Your Business. <span class="hero-gold-sweep">Get Customers.</span></span><br>
+          <span class="hero-line-2">Build a <span class="hero-cyan-sweep">Real Online Business</span></span>
+          <span class="hero-line-3"> System.</span>
         </h1>
 
         <p class="hero-lead">
@@ -4328,35 +4490,6 @@ body { overflow-x: clip; }
             <span class="sp-badge">Founders</span>
             <span class="sp-badge">Companies Scaling</span>
           </div>
-        </div>
-      </div>
-
-      <!-- RIGHT: hero image -->
-      <div class="hero-img-col" style="flex-shrink:0;">
-        <div style="position:relative;">
-          <!-- glow halo -->
-          <div style="position:absolute;inset:-24px;border-radius:50%;
-            background:radial-gradient(ellipse 70% 70% at 50% 50%,
-              rgba(200,155,20,.18) 0%,
-              rgba(0,188,212,.08) 55%,
-              transparent 80%);
-            pointer-events:none;z-index:0;"></div>
-          <img
-            src="https://pink-quiet-wolf-922.mypinata.cloud/ipfs/bafybeibrzgueosb5prt7zlaq2xsvramykv3oljj7m2e7us2bxjrlvlexga"
-            alt="TEKNNUKU Studio — Digital Business Systems"
-            width="460"
-            style="position:relative;z-index:1;
-              display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(24px,5vw,64px);align-items:center;
-            loading="eager"
-            decoding="async"
-          >
-          <!-- gold corner accent -->
-          <div style="position:absolute;top:-2px;left:-2px;width:40px;height:40px;
-            border-top:2px solid var(--gold);border-left:2px solid var(--gold);
-            border-radius:16px 0 0 0;z-index:2;pointer-events:none;"></div>
-          <div style="position:absolute;bottom:-2px;right:-2px;width:40px;height:40px;
-            border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);
-            border-radius:0 0 16px 0;z-index:2;pointer-events:none;"></div>
         </div>
       </div>
     </div>
@@ -6097,10 +6230,11 @@ window.submitServiceInquiry = async function() {
         </div>
       </div>
 
-      <div id="teknnuku-careers"></div>
+      <!-- Legacy Firestore-loader container — cleared by patch script -->
+      <div id="teknnuku-careers" style="display:none;"></div>
 
-      <!-- Role Cards Grid -->
-      <div id="car-roles-grid" style="display:grid;gap:12px;"></div>
+      <!-- Unified role list (Firestore-first, JS fallback) -->
+      <div id="car-roles-grid" style="gap:12px;"></div>
     </div>
 
     <!-- View: Role Detail -->
@@ -7251,6 +7385,205 @@ document.getElementById('services-modal').addEventListener('click', function(e) 
     }
   });
 })();
+</script>
+  
+<!-- ═══════════════════════════════════════════════════════════════
+     TEKNNUKU CAREERS — COMPLETE PATCH SCRIPT
+     Fixes: Apply Now routing · duplicate roles · missing status badges
+     Adds:  Business Scout · Firestore-first list · simple apply fallback
+═══════════════════════════════════════════════════════════════ -->
+<script>
+/* ── 1. Add Business Scout to CAR_ROLES ── */
+(function() {
+  if (typeof CAR_ROLES === 'undefined') return;
+  if (CAR_ROLES.find(function(r){ return r.id === 'business_scout'; })) return;
+  CAR_ROLES.unshift({
+    id: 'business_scout',
+    title: 'Business Scout',
+    team: 'Operations',
+    teamIcon: '🔍',
+    status: 'open',
+    type: 'Commission-Only',
+    location: 'Remote',
+    slots: 4,
+    summary: 'Identify and onboard local businesses into the Global Biz Hub platform. You earn a commission every time a business you recruit is verified and listed.',
+    responsibilities: [
+      'Identify offline businesses in your area not yet listed online',
+      'Introduce them to Global Biz Hub and walk them through the listing process',
+      'Support businesses during onboarding and verification',
+      'Hit weekly listing targets to unlock higher commission tiers',
+      'Report your pipeline activity daily via WhatsApp or the reporting form'
+    ],
+    requirements: {
+      education: 'No formal qualification required — full training provided',
+      experience: 'No prior experience needed. Hustle, energy, and people skills matter more.',
+      skills: ['Communication & persuasion', 'Self-motivation & discipline', 'Basic smartphone usage'],
+      other: 'Must have a working smartphone with reliable internet. Willingness to approach business owners directly is essential.'
+    },
+    kpis: [
+      'Verified business listings per week',
+      'Commission earned per verified listing',
+      'Lead-to-listing conversion rate'
+    ],
+    scoreWeights: { experience: 0.10, skills: 0.45, education: 0.10, availability: 0.35 },
+    requiredSkills: ['communication','outreach','sales','smartphone','self-motivated'],
+    minExperience: 0,
+    questions: [
+      { id:'q1', text:'Do you have a smartphone with reliable internet access?',
+        type:'select',
+        options:['No','Yes — basic data','Yes — reliable internet','Yes — fast/unlimited data'],
+        scores:[0,5,15,20] },
+      { id:'q2', text:'How many local businesses can you realistically approach this week?',
+        type:'select',
+        options:['0 – 5','5 – 15','15 – 30','30+'],
+        scores:[3,8,15,20] },
+      { id:'q3', text:'Are you comfortable walking into a business and pitching cold?',
+        type:'select',
+        options:['No — not comfortable','Somewhat','Yes — fairly confident','Yes — this is my strength'],
+        scores:[0,5,12,18] },
+      { id:'q4', text:'Which city / area will you be scouting in?', type:'text' }
+    ]
+  });
+})();
+
+/* ── 2. Fix window.teknnukuApply — navigate to role detail ── */
+window.teknnukuApply = function(roleId, roleName) {
+  var modal = document.getElementById('careers-modal');
+  if (modal && modal.style.display === 'none') {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  var role = (typeof CAR_ROLES !== 'undefined')
+    ? CAR_ROLES.find(function(r){ return r.id === roleId; })
+    : null;
+  if (role) {
+    showCareersRoleDetail(role);
+  } else {
+    _showSimpleApply(roleId, roleName);
+  }
+};
+
+/* ── 3. Simple apply for Firestore-only roles not yet in CAR_ROLES ── */
+function _showSimpleApply(roleId, roleName) {
+  var fakeRole = {
+    id: roleId, title: roleName, team: '', teamIcon: '📌', status: 'open',
+    requirements: { education:'', experience:'', skills:[], other:'' },
+    responsibilities: [], kpis: [],
+    scoreWeights: { experience:.25, skills:.35, education:.20, availability:.20 },
+    requiredSkills: [], minExperience: 0,
+    questions: [
+      { id:'q1', text:'Years of relevant experience?', type:'select',
+        options:['None','Less than 1 year','1–3 years','3+ years'], scores:[0,5,15,20] },
+      { id:'q2', text:'Why are you applying for this role?', type:'text' }
+    ]
+  };
+  window._carCurrentRole = fakeRole;
+  showCareersAppForm(fakeRole);
+}
+
+/* ── 4. Helper maps ── */
+var _CAR_TEAM_ICONS = {
+  Operations:'🧠', Sales:'💰', 'Lead Generation':'🎯',
+  Delivery:'⚙️', 'Customer Success':'🧾', 'Admin & Finance':'📊', Other:'📌'
+};
+var _CAR_SEED_TEAMS = {
+  ops_lead:'Operations', sales_manager:'Sales', inbound_closer:'Sales',
+  outbound_closer:'Sales', content_lead:'Lead Generation', content_creator:'Lead Generation',
+  outreach_lead_gen:'Lead Generation', tech_product_lead:'Delivery', developer:'Delivery',
+  onboarding_specialist:'Delivery', customer_success_manager:'Customer Success',
+  admin_finance_officer:'Admin & Finance', business_scout:'Operations'
+};
+
+/* ── 5. Render from Firestore docs (with status badges) ── */
+function _renderListFirestore(grid, docs) {
+  var grouped = {};
+  docs.forEach(function(r) {
+    var team = r.team || _CAR_SEED_TEAMS[r.roleId] || 'Other';
+    if (!grouped[team]) grouped[team] = [];
+    grouped[team].push(r);
+  });
+  var html = '';
+  Object.keys(grouped).sort().forEach(function(team) {
+    var color = (typeof CAR_TEAM_COLOR!=='undefined'&&CAR_TEAM_COLOR[team])||'#C89B14';
+    var icon  = _CAR_TEAM_ICONS[team]||'📌';
+    var count = grouped[team].length;
+    html += '<div style="margin-bottom:24px;">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+    html += '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:'+color+';">'+icon+' '+team+'</div>';
+    html += '<div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div>';
+    html += '<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;color:rgba(255,255,255,.25);">'+count+' opening'+(count!==1?'s':'')+'</div>';
+    html += '</div><div style="display:grid;gap:8px;">';
+    grouped[team].forEach(function(r) {
+      var rid = r.roleId||r.id||'';
+      var label = r.title||(rid.replace(/_/g,' '));
+      var st = (typeof CAR_STATUS_MAP!=='undefined'&&CAR_STATUS_MAP[r.status])||{label:r.status||'Open',color:'#22c55e',bg:'rgba(34,197,94,.12)'};
+      var onclk = 'var _r=(typeof CAR_ROLES!==\'undefined\')&&CAR_ROLES.find(function(x){return x.id===\''+rid+'\';});_r?showCareersRoleDetail(_r):_showSimpleApply(\''+rid+'\',\''+label.replace(/'/g,"\\'")+'\');';
+      html += '<div onclick="'+onclk+'" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.1);border-radius:8px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor=\'rgba(200,155,20,.3)\';this.style.background=\'rgba(200,155,20,.05)\'" onmouseout="this.style.borderColor=\'rgba(200,155,20,.1)\';this.style.background=\'rgba(255,255,255,.03)\'">';
+      html += '<div style="flex:1;"><div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:.9rem;color:#F2EDE4;">'+label+'</div>';
+      html += '<div style="font-family:\'DM Mono\',monospace;font-size:.6rem;color:rgba(242,237,228,.45);margin-top:2px;">'+(r.type||'Full-Time')+(r.slots?' · '+r.slots+' slot'+(r.slots!==1?'s':''):'')+(r.location?' · 📍 '+r.location:'')+'</div></div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;">';
+      html += '<span style="background:'+st.bg+';color:'+st.color+';font-family:\'DM Mono\',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:4px;">'+st.label+'</span>';
+      html += '<span style="color:rgba(242,237,228,.3);font-size:.8rem;">→</span></div></div>';
+    });
+    html += '</div></div>';
+  });
+  grid.innerHTML = html||'<div style="text-align:center;padding:36px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">No open positions right now.</div>';
+}
+
+/* ── 6. Render from static CAR_ROLES JS array (fallback) ── */
+function _renderListJS(grid) {
+  if (typeof CAR_ROLES==='undefined') { grid.innerHTML=''; return; }
+  var teams={};
+  CAR_ROLES.forEach(function(r){ if(!teams[r.team])teams[r.team]=[]; teams[r.team].push(r); });
+  var html='';
+  Object.keys(teams).forEach(function(team){
+    var color=(typeof CAR_TEAM_COLOR!=='undefined'&&CAR_TEAM_COLOR[team])||'#C89B14';
+    var icon=_CAR_TEAM_ICONS[team]||'📌';
+    html+='<div style="margin-bottom:24px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+    html+='<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:'+color+';">'+icon+' '+team+'</div>';
+    html+='<div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div></div><div style="display:grid;gap:8px;">';
+    teams[team].forEach(function(role){
+      var st=(typeof CAR_STATUS_MAP!=='undefined'&&CAR_STATUS_MAP[role.status])||{label:'Open',color:'#22c55e',bg:'rgba(34,197,94,.12)'};
+      html+='<div onclick="showCareersRoleById(\''+role.id+'\')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.1);border-radius:8px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor=\'rgba(200,155,20,.3)\';this.style.background=\'rgba(200,155,20,.05)\'" onmouseout="this.style.borderColor=\'rgba(200,155,20,.1)\';this.style.background=\'rgba(255,255,255,.03)\'">';
+      html+='<div style="flex:1;"><div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:.9rem;color:#F2EDE4;">'+role.title+'</div>';
+      html+='<div style="font-family:\'DM Mono\',monospace;font-size:.6rem;color:rgba(242,237,228,.45);margin-top:2px;">'+role.type+(role.slots?' · '+role.slots+' slot'+(role.slots!==1?'s':''):'')+'</div></div>';
+      html+='<div style="display:flex;align-items:center;gap:8px;">';
+      html+='<span style="background:'+st.bg+';color:'+st.color+';font-family:\'DM Mono\',monospace;font-size:.55rem;letter-spacing:.08em;padding:3px 9px;border-radius:4px;">'+st.label+'</span>';
+      html+='<span style="color:rgba(242,237,228,.3);font-size:.8rem;">→</span></div></div>';
+    });
+    html+='</div></div>';
+  });
+  grid.innerHTML=html;
+}
+
+/* ── 7. Rewritten showCareersRoleList — Firestore-first, dedup, status badges ── */
+showCareersRoleList = function() {
+  if (typeof carShowView==='function') carShowView('car-view-list');
+  var titleEl = document.getElementById('car-modal-title');
+  if (titleEl) titleEl.textContent = 'Open Roles';
+
+  /* Clear BOTH containers — kills the duplicate */
+  var grid   = document.getElementById('car-roles-grid');
+  var legacy = document.getElementById('teknnuku-careers');
+  if (legacy) legacy.innerHTML = '';
+  if (grid)   grid.innerHTML   = '<div style="text-align:center;padding:32px;font-family:\'DM Mono\',monospace;font-size:.7rem;color:rgba(255,255,255,.28);letter-spacing:.08em;">Loading open positions…</div>';
+
+  function _attempt(waited) {
+    var db=window.__firestoreDB, gd=window.__firestoreGetDocs, col=window.__firestoreCollection;
+    if (!db||!gd||!col) {
+      if (waited<5000) setTimeout(function(){ _attempt(waited+400); },400);
+      else _renderListJS(grid);
+      return;
+    }
+    gd(col(db,'careers_config')).then(function(snap){
+      var open=snap.docs
+        .map(function(d){ return Object.assign({id:d.id},d.data()); })
+        .filter(function(d){ return d.status==='open'||d.status==='trial'; });
+      open.length ? _renderListFirestore(grid,open) : _renderListJS(grid);
+    }).catch(function(){ _renderListJS(grid); });
+  }
+  _attempt(0);
+};
 </script>
 </body>
 </html>
