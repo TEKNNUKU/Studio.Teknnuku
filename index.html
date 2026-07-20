@@ -288,14 +288,8 @@
 </script>
 
 <script>
-  // Placeholder — real implementation is in the patch script before </body>
-  window.teknnukuApply = function(roleId, roleName) {
-    var modal = document.getElementById('careers-modal');
-    if (modal && modal.style.display === 'none') {
-      modal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-  };
+  /* teknnukuApply — overridden by patch script at bottom of body */
+  window.teknnukuApply = function(r,n){ /* overridden below */ };
 </script>
 
 <style>
@@ -4450,7 +4444,7 @@ body { overflow-x: clip; }
 
   <div class="hero-particles" aria-hidden="true" id="heroParticles"></div>
   <div class="wrap">
-    <div class="hero-inner" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(24px,5vw,64px);align-items:center;">
+    <div class="hero-inner" style="position:relative;z-index:2;">
 
       <!-- LEFT: existing copy -->
       <div>
@@ -7503,6 +7497,9 @@ function _showSimpleApply(roleId, roleName) {
 }
 
 
+/* Expose _showSimpleApply globally for inline onclick handlers */
+window._showSimpleApply = _showSimpleApply;
+
 /* ── 4. Rewrite showCareersRoleList — Firestore-first, no duplicates, status badges ── */
 
 /* Team colour + icon maps (local to avoid polluting outer scope) */
@@ -7531,6 +7528,19 @@ function _renderListFirestore(grid, docs) {
     grouped[team].push(r);
   });
 
+  /* Deduplicate — keep only first doc per roleId within each team */
+  var _seen = {};
+  Object.keys(grouped).forEach(function(team) {
+    grouped[team] = grouped[team].filter(function(r) {
+      var key = (r.roleId || r.id || '').toLowerCase();
+      if (_seen[key]) return false;
+      _seen[key] = true;
+      return true;
+    });
+  });
+  /* Remove empty teams after dedup */
+  Object.keys(grouped).forEach(function(t){ if(!grouped[t].length) delete grouped[t]; });
+
   var html = '';
   Object.keys(grouped).sort().forEach(function(team) {
     var color  = (typeof CAR_TEAM_COLOR !== 'undefined' && CAR_TEAM_COLOR[team]) || '#C89B14';
@@ -7551,7 +7561,7 @@ function _renderListFirestore(grid, docs) {
 
       /* Inline onclick: find in CAR_ROLES, or fall back to simple apply */
       var onclk = 'var _r=(typeof CAR_ROLES!==\'undefined\')&&CAR_ROLES.find(function(x){return x.id===\'' + rid + '\';});'
-                + '_r?showCareersRoleDetail(_r):_showSimpleApply(\'' + rid + '\',\'' + label.replace(/'/g,"\\'") + '\');';
+                + '_r?showCareersRoleDetail(_r):(window._showSimpleApply||window.teknnukuApply)(\'' + rid + '\',\'' + label.replace(/'/g,"\\'") + '\');';
 
       html += '<div onclick="' + onclk + '" '
             + 'style="display:flex;align-items:center;gap:14px;padding:14px 16px;'
