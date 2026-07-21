@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -289,7 +288,7 @@
 </script>
 
 <script>
-  /* teknnukuApply — overridden by patch script at bottom of body */
+  // Overridden by patch script at bottom of body
   window.teknnukuApply = function(r,n){ /* overridden below */ };
 </script>
 
@@ -7498,7 +7497,6 @@ function _showSimpleApply(roleId, roleName) {
 }
 
 
-/* Expose _showSimpleApply globally for inline onclick handlers */
 window._showSimpleApply = _showSimpleApply;
 
 /* ── 4. Rewrite showCareersRoleList — Firestore-first, no duplicates, status badges ── */
@@ -7529,19 +7527,6 @@ function _renderListFirestore(grid, docs) {
     grouped[team].push(r);
   });
 
-  /* Deduplicate — keep only first doc per roleId within each team */
-  var _seen = {};
-  Object.keys(grouped).forEach(function(team) {
-    grouped[team] = grouped[team].filter(function(r) {
-      var key = (r.roleId || r.id || '').toLowerCase();
-      if (_seen[key]) return false;
-      _seen[key] = true;
-      return true;
-    });
-  });
-  /* Remove empty teams after dedup */
-  Object.keys(grouped).forEach(function(t){ if(!grouped[t].length) delete grouped[t]; });
-
   var html = '';
   Object.keys(grouped).sort().forEach(function(team) {
     var color  = (typeof CAR_TEAM_COLOR !== 'undefined' && CAR_TEAM_COLOR[team]) || '#C89B14';
@@ -7562,7 +7547,7 @@ function _renderListFirestore(grid, docs) {
 
       /* Inline onclick: find in CAR_ROLES, or fall back to simple apply */
       var onclk = 'var _r=(typeof CAR_ROLES!==\'undefined\')&&CAR_ROLES.find(function(x){return x.id===\'' + rid + '\';});'
-                + '_r?showCareersRoleDetail(_r):(window._showSimpleApply||window.teknnukuApply)(\'' + rid + '\',\'' + label.replace(/'/g,"\\'") + '\');';
+                + '_r?showCareersRoleDetail(_r):_showSimpleApply(\'' + rid + '\',\'' + label.replace(/'/g,"\\'") + '\');';
 
       html += '<div onclick="' + onclk + '" '
             + 'style="display:flex;align-items:center;gap:14px;padding:14px 16px;'
@@ -7624,43 +7609,101 @@ function _renderListJS(grid) {
   grid.innerHTML = html;
 }
 
-/* Override showCareersRoleList with Firestore-first + dedup logic */
+/* showCareersRoleList v4 MERGED
+   ROOT FIX: Firestore only had 2 docs; old code showed Firestore OR JS array.
+   New: always render ALL CAR_ROLES; overlay Firestore status/slots on top. */
 showCareersRoleList = function() {
-  if (typeof carShowView === 'function') carShowView('car-view-list');
-  var titleEl = document.getElementById('car-modal-title');
-  if (titleEl) titleEl.textContent = 'Open Roles';
+  if (typeof carShowView==='function') carShowView('car-view-list');
+  var titleEl=document.getElementById('car-modal-title');
+  if (titleEl) titleEl.textContent='Open Roles';
+  var grid=document.getElementById('car-roles-grid');
+  var legacy=document.getElementById('teknnuku-careers');
+  if (legacy){legacy.style.display='none';legacy.innerHTML='';}
+  if (grid) grid.innerHTML='<div style="text-align:center;padding:32px;font-family:\'DM Mono\',monospace;font-size:.7rem;color:rgba(255,255,255,.28);">Loading open positions...</div>';
 
-  /* ① Clear BOTH containers — eliminates the Firestore-loader / JS-array duplicate */
-  var grid   = document.getElementById('car-roles-grid');
-  var legacy = document.getElementById('teknnuku-careers');
-  if (legacy) legacy.innerHTML = '';
-  if (grid)   grid.innerHTML = '<div style="text-align:center;padding:32px;font-family:\'DM Mono\',monospace;font-size:.7rem;color:rgba(255,255,255,.28);letter-spacing:.08em;">Loading open positions…</div>';
-
-  /* ② Try Firestore (retries up to 5 s for module-script race) */
-  function _attempt(waited) {
-    var db  = window.__firestoreDB;
-    var gd  = window.__firestoreGetDocs;
-    var col = window.__firestoreCollection;
-
-    if (!db || !gd || !col) {
-      if (waited < 5000) { setTimeout(function(){ _attempt(waited + 400); }, 400); }
-      else               { _renderListJS(grid); }
+  function _buildAndRender(fsDocs) {
+    var base=(typeof CAR_ROLES!=='undefined')?CAR_ROLES.map(function(r){
+      return {id:r.id,title:r.title,team:r.team,type:r.type,
+              slots:r.slots||null,location:r.location||null,status:r.status||'open'};
+    }):[];
+    var idx={};
+    base.forEach(function(r){idx[r.id]=r;});
+    fsDocs.forEach(function(doc){
+      var rid=doc.roleId||doc._docId||doc.id||'';
+      if (idx[rid]) {
+        if(doc.status!==undefined)idx[rid].status=doc.status;
+        if(doc.slots!==undefined)idx[rid].slots=doc.slots;
+        if(doc.location!==undefined)idx[rid].location=doc.location;
+        if(doc.type!==undefined)idx[rid].type=doc.type;
+        if(doc.title!==undefined)idx[rid].title=doc.title;
+      } else if(rid) {
+        base.push({id:rid,title:doc.title||rid.replace(/_/g,' '),
+          team:doc.team||_CAR_SEED_TEAMS[rid]||'Other',type:doc.type||'Full-Time',
+          slots:doc.slots||null,location:doc.location||null,status:doc.status||'open'});
+      }
+    });
+    var visible=base.filter(function(r){return r.status==='open'||r.status==='trial';});
+    if (!visible.length){
+      grid.innerHTML='<div style="text-align:center;padding:48px;font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.3);">No open positions right now.</div>';
       return;
     }
-
-    gd(col(db, 'careers_config'))
-      .then(function(snap) {
-        var open = snap.docs
-          .map(function(d){ return Object.assign({ id: d.id }, d.data()); })
-          .filter(function(d){ return d.status === 'open' || d.status === 'trial'; });
-
-        if (open.length) { _renderListFirestore(grid, open); }
-        else             { _renderListJS(grid); }
-      })
-      .catch(function() { _renderListJS(grid); });
+    var teams={};
+    visible.forEach(function(r){if(!teams[r.team])teams[r.team]=[];teams[r.team].push(r);});
+    var ORDER=['Operations','Sales','Lead Generation','Delivery','Customer Success','Admin & Finance','Other'];
+    var keys=ORDER.filter(function(t){return teams[t];})
+               .concat(Object.keys(teams).filter(function(t){return ORDER.indexOf(t)===-1;}));
+    var html='';
+    keys.forEach(function(team){
+      var roles=teams[team];
+      var color=(typeof CAR_TEAM_COLOR!=='undefined'&&CAR_TEAM_COLOR[team])||'#C89B14';
+      var icon=_CAR_TEAM_ICONS[team]||'📌';
+      var cnt=roles.length;
+      html+='<div style="margin-bottom:24px;">';
+      html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+      html+='<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:'+color+';">'+icon+' '+team+'</div>';
+      html+='<div style="flex:1;height:1px;background:rgba(200,155,20,.1);"></div>';
+      html+='<div style="font-family:\'DM Mono\',monospace;font-size:.56rem;color:rgba(255,255,255,.25);">'+cnt+' opening'+(cnt!==1?'s':'')+'</div>';
+      html+='</div><div style="display:grid;gap:8px;">';
+      roles.forEach(function(r){
+        var stMap=(typeof CAR_STATUS_MAP!=='undefined'&&CAR_STATUS_MAP[r.status])
+                 ||{label:r.status==='open'?'Open':(r.status||'Open'),color:'#22c55e',bg:'rgba(34,197,94,.12)'};
+        var meta=r.type||'Full-Time';
+        if(r.slots) meta+=' · '+r.slots+' slot'+(r.slots!==1?'s':'');
+        if(r.location) meta+=' · 📍 '+r.location;
+        html+='<div onclick="showCareersRoleById(\''+r.id+'\')" '
+             +'style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(200,155,20,.1);border-radius:8px;cursor:pointer;transition:all .2s;" '
+             +'onmouseover="this.style.borderColor=\'rgba(200,155,20,.3)\';this.style.background=\'rgba(200,155,20,.05)\'" '
+             +'onmouseout="this.style.borderColor=\'rgba(200,155,20,.1)\';this.style.background=\'rgba(255,255,255,.03)\'">';
+        html+='<div style="flex:1;">';
+        html+='<div style="font-family:\'DM Sans\',sans-serif;font-weight:600;font-size:.9rem;color:#F2EDE4;">'+r.title+'</div>';
+        html+='<div style="font-family:\'DM Mono\',monospace;font-size:.6rem;color:rgba(242,237,228,.45);margin-top:2px;">'+meta+'</div>';
+        html+='</div>';
+        html+='<div style="display:flex;align-items:center;gap:8px;">';
+        html+='<span style="background:'+stMap.bg+';color:'+stMap.color+';font-family:\'DM Mono\',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:4px;">'+stMap.label+'</span>';
+        html+='<span style="color:rgba(242,237,228,.3);font-size:.8rem;">→</span>';
+        html+='</div></div>';
+      });
+      html+='</div></div>';
+    });
+    grid.innerHTML=html;
   }
 
+  function _attempt(waited){
+    var db=window.__firestoreDB,gd=window.__firestoreGetDocs,col=window.__firestoreCollection;
+    if(!db||!gd||!col){
+      if(waited<5000){setTimeout(function(){_attempt(waited+400);},400);}
+      else{_buildAndRender([]);}
+      return;
+    }
+    gd(col(db,'careers_config'))
+      .then(function(snap){
+        var docs=snap.docs.map(function(d){return Object.assign({_docId:d.id},d.data());});
+        _buildAndRender(docs);
+      })
+      .catch(function(){_buildAndRender([]);});
+  }
   _attempt(0);
+}
 };
 </script>
 </body>
