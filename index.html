@@ -5125,7 +5125,7 @@ body { overflow-x: clip; }
 
 <section class="services-section" id="services">
   <div class="wrap">
-        <div class="t-eyebrow">🧩 Choose Your Situation</div>
+    <div class="t-eyebrow">🧩 Choose Your Situation</div>
     <h2 style="font-size:clamp(1.7rem,4vw,2.8rem);margin-top:14px;">Pick what best describes where you are right now.</h2>
     <p style="margin-top:12px;max-width:620px;font-size:0.92rem;">Eight entry points. One studio. Zero confusion. Choose your situation and we'll show you exactly which Growth System to build next.</p>
 
@@ -5762,11 +5762,11 @@ body { overflow-x: clip; }
     hamburger.setAttribute('aria-expanded', 'false');
     mobileNav.classList.remove('open');
   };
-  function openMenu() {
+  window.openMenu = function openMenu() {
     hamburger.classList.add('open');
     hamburger.setAttribute('aria-expanded', 'true');
     mobileNav.classList.add('open');
-  }
+  };
   hamburger.addEventListener('click', function(e) {
     e.stopPropagation();
     mobileNav.classList.contains('open') ? closeMenu() : openMenu();
@@ -6247,12 +6247,6 @@ var TEK_FMT = {
 };
 
 var SI_SERVICES = {
-  /* Visibility System */
-  visibility_system: { title:'Visibility System', subtitle:"Share where you are with your online presence and we'll recommend the right visibility setup for your business.", badge:'01 · Visibility System', successMsg:"Our visibility specialist will review your situation and respond with a personalised recommendations within 24 hours.", fields:[{id:'si_has_website',label:'Do you currently have a website?',type:'select',options:['No website','Basic website','Professional website','Multiple websites']},{id:'si_google_presence',label:'Can customers find you on Google?',type:'select',options:['Not at all','Barely','Somewhat','Yes — showing well']},{id:'si_monthly_visitors',label:'Estimated monthly website visitors',type:'select',options:['0 — not sure','Under 100','100–500','500–2,000','2,000+']},{id:'si_visibility_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Starter',lo:120000,hi:250000},{label:'Growth',lo:250000,hi:450000},{label:'Scale',lo:450000,hi:700000},{label:'Not sure yet',lo:0,hi:0}]}] },
-  /* Brand Authority System */
-  brand_authority: { title:'Brand Authority System', subtitle:"Tell us about your current brand and we'll build the identity that makes customers trust you immediately.", badge:'02 · Brand Authority System', successMsg:"Our brand strategist will review your submission and respond with a detailed brand roadmap.", fields:[{id:'si_has_logo',label:'Do you have a professional logo?',type:'select',options:['No logo','Basic logo','Professional logo']},{id:'si_brand_problem',label:'What is your biggest brand challenge?',type:'select',options:['No consistent visual identity','Customers don't see me as professional','No clear message or brand story','Poor social media presence','Low trust from new customers']},{id:'si_brand_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Starter',lo:150000,hi:300000},{label:'Growth',lo:300000,hi:500000},{label:'Scale',lo:500000,hi:800000},{label:'Not sure yet',lo:0,hi:0}]}] },
-  /* Lead Generation System */
-  lead_generation: { title:'Lead Generation System', subtitle:"Share how you currently get leads and we'll design a predictable lead generation system for your business.", badge:'03 · Lead Generation System', successMsg:"Our growth strategist will analyse your lead generation situation and respond with a personalised roadmap.", fields:[{id:'si_monthly_leads',label:'How many qualified leads do you get per month?',type:'select',options:['0–5','5–20','20–50','50–100','100+']},{id:'si_lead_source',label:'How do most leads currently find you?',type:'select',options:['Referrals only','Social media','Google search','Walk-ins','Paid ads','Multiple channels']},{id:'si_marketing_exists',label:'Do you have a marketing strategy?',type:'select',options:['No strategy','Basic social media posting','Some paid ads','Full marketing setup']},{id:'si_lead_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Starter',lo:200000,hi:400000},{label:'Growth',lo:400000,hi:700000},{label:'Scale',lo:700000,hi:1200000},{label:'Not sure yet',lo:0,hi:0}]}] },
   brand_launch: { title:'Digital Brand Launch', subtitle:"Tell us about your brand goals and we'll scope the right identity package for you.", badge:'01 · Brand & Identity', successMsg:"Our brand strategist will review your brief and reach out within 24 hours with a tailored proposal.", fields:[{id:'si_industry',label:'Your Industry / Niche',type:'text',placeholder:'e.g. Food & Beverage, Fashion, Tech'},{id:'si_audience',label:'Target audience',type:'text',placeholder:'e.g. Young professionals in Lagos'},{id:'si_timeline',label:'Desired launch timeline',type:'select',options:['Within 2 weeks','1 month','2–3 months','Just exploring']},{id:'si_budget_brand',label:'Budget range',type:'priceSelect',priceOptions:[{label:'Starter',lo:150000,hi:250000},{label:'Standard',lo:250000,hi:350000},{label:'Not sure yet',lo:0,hi:0}]}] },
   sales_system: { title:'Sales System Setup', subtitle:"Share your current sales situation and we'll build the system that closes more deals.", badge:'02 · Sales Infrastructure', successMsg:"Our sales systems specialist will analyse your brief and respond with a personalised roadmap.", fields:[{id:'si_current_sales',label:'How do you currently get sales?',type:'select',options:['Mostly referrals','Social media DMs','Walk-ins','Online ads','No consistent method']},{id:'si_monthly_leads',label:'Monthly leads?',type:'select',options:['0–10','10–50','50–200','200+']},{id:'si_biggest_gap',label:'Biggest sales gap right now',type:'text',placeholder:'e.g. Leads do not convert, no follow-up system'},{id:'si_sales_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Starter',lo:400000,hi:600000},{label:'Growth',lo:700000,hi:1000000},{label:'Full System',lo:1100000,hi:1400000},{label:'Not sure yet',lo:0,hi:0}]}] },
   systemization: { title:'Business Systemization', subtitle:"Let's understand your operations so we can design the systems that eliminate chaos.", badge:'03 · Ops & Systems', successMsg:"Our operations consultant will reach out to schedule an in-depth systems audit call.", fields:[{id:'si_team_size',label:'Team size',type:'select',options:['Solo founder','2–5 people','6–15 people','15–50 people','50+ people']},{id:'si_biggest_bottleneck',label:'Biggest operational bottleneck',type:'text',placeholder:'e.g. No SOPs, manual invoicing'},{id:'si_sys_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Audit + SOPs',lo:600000,hi:900000},{label:'Full System Design',lo:1000000,hi:1500000},{label:'Not sure yet',lo:0,hi:0}]}] },
@@ -7232,18 +7226,20 @@ function carScoreTier(score) {
 window._carCurrentRole = null;
 
 // ── Open / Close ──
-function openCareersModal() {
+window.openCareersModal = function() {
   var m = document.getElementById('careers-modal');
+  if (!m) return;
   m.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   showCareersRoleList();
-}
+};
 
-function closeCareersModal() {
+window.closeCareersModal = function() {
   var m = document.getElementById('careers-modal');
+  if (!m) return;
   m.style.display = 'none';
   document.body.style.overflow = '';
-}
+};
 
 // ── Escape key ──
 document.addEventListener('keydown', function(e) {
@@ -7251,19 +7247,19 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── Views ──
-function carShowView(id) {
+window.carShowView = function carShowView(id) {
   ['car-view-list','car-view-detail','car-view-form','car-view-confirm'].forEach(function(v) {
     document.getElementById(v).style.display = 'none';
   });
   document.getElementById(id).style.display = 'block';
 }
 
-function showCareersRoleById(id) {
+window.showCareersRoleById = function showCareersRoleById(id) {
   var role = CAR_ROLES.find(function(r) { return r.id === id; });
   if (role) showCareersRoleDetail(role);
 }
 
-function showCareersRoleList() {
+window.showCareersRoleList = function showCareersRoleList() {
   carShowView('car-view-list');
   document.getElementById('car-modal-title').textContent = 'Open Roles';
   var grid = document.getElementById('car-roles-grid');
@@ -7312,7 +7308,7 @@ function showCareersRoleList() {
   grid.innerHTML = html;
 }
 
-function showCareersRoleDetail(role) {
+window.showCareersRoleDetail = function showCareersRoleDetail(role) {
   if (!role) return;
   window._carCurrentRole = role;
   carShowView('car-view-detail');
@@ -7402,7 +7398,7 @@ function showCareersRoleDetail(role) {
   document.getElementById('car-role-detail-content').innerHTML = html;
 }
   
-function showCareersAppForm(role) {
+window.showCareersAppForm = function showCareersAppForm(role) {
   if (!role) return;
   carShowView('car-view-form');
   document.getElementById('car-modal-title').textContent = 'Apply — ' + role.title;
