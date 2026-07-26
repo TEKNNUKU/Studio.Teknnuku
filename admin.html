@@ -991,16 +991,19 @@ var QUALIFIER_TIERS = [
 ];
 
 var QUALIFIER_RECOMMENDATIONS = {
-  cold:    ['gata_onboard','p2p_master','globalbiz_list','jobletters_sub','booking_sys','payment_gw'],
-  warm:    ['brand_launch','branding_kit','seo_setup','trust_page','content_basic','content_30day','review_sys','email_sms','follow_up_sys'],
-  hot:     ['sales_system','content_mgr','paid_ads','funnel_check','whatsapp_auto','ai_chatbot','brand_video','analytics_dash','campaign_1time','growth_member'],
-  premium: ['systemization','platform_dev','enterprise_sw','web3_dev','venture_build','growth_engine','content_team']
+  cold:    ['gata_onboard','p2p_master','globalbiz_list','jobletters_sub','booking_sys','payment_gw','visibility_sys','growth_member'],
+  warm:    ['brand_launch','brand_authority','branding_kit','seo_setup','trust_page','content_basic','content_30day','review_sys','email_sms','follow_up_sys','retention_sys','growth_engine'],
+  hot:     ['sales_system','sales_conv_sys','lead_gen_sys','content_mgr','paid_ads','funnel_check','whatsapp_auto','ai_chatbot','brand_video','analytics_dash','campaign_1time','biz_growth_partner'],
+  premium: ['systemization','biz_ops_sys','platform_dev','enterprise_sw','web3_dev','venture_build','growth_engine','content_team']
 };
 
 // Map non-proposal-service IDs (memberships/retainers/ventures) → closest proposable service
 // for prefill purposes since PROPOSAL_TEMPLATES only covers the 8 core services
 var QUALIFIER_PROPOSAL_FALLBACK = {
-  // Growth Systems upsell paths
+  // ── 6 Growth System progression paths ──
+  visibility_sys:'brand_authority', brand_authority:'lead_gen_sys', lead_gen_sys:'sales_conv_sys',
+  sales_conv_sys:'biz_ops_sys', biz_ops_sys:'retention_sys', retention_sys:'biz_ops_sys',
+  // ── Content Execution upsell paths ──
   brand_launch:'sales_system', content_basic:'content_mgr', content_mgr:'content_team',
   campaign_1time:'content_mgr', sales_system:'systemization', systemization:'platform_dev',
   // Growth Add-Ons → core packages
@@ -2121,10 +2124,15 @@ function _panelInquiries() {
         '<input class="tbl-search" id="inq-search" style="width:200px;" placeholder="Search name, email, business…" oninput="applyInquiryFilters()">' +
         '<select class="tbl-filter" id="inq-service" onchange="applyInquiryFilters()">' +
           '<option value="">All Services</option>' +
-          '<optgroup label="── Growth Systems ──">' +
-          '<option value="brand_launch">Digital Brand Launch</option>' +
-          '<option value="sales_system">Sales Conversion System</option>' +
-          '<option value="systemization">Full Business Systemization</option>' +
+          '<optgroup label="── Growth Systems (6 Business Systems) ──">' +
+          '<option value="visibility_sys">Visibility System</option>' +
+          '<option value="brand_authority">Brand Authority System</option>' +
+          '<option value="lead_gen_sys">Lead Generation System</option>' +
+          '<option value="sales_conv_sys">Sales Conversion System</option>' +
+          '<option value="biz_ops_sys">Business Operations System</option>' +
+          '<option value="retention_sys">Customer Retention System</option>' +
+          '</optgroup>' +
+          '<optgroup label="── Content Execution ──">' +
           '<option value="content_basic">Basic Content Support</option>' +
           '<option value="content_mgr">Dedicated Growth Manager</option>' +
           '<option value="content_team">Full Growth Team</option>' +
@@ -2672,6 +2680,309 @@ async function autoMatchFWPayment(tx, txRefOverride) {
 }
 
 var PROPOSAL_TEMPLATES = {
+
+  // ════════════════════════════════════════════════════════════════
+  //  THE 6 GROWTH SYSTEMS — Primary templates (from PDF)
+  // ════════════════════════════════════════════════════════════════
+
+  visibility_sys: {
+    defaultTitle: 'Visibility System',
+    defaultAmount: 200000,
+    durations: ['Starter (one-time)', 'Growth (one-time)', 'Scale (one-time)', '3 milestone payments'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will establish and strengthen your complete digital visibility — ensuring customers can find your business wherever they search.
+
+TIERS
+──────────────────────────────────────
+STARTER · ₦120,000
+• Business Visibility Audit
+• Google Business Profile setup & optimisation
+• Google Maps listing
+• Basic website (up to 5 pages)
+• Global Business Hub listing
+• Basic SEO setup
+• Social media profile optimisation
+
+GROWTH · ₦250,000
+• Everything in Starter
+• Advanced SEO + Local SEO
+• Business Directory Submissions
+• Conversion-optimised Landing Page
+• Analytics & tracking setup
+• Visibility campaign
+
+SCALE · ₦450,000 – ₦700,000
+• Everything in Growth
+• Multi-location setup
+• Content optimisation
+• Technical SEO audit & fix
+• Competitor ranking research
+• Advanced reporting dashboard
+
+TIMELINE
+──────────────────────────────────────
+- Weeks 1–2: Audit + Google setup
+- Week 3: Website + social profiles
+- Week 4: SEO + directories + reporting
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 50% deposit before work begins
+- Balance on delivery
+- Monthly SEO maintenance available separately`
+  },
+
+  brand_authority: {
+    defaultTitle: 'Brand Authority System',
+    defaultAmount: 250000,
+    durations: ['Starter (one-time)', 'Growth (one-time)', 'Scale (one-time)', '2 instalments (50/50)'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will build a professional brand identity that makes customers trust your business immediately and recognise you consistently.
+
+TIERS
+──────────────────────────────────────
+STARTER · ₦150,000
+• Logo design (3 concepts, 2 revision rounds)
+• Brand colours & typography system
+• Brand profile & positioning
+• Mission, vision & values
+• Brand story development
+
+GROWTH · ₦300,000
+• Everything in Starter
+• Full brand guidelines PDF
+• Portfolio development
+• Content strategy
+• Social media profile branding
+• Trust & credibility assets
+
+SCALE · ₦500,000 – ₦800,000
+• Everything in Growth
+• Review & testimonial collection system
+• Brand positioning workshop
+• Premium visual identity package
+• Complete brand authority package
+
+TIMELINE
+──────────────────────────────────────
+- Week 1: Brand strategy + logo concepts
+- Week 2: Visual identity + revisions
+- Week 3: All assets + brand guidelines delivery
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 50% deposit before work begins
+- Balance on final delivery
+- All source files transferred on full payment`
+  },
+
+  lead_gen_sys: {
+    defaultTitle: 'Lead Generation System',
+    defaultAmount: 350000,
+    durations: ['Starter (one-time)', 'Growth (one-time)', 'Scale (one-time)', '2 milestone payments'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will build a predictable lead generation system that continuously attracts qualified leads to your business.
+
+TIERS
+──────────────────────────────────────
+STARTER · ₦200,000
+• Ideal Customer Profile (ICP) research
+• Marketing strategy document
+• Lead capture landing page
+• Lead magnet creation
+• Lead capture forms
+• CRM setup
+• WhatsApp entry points
+
+GROWTH · ₦400,000
+• Everything in Starter
+• AI content strategy
+• Email capture system
+• Analytics & tracking
+• Paid advertising setup (one channel)
+• Content calendar (3-month)
+
+SCALE · ₦700,000 – ₦1,200,000
+• Everything in Growth
+• Multi-channel campaigns
+• Marketing automation sequences
+• Advanced CRM pipeline
+• Conversion tracking & optimisation
+• Full funnel analytics
+
+TIMELINE
+──────────────────────────────────────
+- Week 1: ICP research + strategy
+- Weeks 2–3: Landing page + CRM + forms
+- Week 4: Launch + ads + analytics
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 50% deposit before work begins
+- Balance on delivery
+- Ad spend billed separately by platform`
+  },
+
+  sales_conv_sys: {
+    defaultTitle: 'Sales Conversion System',
+    defaultAmount: 600000,
+    durations: ['Option A Starter', 'Option A Growth', 'Option A Scale', 'Option B GATA', '3 milestone payments'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will build the complete sales infrastructure to turn leads into paying customers — consistently and automatically.
+
+OPTION A — INDEPENDENT SALES SYSTEM
+──────────────────────────────────────
+STARTER · ₦350,000
+• Sales funnel design + offer creation
+• Booking system
+• Payment gateway integration
+• CRM pipeline
+• WhatsApp automation
+
+GROWTH · ₦700,000
+• Everything in Starter
+• Online store
+• Customer portal
+• AI chatbot & lead qualifier
+• Revenue dashboard
+• Invoice system
+
+SCALE · ₦1,200,000 – ₦2,500,000
+• Everything in Growth
+• Custom ordering system
+• Advanced automation & AI
+• Multi-user system
+• Full API integrations
+
+OPTION B — GATA BUSINESS ECOSYSTEM
+──────────────────────────────────────
+STARTER · ₦50,000
+• Business onboarding
+• GATAMARKET storefront
+• Product listings (up to 20)
+• Community access
+
+GROWTH · ₦100,000
+• Everything in Starter
+• Product optimisation
+• GATANow logistics integration
+• Order management system
+• Business training session
+
+SCALE · ₦150,000 – ₦250,000
+• Priority onboarding & setup
+• Marketplace promotions
+• Community growth support
+
+TIMELINE
+──────────────────────────────────────
+- Weeks 1–2: Architecture + page build
+- Weeks 3–4: Payments + CRM + automations
+- Week 5: Testing + launch + training
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 50% deposit before work begins
+- Balance upon go-live confirmation
+- 30 days post-launch support included`
+  },
+
+  biz_ops_sys: {
+    defaultTitle: 'Business Operations System',
+    defaultAmount: 500000,
+    durations: ['Starter (one-time)', 'Growth (one-time)', 'Scale (milestone payments)', '3 milestone payments'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will digitize and systemize your internal business operations — making your business efficient, organized, and scalable.
+
+TIERS
+──────────────────────────────────────
+STARTER · ₦300,000
+• Business process mapping
+• Workflow design
+• Client onboarding system
+• Project management setup
+• Revenue dashboards
+
+GROWTH · ₦700,000
+• Everything in Starter
+• Automation tools implementation
+• Finance tracking system
+• Customer support systems
+• AI integration
+• Analytics dashboards
+
+SCALE · ₦1,500,000 – ₦4,000,000+
+• Everything in Growth
+• Custom internal software
+• ERP-style features
+• Team management system
+• Advanced integrations
+• Full business system integration
+
+TIMELINE
+──────────────────────────────────────
+- Weeks 1–2: Audit + process mapping
+- Weeks 3–4: System build + automation
+- Week 5–6: Testing + training + handover
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 40% deposit to begin
+- 40% at midpoint milestone
+- 20% upon final handover`
+  },
+
+  retention_sys: {
+    defaultTitle: 'Customer Retention System',
+    defaultAmount: 200000,
+    durations: ['Starter (one-time)', 'Growth (one-time)', 'Scale (one-time)', '2 milestone payments'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+We will build the system that keeps customers coming back, increases repeat purchases, and generates referrals automatically.
+
+TIERS
+──────────────────────────────────────
+STARTER · ₦120,000
+• Email marketing campaigns setup
+• WhatsApp broadcast system
+• Customer feedback system
+
+GROWTH · ₦250,000
+• Everything in Starter
+• Loyalty program design & build
+• Referral program + tracking
+• Review collection automation
+• Upsell & cross-sell strategy
+
+SCALE · ₦500,000 – ₦900,000
+• Everything in Growth
+• Membership platform build
+• Customer segmentation system
+• Re-engagement automation sequences
+• Customer success dashboard
+
+TIMELINE
+──────────────────────────────────────
+- Week 1: Strategy + system design
+- Weeks 2–3: Build + automation setup
+- Week 4: Launch + team training
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 50% deposit before work begins
+- Balance on delivery
+- Monthly management available as retainer`
+  },
+
+  // ════════════════════════════════════════════════════════════════
+  //  LEGACY TEMPLATES (preserved for existing proposals)
+  // ════════════════════════════════════════════════════════════════
+
   brand_launch: {
     defaultTitle: 'Digital Brand Launch Package',
     defaultAmount: 200000,
@@ -2812,8 +3123,8 @@ TERMS & CONDITIONS
   },
 
   platform_dev: {
-    defaultTitle: 'Custom Platform Development',
-    defaultAmount: 3000000,
+    defaultTitle: 'Platform Development',
+    defaultAmount: 5000000,
     durations: ['Milestone-based payments', 'Monthly development retainer', 'Equity + cash hybrid'],
     body: `SCOPE OF WORK
 ══════════════════════════════════════
@@ -2910,7 +3221,7 @@ TERMS & CONDITIONS
 
   venture_build: {
     defaultTitle: 'Venture Build Partnership',
-    defaultAmount: 1000000,
+    defaultAmount: 1500000,
     durations: ['Milestone-based payments', 'Equity-only arrangement', 'Cash + equity hybrid'],
     body: `SCOPE OF WORK
 ══════════════════════════════════════
@@ -2954,8 +3265,8 @@ TERMS & CONDITIONS
   },
 
   enterprise_sw: {
-    defaultTitle: 'Enterprise Software Solution',
-    defaultAmount: 5000000,
+    defaultTitle: 'Enterprise Systems',
+    defaultAmount: 10000000,
     durations: ['Milestone-based payments', 'Annual contract (SLA)', 'Monthly SLA retainer'],
     body: `SCOPE OF WORK
 ══════════════════════════════════════
@@ -3159,16 +3470,48 @@ TERMS: Full payment before setup.`
   },
   // ── Monthly Growth Membership templates ──
   growth_member: {
-    defaultTitle: 'Growth Membership (Monthly)',
-    defaultAmount: 25000,
+    defaultTitle: 'Growth Membership',
+    defaultAmount: 30000,
     durations: ['Monthly rolling', 'Quarterly (save 10%)', 'Annual (save 20%)'],
     body: `SCOPE: Monthly growth membership — access to tools, community, templates, and monthly strategy calls.
 DELIVERABLES: Monthly strategy call · template library access · community access · priority support.
 TERMS: Monthly rolling. Cancel anytime with 7 days notice.`
   },
+  biz_growth_partner: {
+    defaultTitle: 'Business Growth Partner',
+    defaultAmount: 150000,
+    durations: ['Monthly (3-month min)', 'Quarterly contract', 'Annual contract'],
+    body: `SCOPE OF WORK
+══════════════════════════════════════
+A dedicated monthly growth partnership — strategy, accountability, and execution support every month.
+
+DELIVERABLES (Monthly)
+──────────────────────────────────────
+✦ Strategy & Planning
+   • Monthly strategy session (1–2 hours)
+   • Monthly performance review & reporting
+   • Quarterly growth roadmap
+
+✦ Execution Support
+   • Priority support with faster response times
+   • AI consultation & implementation
+   • Business growth guidance
+
+✦ Reporting
+   • Monthly KPI dashboard
+   • Growth tracking across all areas
+   • Recommendations & next-step actions
+
+TERMS & CONDITIONS
+──────────────────────────────────────
+- 3-month minimum commitment
+- Monthly invoicing
+- Cancel with 30 days notice after minimum term`
+  },
+
   growth_engine: {
     defaultTitle: 'Growth Engine Retainer',
-    defaultAmount: 60000,
+    defaultAmount: 75000,
     durations: ['Monthly retainer (3-month min)', 'Quarterly contract'],
     body: `SCOPE: Active growth management — content, outreach, and growth execution handled for you.
 DELIVERABLES: Monthly strategy + execution plan · 15–20 content pieces · outreach campaigns · bi-weekly report.
@@ -3238,14 +3581,22 @@ var DEFAULT_SLA_TEXT = `SERVICE LEVEL AGREEMENT (SLA)
 //  PAYMENT SYSTEM — SERVICES + BUILDERS
 // ═══════════════════════════════════════════════════════════════
 var TEKNNUKU_SERVICES = [
-  // ── Growth Systems (accessible, deployable packages) ──
-  {id:'brand_launch',   label:'Digital Brand Launch',          venture:'studio',       category:'Growth Systems'},
-  {id:'sales_system',   label:'Sales Conversion System',       venture:'studio',       category:'Growth Systems'},
-  {id:'systemization',  label:'Full Business Systemization',   venture:'studio',       category:'Growth Systems'},
+  // ── GROWTH SYSTEMS (the 6 named business systems from the PDF) ──
+  {id:'visibility_sys',  label:'Visibility System',            venture:'studio',       category:'Growth Systems'},
+  {id:'brand_authority', label:'Brand Authority System',       venture:'studio',       category:'Growth Systems'},
+  {id:'lead_gen_sys',    label:'Lead Generation System',       venture:'studio',       category:'Growth Systems'},
+  {id:'sales_conv_sys',  label:'Sales Conversion System',      venture:'studio',       category:'Growth Systems'},
+  {id:'biz_ops_sys',     label:'Business Operations System',   venture:'studio',       category:'Growth Systems'},
+  {id:'retention_sys',   label:'Customer Retention System',    venture:'studio',       category:'Growth Systems'},
+  // ── Content Execution (under Growth Systems) ──
   {id:'content_basic',  label:'Basic Content Support',         venture:'studio',       category:'Growth Systems'},
   {id:'content_mgr',    label:'Dedicated Growth Manager',      venture:'studio',       category:'Growth Systems'},
   {id:'content_team',   label:'Full Growth Team',              venture:'studio',       category:'Growth Systems'},
   {id:'campaign_1time', label:'One-Time Campaign',             venture:'studio',       category:'Growth Systems'},
+  // ── Legacy IDs (kept for backward compatibility with existing proposals) ──
+  {id:'brand_launch',   label:'Digital Brand Launch',          venture:'studio',       category:'Growth Systems'},
+  {id:'sales_system',   label:'Sales Conversion System (Legacy)',venture:'studio',     category:'Growth Systems'},
+  {id:'systemization',  label:'Full Business Systemization',   venture:'studio',       category:'Growth Systems'},
   // ── Bigger Projects (technical builds & partnerships) ──
   {id:'platform_dev',   label:'Custom Platform Development',   venture:'studio',       category:'Bigger Projects'},
   {id:'enterprise_sw',  label:'Enterprise Software Solution',  venture:'studio',       category:'Bigger Projects'},
@@ -5858,35 +6209,62 @@ function tierBadge(tier){if(!tier)return'<span class="badge badge-dim">—</span
 function scoreBadge(score){var s=parseInt(score)||0;var cls=s>=70?'tier-a':s>=40?'tier-b':'tier-c';return'<div class="score-ring '+cls+'">'+s+'</div>';}
 function statusBadge(status){var map={paid:'badge-green',pending:'badge-gold',partial:'badge-orange',overdue:'badge-red',draft:'badge-dim',sent:'badge-cyan',accepted:'badge-green',declined:'badge-red',active:'badge-cyan',completed:'badge-green',cancelled:'badge-red','in-progress':'badge-purple','on-hold':'badge-orange',interview:'badge-cyan',hired:'badge-green',rejected:'badge-red',phase1:'badge-amber',phase2:'badge-blue',phase3:'badge-green',employed:'badge-green',open:'badge-green',filled:'badge-red',closed:'badge-dim'};var cls=map[status]||'badge-dim';return'<span class="badge '+cls+'">'+escHtml(status||'—')+'</span>';}
 function serviceLabel(svc){var map={
-  brand_launch:'Digital Brand Launch',
-  sales_system:'Sales Conversion System',
-  systemization:'Full Business Systemization',
-  content_basic:'Basic Content Support',
-  content_mgr:'Dedicated Growth Manager',
-  content_team:'Full Growth Team',
-  campaign_1time:'One-Time Campaign',
-  platform_dev:'Custom Platform Development',
-  enterprise_sw:'Enterprise Software Solution',
-  web3_dev:'Web3 / Blockchain Development',
-  venture_build:'Venture Build Partnership',
-  gata_onboard:'GATA Ecosystem Onboarding',
-  whatsapp_auto:'WhatsApp Automation',
-  ai_chatbot:'AI Chatbot / Lead Qualifier',
-  funnel_check:'Funnel Check & Fix',
-  follow_up_sys:'Follow-Up & Reminder System',
-  paid_ads:'Paid Ads Setup',
-  seo_setup:'SEO Setup',
-  content_30day:'30-Day Content Campaign',
-  email_sms:'Email / SMS Campaign Setup',
-  payment_gw:'Payment Gateway Setup',
-  analytics_dash:'Revenue & Analytics Dashboard',
-  booking_sys:'Booking / Appointment System',
-  branding_kit:'Branding Upgrade Kit',
-  trust_page:'Trust & Credibility Page',
-  brand_video:'Brand Video / Reel',
-  review_sys:'Review & Social Proof System',
-  growth_member:'Growth Membership (Monthly)',
-  growth_engine:'Growth Engine Retainer'
+  // ── The 6 Growth Systems (PDF) ──
+  visibility_sys:  'Visibility System',
+  brand_authority: 'Brand Authority System',
+  lead_gen_sys:    'Lead Generation System',
+  sales_conv_sys:  'Sales Conversion System',
+  biz_ops_sys:     'Business Operations System',
+  retention_sys:   'Customer Retention System',
+  // ── Content Execution ──
+  content_basic:   'Basic Content Support',
+  content_mgr:     'Dedicated Growth Manager',
+  content_team:    'Full Growth Team',
+  campaign_1time:  'One-Time Campaign',
+  // ── Bigger Projects ──
+  platform_dev:    'Platform Development',
+  venture_build:   'Venture Build Partnership',
+  enterprise_sw:   'Enterprise Systems',
+  web3_dev:        'Web3 / Blockchain Development',
+  gata_onboard:    'GATA Ecosystem Onboarding',
+  // ── Growth Add-Ons ──
+  seo_setup:       'SEO Setup',
+  google_biz:      'Google Business Profile',
+  local_seo:       'Local SEO',
+  paid_ads:        'Paid Ads Setup',
+  branding_kit:    'Branding Upgrade',
+  brand_video:     'Brand Video / Reel',
+  trust_page:      'Trust & Credibility Page',
+  review_sys:      'Review & Social Proof System',
+  landing_page:    'Landing Page',
+  lead_magnet:     'Lead Magnet',
+  crm_setup:       'CRM Setup',
+  email_marketing: 'Email Marketing Setup',
+  ai_content_sys:  'AI Content System',
+  content_30day:   '30-Day Content Campaign',
+  whatsapp_auto:   'WhatsApp Automation',
+  ai_chatbot:      'AI Chatbot & Lead Qualifier',
+  funnel_check:    'Funnel Audit & Optimisation',
+  payment_gw:      'Payment Gateway Integration',
+  booking_sys:     'Booking / Appointment System',
+  follow_up_sys:   'Follow-Up & Reminder Automation',
+  analytics_dash:  'Revenue & Analytics Dashboard',
+  workflow_auto:   'Workflow Automation',
+  sys_integration: 'System Integrations',
+  internal_sw:     'Internal Software Module',
+  loyalty_prog:    'Loyalty Program',
+  referral_sys:    'Referral System',
+  feedback_sys:    'Customer Feedback System',
+  reengage_camp:   'Re-engagement Campaigns',
+  // ── Monthly Growth Memberships ──
+  growth_member:   'Growth Membership',
+  growth_engine:   'Growth Engine',
+  biz_growth_partner: 'Business Growth Partner',
+  // ── Legacy IDs (backward compat) ──
+  brand_launch:    'Digital Brand Launch',
+  sales_system:    'Sales Conversion System',
+  systemization:   'Full Business Systemization',
+  email_sms:       'Email / SMS Campaign'
 };return map[svc]||svc||'—';}
 function initials(name){if(!name)return'?';var p=name.trim().split(' ');return(p[0][0]+(p[1]?p[1][0]:'')).toUpperCase();}
 function phaseBadge(a){
