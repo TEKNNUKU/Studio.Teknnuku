@@ -3138,7 +3138,7 @@ body { overflow-x: clip; }
 .svm-tab:hover { color:rgba(242,237,228,.7); }
 .svm-tab.active { color:#C89B14;border-bottom-color:#C89B14; }
 .svm-tab-body { display:none; }
-.svm-tab-body.active { display:block; }
+.svm-tab-body.active { display:block; overflow-y:visible; }
  
 .svm-problems-strip {
   background:rgba(200,155,20,.04);border:1px solid rgba(200,155,20,.1);
@@ -3752,10 +3752,8 @@ body { overflow-x: clip; }
      SERVICES & PRICING MODAL
 ============================================================ -->
 <div id="services-modal" role="dialog" aria-modal="true" aria-label="Services & Pricing"
-  style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(5,5,8,.92);
-         backdrop-filter:blur(8px);overflow-y:auto;padding:24px 16px;">
-<div style="max-width:940px;margin:0 auto;background:#0c0c14;border:1px solid rgba(200,155,20,.2);
-            border-radius:16px;overflow:hidden;">
+  style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(5,5,8,.92);backdrop-filter:blur(8px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:24px 16px;">
+<div style="max-width:940px;margin:0 auto;background:#0c0c14;border:1px solid rgba(200,155,20,.2);border-radius:16px;overflow:visible;">
 
   <!-- ── Modal Header ── -->
   <div style="padding:28px 32px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
@@ -4877,7 +4875,7 @@ body { overflow-x: clip; }
     <div style="background:var(--panel);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
       <div style="padding:clamp(22px,4vw,36px);border-bottom:1px solid var(--borderS);display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
         <div style="flex:1;min-width:220px;">
-          <div style="font-family:'DM Mono',monospace;font-size:.100rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">🎓 Poverty2Prosperity Digital Business Masterclass</div> 
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.05rem,2.8vw,1.5rem);color:var(--gold);margin-bottom:10px;line-height:1.3;">🎓 Poverty2Prosperity<br>Digital Business Masterclass</div> 
           <h3 style="font-size:clamp(1.1rem,2vw,1.4rem);color:var(--white);margin-bottom:10px;">What you get, free with every paid service:</h3>
           <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">
             <li style="display:flex;gap:8px;font-size:.84rem;color:var(--muted);"><span style="color:var(--gold);flex-shrink:0;">→</span> How to attract customers online</li>
@@ -5156,7 +5154,7 @@ body { overflow-x: clip; }
             <li>Social media profiles setup &amp; optimisation</li>
             <li>Visibility campaigns</li>
           </ul>
-          <button onclick="openServiceInquiry('brand_launch')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Get My Business Found →</button>
+          <button onclick="openServiceInquiry('visibility_sys')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Get My Business Found →</button>
         </div>
       </div>
 
@@ -5185,7 +5183,7 @@ body { overflow-x: clip; }
             <li>Review &amp; testimonial collection system</li>
             <li>Professional social media profiles</li>
           </ul>
-          <button onclick="openServiceInquiry('brand_launch')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Build My Brand Authority →</button>
+          <button onclick="openServiceInquiry('brand_authority')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Build My Brand Authority →</button>
         </div>
       </div>
 
@@ -5214,7 +5212,7 @@ body { overflow-x: clip; }
             <li>AI content strategy</li>
             <li>Multi-channel marketing automation</li>
           </ul>
-          <button onclick="openServiceInquiry('sales_system')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Generate More Leads →</button>
+          <button onclick="openServiceInquiry('lead_gen_sys')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Generate More Leads →</button>
         </div>
       </div>
 
@@ -5276,7 +5274,7 @@ body { overflow-x: clip; }
             <li>AI integration + internal software</li>
             <li>Business system integrations</li>
           </ul>
-          <button onclick="openServiceInquiry('systemization')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Systemize My Business →</button>
+          <button onclick="openServiceInquiry('biz_ops_sys')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Systemize My Business →</button>
         </div>
       </div>
 
@@ -5305,7 +5303,7 @@ body { overflow-x: clip; }
             <li>Membership programs</li>
             <li>Customer re-engagement campaigns</li>
           </ul>
-          <button onclick="openServiceInquiry('sales_system')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Build My Retention System →</button>
+          <button onclick="openServiceInquiry('retention_sys')" class="btn btn-gold" style="font-size:.8rem;padding:11px 22px;width:100%;justify-content:center;">Build My Retention System →</button>
         </div>
       </div>
 
@@ -6247,10 +6245,153 @@ var TEK_FMT = {
 };
 
 var SI_SERVICES = {
+  /* ── The 6 Growth Systems — dedicated inquiry forms ── */
+
+  visibility_sys: {
+    title:'Visibility System',
+    subtitle:"Tell us about your current online visibility — we'll recommend the exact tier your business needs.",
+    badge:'System 01 · Visibility System',
+    successMsg:"Our visibility specialist will review your situation and respond within 24 hours with a personalised roadmap.",
+    fields:[
+      {id:'si_has_website',label:'Do you currently have a website?',type:'select',
+       options:['No website at all','Basic DIY website','Professional website','Multiple websites']},
+      {id:'si_google',label:'Can customers find you on Google when they search?',type:'select',
+       options:['Not at all — completely invisible','Barely — very low ranking','Sometimes appears','Yes — showing well']},
+      {id:'si_monthly_traffic',label:'Estimated monthly visitors or social reach',type:'select',
+       options:['0 — not sure','Under 100','100–500','500–2,000','2,000–10,000','10,000+']},
+      {id:'si_vis_problem',label:'Biggest visibility challenge right now',type:'select',
+       options:["Customers can't find me online",'I appear but rank very low','No Google Maps or Business Profile','My social profiles look unprofessional','Website exists but gets no traffic','All of the above']},
+      {id:'si_vis_tier',label:'Which tier are you interested in?',type:'priceSelect',
+       priceOptions:[
+         {label:'Starter — Google + Website + Basic SEO (₦120,000)',lo:120000,hi:120000},
+         {label:'Growth — Advanced SEO + Landing Page + Campaigns (₦250,000)',lo:250000,hi:250000},
+         {label:'Scale — Multi-location + Technical SEO + Full Setup (₦450k–₦700k)',lo:450000,hi:700000},
+         {label:"Not sure — recommend the right one for me",lo:0,hi:0}
+       ]}
+    ]
+  },
+
+  brand_authority: {
+    title:'Brand Authority System',
+    subtitle:"Tell us about your current brand — we'll build the identity that makes customers trust you immediately.",
+    badge:'System 02 · Brand Authority System',
+    successMsg:"Our brand strategist will review your submission and respond with a detailed brand roadmap within 24 hours.",
+    fields:[
+      {id:'si_has_logo',label:'Do you currently have a professional logo?',type:'select',
+       options:['No logo at all','Basic or DIY logo','Professional but outdated','Professional logo — need more brand assets']},
+      {id:'si_brand_consistency',label:'How consistent is your brand look across platforms?',type:'select',
+       options:['No consistent look at all','Very inconsistent — different everywhere','Somewhat consistent','Professional and consistent']},
+      {id:'si_brand_gap',label:'Biggest brand challenge right now',type:'select',
+       options:["Customers don't see me as professional",'No clear brand story or message','No consistent visual identity','Low trust from new customers','Poor social media brand presence','I look like everyone else in my industry']},
+      {id:'si_brand_tier',label:'Which tier are you interested in?',type:'priceSelect',
+       priceOptions:[
+         {label:'Starter — Logo + Colours + Typography + Brand Story (₦150,000)',lo:150000,hi:150000},
+         {label:'Growth — + Brand Guidelines + Portfolio + Trust Assets (₦300,000)',lo:300000,hi:300000},
+         {label:'Scale — + Premium Identity + Review System + Authority Package (₦500k–₦800k)',lo:500000,hi:800000},
+         {label:'Not sure — help me decide',lo:0,hi:0}
+       ]}
+    ]
+  },
+
+  lead_gen_sys: {
+    title:'Lead Generation System',
+    subtitle:"Tell us how you currently get leads — we'll design a predictable system that brings in qualified leads every week.",
+    badge:'System 03 · Lead Generation System',
+    successMsg:"Our growth strategist will analyse your lead generation situation and respond with a personalised plan within 24 hours.",
+    fields:[
+      {id:'si_monthly_leads',label:'How many qualified leads do you get per month?',type:'select',
+       options:['0–5 leads per month','5–20 leads per month','20–50 leads per month','50–100 leads per month','100+ leads per month']},
+      {id:'si_lead_source',label:'How do most leads currently find you?',type:'select',
+       options:['Referrals only — no online lead generation','Occasional social media inquiries','Google search sometimes','Walk-ins or direct calls','Paid ads running','Multiple consistent online channels']},
+      {id:'si_marketing_level',label:'Current marketing setup',type:'select',
+       options:['No strategy at all','Just posting when I can','Some paid ads but no system','Basic funnel in place','Marketing running but inconsistent results']},
+      {id:'si_crm',label:'Do you track your leads in a CRM or system?',type:'select',
+       options:['No — I track nothing','WhatsApp chats and notes','Spreadsheet','Basic CRM','Advanced CRM pipeline']},
+      {id:'si_lead_tier',label:'Which tier are you interested in?',type:'priceSelect',
+       priceOptions:[
+         {label:'Starter — ICP + Landing Page + Lead Magnet + CRM + WhatsApp (₦200,000)',lo:200000,hi:200000},
+         {label:'Growth — + AI Content + Email Capture + Paid Ads + Analytics (₦400,000)',lo:400000,hi:400000},
+         {label:'Scale — + Multi-channel + Automation + Full Funnel Optimisation (₦700k–₦1.2M)',lo:700000,hi:1200000},
+         {label:'Not sure — help me pick the right level',lo:0,hi:0}
+       ]}
+    ]
+  },
+
+  sales_conv_sys: {
+    title:'Sales Conversion System',
+    subtitle:"Tell us about your sales situation — we'll build the system that turns leads into paying customers consistently.",
+    badge:'System 04 · Sales Conversion System',
+    successMsg:"Our sales system specialist will review your situation and respond within 24 hours with a detailed action plan.",
+    fields:[
+      {id:'si_monthly_inquiries',label:'How many inquiries or messages do you get per month?',type:'select',
+       options:['Almost none','5–20','20–50','50–100','100+']},
+      {id:'si_close_rate',label:'What % of those inquiries become paying customers?',type:'select',
+       options:['Less than 5%','5–15%','15–30%','30–50%','Over 50%']},
+      {id:'si_sales_method',label:'How do you currently sell?',type:'select',
+       options:['WhatsApp or DM only','Phone calls','In-person meetings','Basic website or landing page','Online store','No structured sales process']},
+      {id:'si_sales_path',label:'Which option are you interested in?',type:'select',
+       options:['Option A — Build my own independent sales infrastructure','Option B — Join the GATA Business Ecosystem (faster & more affordable)','Not sure — help me decide which is right']},
+      {id:'si_sales_tier',label:'Investment range',type:'priceSelect',
+       priceOptions:[
+         {label:'Option A Starter — Funnel + Booking + Payment + CRM + WhatsApp (₦350,000)',lo:350000,hi:350000},
+         {label:'Option A Growth — + Store + Portal + AI Chatbot + Dashboard (₦700,000)',lo:700000,hi:700000},
+         {label:'Option A Scale — + Custom Ordering + Advanced Automation (₦1.2M–₦2.5M)',lo:1200000,hi:2500000},
+         {label:'Option B GATA Starter — GATAMARKET storefront + listings (₦50,000)',lo:50000,hi:50000},
+         {label:'Option B GATA Growth — + Logistics + Order management (₦100,000)',lo:100000,hi:100000},
+         {label:'Option B GATA Scale — Priority + Promotions + Community (₦150k–₦250k)',lo:150000,hi:250000}
+       ]}
+    ]
+  },
+
+  biz_ops_sys: {
+    title:'Business Operations System',
+    subtitle:"Tell us about your current operations — we'll build the system that makes your business run smoothly and scale.",
+    badge:'System 05 · Business Operations System',
+    successMsg:"Our operations specialist will review your submission and respond within 24 hours with a detailed plan.",
+    fields:[
+      {id:'si_team_size',label:'How many people work in your business?',type:'select',
+       options:['Just me','2–5 people','6–15 people','16–50 people','50+ people']},
+      {id:'si_ops_problem',label:'Biggest operational challenge right now',type:'select',
+       options:['Everything depends on me personally','Tasks and client info gets lost constantly','No clear processes or SOPs','Manual work taking too much of my time','Poor financial tracking and reporting',"Can't scale without chaos increasing"]},
+      {id:'si_tools',label:'What systems or tools do you currently use?',type:'select',
+       options:['Nothing — pen, paper, and WhatsApp','Basic spreadsheets','WhatsApp + Google Docs','Several apps but not connected','Multiple tools fully integrated']},
+      {id:'si_ops_tier',label:'Which tier are you interested in?',type:'priceSelect',
+       priceOptions:[
+         {label:'Starter — Process mapping + Workflows + Client onboarding + Dashboard (₦300,000)',lo:300000,hi:300000},
+         {label:'Growth — + Automation + Finance tracking + AI integration (₦700,000)',lo:700000,hi:700000},
+         {label:'Scale — + Custom software + ERP features + Team management (₦1.5M–₦4M+)',lo:1500000,hi:4000000},
+         {label:'Not sure — help me assess what I need',lo:0,hi:0}
+       ]}
+    ]
+  },
+
+  retention_sys: {
+    title:'Customer Retention System',
+    subtitle:"Tell us about your customer repeat rate — we'll build the system that keeps customers coming back and sending referrals.",
+    badge:'System 06 · Customer Retention System',
+    successMsg:"Our growth specialist will review your situation and respond within 24 hours with a personalised retention strategy.",
+    fields:[
+      {id:'si_repeat_rate',label:'What % of your customers come back to buy again?',type:'select',
+       options:['Almost none — buy once and disappear','Under 20% return','20–40% return','40–60% return','Over 60% return regularly']},
+      {id:'si_referral_rate',label:'How many new customers come from referrals?',type:'select',
+       options:['Almost none','A few here and there','About 20–30% of new customers','Most of my new customers are referrals']},
+      {id:'si_retention_existing',label:'What retention tools do you currently use?',type:'select',
+       options:['Nothing — no follow-up system at all','Occasional WhatsApp messages','Basic email newsletter','Loyalty or referral program running','Multiple retention channels active']},
+      {id:'si_retention_tier',label:'Which tier are you interested in?',type:'priceSelect',
+       priceOptions:[
+         {label:'Starter — Email campaigns + WhatsApp broadcasts + Feedback system (₦120,000)',lo:120000,hi:120000},
+         {label:'Growth — + Loyalty program + Referral program + Review automation (₦250,000)',lo:250000,hi:250000},
+         {label:'Scale — + Membership platform + Segmentation + Re-engagement automation (₦500k–₦900k)',lo:500000,hi:900000},
+         {label:'Not sure — help me decide the right level',lo:0,hi:0}
+       ]}
+    ]
+  },
+
+
   brand_launch: { title:'Digital Brand Launch', subtitle:"Tell us about your brand goals and we'll scope the right identity package for you.", badge:'01 · Brand & Identity', successMsg:"Our brand strategist will review your brief and reach out within 24 hours with a tailored proposal.", fields:[{id:'si_industry',label:'Your Industry / Niche',type:'text',placeholder:'e.g. Food & Beverage, Fashion, Tech'},{id:'si_audience',label:'Target audience',type:'text',placeholder:'e.g. Young professionals in Lagos'},{id:'si_timeline',label:'Desired launch timeline',type:'select',options:['Within 2 weeks','1 month','2–3 months','Just exploring']},{id:'si_budget_brand',label:'Budget range',type:'priceSelect',priceOptions:[{label:'Starter',lo:150000,hi:250000},{label:'Standard',lo:250000,hi:350000},{label:'Not sure yet',lo:0,hi:0}]}] },
   sales_system: { title:'Sales System Setup', subtitle:"Share your current sales situation and we'll build the system that closes more deals.", badge:'02 · Sales Infrastructure', successMsg:"Our sales systems specialist will analyse your brief and respond with a personalised roadmap.", fields:[{id:'si_current_sales',label:'How do you currently get sales?',type:'select',options:['Mostly referrals','Social media DMs','Walk-ins','Online ads','No consistent method']},{id:'si_monthly_leads',label:'Monthly leads?',type:'select',options:['0–10','10–50','50–200','200+']},{id:'si_biggest_gap',label:'Biggest sales gap right now',type:'text',placeholder:'e.g. Leads do not convert, no follow-up system'},{id:'si_sales_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Starter',lo:400000,hi:600000},{label:'Growth',lo:700000,hi:1000000},{label:'Full System',lo:1100000,hi:1400000},{label:'Not sure yet',lo:0,hi:0}]}] },
   systemization: { title:'Business Systemization', subtitle:"Let's understand your operations so we can design the systems that eliminate chaos.", badge:'03 · Ops & Systems', successMsg:"Our operations consultant will reach out to schedule an in-depth systems audit call.", fields:[{id:'si_team_size',label:'Team size',type:'select',options:['Solo founder','2–5 people','6–15 people','15–50 people','50+ people']},{id:'si_biggest_bottleneck',label:'Biggest operational bottleneck',type:'text',placeholder:'e.g. No SOPs, manual invoicing'},{id:'si_sys_budget',label:'Investment range',type:'priceSelect',priceOptions:[{label:'Audit + SOPs',lo:600000,hi:900000},{label:'Full System Design',lo:1000000,hi:1500000},{label:'Not sure yet',lo:0,hi:0}]}] },
-  gata_onboard: { title:'GATA Ecosystem Onboarding', subtitle:"Join Nigeria's growing digital commerce ecosystem.", badge:"06 · GATA Ecosystem", successMsg:"Welcome! Our onboarding coordinator will send your access details shortly.", fields:[{id:'si_biz_type',label:'Type of business',type:'select',options:['Physical product seller','Digital product / service','Freelancer / Consultant','Food & Beverage','Fashion & Apparel','Other']},{id:'si_gata_goal',label:'Primary goal for joining GATA',type:'select',options:['Access the marketplace','Join the community','Distribute my products','All of the above']},{id:'si_gata_tier',label:'Membership tier',type:'priceSelect',priceOptions:[{label:'Basic Access',lo:25000,hi:40000},{label:'Standard Member',lo:50000,hi:80000},{label:'Premium Partner',lo:90000,hi:150000},{label:'Not sure yet',lo:0,hi:0}]}] },
+  gata_onboard: { title:'GATA Ecosystem Onboarding', subtitle:"Join Nigeria's growing digital commerce ecosystem.", badge:"06 · GATA Ecosystem", successMsg:"Welcome! Our onboarding coordinator will send your access details shortly.", fields:[{id:'si_biz_type',label:'Type of business',type:'select',options:['Physical product seller','Digital product / service','Freelancer / Consultant','Food & Beverage','Fashion & Apparel','Logistics / Delivery service provider','Transport & Haulage company','Last-mile delivery operator','Other']},{id:'si_gata_goal',label:'Primary goal for joining GATA',type:'select',options:['Access the marketplace','Join the community','Distribute my products','Become a GATANow delivery / logistics partner','Provide last-mile delivery services on GATANow','All of the above']},{id:'si_gata_tier',label:'Membership tier',type:'priceSelect',priceOptions:[{label:'Basic Access',lo:25000,hi:40000},{label:'Standard Member',lo:50000,hi:80000},{label:'Premium Partner',lo:90000,hi:150000},{label:'Not sure yet',lo:0,hi:0}]}] },
   platform_dev: { title:'Platform Development', subtitle:"Describe the platform you want built and we'll scope it with you.", badge:'06 · Platform Engineering', successMsg:"Our technical lead will arrange a scoping session within 48 hours.", fields:[{id:'si_platform_type',label:'What type of platform?',type:'select',options:['Marketplace / E-commerce','SaaS / Web App','Booking / Scheduling','CRM / Internal Tool','Other']},{id:'si_core_features',label:'Key features needed',type:'text',placeholder:'e.g. User login, payments, dashboards'},{id:'si_platform_budget',label:'Budget range',type:'priceSelect',priceOptions:[{label:'MVP',lo:1500000,hi:2500000},{label:'Standard Web App',lo:2800000,hi:4500000},{label:'Full Platform',lo:5000000,hi:10000000,plus:true},{label:'To be scoped',lo:0,hi:0}]}] },
   venture_build: { title:'Startup Venture Building', subtitle:"Apply to co-build a revenue-generating venture with the TEKNNUKU Studio team.", badge:'07 · Venture Building', successMsg:"Your venture application has been received. Our investment team reviews applications weekly.", fields:[{id:'si_venture_idea',label:'Your venture idea / concept',type:'text',placeholder:'Describe the problem you are solving'},{id:'si_venture_stage',label:'Current stage',type:'select',options:['Idea only','Research done','MVP built','Pilot customers','Early revenue']},{id:'si_equity_range',label:'Equity open to offering',type:'select',options:['10–15%','15–20%','20–30%','30%+','Open to discussion']},{id:'si_venture_invest',label:'Min. capital you can commit',type:'priceSelect',priceOptions:[{label:'Seed',lo:500000,hi:1000000},{label:'Early',lo:1200000,hi:2000000},{label:'Equity-only deal',lo:0,hi:0}]}] },
   enterprise_sw: { title:'Custom Software Development', subtitle:"Tell us about your enterprise project and we'll prepare a detailed technical quote.", badge:'08 · Enterprise Software', successMsg:"Our engineering team will prepare a technical proposal within 48 hours.", fields:[{id:'si_org_size',label:'Organisation size',type:'select',options:['1–10 people','11–50 people','51–200 people','200+ people','Government / Public sector']},{id:'si_project_scope',label:'Project scope description',type:'text',placeholder:'e.g. ERP system, HR platform, logistics tracking'},{id:'si_ent_budget',label:'Budget range',type:'priceSelect',priceOptions:[{label:'Standard',lo:3000000,hi:5000000},{label:'Mid-Scale',lo:6000000,hi:10000000},{label:'Enterprise',lo:12000000,hi:20000000,plus:true},{label:'To be scoped',lo:0,hi:0}]}] }
