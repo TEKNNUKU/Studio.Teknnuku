@@ -665,6 +665,87 @@ body::after {
   .results-footer { padding: 16px 18px 22px; flex-direction: column; }
   .progress-meta { padding: 12px 18px 0; }
 }
+
+/* ═══════════════════════════════════════════
+   BUSINESS HEALTH ASSESSMENT — RATING WIDGET
+═══════════════════════════════════════════ */
+.rating-block { margin-bottom: 26px; }
+.rating-block:last-child { margin-bottom: 0; }
+.rating-stmt {
+  font-size: .88rem;
+  color: var(--white);
+  line-height: 1.45;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.rating-scale { display: flex; gap: 8px; }
+.rating-circle {
+  flex: 1;
+  height: 38px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--borderS);
+  background: var(--card);
+  color: var(--dim);
+  font-family: 'DM Mono', monospace;
+  font-size: .74rem;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .18s;
+}
+.rating-circle:hover { border-color: var(--gold); color: var(--muted); }
+.rating-circle.selected { background: var(--gold); border-color: var(--gold); color: #080808; }
+.rating-scale-labels {
+  display: flex; justify-content: space-between;
+  font-family: 'DM Mono', monospace;
+  font-size: .54rem; letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 6px;
+}
+.category-progress {
+  font-family: 'DM Mono', monospace;
+  font-size: .6rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 4px;
+}
+
+/* ── Priority chips ── */
+.tag-chip.crit  { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.28); color: var(--red); }
+.tag-chip.high  { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.28); color: var(--amber); }
+.tag-chip.med   { background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.28); color: var(--blue); }
+.tag-chip.healthy { background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.28); color: var(--green); }
+
+/* ── Health breakdown section ── */
+.health-section { padding: 28px 32px; border-top: 1px solid var(--borderS); }
+.health-ring-row { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; margin-bottom: 22px; }
+.health-cats { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 10px; }
+.health-cat-row { display: flex; align-items: center; gap: 10px; }
+.health-cat-label { min-width: 132px; font-family: 'DM Mono', monospace; font-size: .6rem; letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+.health-cat-bar-wrap { flex: 1; height: 6px; background: var(--borderS); border-radius: 4px; overflow: hidden; }
+.health-cat-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease .2s; width: 0; }
+.health-cat-pct { font-family: 'DM Mono', monospace; font-size: .68rem; min-width: 34px; text-align: right; }
+
+.sw-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 4px; }
+@media (max-width:600px) { .sw-lists { grid-template-columns: 1fr; } }
+.sw-block h5 { font-family: 'DM Mono', monospace; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+.sw-block.strengths h5 { color: var(--green); }
+.sw-block.challenges h5 { color: var(--red); }
+.sw-block ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.sw-block li { font-size: .8rem; color: var(--muted); padding-left: 16px; position: relative; line-height: 1.4; }
+.sw-block.strengths li::before { content:'✓'; position:absolute; left:0; color: var(--green); }
+.sw-block.challenges li::before { content:'!'; position:absolute; left:0; color: var(--red); font-weight: 700; }
+
+/* ── Growth systems / roadmap ── */
+.systems-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.system-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--card); border: 1px solid var(--borderS); border-radius: var(--r); }
+.system-card .sc-name { flex: 1; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .88rem; color: var(--white); }
+.addons-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+.roadmap { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; }
+.roadmap-phase { display: flex; gap: 14px; padding: 14px 16px; background: var(--card); border: 1px solid var(--borderS); border-radius: var(--r); }
+.roadmap-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--gold); flex-shrink: 0; width: 30px; }
+.roadmap-body .rp-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .85rem; color: var(--white); margin-bottom: 4px; }
+.roadmap-body .rp-desc { font-size: .78rem; color: var(--muted); line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -745,6 +826,9 @@ body::after {
           <button class="option-btn" data-value="solar_vendor" onclick="select(this,'q1','single')">
             <div class="opt-check"></div><span class="opt-icon">☀️</span><span class="opt-label">I sell solar/inverter solutions</span>
           </button>
+          <button class="option-btn" data-value="salon_biz" onclick="select(this,'q1','single')">
+            <div class="opt-check"></div><span class="opt-icon">💇</span><span class="opt-label">I run a salon/spa/beauty business</span>
+          </button>
         </div>
         <div class="val-msg" id="val-1">Please select an option to continue.</div>
       </div>
@@ -799,9 +883,31 @@ body::after {
         <div class="val-msg" id="val-3">Please select an option to continue.</div>
       </div>
 
-      <!-- ── STEP 4: Pain ── -->
-      <div class="step-panel" data-step="4">
-        <div class="section-label">Section 2 — Pain Diagnosis</div>
+      <!-- ── STEPS 4–9: Business Health Assessment (auto-generated) ── -->
+      <div id="health-steps-container"></div>
+
+      <!-- ── STEP 10: Sales Infrastructure Preference ── -->
+      <div class="step-panel" data-step="10">
+        <div class="section-label">Section 3 — Sales Infrastructure</div>
+        <div class="q-title">Which sales infrastructure fits you best?</div>
+        <div class="q-hint">This decides between an independent system built just for you, or joining our shared marketplace ecosystem.</div>
+        <div class="options-grid" id="salesInfra">
+          <button class="option-btn" data-value="independent" onclick="select(this,'salesInfra','single')">
+            <div class="opt-check"></div><span class="opt-icon">🏗️</span><span class="opt-label">My own independent website, ordering, booking &amp; payment system</span>
+          </button>
+          <button class="option-btn" data-value="marketplace" onclick="select(this,'salesInfra','single')">
+            <div class="opt-check"></div><span class="opt-icon">🛒</span><span class="opt-label">Join the GATA Business Ecosystem (GATAMARKET + GATANow + Network)</span>
+          </button>
+          <button class="option-btn" data-value="unsure" onclick="select(this,'salesInfra','single')">
+            <div class="opt-check"></div><span class="opt-icon">🤔</span><span class="opt-label">I'm not sure — please advise me</span>
+          </button>
+        </div>
+        <div class="val-msg" id="val-10">Please select an option to continue.</div>
+      </div>
+
+      <!-- ── STEP 11: Pain ── -->
+      <div class="step-panel" data-step="11">
+        <div class="section-label">Section 4 — Pain Diagnosis</div>
         <div class="q-title">What is your biggest current challenge?</div>
         <div class="q-hint">Pick the one that stings the most right now.</div>
         <div class="options-grid" id="q4">
@@ -824,15 +930,15 @@ body::after {
             <div class="opt-check"></div><span class="opt-icon">💸</span><span class="opt-label">I need more income streams</span>
           </button>
           <button class="option-btn" data-value="staff_management" onclick="select(this,'q4','single')">
-            <div class="opt-check"></div><span class="opt-icon">👥</span><span class="opt-label">I struggle managing staff/guards</span>
+            <div class="opt-check"></div><span class="opt-icon">👥</span><span class="opt-label">I struggle managing staff/guards/bookings</span>
           </button>
         </div>
-        <div class="val-msg" id="val-4">Please select an option to continue.</div>
+        <div class="val-msg" id="val-11">Please select an option to continue.</div>
       </div>
 
-      <!-- ── STEP 5: Needs ── -->
-      <div class="step-panel" data-step="5">
-        <div class="section-label">Section 2 — Pain Diagnosis</div>
+      <!-- ── STEP 12: Needs ── -->
+      <div class="step-panel" data-step="12">
+        <div class="section-label">Section 4 — Pain Diagnosis</div>
         <div class="q-title">What do you need most right now?</div>
         <div class="q-hint">Select up to 2 options — be specific.</div>
         <div class="options-grid cols-2" id="q5">
@@ -860,13 +966,16 @@ body::after {
           <button class="option-btn" data-value="solar_acquisition" onclick="select(this,'q5','multi',2)">
             <div class="opt-check square"></div><span class="opt-label">Solar customer acquisition</span>
           </button>
+          <button class="option-btn" data-value="salon_booking" onclick="select(this,'q5','multi',2)">
+            <div class="opt-check square"></div><span class="opt-label">Salon/spa booking &amp; payment system</span>
+          </button>
         </div>
-        <div class="val-msg" id="val-5">Please select at least 1 option.</div>
+        <div class="val-msg" id="val-12">Please select at least 1 option.</div>
       </div>
 
-      <!-- ── STEP 6: Budget ── -->
-      <div class="step-panel" data-step="6">
-        <div class="section-label">Section 3 — Buyer Readiness</div>
+      <!-- ── STEP 13: Budget ── -->
+      <div class="step-panel" data-step="13">
+        <div class="section-label">Section 5 — Buyer Readiness</div>
         <div class="q-title">If the right solution exists, what is your budget readiness?</div>
         <div class="q-hint">Honest answers unlock better-matched recommendations for you.</div>
         <div class="options-grid" id="q6">
@@ -883,12 +992,12 @@ body::after {
             <div class="opt-check"></div><span class="opt-icon">🏆</span><span class="opt-label">I am ready for premium solutions</span>
           </button>
         </div>
-        <div class="val-msg" id="val-6">Please select an option to continue.</div>
+        <div class="val-msg" id="val-13">Please select an option to continue.</div>
       </div>
 
-      <!-- ── STEP 7: Urgency ── -->
-      <div class="step-panel" data-step="7">
-        <div class="section-label">Section 3 — Buyer Readiness</div>
+      <!-- ── STEP 14: Urgency ── -->
+      <div class="step-panel" data-step="14">
+        <div class="section-label">Section 5 — Buyer Readiness</div>
         <div class="q-title">How urgently do you need a solution?</div>
         <div class="q-hint">This determines your priority in our pipeline.</div>
         <div class="options-grid" id="q7">
@@ -905,12 +1014,12 @@ body::after {
             <div class="opt-check"></div><span class="opt-icon">🔥</span><span class="opt-label">Immediately</span>
           </button>
         </div>
-        <div class="val-msg" id="val-7">Please select an option to continue.</div>
+        <div class="val-msg" id="val-14">Please select an option to continue.</div>
       </div>
 
-      <!-- ── STEP 8: Channels ── -->
-      <div class="step-panel" data-step="8">
-        <div class="section-label">Section 4 — Qualification Enrichment</div>
+      <!-- ── STEP 15: Channels ── -->
+      <div class="step-panel" data-step="15">
+        <div class="section-label">Section 6 — Qualification Enrichment</div>
         <div class="q-title">Where do you currently get customers from?</div>
         <div class="q-hint">Select all that apply.</div>
         <div class="options-grid cols-2" id="q8">
@@ -933,12 +1042,12 @@ body::after {
             <div class="opt-check square"></div><span class="opt-label">I don't have customers yet</span>
           </button>
         </div>
-        <div class="val-msg" id="val-8">Please select at least 1 option.</div>
+        <div class="val-msg" id="val-15">Please select at least 1 option.</div>
       </div>
 
-      <!-- ── STEP 9: Infrastructure ── -->
-      <div class="step-panel" data-step="9">
-        <div class="section-label">Section 4 — Qualification Enrichment</div>
+      <!-- ── STEP 16: Infrastructure ── -->
+      <div class="step-panel" data-step="16">
+        <div class="section-label">Section 6 — Qualification Enrichment</div>
         <div class="q-title">Do you currently have any of these?</div>
         <div class="q-hint">Select everything you already have in place.</div>
         <div class="options-grid cols-2" id="q9">
@@ -958,12 +1067,12 @@ body::after {
             <div class="opt-check square"></div><span class="opt-label">None of the above</span>
           </button>
         </div>
-        <div class="val-msg" id="val-9">Please select at least 1 option.</div>
+        <div class="val-msg" id="val-16">Please select at least 1 option.</div>
       </div>
 
-      <!-- ── STEP 10: Goal ── -->
-      <div class="step-panel" data-step="10">
-        <div class="section-label">Section 4 — Qualification Enrichment</div>
+      <!-- ── STEP 17: Goal ── -->
+      <div class="step-panel" data-step="17">
+        <div class="section-label">Section 6 — Qualification Enrichment</div>
         <div class="q-title">What best describes your goal for the next 6–12 months?</div>
         <div class="q-hint">This determines your long-term routing.</div>
         <div class="options-grid" id="q10">
@@ -983,7 +1092,7 @@ body::after {
             <div class="opt-check"></div><span class="opt-icon">🌍</span><span class="opt-label">Expand to new markets</span>
           </button>
         </div>
-        <div class="val-msg" id="val-10">Please select an option to continue.</div>
+        <div class="val-msg" id="val-17">Please select an option to continue.</div>
       </div>
 
     </div><!-- /form-body -->
@@ -1032,6 +1141,38 @@ body::after {
       <div class="tags-row" id="tagsRow"></div>
     </div>
 
+    <!-- ═══ BUSINESS GROWTH PRESCRIPTION ═══ -->
+    <div class="health-section">
+      <div class="routes-label">Business Growth Prescription</div>
+      <div class="health-ring-row">
+        <div class="score-ring">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle class="track" cx="50" cy="50" r="44"/>
+            <circle class="fill" id="healthCircle" cx="50" cy="50" r="44"
+              stroke-dasharray="276.5" stroke-dashoffset="276.5" style="stroke:var(--cyan);"/>
+          </svg>
+          <div class="num" id="healthNum" style="color:var(--cyan);">0<small>HEALTH</small></div>
+        </div>
+        <div class="health-cats" id="healthCats"></div>
+      </div>
+
+      <div class="sw-lists">
+        <div class="sw-block strengths"><h5>✓ Strengths</h5><ul id="strengthsList"></ul></div>
+        <div class="sw-block challenges"><h5>! Key Challenges</h5><ul id="challengesList"></ul></div>
+      </div>
+    </div>
+
+    <div class="health-section">
+      <div class="routes-label">Recommended Growth Systems (Priority Order)</div>
+      <div class="systems-list" id="systemsList"></div>
+      <div class="addons-row" id="addonsRow"></div>
+    </div>
+
+    <div class="health-section">
+      <div class="routes-label">Growth Roadmap</div>
+      <div class="roadmap" id="roadmapList"></div>
+    </div>
+
     <div class="routes-section">
       <div class="routes-label">Your Recommended Next Steps</div>
       <div class="route-cards" id="routeCards"></div>
@@ -1048,18 +1189,134 @@ body::after {
 <!-- ═══════════════════ ENGINE ═══════════════════ -->
 <script>
 /* ═══════════════════════════════════════════
+   BUSINESS HEALTH CATEGORIES
+   (drives Sections 2–7 of the TEKNNUKU Business
+   Growth Assessment — feeds the Growth Prescription)
+═══════════════════════════════════════════ */
+var CATEGORIES = [
+  { id:'visibility', title:'Visibility',           hint:'Can people actually find your business?',
+    statements:[
+      'My business appears easily when people search for it on Google.',
+      'I have a professional website and an active, optimised Google Business Profile.',
+      'New customers regularly discover me online — not just through referrals.'
+    ], systemId:'visibility_sys', systemLabel:'Visibility System',
+    addons:['seo_setup','gbp_setup','landing_page'] },
+
+  { id:'brand', title:'Brand Authority',           hint:'Do customers trust your business?',
+    statements:[
+      'My brand looks professional and consistent everywhere customers see it.',
+      'I actively collect and showcase customer reviews / testimonials.',
+      'Customers rarely question whether my business is genuine.'
+    ], systemId:'brand_authority', systemLabel:'Brand Authority System',
+    addons:['branding_kit','trust_page','review_sys'] },
+
+  { id:'leadgen', title:'Lead Generation',         hint:'Are enough people reaching your business?',
+    statements:[
+      'I get new leads or inquiries every week without chasing them.',
+      'I have a clear marketing strategy and create content consistently.',
+      'I capture and track customer/lead information (CRM, forms, lists).'
+    ], systemId:'lead_gen_sys', systemLabel:'Lead Generation System',
+    addons:['lead_magnet','crm_setup','paid_ads'] },
+
+  { id:'sales', title:'Sales Conversion',          hint:'Are you converting leads into paying customers?',
+    statements:[
+      'Most people who inquire eventually become paying customers.',
+      'I follow up automatically and consistently — I rarely lose sales to slow replies.',
+      'Customers can order and pay online without friction.'
+    ], systemId:'sales_conv_sys', systemLabel:'Sales Conversion System',
+    addons:['payment_gw','booking_sys','follow_up_sys'] },
+
+  { id:'ops', title:'Business Operations',         hint:'Is your business organised enough to run without you?',
+    statements:[
+      'My day-to-day processes are documented — staff know what to do without me.',
+      'I use digital tools/dashboards instead of manual spreadsheets to track the business.',
+      'My business could run for one week without me actively present.'
+    ], systemId:'biz_ops_sys', systemLabel:'Business Operations System',
+    addons:['workflow_auto','analytics_dash'] },
+
+  { id:'retention', title:'Customer Retention',    hint:'Do customers come back and refer others?',
+    statements:[
+      'Customers buy from me again and refer other people regularly.',
+      'I follow up after a sale (WhatsApp, email, promotions).',
+      'I have a loyalty or referral system in place.'
+    ], systemId:'retention_sys', systemLabel:'Customer Retention System',
+    addons:['loyalty_program','referral_sys','whatsapp_auto'] }
+];
+
+var SERVICE_LABELS = {
+  seo_setup:'SEO Setup', gbp_setup:'Google Business Profile Setup', landing_page:'Landing Page Build',
+  branding_kit:'Branding Upgrade Kit', trust_page:'Trust & Credibility Page', review_sys:'Review & Social Proof System',
+  lead_magnet:'Lead Magnet Creation', crm_setup:'CRM Setup', paid_ads:'Paid Ads Setup',
+  payment_gw:'Payment Gateway Setup', booking_sys:'Booking / Appointment System', follow_up_sys:'Follow-Up & Reminder System',
+  workflow_auto:'Workflow Automation', analytics_dash:'Revenue & Analytics Dashboard',
+  loyalty_program:'Loyalty Program', referral_sys:'Referral System', whatsapp_auto:'WhatsApp Automation Setup',
+  content_basic:'Basic Content Support', content_mgr:'Dedicated Growth Manager', content_team:'Full Growth Team',
+  visibility_sys:'Visibility System', brand_authority:'Brand Authority System', lead_gen_sys:'Lead Generation System',
+  sales_conv_sys:'Sales Conversion System', biz_ops_sys:'Business Operations System', retention_sys:'Customer Retention System'
+};
+
+/* ═══════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════ */
 var state = {
   step: 0,
-  totalSteps: 11,        // steps 0–10
+  totalSteps: 18,        // steps 0–17
   answers: {
     firstName:'', lastName:'', email:'', phone:'',
-    q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[]
+    q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[],
+    salesInfra:[],
+    health: { visibility:[], brand:[], leadgen:[], sales:[], ops:[], retention:[] }
   }
 };
 
-var MULTI_QUESTIONS = [5,8,9]; // step indices that are multi-select
+var MULTI_QUESTIONS = [12,15,16]; // step indices that are multi-select (needs, channels, infra)
+var STEP_MAP = {1:'q1',2:'q2',3:'q3',11:'q4',12:'q5',13:'q6',14:'q7',15:'q8',16:'q9',17:'q10'};
+
+/* ═══════════════════════════════════════════
+   BUILD HEALTH ASSESSMENT STEPS (4–9)
+═══════════════════════════════════════════ */
+(function buildHealthSteps(){
+  var container = document.getElementById('health-steps-container');
+  var html = '';
+  var sectionNum = 2;
+  CATEGORIES.forEach(function(cat, idx){
+    var stepN = idx + 4;
+    html += '<div class="step-panel" data-step="'+stepN+'">';
+    html += '<div class="section-label">Section '+(sectionNum+idx)+' — '+cat.title+' Assessment</div>';
+    html += '<div class="q-title">'+cat.hint+'</div>';
+    html += '<div class="q-hint">Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).</div>';
+    cat.statements.forEach(function(stmt, sIdx){
+      html += '<div class="rating-block">';
+      html += '<div class="rating-stmt">'+stmt+'</div>';
+      html += '<div class="rating-scale" id="rate-'+cat.id+'-'+sIdx+'">';
+      for(var v=1; v<=5; v++){
+        html += '<div class="rating-circle" onclick="setRating(\''+cat.id+'\','+sIdx+','+v+',this)">'+v+'</div>';
+      }
+      html += '</div>';
+      if(sIdx===0){
+        html += '<div class="rating-scale-labels"><span>Strongly Disagree</span><span>Strongly Agree</span></div>';
+      }
+      html += '</div>';
+    });
+    html += '<div class="val-msg" id="val-'+stepN+'">Please rate every statement to continue.</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+})();
+
+function setRating(catId, stmtIdx, value, btnEl){
+  if(!state.answers.health[catId]) state.answers.health[catId] = [];
+  state.answers.health[catId][stmtIdx] = value;
+  var row = document.getElementById('rate-'+catId+'-'+stmtIdx);
+  if(row){
+    row.querySelectorAll('.rating-circle').forEach(function(c,i){
+      c.classList.toggle('selected', i===(value-1));
+    });
+  }
+  var stepN = state.step;
+  var vm = document.getElementById('val-'+stepN);
+  if(vm) vm.classList.remove('show');
+}
 
 /* ═══════════════════════════════════════════
    DOTS
@@ -1096,8 +1353,7 @@ function select(btn, groupId, mode, maxSel){
   if(mode === 'single'){
     document.querySelectorAll('#'+groupId+' .option-btn').forEach(function(b){ b.classList.remove('selected'); });
     btn.classList.add('selected');
-    var qNum = parseInt(groupId.replace('q',''));
-    state.answers['q'+qNum] = [btn.dataset.value];
+    state.answers[groupId] = [btn.dataset.value];
   } else {
     // multi
     var max = maxSel || 99;
@@ -1109,10 +1365,9 @@ function select(btn, groupId, mode, maxSel){
         btn.classList.add('selected');
       }
     }
-    var qNum = parseInt(groupId.replace('q',''));
     var vals = [];
     document.querySelectorAll('#'+groupId+' .option-btn.selected').forEach(function(b){ vals.push(b.dataset.value); });
-    state.answers['q'+qNum] = vals;
+    state.answers[groupId] = vals;
   }
   // Hide validation msg on interaction
   var vm = document.getElementById('val-'+state.step);
@@ -1143,7 +1398,28 @@ function validate(step){
     state.answers.phone     = ph;
     return true;
   }
-  var qKey = 'q'+step;
+  // Health assessment steps (4–9)
+  if(step >= 4 && step <= 9){
+    var cat = CATEGORIES[step-4];
+    var arr = state.answers.health[cat.id] || [];
+    var answered = arr.filter(function(v){ return v; }).length;
+    if(answered < cat.statements.length){
+      var vm = document.getElementById('val-'+step);
+      if(vm) vm.classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  // Sales infrastructure preference (step 10)
+  if(step === 10){
+    if(!state.answers.salesInfra || state.answers.salesInfra.length === 0){
+      var vm = document.getElementById('val-10');
+      if(vm) vm.classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  var qKey = STEP_MAP[step] || ('q'+step);
   if(!state.answers[qKey] || state.answers[qKey].length === 0){
     var vm = document.getElementById('val-'+step);
     if(vm) vm.classList.add('show');
@@ -1223,6 +1499,79 @@ function computeScore(){
 }
 
 /* ═══════════════════════════════════════════
+   BUSINESS HEALTH / GROWTH PRESCRIPTION ENGINE
+═══════════════════════════════════════════ */
+function computeHealth(){
+  var categories = {};
+  var totalPct = 0;
+
+  CATEGORIES.forEach(function(cat){
+    var ratings = state.answers.health[cat.id] || [];
+    var sum = ratings.reduce(function(a,b){ return a+(b||0); }, 0);
+    var pct = ratings.length ? Math.round((sum / (ratings.length*5)) * 100) : 0;
+    var priority = pct < 50 ? 'critical' : pct < 70 ? 'high' : pct < 85 ? 'medium' : 'healthy';
+    categories[cat.id] = {
+      id: cat.id, label: cat.title, score: pct, priority: priority,
+      systemId: cat.systemId, systemLabel: cat.systemLabel, addons: cat.addons
+    };
+    totalPct += pct;
+  });
+
+  var healthScore = Math.round(totalPct / CATEGORIES.length);
+
+  var strengths  = [];
+  var challenges = [];
+  CATEGORIES.forEach(function(cat){
+    var c = categories[cat.id];
+    if(c.score >= 70) strengths.push(cat.title + ' is a strong point (' + c.score + '%).');
+    if(c.score < 50)  challenges.push(cat.title + ' needs urgent attention (' + c.score + '%).');
+  });
+  if(!challenges.length){
+    CATEGORIES.forEach(function(cat){
+      var c = categories[cat.id];
+      if(c.score < 70) challenges.push(cat.title + ' has room to grow (' + c.score + '%).');
+    });
+  }
+  if(!strengths.length) strengths.push('You\'re early — every category is an opportunity to build strong foundations.');
+
+  // Priority-ordered growth systems (weakest category first)
+  var systems = CATEGORIES.map(function(cat){ return categories[cat.id]; })
+    .sort(function(a,b){ return a.score - b.score; });
+
+  // Recommended add-ons: pulled from any category scoring below 70%
+  var addons = [];
+  systems.forEach(function(s){
+    if(s.score < 70){
+      s.addons.forEach(function(a){ if(addons.indexOf(a)===-1) addons.push(a); });
+    }
+  });
+
+  // Content / growth-support tier
+  var budget = state.answers.q6[0];
+  var contentTier = 'content_basic';
+  if(healthScore < 50 && (budget==='premium_ready' || budget==='can_invest')) contentTier = 'content_team';
+  else if(healthScore < 70 && budget!=='free_only') contentTier = 'content_mgr';
+
+  // Fixed phased roadmap (per TEKNNUKU Business Growth Prescription format)
+  var roadmap = [
+    { phase:1, title:'Visibility + Brand Authority',        systems:['visibility_sys','brand_authority'] },
+    { phase:2, title:'Lead Generation + Sales Conversion',   systems:['lead_gen_sys','sales_conv_sys'] },
+    { phase:3, title:'Business Operations + Customer Retention', systems:['biz_ops_sys','retention_sys'] }
+  ];
+
+  return {
+    healthScore: healthScore,
+    categories: categories,
+    strengths: strengths,
+    challenges: challenges,
+    systems: systems,
+    addons: addons,
+    contentTier: contentTier,
+    roadmap: roadmap
+  };
+}
+
+/* ═══════════════════════════════════════════
    TAGGING ENGINE
 ═══════════════════════════════════════════ */
 function computeTags(score){
@@ -1240,6 +1589,7 @@ function computeTags(score){
   if(q1==='company_team')    tags.push('operator');
   if(q1==='security_firm')   tags.push('security_firm');
   if(q1==='solar_vendor')    tags.push('solar_vendor');
+  if(q1==='salon_biz')       tags.push('salon_biz');
   if(q1==='just_starting')   tags.push('beginner');
 
   if(q3==='high'||q3==='premium') tags.push('revenue_positive');
@@ -1249,9 +1599,29 @@ function computeTags(score){
   if(state.answers.q5.indexOf('marketplace')>-1) tags.push('marketplace_interest');
   if(state.answers.q5.indexOf('guard_system')>-1)  tags.push('guard_system_interest');
   if(state.answers.q5.indexOf('solar_acquisition')>-1) tags.push('solar_interest');
+  if(state.answers.q5.indexOf('salon_booking')>-1) tags.push('salon_interest');
   if(state.answers.q7[0]==='immediately') tags.push('hot_lead');
+  if(state.answers.salesInfra[0]) tags.push('sales_infra_'+state.answers.salesInfra[0]);
 
   return [...new Set(tags)];
+}
+
+/* ═══════════════════════════════════════════
+   PLATFORM ROUTING (which TEKNNUKU-built platform
+   this lead should be routed to, for Admin visibility)
+═══════════════════════════════════════════ */
+function computePlatformRoute(){
+  var q1 = state.answers.q1[0];
+  var q5 = state.answers.q5 || [];
+  var salesInfra = state.answers.salesInfra[0];
+
+  if(q1 === 'security_firm')  return { id:'tek1security', label:'TEK1SECURITY' };
+  if(q1 === 'solar_vendor')   return { id:'pawa',         label:'PowerPlus 9ja' };
+  if(q1 === 'salon_biz' || q5.indexOf('salon_booking')>-1)
+                               return { id:'saloncore',    label:'SalonCore' };
+  if(salesInfra === 'marketplace' || q5.indexOf('marketplace')>-1)
+                               return { id:'gata',         label:'GATA Business Ecosystem' };
+  return { id:'studio', label:'TEKNNUKU Studio (Growth Systems Client)' };
 }
 
 /* ═══════════════════════════════════════════
@@ -1281,11 +1651,25 @@ function computeRoutes(score, tags){
     });
   }
 
-  if(q5.indexOf('marketplace')>-1){
+  if(q1 === 'salon_biz' || q5.indexOf('salon_booking')>-1){
     routes.push({
-      icon:'🛒', name:'GATA Marketplace Onboarding', primary:q1==='physical_seller',
-      desc:'List your products on a marketplace built for Nigerian sellers.',
+      icon:'💇', name:'SalonCore', primary:q1==='salon_biz',
+      desc:'Booking &amp; payment system built for salons, barbers, nails, spa and beauty businesses — schedule, take deposits, and manage clients in one place.',
+      url:'https://teknnuku.xyz', cta:'Explore SalonCore'
+    });
+  }
+
+  if(q5.indexOf('marketplace')>-1 || state.answers.salesInfra[0]==='marketplace'){
+    routes.push({
+      icon:'🛒', name:'GATA Business Ecosystem (Option B)', primary:q1==='physical_seller',
+      desc:'A ready-made storefront with ordering, payment, and logistics through GATAMARKET and GATANow, plus access to the GATA business network.',
       url:'https://teknnuku.xyz', cta:'Onboard to GATA'
+    });
+  } else if(state.answers.salesInfra[0]==='independent'){
+    routes.push({
+      icon:'💳', name:'Sales Conversion System — Option A (Independent)', primary:false,
+      desc:'Your own independent website, ordering, booking and payment system, built and owned by you.',
+      url:'/pagebuilder.html', cta:'Build My System'
     });
   }
 
@@ -1423,6 +1807,59 @@ function renderResults(scoreObj, tags){
       '<span class="rc-arrow">→</span>'+
     '</a>';
   }).join('');
+
+  // ═══ Business Growth Prescription ═══
+  var health = computeHealth();
+
+  setTimeout(function(){
+    var circumference = 276.5;
+    var offset = circumference - (health.healthScore/100)*circumference;
+    document.getElementById('healthCircle').style.strokeDashoffset = offset;
+    document.getElementById('healthNum').innerHTML = health.healthScore+'<small>HEALTH</small>';
+  }, 250);
+
+  var PRIORITY_COLOR = { critical:'var(--red)', high:'var(--amber)', medium:'var(--blue)', healthy:'var(--green)' };
+  var catHtml = CATEGORIES.map(function(cat){
+    var c = health.categories[cat.id];
+    return '<div class="health-cat-row">'+
+      '<span class="health-cat-label">'+c.label+'</span>'+
+      '<div class="health-cat-bar-wrap"><div class="health-cat-bar-fill" data-pct="'+c.score+'" style="background:'+PRIORITY_COLOR[c.priority]+';"></div></div>'+
+      '<span class="health-cat-pct" style="color:'+PRIORITY_COLOR[c.priority]+';">'+c.score+'%</span>'+
+    '</div>';
+  }).join('');
+  document.getElementById('healthCats').innerHTML = catHtml;
+  setTimeout(function(){
+    document.querySelectorAll('.health-cat-bar-fill').forEach(function(b){ b.style.width = b.dataset.pct+'%'; });
+  }, 450);
+
+  document.getElementById('strengthsList').innerHTML = health.strengths.map(function(s){ return '<li>'+s+'</li>'; }).join('');
+  document.getElementById('challengesList').innerHTML = health.challenges.map(function(s){ return '<li>'+s+'</li>'; }).join('');
+
+  var PRIORITY_ICON = { critical:'🔴', high:'🟠', medium:'🟡', healthy:'🟢' };
+  document.getElementById('systemsList').innerHTML = health.systems.map(function(s){
+    return '<div class="system-card">'+
+      '<span style="font-size:1.1rem;">'+PRIORITY_ICON[s.priority]+'</span>'+
+      '<span class="sc-name">'+s.systemLabel+'</span>'+
+      '<span class="tag-chip '+(s.priority==='critical'?'crit':s.priority==='high'?'high':s.priority==='medium'?'med':'healthy')+'">'+s.priority+' · '+s.score+'%</span>'+
+    '</div>';
+  }).join('') + '<div class="system-card"><span style="font-size:1.1rem;">📡</span><span class="sc-name">'+(SERVICE_LABELS[health.contentTier]||health.contentTier)+'</span><span class="tag-chip gold">content &amp; support</span></div>';
+
+  document.getElementById('addonsRow').innerHTML = health.addons.map(function(a){
+    return '<span class="tag-chip">'+(SERVICE_LABELS[a]||a.replace(/_/g,' '))+'</span>';
+  }).join('');
+
+  var ICON_MAP = { visibility_sys:'👁️', brand_authority:'🎯', lead_gen_sys:'🧲', sales_conv_sys:'💳', biz_ops_sys:'⚙️', retention_sys:'🔁' };
+  document.getElementById('roadmapList').innerHTML = health.roadmap.map(function(p){
+    var sysNames = p.systems.map(function(sid){ return ICON_MAP[sid]+' '+(SERVICE_LABELS[sid]||sid); }).join(' &nbsp;+&nbsp; ');
+    return '<div class="roadmap-phase">'+
+      '<div class="roadmap-num">P'+p.phase+'</div>'+
+      '<div class="roadmap-body"><div class="rp-title">Phase '+p.phase+' — '+p.title+'</div><div class="rp-desc">'+sysNames+'</div></div>'+
+    '</div>';
+  }).join('');
+
+  // Stash for submit payload
+  state._health = health;
+  state._platformRoute = computePlatformRoute();
 }
 
 /* ═══════════════════════════════════════════
@@ -1436,9 +1873,21 @@ async function submitForm(){
   var scoreObj = computeScore();
   var tags     = computeTags(scoreObj.total);
   var routes   = computeRoutes(scoreObj.total, tags);
+  var health   = computeHealth();
+  var platform = computePlatformRoute();
 
   // Determine tier
   var tier = scoreObj.total >= 70 ? 'A' : scoreObj.total >= 40 ? 'B' : 'C';
+
+  // Growth systems list for storage (id/label/priority/score)
+  var recommendedSystems = health.systems.map(function(s){
+    return { id:s.systemId, label:s.systemLabel, priority:s.priority, score:s.score };
+  });
+  recommendedSystems.push({ id:health.contentTier, label:SERVICE_LABELS[health.contentTier]||health.contentTier, priority:'support', score:null });
+
+  var recommendedAddons = health.addons.map(function(a){
+    return { id:a, label:SERVICE_LABELS[a]||a.replace(/_/g,' ') };
+  });
 
   // Payload for Firebase
   var payload = {
@@ -1457,12 +1906,36 @@ async function submitForm(){
       q8_channels:    state.answers.q8,
       q9_infra:       state.answers.q9,
       q10_goal:       state.answers.q10,
+      salesInfraPreference: state.answers.salesInfra
     },
     score:        scoreObj.total,
     scoreBreakdown: scoreObj.breakdown,
     tier:         'Tier '+tier,
     tags:         tags,
     primaryRoute: routes[0] ? routes[0].name : 'none',
+
+    // ── Platform routing (which TEKNNUKU-built platform, incl. SalonCore) ──
+    platformRoute:      platform.id,
+    platformRouteLabel: platform.label,
+
+    // ── Business Growth Prescription ──
+    businessHealthScore: health.healthScore,
+    categoryScores: {
+      visibility:     health.categories.visibility.score,
+      brandAuthority:  health.categories.brand.score,
+      leadGeneration:  health.categories.leadgen.score,
+      salesConversion: health.categories.sales.score,
+      businessOps:     health.categories.ops.score,
+      retention:       health.categories.retention.score
+    },
+    strengths:  health.strengths,
+    challenges: health.challenges,
+    recommendedSystems: recommendedSystems,
+    recommendedAddons:  recommendedAddons,
+    contentSupportTier: health.contentTier,
+    growthRoadmap: health.roadmap,
+    salesInfraPreference: state.answers.salesInfra[0] || '',
+
     completedAt:  new Date().toISOString()
   };
 
@@ -1492,14 +1965,17 @@ async function submitForm(){
 function restart(){
   state = {
     step: 0,
-    totalSteps: 11,
+    totalSteps: 18,
     answers: {
       firstName:'', lastName:'', email:'', phone:'',
-      q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[]
+      q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[],
+      salesInfra:[],
+      health: { visibility:[], brand:[], leadgen:[], sales:[], ops:[], retention:[] }
     }
   };
   // Reset UI
   document.querySelectorAll('.option-btn').forEach(function(b){ b.classList.remove('selected'); });
+  document.querySelectorAll('.rating-circle').forEach(function(b){ b.classList.remove('selected'); });
   document.querySelectorAll('.val-msg').forEach(function(m){ m.classList.remove('show'); });
   ['firstName','lastName','email','phone'].forEach(function(id){
     var el = document.getElementById(id);
