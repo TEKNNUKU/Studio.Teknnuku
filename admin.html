@@ -769,7 +769,7 @@ window._loadAll = async function() {
 const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log,
 fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
-fin_investments,fin_ledger,fin_budgets] = await Promise.all([
+fin_investments,fin_ledger,fin_budgets,sds_records,client_assets] = await Promise.all([
 getCol('intake_leads'), getCol('service_inquiries'), getCol('contact_messages'),
 getCol('proposals'), getCol('payments'), getCol('assignments'),
 getCol('applicants'), getCol('team_members'), getCol('careers_config'),
@@ -778,12 +778,13 @@ getCol('clients'), getCol('financials'), getCol('daily_reports'), getCol('weekly
 getCol('invoices'), getCol('receipts'), getCol('comm_log'),
 getCol('fin_accounts'), getCol('fin_transfers'), getCol('fin_assets'), getCol('fin_liabilities'),
 getCol('fin_equity'), getCol('fin_receivables'), getCol('fin_payables'),
-getCol('fin_investments'), getCol('fin_ledger'), getCol('fin_budgets')
+getCol('fin_investments'), getCol('fin_ledger'), getCol('fin_budgets'),
+getCol('sds_records'), getCol('client_assets')
 ]);
 window._data = { leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,invoices,receipts,comm_log,
 fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
-fin_investments,fin_ledger,fin_budgets };
+fin_investments,fin_ledger,fin_budgets,sds_records,client_assets };
   document.getElementById('last-refresh').textContent = 'Updated '+new Date().toLocaleTimeString();
   window._renderAll();
 };
@@ -1217,21 +1218,176 @@ var PROBATION_PHASES = [
 ];
 
 // ═══════════════════════════════════════
+// SERVICE DELIVERY SYSTEM (SDS)
+// ═══════════════════════════════════════
+// DIAGNOSE → PLAN → BUILD → DEPLOY → OPTIMIZE → HANDOVER/MANAGE
+// Every phase has a single accountable owner role + supporting roles.
+var SDS_PHASES = [
+  {key:'diagnose', label:'Diagnose',        icon:'🔎', color:'#3b82f6', owner:'sales_manager',            support:['outreach_lead_gen','inbound_closer','outbound_closer']},
+  {key:'plan',      label:'Plan',            icon:'🧭', color:'#a855f7', owner:'sales_manager',            support:['tech_product_lead','ops_lead']},
+  {key:'build',     label:'Build',           icon:'⚙️', color:'#C89B14', owner:'tech_product_lead',        support:['developer']},
+  {key:'deploy',    label:'Deploy',          icon:'🚀', color:'#00BCD4', owner:'tech_product_lead',        support:['onboarding_specialist','developer']},
+  {key:'optimize',  label:'Optimize',        icon:'📈', color:'#f59e0b', owner:'customer_success_manager', support:['tech_product_lead','developer']},
+  {key:'handover',  label:'Handover/Manage', icon:'✅', color:'#22c55e', owner:'customer_success_manager', support:['ops_lead']}
+];
+var SDS_PHASE_MAP = {}; SDS_PHASES.forEach(function(p){ SDS_PHASE_MAP[p.key]=p; });
+
+// Communication tiers by contract value (from the SDS playbook)
+var SDS_COMM_TIERS = [
+  {key:'tier1', label:'Tier 1 · Light (₦10k–₦100k)',  cadence:'Chat only, no scheduled calls'},
+  {key:'tier2', label:'Tier 2 · Mid (₦100k–₦400k)',    cadence:'Weekly updates, occasional calls'},
+  {key:'tier3', label:'Tier 3 · High Ticket (₦400k+)', cadence:'Weekly calls, detailed reports'}
+];
+function sdsCommTierForValue(v){
+  v = parseFloat(v)||0;
+  if(v >= 400000) return 'tier3';
+  if(v >= 100000) return 'tier2';
+  return 'tier1';
+}
+
+// ── Master Client Asset Checklist (condensed, section-driven) ──
+// Each item id is globally unique: <sectionId>_<n>
+var CHECKLIST_SCHEMA = [
+  {id:'business_info', label:'1. Business Information', items:[
+    {id:'business_info_1',label:'Business name'},{id:'business_info_2',label:'Registered/CAC name (if different)'},
+    {id:'business_info_3',label:'Industry & business type'},{id:'business_info_4',label:'Years in business'},
+    {id:'business_info_5',label:'Business description / bio'},{id:'business_info_6',label:'USP / brand promise'},
+    {id:'business_info_7',label:'Address, service areas & hours'},{id:'business_info_8',label:'Phone, WhatsApp & email'}
+  ]},
+  {id:'contacts', label:'2. Business Contacts', items:[
+    {id:'contacts_1',label:'Primary contact'},{id:'contacts_2',label:'Sales contact'},
+    {id:'contacts_3',label:'Technical contact'},{id:'contacts_4',label:'Finance contact'}
+  ]},
+  {id:'brand_assets', label:'3. Brand Assets', items:[
+    {id:'brand_assets_1',label:'Logo (AI/SVG/PNG)'},{id:'brand_assets_2',label:'Brand colours & typography'},
+    {id:'brand_assets_3',label:'Slogan / tagline'},{id:'brand_assets_4',label:'Brand guidelines doc'},
+    {id:'brand_assets_5',label:'Business card / letterhead design'}
+  ]},
+  {id:'business_story', label:'4. Business Story', items:[
+    {id:'business_story_1',label:'Founder story'},{id:'business_story_2',label:'Why the business started'},
+    {id:'business_story_3',label:'Mission / vision / values'},{id:'business_story_4',label:'Future plans'}
+  ]},
+  {id:'products', label:'5. Products & Services', items:[
+    {id:'products_1',label:'Product/service list with prices'},{id:'products_2',label:'Descriptions & categories'},
+    {id:'products_3',label:'Images / videos'},{id:'products_4',label:'Stock, delivery time & warranty/refund policy'}
+  ]},
+  {id:'media', label:'6. Media Assets', items:[
+    {id:'media_1',label:'Product photos'},{id:'media_2',label:'Team / office photos'},
+    {id:'media_3',label:'Videos / brand video'},{id:'media_4',label:'Portfolio / before-after images'}
+  ]},
+  {id:'trust', label:'7. Trust Assets', items:[
+    {id:'trust_1',label:'Testimonials / reviews'},{id:'trust_2',label:'Case studies / success stories'},
+    {id:'trust_3',label:'Awards, certifications, licenses'},{id:'trust_4',label:'Stats (years, customers served)'}
+  ]},
+  {id:'website', label:'8. Website Assets', items:[
+    {id:'website_1',label:'Existing website (if any)'},{id:'website_2',label:'Hosting / domain / DNS access'},
+    {id:'website_3',label:'Website content, images & files'},{id:'website_4',label:'Privacy policy / terms'}
+  ]},
+  {id:'google', label:'9. Google Assets', items:[
+    {id:'google_1',label:'Google Business Profile access'},{id:'google_2',label:'Search Console & Analytics'},
+    {id:'google_3',label:'Google Ads / Tag Manager'},{id:'google_4',label:'Google Maps listing access'}
+  ]},
+  {id:'social', label:'10. Social Media', items:[
+    {id:'social_1',label:'Facebook page access'},{id:'social_2',label:'Instagram access'},
+    {id:'social_3',label:'TikTok / other platforms'},{id:'social_4',label:'Meta Business Manager / ad account access'}
+  ]},
+  {id:'marketing', label:'11. Marketing Assets', items:[
+    {id:'marketing_1',label:'Existing campaigns / marketing calendar'},{id:'marketing_2',label:'Email / WhatsApp / SMS contact lists'},
+    {id:'marketing_3',label:'Lead magnets, brochures, catalogues'},{id:'marketing_4',label:'Previous adverts'}
+  ]},
+  {id:'customer_info', label:'12. Customer Information', items:[
+    {id:'customer_info_1',label:'Customer categories & list'},{id:'customer_info_2',label:'Existing CRM / customer journey'},
+    {id:'customer_info_3',label:'Customer FAQs & complaints'}
+  ]},
+  {id:'sales_info', label:'13. Sales Information', items:[
+    {id:'sales_info_1',label:'Sales process & pricing'},{id:'sales_info_2',label:'Offers, packages, promotions'},
+    {id:'sales_info_3',label:'Objection list & sales scripts'},{id:'sales_info_4',label:'Sample WhatsApp/DM conversations'}
+  ]},
+  {id:'payment', label:'14. Payment Information', items:[
+    {id:'payment_1',label:'Bank details'},{id:'payment_2',label:'Paystack / Flutterwave / Stripe / PayPal'},
+    {id:'payment_3',label:'Payment links'}
+  ]},
+  {id:'booking', label:'15. Booking Information', items:[
+    {id:'booking_1',label:'Business hours & staff schedules'},{id:'booking_2',label:'Appointment durations & capacity'},
+    {id:'booking_3',label:'Holidays & cancellation policy'}
+  ]},
+  {id:'inventory', label:'16. Inventory', items:[
+    {id:'inventory_1',label:'Product inventory & categories'},{id:'inventory_2',label:'Stock levels & suppliers'},
+    {id:'inventory_3',label:'Warehouses & delivery methods'}
+  ]},
+  {id:'operations', label:'17. Operations', items:[
+    {id:'operations_1',label:'Org chart & staff list'},{id:'operations_2',label:'SOPs & workflow documents'},
+    {id:'operations_3',label:'Existing software / internal processes'}
+  ]},
+  {id:'finance', label:'18. Finance', items:[
+    {id:'finance_1',label:'Revenue & expense reports'},{id:'finance_2',label:'Monthly targets & KPIs'},
+    {id:'finance_3',label:'Budgets'}
+  ]},
+  {id:'ai_assets', label:'19. AI Assets', items:[
+    {id:'ai_assets_1',label:'FAQs & knowledge base'},{id:'ai_assets_2',label:'Policies & manuals'},
+    {id:'ai_assets_3',label:'Product catalogue & price list'}
+  ]},
+  {id:'legal', label:'20. Legal', items:[
+    {id:'legal_1',label:'CAC certificate & Tax ID'},{id:'legal_2',label:'Business license / insurance'},
+    {id:'legal_3',label:'Privacy policy, terms, refund policy'}
+  ]},
+  {id:'gata', label:'21. GATA Protocol Onboarding', items:[
+    {id:'gata_1',label:'Business profile, banner & logo'},{id:'gata_2',label:'GATAMARKET products/pricing/images'},
+    {id:'gata_3',label:'GATANow delivery areas & operating hours'},{id:'gata_4',label:'Business Network / partnership preferences'}
+  ]},
+  {id:'content', label:'22. Content Creation', items:[
+    {id:'content_1',label:'Brand voice & tone'},{id:'content_2',label:'Content pillars & keywords'},
+    {id:'content_3',label:'Competitors & content calendar'},{id:'content_4',label:'Promotions / events / offers'}
+  ]},
+  {id:'technical', label:'23. Technical Access', items:[
+    {id:'technical_1',label:'Domain registrar & hosting'},{id:'technical_2',label:'cPanel / FTP / Cloudflare'},
+    {id:'technical_3',label:'Firebase / GitHub / CRM / CMS'}
+  ]},
+  {id:'credentials', label:'24. Credentials (share securely)', items:[
+    {id:'credentials_1',label:'Website/CMS access granted'},{id:'credentials_2',label:'Payment gateway access granted'},
+    {id:'credentials_3',label:'Social media admin access granted'}
+  ]}
+];
+var CHECKLIST_MAP = {}; CHECKLIST_SCHEMA.forEach(function(s){ CHECKLIST_MAP[s.id]=s; });
+
+// Which checklist sections matter most for each service package —
+// used to auto-highlight relevant sections so the team only asks for what's needed.
+var PACKAGE_SECTION_MAP = {
+  visibility_sys:   ['business_info','website','google','social','media'],
+  brand_authority:  ['business_info','brand_assets','business_story','trust','media'],
+  lead_gen_sys:      ['business_info','marketing','customer_info','social','content'],
+  sales_conv_sys:    ['sales_info','payment','booking','customer_info'],
+  biz_ops_sys:       ['operations','inventory','finance','technical'],
+  retention_sys:     ['customer_info','marketing','trust'],
+  content_basic:     ['content','brand_assets','media'],
+  content_mgr:       ['content','marketing','media','social'],
+  content_team:      ['content','marketing','media','social','business_story'],
+  gata_onboard:      ['gata','products','payment','booking'],
+  saloncore_sub:     ['booking','payment','products','operations'],
+  platform_dev:      ['technical','operations','business_info'],
+  enterprise_sw:     ['technical','operations','finance'],
+  venture_build:     ['business_info','business_story','legal','technical']
+};
+function sectionsForService(serviceId){
+  return PACKAGE_SECTION_MAP[serviceId] || ['business_info','brand_assets','products','payment'];
+}
+
+// ═══════════════════════════════════════
 // RBAC
 // ═══════════════════════════════════════
 var ROLE_PERMISSIONS = {
-  founder:                  ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','finance','team','vacancies','reports','sops','settings'],
-  ops_lead:                 ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','team','reports','sops'],
-  sales_manager:            ['overview','leads','inquiries','crm','people','proposals','payments','assignments','tasks','team','reports','sops'],
+  founder:                  ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','sds','finance','team','vacancies','reports','sops','settings'],
+  ops_lead:                 ['overview','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','sds','team','reports','sops'],
+  sales_manager:            ['overview','leads','inquiries','crm','people','proposals','payments','assignments','tasks','sds','team','reports','sops'],
   inbound_closer:           ['overview','crm','assignments','tasks','team','reports'],
   outbound_closer:          ['overview','crm','assignments','tasks','team','reports'],
   content_lead:             ['overview','crm','assignments','ventures','tasks','team','reports','sops'],
   content_creator:          ['overview','assignments','tasks','team','reports'],
   outreach_lead_gen:        ['overview','crm','assignments','tasks','team','reports'],
-  tech_product_lead:        ['overview','ventures','tasks','assignments','clients','team','reports','sops'],
-  developer:                ['overview','tasks','assignments','team','reports'],
-  onboarding_specialist:    ['overview','tasks','assignments','clients','team','reports'],
-  customer_success_manager: ['overview','people','clients','assignments','team','reports','sops'],
+  tech_product_lead:        ['overview','ventures','tasks','assignments','clients','sds','team','reports','sops'],
+  developer:                ['overview','tasks','assignments','sds','team','reports'],
+  onboarding_specialist:    ['overview','tasks','assignments','clients','sds','team','reports'],
+  customer_success_manager: ['overview','people','clients','sds','assignments','team','reports','sops'],
   admin_finance_officer:    ['overview','payments','proposals','finance','team','reports']
 };
 
@@ -1249,6 +1405,7 @@ var NAV_ITEMS = [
   {id:'ventures',   icon:'🏢', label:'Ventures',                              section:'Delivery'},
   {id:'tasks',      icon:'✅', label:'Task Board',     badge:'nb-tasks',      section:'Delivery'},
   {id:'clients',    icon:'🤝', label:'Clients',                               section:'Delivery'},
+  {id:'sds',        icon:'🧭', label:'Service Delivery',badge:'nb-sds',       section:'Delivery'},
   {id:'finance',    icon:'📊', label:'Finance',                               section:'Delivery'},
   {id:'team',       icon:'👤', label:'Team Members',                          section:'People'},
   {id:'vacancies',  icon:'📌', label:'Vacancies',                             section:'People'},
@@ -1337,6 +1494,7 @@ function _buildPanels() {
   if (canAccess('ventures'))    ca.innerHTML += _panelVentures();
   if (canAccess('tasks'))       ca.innerHTML += _panelTasks();
   if (canAccess('clients'))     ca.innerHTML += _panelClients();
+  if (canAccess('sds'))         ca.innerHTML += _panelSDS();
   if (canAccess('finance'))     ca.innerHTML += _panelFinance();
   if (canAccess('team'))        ca.innerHTML += _panelTeam();
   if (canAccess('vacancies'))   ca.innerHTML += _panelVacancies();
@@ -5817,6 +5975,74 @@ function _panelClients() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  SERVICE DELIVERY SYSTEM (SDS) — PANEL
+// ═══════════════════════════════════════════════════════════════
+var _sdsView = 'board'; // 'board' | 'vault'
+var _sdsFilters = { search:'', venture:'', phase:'', owner:'', status:'' };
+var _sdsAssetClientId = null;
+
+function _panelSDS() {
+  return '<div class="panel" id="panel-sds">' +
+    '<div class="eyebrow">Delivery</div>' +
+    '<div class="panel-header">' +
+      '<div class="panel-title">Service Delivery System (SDS)</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;">' +
+        '<div class="seg-toggle" style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;">' +
+          '<button class="action-btn" id="sds-tab-board" style="border:none;border-radius:0;background:var(--gold);color:#080808;" onclick="switchSDSView(\'board\')">🧭 Pipeline Board</button>' +
+          '<button class="action-btn" id="sds-tab-vault" style="border:none;border-radius:0;" onclick="switchSDSView(\'vault\')">🗄️ Client Asset Vault</button>' +
+        '</div>' +
+        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="openNewSDSDrawer()">+ New Engagement</button>' +
+      '</div>' +
+    '</div>' +
+
+    // ── KPIs ─────────────────────────────────────────────────
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:16px;">' +
+      '<div class="kpi-card cyan"><div class="kpi-icon">🧭</div><div class="kpi-label">Active Engagements</div><div class="kpi-value" id="sds-kpi-active">—</div><div class="kpi-meta">in delivery pipeline</div></div>' +
+      '<div class="kpi-card gold"><div class="kpi-icon">⚙️</div><div class="kpi-label">In Build/Deploy</div><div class="kpi-value" id="sds-kpi-building">—</div><div class="kpi-meta">execution stage</div></div>' +
+      '<div class="kpi-card red"><div class="kpi-icon">⏰</div><div class="kpi-label">Overdue Check-ins</div><div class="kpi-value" id="sds-kpi-overdue">—</div><div class="kpi-meta">past target date</div></div>' +
+      '<div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-label">Handed Over</div><div class="kpi-value" id="sds-kpi-done">—</div><div class="kpi-meta">optimize/managed</div></div>' +
+    '</div>' +
+
+    // ── BOARD VIEW ───────────────────────────────────────────
+    '<div id="sds-board-view">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">' +
+        '<input class="tbl-search" id="sds-f-search" style="width:200px;" placeholder="Search client, business…" oninput="applySDSFilters()">' +
+        '<select class="tbl-filter venture-filter-select" id="sds-f-venture" onchange="applySDSFilters()">' +
+          buildVentureDropdownOptions('', true, 'All Ventures') +
+        '</select>' +
+        '<select class="tbl-filter" id="sds-f-owner" onchange="applySDSFilters()">' +
+          '<option value="">All Owners</option>' +
+        '</select>' +
+        '<select class="tbl-filter" id="sds-f-status" onchange="applySDSFilters()">' +
+          '<option value="">All Status</option>' +
+          '<option value="active">Active</option>' +
+          '<option value="paused">Paused</option>' +
+          '<option value="completed">Completed</option>' +
+          '<option value="churned">Churned</option>' +
+        '</select>' +
+        '<button onclick="clearSDSFilters()" style="background:none;border:1px solid rgba(242,237,228,.08);color:var(--dimmer);border-radius:4px;padding:5px 10px;font-family:var(--mono);font-size:.58rem;cursor:pointer;">✕ Clear</button>' +
+      '</div>' +
+      '<div id="sds-board" class="kanban-board" style="grid-template-columns:repeat(6,1fr);">' +
+        '<div class="loading-row"><div class="spinner"></div></div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── ASSET VAULT VIEW ─────────────────────────────────────
+    '<div id="sds-vault-view" style="display:none;">' +
+      '<div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">' +
+        '<span style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.08em;">Client:</span>' +
+        '<select class="tbl-filter" id="sds-vault-client" style="flex:1;max-width:320px;" onchange="selectAssetClient(this.value)">' +
+          '<option value="">Select a client…</option>' +
+        '</select>' +
+        '<div id="sds-vault-overall" style="margin-left:auto;font-family:var(--mono);font-size:.65rem;color:var(--gold);"></div>' +
+      '</div>' +
+      '<div id="sds-vault-body"><div class="empty-state"><div class="empty-icon">🗄️</div><div>Select a client to view or collect their asset checklist.</div></div></div>' +
+    '</div>' +
+
+  '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  FINANCE SYSTEM — CONSTANTS + HELPERS
 // ═══════════════════════════════════════════════════════════════
 var INCOME_CATEGORIES = [
@@ -6447,6 +6673,8 @@ if (ovVen) {
   if(canAccess('ventures'))renderVentures(d.ventures||[],d.tasks||[],d.crm_leads||[],d.clients||[],d.financials||[]);
   if(canAccess('tasks'))renderTasks(d.tasks||[],d.team_members||[]);
   if(canAccess('clients')){renderClients(d.clients||[],d.team_members||[]);}
+  if(canAccess('sds')){renderSDS(d.sds_records||[],d.clients||[],d.team_members||[],d.client_assets||[]);}
+  var nbSDS=document.getElementById('nb-sds');if(nbSDS)nbSDS.textContent=(d.sds_records||[]).filter(function(r){return r.status==='active'&&r.phase!=='handover';}).length;
   if(canAccess('finance')){
 renderFinance(d.financials||[],d.clients||[]);
 if(_finTab==='dashboard')renderFinDashboard();
@@ -14390,6 +14618,24 @@ function openClientDrawer(id) {
           statusBadge(pay.status) + '</div>' : '') +
       '</div></div>' : '') +
 
+    // ── Service Delivery (SDS) Quick Link ────────────────────
+    (function(){
+      var sds = (window._data.sds_records||[]).find(function(r){ return r.clientId===c.id; });
+      var phaseInfo = sds ? SDS_PHASE_MAP[sds.phase] : null;
+      return '<div class="detail-section"><h4>🧭 Service Delivery</h4>' +
+        (sds
+          ? '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(200,155,20,.05);border:1px solid rgba(200,155,20,.15);border-radius:6px;">' +
+              '<div><div style="font-size:.5rem;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer);">Current Phase</div>' +
+              '<div style="font-size:.85rem;color:var(--white);font-weight:700;">' + (phaseInfo?phaseInfo.icon+' '+phaseInfo.label:'—') + '</div></div>' +
+              '<button class="action-btn" onclick="openSDSDrawer(\''+sds.id+'\')">Manage →</button>' +
+            '</div>'
+          : '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(255,255,255,.02);border:1px dashed var(--border);border-radius:6px;">' +
+              '<div style="font-size:.78rem;color:var(--dimmer);">No delivery engagement started yet.</div>' +
+              '<button class="action-btn" onclick="openNewSDSDrawer(\''+c.id+'\')">+ Start SDS</button>' +
+            '</div>') +
+      '</div>';
+    })() +
+
     // ── Communication Timeline ───────────────────────────────────────
     '<div class="detail-section"><h4>🕐 Communication Timeline <button class="action-btn" style="margin-left:8px;font-size:.58rem;" onclick="openCommLogDrawer(\'clients\',\''+c.id+'\',\'note\')">+ Add Entry</button></h4>' +
   renderCommTimeline('clients', c.id) +
@@ -14425,6 +14671,519 @@ function saveClientUpdate(id) {
 function filterClientsByStatus(status) {
   var fEl = document.getElementById('cl-f-status');
   if (fEl) { fEl.value = status; applyClientFilters(); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SERVICE DELIVERY SYSTEM (SDS) — ENGINE
+// ═══════════════════════════════════════════════════════════════
+
+function switchSDSView(view) {
+  _sdsView = view;
+  var boardBtn = document.getElementById('sds-tab-board');
+  var vaultBtn = document.getElementById('sds-tab-vault');
+  var boardEl  = document.getElementById('sds-board-view');
+  var vaultEl  = document.getElementById('sds-vault-view');
+  if (boardBtn) boardBtn.style.cssText = view==='board' ? 'border:none;border-radius:0;background:var(--gold);color:#080808;' : 'border:none;border-radius:0;';
+  if (vaultBtn) vaultBtn.style.cssText = view==='vault' ? 'border:none;border-radius:0;background:var(--gold);color:#080808;' : 'border:none;border-radius:0;';
+  if (boardEl) boardEl.style.display = view==='board' ? '' : 'none';
+  if (vaultEl) vaultEl.style.display = view==='vault' ? '' : 'none';
+  if (view==='vault') renderAssetVaultClientOptions();
+}
+
+function applySDSFilters() {
+  _sdsFilters.search = ((document.getElementById('sds-f-search') ||{}).value||'').toLowerCase().trim();
+  _sdsFilters.venture = (document.getElementById('sds-f-venture')||{}).value||'';
+  _sdsFilters.owner   = (document.getElementById('sds-f-owner')  ||{}).value||'';
+  _sdsFilters.status  = (document.getElementById('sds-f-status') ||{}).value||'';
+  renderSDS(window._data.sds_records||[], window._data.clients||[], window._data.team_members||[], window._data.client_assets||[]);
+}
+function clearSDSFilters() {
+  ['sds-f-search','sds-f-venture','sds-f-owner','sds-f-status'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  Object.keys(_sdsFilters).forEach(function(k){ _sdsFilters[k]=''; });
+  renderSDS(window._data.sds_records||[], window._data.clients||[], window._data.team_members||[], window._data.client_assets||[]);
+}
+
+function renderSDS(records, clients, members, clientAssets) {
+  records = records || [];
+  var memberMap = {}; members.forEach(function(m){ memberMap[m.id]=m; });
+  var clientMap = {}; (clients||[]).forEach(function(c){ clientMap[c.id]=c; });
+  var today = new Date();
+
+  // KPIs
+  var active   = records.filter(function(r){ return r.status==='active'; }).length;
+  var building = records.filter(function(r){ return r.status==='active' && (r.phase==='build'||r.phase==='deploy'); }).length;
+  var overdue  = records.filter(function(r){ return r.status==='active' && r.targetDate && new Date(r.targetDate)<today; }).length;
+  var done     = records.filter(function(r){ return r.phase==='handover' || r.status==='completed'; }).length;
+  setText('sds-kpi-active', active);
+  setText('sds-kpi-building', building);
+  setText('sds-kpi-overdue', overdue);
+  setText('sds-kpi-done', done);
+
+  // Owner filter options
+  var ownerEl = document.getElementById('sds-f-owner');
+  if (ownerEl) {
+    var cur = ownerEl.value;
+    var owners = {};
+    records.forEach(function(r){ if (r.assignedTo) owners[r.assignedTo] = (memberMap[r.assignedTo]||{}).name || r.assignedName || r.assignedTo; });
+    ownerEl.innerHTML = '<option value="">All Owners</option>' + Object.keys(owners).map(function(id){
+      return '<option value="'+id+'"'+(cur===id?' selected':'')+'>'+escHtml(owners[id])+'</option>';
+    }).join('');
+    if (cur) ownerEl.value = cur;
+  }
+
+  var f = _sdsFilters;
+  var filtered = records.filter(function(r) {
+    if (f.venture && r.ventureId !== f.venture) return false;
+    if (f.owner   && r.assignedTo !== f.owner)   return false;
+    if (f.status  && r.status !== f.status)      return false;
+    if (f.search) {
+      var hay = ((r.clientName||'')+' '+(r.businessName||'')).toLowerCase();
+      if (hay.indexOf(f.search) === -1) return false;
+    }
+    return true;
+  });
+
+  var board = document.getElementById('sds-board'); if (!board) return;
+  board.innerHTML = SDS_PHASES.map(function(phase) {
+    var items = filtered.filter(function(r){ return r.phase === phase.key; });
+    return '<div class="kanban-col">' +
+      '<div class="kanban-col-header" style="background:'+phase.color+'12;">' +
+        '<div class="kanban-col-title"><div class="col-dot" style="background:'+phase.color+'"></div>'+phase.icon+' '+phase.label+'</div>' +
+        '<div class="col-count">'+items.length+'</div>' +
+      '</div>' +
+      '<div class="kanban-col-body">' +
+      (items.length ? items.map(function(r) {
+        var owner = memberMap[r.assignedTo];
+        var od = r.status==='active' && r.targetDate && new Date(r.targetDate) < today;
+        var v = V_MAP[r.ventureId] || {};
+        return '<div class="kanban-item" onclick="openSDSDrawer(\''+r.id+'\')" style="'+(od?'border-color:rgba(239,68,68,.3);':'')+'">' +
+          '<div class="kanban-item-title" style="margin-bottom:6px;">'+escHtml(r.clientName||'—')+'</div>' +
+          (r.businessName ? '<div style="font-size:.68rem;color:var(--dimmer);margin-bottom:6px;">'+escHtml(r.businessName)+'</div>' : '') +
+          '<div style="margin-bottom:7px;display:flex;gap:5px;flex-wrap:wrap;">' +
+            (r.serviceLabel ? '<span class="venture-tag">'+escHtml(r.serviceLabel)+'</span>' : '') +
+            (r.ventureId ? '<span class="venture-tag">'+escHtml(v.name||r.ventureId)+'</span>' : '') +
+          '</div>' +
+          (od ? '<div style="font-family:var(--mono);font-size:.55rem;color:var(--red);margin-bottom:6px;">⚠ OVERDUE CHECK-IN</div>' : '') +
+          '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(200,155,20,.06);">' +
+            '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">'+(owner?escHtml(owner.name||owner.email):'Unassigned')+'</span>' +
+            statusBadge(r.status||'active') +
+          '</div>' +
+        '</div>';
+      }).join('') : '<div style="padding:16px 8px;text-align:center;font-size:.68rem;color:var(--dimmer);">No engagements</div>') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Build a dropdown of clients eligible for a new SDS engagement ──
+function buildSDSClientOptions(selected) {
+  var clients = window._data.clients || [];
+  var records = window._data.sds_records || [];
+  var withSDS = {}; records.forEach(function(r){ withSDS[r.clientId]=true; });
+  return '<option value="">Select a client…</option>' + clients.map(function(c) {
+    var tag = withSDS[c.id] ? ' (already in SDS)' : '';
+    return '<option value="'+c.id+'"'+(selected===c.id?' selected':'')+'>'+escHtml((c.name||'—')+(c.businessName?' — '+c.businessName:''))+tag+'</option>';
+  }).join('');
+}
+
+function openNewSDSDrawer(prefillClientId) {
+  var members = window._data.team_members || [];
+  var clients = window._data.clients || [];
+
+  var html =
+    '<div class="detail-section"><h4>🧭 New Service Delivery Engagement</h4>' +
+      '<div class="form-field" style="margin-bottom:10px;">' +
+        '<div class="form-label">Client</div>' +
+        '<select class="form-select" id="sds-n-client" onchange="onSDSClientChange()">' + buildSDSClientOptions(prefillClientId||'') + '</select>' +
+      '</div>' +
+      '<div id="sds-n-client-info" style="display:none;font-family:var(--mono);font-size:.6rem;color:var(--dimmer);margin-bottom:10px;padding:10px 12px;background:rgba(255,255,255,.02);border-radius:6px;"></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+        '<div class="form-field">' +
+          '<div class="form-label">Package Type</div>' +
+          '<select class="form-select" id="sds-n-pkgtype">' +
+            '<option value="growth_system">Growth System Service Package</option>' +
+            '<option value="bigger_project">Bigger Project Deal</option>' +
+            '<option value="growth_addon">Growth Add-on</option>' +
+            '<option value="membership">Growth Membership</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="form-field">' +
+          '<div class="form-label">Starting Phase</div>' +
+          '<select class="form-select" id="sds-n-phase">' +
+            SDS_PHASES.map(function(p){ return '<option value="'+p.key+'">'+p.icon+' '+p.label+'</option>'; }).join('') +
+          '</select>' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-field" style="margin-top:10px;">' +
+        '<div class="form-label">Phase Owner (auto-suggested by role)</div>' +
+        '<select class="form-select" id="sds-n-owner"><option value="">Unassigned</option>' +
+          members.map(function(m){ return '<option value="'+m.id+'">'+escHtml(m.name||m.email||'')+' — '+escHtml(ROLE_LABELS[m.role]||m.role||'')+'</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="form-field" style="margin-top:10px;">' +
+        '<div class="form-label">Target Check-in Date</div>' +
+        '<input type="date" class="form-input" id="sds-n-date">' +
+      '</div>' +
+      '<div class="form-field" style="margin-top:10px;">' +
+        '<div class="form-label">Notes</div>' +
+        '<textarea class="form-textarea" id="sds-n-notes" style="min-height:70px;" placeholder="Problem diagnosed, what was sold, anything Delivery needs to know…"></textarea>' +
+      '</div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn-primary" onclick="saveSDSRecord()">💾 Create Engagement</button></div>';
+
+  openDrawer('Service Delivery', 'New Engagement', html);
+  if (prefillClientId) setTimeout(onSDSClientChange, 50);
+}
+
+function onSDSClientChange() {
+  var clientId = (document.getElementById('sds-n-client')||{}).value;
+  var infoEl = document.getElementById('sds-n-client-info');
+  if (!clientId) { if (infoEl) infoEl.style.display='none'; return; }
+  var c = (window._data.clients||[]).find(function(x){ return x.id===clientId; });
+  if (!c) return;
+  if (infoEl) {
+    infoEl.style.display = 'block';
+    infoEl.innerHTML = 'Package: ' + escHtml(c.package||c.serviceLabel||'—') + (c.serviceId?' ('+escHtml(c.serviceId)+')':'') +
+      '<br>Venture: ' + escHtml((V_MAP[c.ventureId]||{}).name || c.ventureId || '—');
+  }
+  // Auto-suggest owner: any team member whose role matches the DIAGNOSE phase owner (sales_manager)
+  var ownerSel = document.getElementById('sds-n-owner');
+  if (ownerSel) {
+    var candidate = (window._data.team_members||[]).find(function(m){ return m.role==='sales_manager'; });
+    if (candidate) ownerSel.value = candidate.id;
+  }
+}
+
+function saveSDSRecord() {
+  var clientId = (document.getElementById('sds-n-client')||{}).value;
+  if (!clientId) { toast('Please select a client', 'error'); return; }
+  var c = (window._data.clients||[]).find(function(x){ return x.id===clientId; });
+  if (!c) { toast('Client not found', 'error'); return; }
+
+  var members = window._data.team_members || [];
+  var assignedTo = (document.getElementById('sds-n-owner')||{}).value || '';
+  var assignee   = members.find(function(m){ return m.id===assignedTo; });
+  var phase      = (document.getElementById('sds-n-phase')||{}).value || 'diagnose';
+  var amt        = parseFloat(c.monthlyValue) || parseFloat(c.proposalAmount) || 0;
+
+  var data = {
+    clientId:     c.id,
+    clientName:   c.name || '',
+    clientEmail:  c.email || c.contact || '',
+    businessName: c.businessName || '',
+    ventureId:    c.ventureId || '',
+    serviceId:    c.serviceId || '',
+    serviceLabel: c.package || c.serviceLabel || '',
+    packageType:  (document.getElementById('sds-n-pkgtype')||{}).value || 'growth_system',
+    phase:        phase,
+    status:       'active',
+    assignedTo:   assignedTo,
+    assignedName: assignee ? (assignee.name||assignee.email||'') : 'Unassigned',
+    dealValue:    amt,
+    commTier:     sdsCommTierForValue(amt),
+    targetDate:   (document.getElementById('sds-n-date')||{}).value || '',
+    notes:        (document.getElementById('sds-n-notes')||{}).value || '',
+    phaseHistory: [{ phase:phase, at:new Date().toISOString(), by:(window._currentUser?window._currentUser.email:'system'), note:'Engagement started' }]
+  };
+
+  window._saveDoc('sds_records', data).then(function(newId) {
+    syncSDSAssignment(Object.assign({id:newId}, data));
+    toast('SDS engagement created ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Failed: '+(e.message||e), 'error'); });
+}
+
+function openSDSDrawer(id) {
+  var r = (window._data.sds_records||[]).find(function(x){ return x.id===id; });
+  if (!r) return;
+  var members = window._data.team_members || [];
+  var phaseInfo = SDS_PHASE_MAP[r.phase] || SDS_PHASES[0];
+  var phaseIdx  = SDS_PHASES.findIndex(function(p){ return p.key===r.phase; });
+  var v = V_MAP[r.ventureId] || {};
+
+  var timelineHtml = '<div style="display:flex;gap:4px;margin-bottom:14px;">' +
+    SDS_PHASES.map(function(p, i) {
+      var st = i < phaseIdx ? 'done' : i === phaseIdx ? 'current' : 'todo';
+      var bg = st==='done' ? p.color : st==='current' ? p.color : 'rgba(255,255,255,.06)';
+      var op = st==='todo' ? '.35' : '1';
+      return '<div style="flex:1;text-align:center;opacity:'+op+';">' +
+        '<div style="height:4px;background:'+bg+';border-radius:2px;margin-bottom:4px;"></div>' +
+        '<div style="font-family:var(--mono);font-size:.5rem;color:var(--dimmer);">'+p.icon+'</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+
+  var ownerOpts = '<option value="">Unassigned</option>' + members.map(function(m){
+    return '<option value="'+m.id+'"'+(r.assignedTo===m.id?' selected':'')+'>'+escHtml(m.name||m.email||'')+' — '+escHtml(ROLE_LABELS[m.role]||m.role||'')+'</option>';
+  }).join('');
+
+  var history = (r.phaseHistory||[]).slice().reverse();
+
+  var html =
+    '<div class="detail-section">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
+        '<div style="font-family:var(--display);font-weight:700;font-size:1.02rem;">'+escHtml(r.clientName||'—')+'</div>' +
+        statusBadge(r.status||'active') +
+      '</div>' +
+      (r.businessName ? '<div style="font-size:.78rem;color:var(--dimmer);margin-bottom:4px;">'+escHtml(r.businessName)+'</div>' : '') +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">' +
+        (r.serviceLabel ? '<span class="venture-tag">'+escHtml(r.serviceLabel)+'</span>' : '') +
+        '<span class="venture-tag">'+escHtml(v.name||r.ventureId||'—')+'</span>' +
+        (r.commTier ? '<span class="venture-tag">'+escHtml((SDS_COMM_TIERS.find(function(t){return t.key===r.commTier;})||{}).label||r.commTier)+'</span>' : '') +
+      '</div>' +
+      timelineHtml +
+      '<div style="font-family:var(--mono);font-size:.6rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;">Current Phase: '+phaseInfo.icon+' '+phaseInfo.label+'</div>' +
+      '<div style="font-size:.72rem;color:var(--dimmer);margin-top:4px;">Owner role: '+(ROLE_LABELS[phaseInfo.owner]||phaseInfo.owner)+'</div>' +
+    '</div>' +
+
+    '<div class="detail-section"><h4>👤 Assigned Owner</h4>' +
+      '<select class="form-select" id="sds-u-owner">'+ownerOpts+'</select>' +
+    '</div>' +
+
+    '<div class="detail-section"><h4>📅 Target Check-in & Status</h4>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+        '<div class="form-field"><div class="form-label">Target Date</div><input type="date" class="form-input" id="sds-u-date" value="'+escHtml(r.targetDate||'')+'"></div>' +
+        '<div class="form-field"><div class="form-label">Status</div><select class="form-select" id="sds-u-status">' +
+          ['active','paused','completed','churned'].map(function(s){ return '<option value="'+s+'"'+(r.status===s?' selected':'')+'>'+s+'</option>'; }).join('') +
+        '</select></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="detail-section"><h4>📝 Notes</h4>' +
+      '<textarea class="form-textarea" id="sds-u-notes" style="min-height:80px;">'+escHtml(r.notes||'')+'</textarea>' +
+    '</div>' +
+
+    (history.length ? '<div class="detail-section"><h4>🕐 Phase History</h4>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;">' +
+      history.map(function(h){
+        var hp = SDS_PHASE_MAP[h.phase] || {};
+        return '<div style="padding:8px 10px;background:rgba(255,255,255,.02);border-radius:6px;font-size:.74rem;">' +
+          '<span style="color:var(--white);">'+(hp.icon||'')+' '+(hp.label||h.phase)+'</span> ' +
+          '<span style="font-family:var(--mono);font-size:.58rem;color:var(--dimmer);">— '+fmtDate(h.at)+(h.note?' · '+escHtml(h.note):'')+'</span>' +
+        '</div>';
+      }).join('') +
+      '</div></div>' : '') +
+
+    '<div class="btn-row">' +
+      (phaseIdx < SDS_PHASES.length-1 ? '<button class="btn-primary" onclick="advanceSDSPhase(\''+r.id+'\')">'+SDS_PHASES[phaseIdx+1].icon+' Advance to '+SDS_PHASES[phaseIdx+1].label+' →</button>' : '<span style="font-family:var(--mono);font-size:.65rem;color:var(--green);">✅ Fully handed over</span>') +
+      '<button class="btn-secondary" onclick="saveSDSUpdate(\''+r.id+'\')">💾 Save</button>' +
+      '<button class="btn-secondary" onclick="openClientDrawer(\''+r.clientId+'\')">🤝 View Client</button>' +
+    '</div>';
+
+  openDrawer('Service Delivery', escHtml(r.clientName||'—'), html);
+}
+
+function saveSDSUpdate(id) {
+  var r = (window._data.sds_records||[]).find(function(x){ return x.id===id; });
+  if (!r) return;
+  var members = window._data.team_members || [];
+  var assignedTo = (document.getElementById('sds-u-owner')||{}).value || '';
+  var assignee   = members.find(function(m){ return m.id===assignedTo; });
+  var data = {
+    assignedTo:   assignedTo,
+    assignedName: assignee ? (assignee.name||assignee.email||'') : 'Unassigned',
+    targetDate:   (document.getElementById('sds-u-date')||{}).value || '',
+    status:       (document.getElementById('sds-u-status')||{}).value || 'active',
+    notes:        (document.getElementById('sds-u-notes')||{}).value || ''
+  };
+  window._updateDoc('sds_records', id, data).then(function() {
+    syncSDSAssignment(Object.assign({}, r, data, {id:id}));
+    toast('Engagement updated ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Update failed: '+(e.message||e), 'error'); });
+}
+
+// ── Advance to the next SDS phase — logs history + re-syncs owner/assignment/task ──
+function advanceSDSPhase(id) {
+  var r = (window._data.sds_records||[]).find(function(x){ return x.id===id; });
+  if (!r) return;
+  var curIdx = SDS_PHASES.findIndex(function(p){ return p.key===r.phase; });
+  if (curIdx === -1 || curIdx >= SDS_PHASES.length-1) return;
+  var nextPhase = SDS_PHASES[curIdx+1];
+
+  // Auto-suggest a new owner matching the next phase's owner role, if current owner doesn't match
+  var members = window._data.team_members || [];
+  var curOwner = members.find(function(m){ return m.id===r.assignedTo; });
+  var newOwner = (curOwner && curOwner.role===nextPhase.owner) ? curOwner : members.find(function(m){ return m.role===nextPhase.owner; });
+
+  var history = (r.phaseHistory||[]).concat([{
+    phase: nextPhase.key, at: new Date().toISOString(),
+    by: (window._currentUser?window._currentUser.email:'system'),
+    note: 'Moved from '+(SDS_PHASE_MAP[r.phase]||{}).label+' to '+nextPhase.label
+  }]);
+
+  var data = {
+    phase: nextPhase.key,
+    assignedTo: newOwner ? newOwner.id : r.assignedTo,
+    assignedName: newOwner ? (newOwner.name||newOwner.email||'') : r.assignedName,
+    phaseHistory: history
+  };
+
+  window._updateDoc('sds_records', id, data).then(function() {
+    var merged = Object.assign({}, r, data, {id:id});
+    syncSDSAssignment(merged);
+    if (nextPhase.key === 'build' || nextPhase.key === 'deploy') syncSDSTask(merged);
+    toast('Advanced to '+nextPhase.label+' ✓', 'success');
+    closeDrawer();
+    window._loadAll();
+  }).catch(function(e){ toast('Failed: '+(e.message||e), 'error'); });
+}
+
+// ── Sync: keep a linked Assignment record reflecting the current phase/owner ──
+// This is what makes SDS phase changes show up automatically in Assignments + History by Person.
+function syncSDSAssignment(r) {
+  var phaseInfo = SDS_PHASE_MAP[r.phase] || SDS_PHASES[0];
+  var existing = (window._data.assignments||[]).find(function(a){ return a.sdsRecordId === r.id; });
+  var v = V_MAP[r.ventureId] || {};
+  var data = {
+    sdsRecordId:  r.id,
+    subjectRef:   'client|'+r.clientId,
+    personName:   r.clientName || '',
+    personEmail:  r.clientEmail || '',
+    businessName: r.businessName || '',
+    ventureId:    r.ventureId || '',
+    venture:      v.name || '',
+    assignedTo:   r.assignedTo || '',
+    assignedName: r.assignedName || 'Unassigned',
+    assignedRole: ROLE_LABELS[phaseInfo.owner] || phaseInfo.owner,
+    status:       r.status === 'active' ? 'active' : r.status,
+    priority:     'medium',
+    targetDate:   r.targetDate || '',
+    notes:        '[SDS · '+phaseInfo.label+'] '+(r.notes||'')
+  };
+  if (existing) {
+    window._updateDoc('assignments', existing.id, data).catch(function(){});
+  } else {
+    data.assignedAt = new Date().toISOString();
+    data.assignedById = window._currentUser ? window._currentUser.email : 'system';
+    data.assignedByName = window._userRole==='founder' ? 'Founder' : (window._currentUser?window._currentUser.email:'System');
+    window._saveDoc('assignments', data).catch(function(){});
+  }
+}
+
+// ── Sync: auto-create a Task Board card for Build/Deploy phase execution ──
+function syncSDSTask(r) {
+  var phaseInfo = SDS_PHASE_MAP[r.phase] || {};
+  var existing = (window._data.tasks||[]).find(function(t){ return t.sdsRecordId === r.id && t.sdsPhase === r.phase; });
+  if (existing) return; // already created for this phase
+  var data = {
+    title: phaseInfo.label + ' — ' + (r.clientName||'client') + (r.serviceLabel?' ('+r.serviceLabel+')':''),
+    ventureId: r.ventureId || '',
+    status: 'todo',
+    priority: 'medium',
+    assignedTo: r.assignedTo || '',
+    deadline: r.targetDate || '',
+    sdsRecordId: r.id,
+    sdsPhase: r.phase
+  };
+  window._saveDoc('tasks', data).catch(function(){});
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CLIENT ASSET VAULT
+// ═══════════════════════════════════════════════════════════════
+function renderAssetVaultClientOptions() {
+  var sel = document.getElementById('sds-vault-client'); if (!sel) return;
+  var cur = sel.value;
+  var clients = window._data.clients || [];
+  sel.innerHTML = '<option value="">Select a client…</option>' + clients.map(function(c) {
+    return '<option value="'+c.id+'"'+(cur===c.id?' selected':'')+'>'+escHtml((c.name||'—')+(c.businessName?' — '+c.businessName:''))+'</option>';
+  }).join('');
+  if (cur) { sel.value = cur; if (cur) renderAssetVaultBody(cur); }
+}
+
+function selectAssetClient(clientId) {
+  _sdsAssetClientId = clientId || null;
+  if (!clientId) {
+    document.getElementById('sds-vault-body').innerHTML = '<div class="empty-state"><div class="empty-icon">🗄️</div><div>Select a client to view or collect their asset checklist.</div></div>';
+    setText('sds-vault-overall', '');
+    return;
+  }
+  renderAssetVaultBody(clientId);
+}
+
+function getClientAssetAnswers(clientId) {
+  var rec = (window._data.client_assets||[]).find(function(a){ return a.clientId===clientId; });
+  return rec ? (rec.answers||{}) : {};
+}
+
+function renderAssetVaultBody(clientId) {
+  var c = (window._data.clients||[]).find(function(x){ return x.id===clientId; });
+  if (!c) return;
+  var answers = getClientAssetAnswers(clientId);
+  var recommended = sectionsForService(c.serviceId);
+
+  var totalItems = 0, doneItems = 0;
+  var sectionsOrdered = CHECKLIST_SCHEMA.slice().sort(function(a,b) {
+    var ar = recommended.indexOf(a.id) > -1 ? 0 : 1;
+    var br = recommended.indexOf(b.id) > -1 ? 0 : 1;
+    return ar - br;
+  });
+
+  var bodyHtml = sectionsOrdered.map(function(sec) {
+    var secDone = 0;
+    var itemsHtml = sec.items.map(function(item) {
+      var a = answers[item.id] || {};
+      totalItems++; if (a.done) { doneItems++; secDone++; }
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);">' +
+        '<input type="checkbox" id="asset-'+item.id+'" '+(a.done?'checked':'')+' onchange="toggleAssetItem(\''+item.id+'\',this.checked)" style="width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;">' +
+        '<label for="asset-'+item.id+'" style="flex:1;font-size:.78rem;color:'+(a.done?'var(--dimmer)':'var(--white)')+';'+(a.done?'text-decoration:line-through;':'')+'">'+escHtml(item.label)+'</label>' +
+        '<input type="text" placeholder="link / note" value="'+escHtml(a.value||'')+'" oninput="updateAssetNote(\''+item.id+'\',this.value)" style="width:160px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:.68rem;color:var(--white);">' +
+      '</div>';
+    }).join('');
+    var isRec = recommended.indexOf(sec.id) > -1;
+    var pct = Math.round((secDone/sec.items.length)*100);
+    return '<details'+(isRec?' open':'')+' style="margin-bottom:10px;background:var(--surface);border:1px solid '+(isRec?'rgba(200,155,20,.25)':'var(--border)')+';border-radius:8px;padding:0;">' +
+      '<summary style="cursor:pointer;padding:12px 14px;font-family:var(--display);font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
+        '<span style="flex:1;">'+escHtml(sec.label)+(isRec?' <span class="badge badge-gold" style="font-size:.5rem;padding:2px 6px;margin-left:6px;">recommended</span>':'')+'</span>' +
+        '<span style="font-family:var(--mono);font-size:.6rem;color:'+(pct===100?'var(--green)':'var(--dimmer)')+';">'+secDone+'/'+sec.items.length+'</span>' +
+      '</summary>' +
+      '<div style="padding:0 14px 12px;">'+itemsHtml+'</div>' +
+    '</details>';
+  }).join('');
+
+  document.getElementById('sds-vault-body').innerHTML = bodyHtml +
+    '<div class="btn-row" style="margin-top:12px;"><button class="btn-primary" onclick="saveClientAssets()">💾 Save Checklist Progress</button></div>';
+
+  var overallPct = totalItems ? Math.round((doneItems/totalItems)*100) : 0;
+  setText('sds-vault-overall', doneItems+' / '+totalItems+' collected ('+overallPct+'%)');
+
+  window._assetDraft = window._assetDraft || {};
+  window._assetDraft[clientId] = window._assetDraft[clientId] || JSON.parse(JSON.stringify(answers));
+}
+
+function toggleAssetItem(itemId, checked) {
+  if (!_sdsAssetClientId) return;
+  window._assetDraft = window._assetDraft || {};
+  window._assetDraft[_sdsAssetClientId] = window._assetDraft[_sdsAssetClientId] || {};
+  var d = window._assetDraft[_sdsAssetClientId];
+  d[itemId] = d[itemId] || {};
+  d[itemId].done = checked;
+  var label = document.querySelector('label[for="asset-'+itemId+'"]');
+  if (label) { label.style.color = checked ? 'var(--dimmer)' : 'var(--white)'; label.style.textDecoration = checked ? 'line-through' : 'none'; }
+}
+function updateAssetNote(itemId, value) {
+  if (!_sdsAssetClientId) return;
+  window._assetDraft = window._assetDraft || {};
+  window._assetDraft[_sdsAssetClientId] = window._assetDraft[_sdsAssetClientId] || {};
+  var d = window._assetDraft[_sdsAssetClientId];
+  d[itemId] = d[itemId] || {};
+  d[itemId].value = value;
+}
+
+function saveClientAssets() {
+  if (!_sdsAssetClientId) return;
+  var c = (window._data.clients||[]).find(function(x){ return x.id===_sdsAssetClientId; });
+  var existing = (window._data.client_assets||[]).find(function(a){ return a.clientId===_sdsAssetClientId; });
+  var answers = (window._assetDraft && window._assetDraft[_sdsAssetClientId]) || {};
+  var data = { clientId:_sdsAssetClientId, clientName:c?c.name:'', businessName:c?c.businessName:'', answers:answers };
+  var fn = existing ? window._updateDoc('client_assets', existing.id, data) : window._saveDoc('client_assets', data);
+  fn.then(function(){
+    toast('Asset checklist saved ✓', 'success');
+    window._loadAll();
+  }).catch(function(e){ toast('Save failed: '+(e.message||e), 'error'); });
 }
 
 // ── Finance ────────────────────────────────────────────────────
