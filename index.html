@@ -2301,6 +2301,61 @@ footer {
 .rfbtn-ghost { background:transparent; color:var(--dim); border:1px solid var(--borderS); }
 .rfbtn-ghost:hover { border-color:var(--dim); color:var(--muted); }
 
+/* ── Business Health Assessment — rating widget (modal) ── */
+.rating-block-m { margin-bottom:24px; }
+.rating-block-m:last-child { margin-bottom:0; }
+.rating-stmt-m { font-size:.86rem; color:var(--white); line-height:1.45; margin-bottom:11px; font-weight:500; }
+.rating-scale-m { display:flex; gap:7px; }
+.rating-circle-m {
+  flex:1; height:36px; border-radius:var(--r);
+  border:1.5px solid var(--borderS); background:var(--card); color:var(--dim);
+  font-family:'DM Mono', monospace; font-size:.72rem; font-weight:600;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .18s;
+}
+.rating-circle-m:hover { border-color:var(--gold); color:var(--muted); }
+.rating-circle-m.selected { background:var(--gold); border-color:var(--gold); color:#080808; }
+.rating-scale-labels-m {
+  display:flex; justify-content:space-between;
+  font-family:'DM Mono', monospace; font-size:.52rem; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--dim); margin-top:6px;
+}
+
+.tag-chip-m.crit-m  { background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.28); color:var(--red); }
+.tag-chip-m.high-m  { background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.28); color:var(--amber); }
+.tag-chip-m.med-m   { background:rgba(59,130,246,.12); border-color:rgba(59,130,246,.28); color:var(--blue); }
+.tag-chip-m.healthy-m { background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.28); color:var(--green); }
+
+.health-section-m { padding:26px 32px; border-top:1px solid var(--borderS); }
+.health-ring-row-m { display:flex; align-items:center; gap:26px; flex-wrap:wrap; margin-bottom:20px; }
+.health-cats-m { flex:1; min-width:200px; display:flex; flex-direction:column; gap:9px; }
+.health-cat-row-m { display:flex; align-items:center; gap:9px; }
+.health-cat-label-m { min-width:126px; font-family:'DM Mono', monospace; font-size:.58rem; letter-spacing:.05em; text-transform:uppercase; color:var(--dim); }
+.health-cat-bar-wrap-m { flex:1; height:6px; background:var(--borderS); border-radius:4px; overflow:hidden; }
+.health-cat-bar-fill-m { height:100%; border-radius:4px; transition:width 1s ease .2s; width:0; }
+.health-cat-pct-m { font-family:'DM Mono', monospace; font-size:.66rem; min-width:32px; text-align:right; }
+
+.sw-lists-m { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:4px; }
+@media (max-width:600px) { .sw-lists-m { grid-template-columns:1fr; } }
+.sw-block-m h5 { font-family:'DM Mono', monospace; font-size:.58rem; letter-spacing:.12em; text-transform:uppercase; margin-bottom:8px; }
+.sw-block-m.strengths-m h5 { color:var(--green); }
+.sw-block-m.challenges-m h5 { color:var(--red); }
+.sw-block-m ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+.sw-block-m li { font-size:.78rem; color:var(--muted); padding-left:16px; position:relative; line-height:1.4; }
+.sw-block-m.strengths-m li::before { content:'✓'; position:absolute; left:0; color:var(--green); }
+.sw-block-m.challenges-m li::before { content:'!'; position:absolute; left:0; color:var(--red); font-weight:700; }
+
+.systems-list-m { display:flex; flex-direction:column; gap:9px; margin-top:4px; }
+.system-card-m { display:flex; align-items:center; gap:12px; padding:13px 15px; background:var(--card); border:1px solid var(--borderS); border-radius:var(--r); }
+.system-card-m .sc-name-m { flex:1; font-family:'Syne', sans-serif; font-weight:700; font-size:.86rem; color:var(--white); }
+.addons-row-m { display:flex; flex-wrap:wrap; gap:7px; margin-top:11px; }
+
+.roadmap-m { display:flex; flex-direction:column; gap:12px; margin-top:4px; }
+.roadmap-phase-m { display:flex; gap:12px; padding:13px 15px; background:var(--card); border:1px solid var(--borderS); border-radius:var(--r); }
+.roadmap-num-m { font-family:'Syne', sans-serif; font-weight:800; font-size:1.05rem; color:var(--gold); flex-shrink:0; width:28px; }
+.roadmap-body-m .rp-title-m { font-family:'Syne', sans-serif; font-weight:700; font-size:.82rem; color:var(--white); margin-bottom:4px; }
+.roadmap-body-m .rp-desc-m { font-size:.76rem; color:var(--muted); line-height:1.5; }
+
 /* ============================================
    RESPONSIVE — TABLET ≤900px
 ============================================ */
@@ -4413,6 +4468,7 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="just_starting" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌱</span><span class="opt-label-m">I am just starting</span></button>
               <button class="option-btn-m" data-value="security_firm" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🛡️</span><span class="opt-label-m">I manage security guards</span></button>
               <button class="option-btn-m" data-value="solar_vendor" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">☀️</span><span class="opt-label-m">I sell solar/inverter solutions</span></button>
+              <button class="option-btn-m" data-value="salon_biz" onclick="mSelect(this,'mq1','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💇</span><span class="opt-label-m">I run a salon/spa/beauty business</span></button>
             </div>
             <div class="val-msg-m" id="mval-1">Please select an option to continue.</div>
           </div>
@@ -4447,9 +4503,25 @@ body { overflow-x: clip; }
             <div class="val-msg-m" id="mval-3">Please select an option to continue.</div>
           </div>
 
-          <!-- STEP 4: Pain -->
-          <div class="step-panel-m" data-mstep="4">
-            <div class="section-label-m">Section 2 — Pain Diagnosis</div>
+          <!-- STEPS 4–9: Business Health Assessment (auto-generated) -->
+          <div id="health-steps-container-m"></div>
+
+          <!-- STEP 10: Sales Infrastructure Preference -->
+          <div class="step-panel-m" data-mstep="10">
+            <div class="section-label-m">Section 3 — Sales Infrastructure</div>
+            <div class="q-title-m">Which sales infrastructure fits you best?</div>
+            <div class="q-hint-m">This decides between an independent system built just for you, or joining our shared marketplace ecosystem.</div>
+            <div class="options-grid-m" id="mSalesInfra">
+              <button class="option-btn-m" data-value="independent" onclick="mSelect(this,'mSalesInfra','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🏗️</span><span class="opt-label-m">My own independent website, ordering, booking &amp; payment system</span></button>
+              <button class="option-btn-m" data-value="marketplace" onclick="mSelect(this,'mSalesInfra','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🛒</span><span class="opt-label-m">Join the GATA Business Ecosystem (GATAMARKET + GATANow + Network)</span></button>
+              <button class="option-btn-m" data-value="unsure" onclick="mSelect(this,'mSalesInfra','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🤔</span><span class="opt-label-m">I'm not sure — please advise me</span></button>
+            </div>
+            <div class="val-msg-m" id="mval-10">Please select an option to continue.</div>
+          </div>
+
+          <!-- STEP 11: Pain -->
+          <div class="step-panel-m" data-mstep="11">
+            <div class="section-label-m">Section 4 — Pain Diagnosis</div>
             <div class="q-title-m">What is your biggest current challenge?</div>
             <div class="q-hint-m">Pick the one that stings the most right now.</div>
             <div class="options-grid-m" id="mq4">
@@ -4459,14 +4531,14 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="need_automation" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">⚙️</span><span class="opt-label-m">I need automation</span></button>
               <button class="option-btn-m" data-value="want_scale" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">📈</span><span class="opt-label-m">I want to scale faster</span></button>
               <button class="option-btn-m" data-value="more_income" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">💸</span><span class="opt-label-m">I need more income streams</span></button>
-              <button class="option-btn-m" data-value="staff_management" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">👥</span><span class="opt-label-m">I struggle managing staff/guards</span></button>
+              <button class="option-btn-m" data-value="staff_management" onclick="mSelect(this,'mq4','single')"><div class="opt-check-m"></div><span class="opt-icon-m">👥</span><span class="opt-label-m">I struggle managing staff/guards/bookings</span></button>
             </div>
-            <div class="val-msg-m" id="mval-4">Please select an option to continue.</div>
+            <div class="val-msg-m" id="mval-11">Please select an option to continue.</div>
           </div>
 
-          <!-- STEP 5: Needs (multi) -->
-          <div class="step-panel-m" data-mstep="5">
-            <div class="section-label-m">Section 2 — Pain Diagnosis</div>
+          <!-- STEP 12: Needs (multi) -->
+          <div class="step-panel-m" data-mstep="12">
+            <div class="section-label-m">Section 4 — Pain Diagnosis</div>
             <div class="q-title-m">What do you need most right now?</div>
             <div class="q-hint-m">Select up to 2 options — be specific.</div>
             <div class="options-grid-m cols-2" id="mq5">
@@ -4478,13 +4550,14 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="custom_software" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Custom software</span></button>
               <button class="option-btn-m" data-value="guard_system" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Guard management system</span></button>
               <button class="option-btn-m" data-value="solar_acquisition" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Solar customer acquisition</span></button>
+              <button class="option-btn-m" data-value="salon_booking" onclick="mSelect(this,'mq5','multi',2)"><div class="opt-check-m square"></div><span class="opt-label-m">Salon/spa booking &amp; payment system</span></button>
             </div>
-            <div class="val-msg-m" id="mval-5">Please select at least 1 option.</div>
+            <div class="val-msg-m" id="mval-12">Please select at least 1 option.</div>
           </div>
 
-          <!-- STEP 6: Budget -->
-          <div class="step-panel-m" data-mstep="6">
-            <div class="section-label-m">Section 3 — Buyer Readiness</div>
+          <!-- STEP 13: Budget -->
+          <div class="step-panel-m" data-mstep="13">
+            <div class="section-label-m">Section 5 — Buyer Readiness</div>
             <div class="q-title-m">If the right solution exists, what is your budget readiness?</div>
             <div class="q-hint-m">Honest answers unlock better-matched recommendations for you.</div>
             <div class="options-grid-m" id="mq6">
@@ -4493,12 +4566,12 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="can_invest" onclick="mSelect(this,'mq6','single')"><div class="opt-check-m"></div><span class="opt-icon-m">📊</span><span class="opt-label-m">I can invest in my business</span></button>
               <button class="option-btn-m" data-value="premium_ready" onclick="mSelect(this,'mq6','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🏆</span><span class="opt-label-m">I am ready for premium solutions</span></button>
             </div>
-            <div class="val-msg-m" id="mval-6">Please select an option to continue.</div>
+            <div class="val-msg-m" id="mval-13">Please select an option to continue.</div>
           </div>
 
-          <!-- STEP 7: Urgency -->
-          <div class="step-panel-m" data-mstep="7">
-            <div class="section-label-m">Section 3 — Buyer Readiness</div>
+          <!-- STEP 14: Urgency -->
+          <div class="step-panel-m" data-mstep="14">
+            <div class="section-label-m">Section 5 — Buyer Readiness</div>
             <div class="q-title-m">How urgently do you need a solution?</div>
             <div class="q-hint-m">This determines your priority in our pipeline.</div>
             <div class="options-grid-m" id="mq7">
@@ -4507,12 +4580,12 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="thirty_days" onclick="mSelect(this,'mq7','single')"><div class="opt-check-m"></div><span class="opt-icon-m">⏰</span><span class="opt-label-m">Within 30 days</span></button>
               <button class="option-btn-m" data-value="immediately" onclick="mSelect(this,'mq7','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🔥</span><span class="opt-label-m">Immediately</span></button>
             </div>
-            <div class="val-msg-m" id="mval-7">Please select an option to continue.</div>
+            <div class="val-msg-m" id="mval-14">Please select an option to continue.</div>
           </div>
 
-          <!-- STEP 8: Channels (multi) -->
-          <div class="step-panel-m" data-mstep="8">
-            <div class="section-label-m">Section 4 — Qualification Enrichment</div>
+          <!-- STEP 15: Channels (multi) -->
+          <div class="step-panel-m" data-mstep="15">
+            <div class="section-label-m">Section 6 — Qualification Enrichment</div>
             <div class="q-title-m">Where do you currently get customers from?</div>
             <div class="q-hint-m">Select all that apply.</div>
             <div class="options-grid-m cols-2" id="mq8">
@@ -4523,12 +4596,12 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="referrals" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">Referrals</span></button>
               <button class="option-btn-m" data-value="no_customers_yet" onclick="mSelect(this,'mq8','multi',6)"><div class="opt-check-m square"></div><span class="opt-label-m">I don't have customers yet</span></button>
             </div>
-            <div class="val-msg-m" id="mval-8">Please select at least 1 option.</div>
+            <div class="val-msg-m" id="mval-15">Please select at least 1 option.</div>
           </div>
 
-          <!-- STEP 9: Infrastructure (multi) -->
-          <div class="step-panel-m" data-mstep="9">
-            <div class="section-label-m">Section 4 — Qualification Enrichment</div>
+          <!-- STEP 16: Infrastructure (multi) -->
+          <div class="step-panel-m" data-mstep="16">
+            <div class="section-label-m">Section 6 — Qualification Enrichment</div>
             <div class="q-title-m">Do you currently have any of these?</div>
             <div class="q-hint-m">Select everything you already have in place.</div>
             <div class="options-grid-m cols-2" id="mq9">
@@ -4538,12 +4611,12 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="sales_funnel" onclick="mSelect(this,'mq9','multi',5)"><div class="opt-check-m square"></div><span class="opt-label-m">Sales funnel</span></button>
               <button class="option-btn-m" data-value="none" onclick="mSelect(this,'mq9','multi',5)"><div class="opt-check-m square"></div><span class="opt-label-m">None of the above</span></button>
             </div>
-            <div class="val-msg-m" id="mval-9">Please select at least 1 option.</div>
+            <div class="val-msg-m" id="mval-16">Please select at least 1 option.</div>
           </div>
 
-          <!-- STEP 10: Goal -->
-          <div class="step-panel-m" data-mstep="10">
-            <div class="section-label-m">Section 4 — Qualification Enrichment</div>
+          <!-- STEP 17: Goal -->
+          <div class="step-panel-m" data-mstep="17">
+            <div class="section-label-m">Section 6 — Qualification Enrichment</div>
             <div class="q-title-m">What best describes your goal for the next 6–12 months?</div>
             <div class="q-hint-m">This determines your long-term routing.</div>
             <div class="options-grid-m" id="mq10">
@@ -4553,7 +4626,7 @@ body { overflow-x: clip; }
               <button class="option-btn-m" data-value="automate" onclick="mSelect(this,'mq10','single')"><div class="opt-check-m"></div><span class="opt-icon-m">⚙️</span><span class="opt-label-m">Automate my operations</span></button>
               <button class="option-btn-m" data-value="expand_markets" onclick="mSelect(this,'mq10','single')"><div class="opt-check-m"></div><span class="opt-icon-m">🌍</span><span class="opt-label-m">Expand to new markets</span></button>
             </div>
-            <div class="val-msg-m" id="mval-10">Please select an option to continue.</div>
+            <div class="val-msg-m" id="mval-17">Please select an option to continue.</div>
           </div>
 
         </div><!-- /form-body-m -->
@@ -4590,6 +4663,37 @@ body { overflow-x: clip; }
           </div>
           <div class="tags-row-m" id="mTagsRow"></div>
         </div>
+
+        <!-- ═══ BUSINESS GROWTH PRESCRIPTION (modal) ═══ -->
+        <div class="health-section-m">
+          <div class="routes-label-m">Business Growth Prescription</div>
+          <div class="health-ring-row-m">
+            <div class="score-ring-m">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle class="track-m" cx="50" cy="50" r="44"/>
+                <circle class="fill-m" id="mHealthCircle" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="276.5" style="stroke:var(--cyan);"/>
+              </svg>
+              <div class="num-m" id="mHealthNum" style="color:var(--cyan);">0<small>HEALTH</small></div>
+            </div>
+            <div class="health-cats-m" id="mHealthCats"></div>
+          </div>
+          <div class="sw-lists-m">
+            <div class="sw-block-m strengths-m"><h5>✓ Strengths</h5><ul id="mStrengthsList"></ul></div>
+            <div class="sw-block-m challenges-m"><h5>! Key Challenges</h5><ul id="mChallengesList"></ul></div>
+          </div>
+        </div>
+
+        <div class="health-section-m">
+          <div class="routes-label-m">Recommended Growth Systems (Priority Order)</div>
+          <div class="systems-list-m" id="mSystemsList"></div>
+          <div class="addons-row-m" id="mAddonsRow"></div>
+        </div>
+
+        <div class="health-section-m">
+          <div class="routes-label-m">Growth Roadmap</div>
+          <div class="roadmap-m" id="mRoadmapList"></div>
+        </div>
+
         <div class="routes-section-m">
           <div class="routes-label-m">Your Recommended Next Steps</div>
           <div id="mRouteCards"></div>
@@ -5872,11 +5976,107 @@ document.getElementById('intake-modal').addEventListener('click', function(e) {
   if (e.target === this) closeIntakeModal();
 });
 
+// ── Business Health Categories (modal) ──
+var CATEGORIES_M = [
+  { id:'visibility', title:'Visibility',           hint:'Can people actually find your business?',
+    statements:[
+      'My business appears easily when people search for it on Google.',
+      'I have a professional website and an active, optimised Google Business Profile.',
+      'New customers regularly discover me online — not just through referrals.'
+    ], systemId:'visibility_sys', systemLabel:'Visibility System', addons:['seo_setup','gbp_setup','landing_page'] },
+  { id:'brand', title:'Brand Authority',           hint:'Do customers trust your business?',
+    statements:[
+      'My brand looks professional and consistent everywhere customers see it.',
+      'I actively collect and showcase customer reviews / testimonials.',
+      'Customers rarely question whether my business is genuine.'
+    ], systemId:'brand_authority', systemLabel:'Brand Authority System', addons:['branding_kit','trust_page','review_sys'] },
+  { id:'leadgen', title:'Lead Generation',         hint:'Are enough people reaching your business?',
+    statements:[
+      'I get new leads or inquiries every week without chasing them.',
+      'I have a clear marketing strategy and create content consistently.',
+      'I capture and track customer/lead information (CRM, forms, lists).'
+    ], systemId:'lead_gen_sys', systemLabel:'Lead Generation System', addons:['lead_magnet','crm_setup','paid_ads'] },
+  { id:'sales', title:'Sales Conversion',          hint:'Are you converting leads into paying customers?',
+    statements:[
+      'Most people who inquire eventually become paying customers.',
+      'I follow up automatically and consistently — I rarely lose sales to slow replies.',
+      'Customers can order and pay online without friction.'
+    ], systemId:'sales_conv_sys', systemLabel:'Sales Conversion System', addons:['payment_gw','booking_sys','follow_up_sys'] },
+  { id:'ops', title:'Business Operations',         hint:'Is your business organised enough to run without you?',
+    statements:[
+      'My day-to-day processes are documented — staff know what to do without me.',
+      'I use digital tools/dashboards instead of manual spreadsheets to track the business.',
+      'My business could run for one week without me actively present.'
+    ], systemId:'biz_ops_sys', systemLabel:'Business Operations System', addons:['workflow_auto','analytics_dash'] },
+  { id:'retention', title:'Customer Retention',    hint:'Do customers come back and refer others?',
+    statements:[
+      'Customers buy from me again and refer other people regularly.',
+      'I follow up after a sale (WhatsApp, email, promotions).',
+      'I have a loyalty or referral system in place.'
+    ], systemId:'retention_sys', systemLabel:'Customer Retention System', addons:['loyalty_program','referral_sys','whatsapp_auto'] }
+];
+
+var SERVICE_LABELS_M = {
+  seo_setup:'SEO Setup', gbp_setup:'Google Business Profile Setup', landing_page:'Landing Page Build',
+  branding_kit:'Branding Upgrade Kit', trust_page:'Trust & Credibility Page', review_sys:'Review & Social Proof System',
+  lead_magnet:'Lead Magnet Creation', crm_setup:'CRM Setup', paid_ads:'Paid Ads Setup',
+  payment_gw:'Payment Gateway Setup', booking_sys:'Booking / Appointment System', follow_up_sys:'Follow-Up & Reminder System',
+  workflow_auto:'Workflow Automation', analytics_dash:'Revenue & Analytics Dashboard',
+  loyalty_program:'Loyalty Program', referral_sys:'Referral System', whatsapp_auto:'WhatsApp Automation Setup',
+  content_basic:'Basic Content Support', content_mgr:'Dedicated Growth Manager', content_team:'Full Growth Team',
+  visibility_sys:'Visibility System', brand_authority:'Brand Authority System', lead_gen_sys:'Lead Generation System',
+  sales_conv_sys:'Sales Conversion System', biz_ops_sys:'Business Operations System', retention_sys:'Customer Retention System'
+};
+
 // ── State ──
 var mState = {
   step: 0,
-  totalSteps: 11,
-  answers: { firstName:'', lastName:'', email:'', phone:'', q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[] }
+  totalSteps: 18,
+  answers: {
+    firstName:'', lastName:'', email:'', phone:'',
+    q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[],
+    salesInfra:[],
+    health: { visibility:[], brand:[], leadgen:[], sales:[], ops:[], retention:[] }
+  }
+};
+var MSTEP_MAP = {1:'q1',2:'q2',3:'q3',11:'q4',12:'q5',13:'q6',14:'q7',15:'q8',16:'q9',17:'q10'};
+
+// ── Build health assessment steps (4–9) ──
+(function buildHealthStepsM(){
+  var container = document.getElementById('health-steps-container-m');
+  if (!container) return;
+  var html = '';
+  var sectionNum = 2;
+  CATEGORIES_M.forEach(function(cat, idx){
+    var stepN = idx + 4;
+    html += '<div class="step-panel-m" data-mstep="'+stepN+'">';
+    html += '<div class="section-label-m">Section '+(sectionNum+idx)+' — '+cat.title+' Assessment</div>';
+    html += '<div class="q-title-m">'+cat.hint+'</div>';
+    html += '<div class="q-hint-m">Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).</div>';
+    cat.statements.forEach(function(stmt, sIdx){
+      html += '<div class="rating-block-m">';
+      html += '<div class="rating-stmt-m">'+stmt+'</div>';
+      html += '<div class="rating-scale-m" id="mrate-'+cat.id+'-'+sIdx+'">';
+      for (var v=1; v<=5; v++) {
+        html += '<div class="rating-circle-m" onclick="mSetRating(\''+cat.id+'\','+sIdx+','+v+',this)">'+v+'</div>';
+      }
+      html += '</div>';
+      if (sIdx===0) html += '<div class="rating-scale-labels-m"><span>Strongly Disagree</span><span>Strongly Agree</span></div>';
+      html += '</div>';
+    });
+    html += '<div class="val-msg-m" id="mval-'+stepN+'">Please rate every statement to continue.</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+})();
+
+window.mSetRating = function(catId, stmtIdx, value, btnEl) {
+  if (!mState.answers.health[catId]) mState.answers.health[catId] = [];
+  mState.answers.health[catId][stmtIdx] = value;
+  var row = document.getElementById('mrate-'+catId+'-'+stmtIdx);
+  if (row) row.querySelectorAll('.rating-circle-m').forEach(function(c,i){ c.classList.toggle('selected', i===(value-1)); });
+  var vm = document.getElementById('mval-'+mState.step);
+  if (vm) vm.classList.remove('show');
 };
 
 // ── Init Dots ──
@@ -5910,8 +6110,7 @@ window.mSelect = function(btn, groupId, mode, maxSel) {
   if (mode === 'single') {
     document.querySelectorAll('#' + groupId + ' .option-btn-m').forEach(function(b) { b.classList.remove('selected'); });
     btn.classList.add('selected');
-    var qNum = parseInt(groupId.replace('mq', ''));
-    mState.answers['q' + qNum] = [btn.dataset.value];
+    mState.answers[groupId] = [btn.dataset.value];
   } else {
     var max = maxSel || 99;
     var selected = document.querySelectorAll('#' + groupId + ' .option-btn-m.selected');
@@ -5920,10 +6119,9 @@ window.mSelect = function(btn, groupId, mode, maxSel) {
     } else {
       if (selected.length < max) btn.classList.add('selected');
     }
-    var qNum = parseInt(groupId.replace('mq', ''));
     var vals = [];
     document.querySelectorAll('#' + groupId + ' .option-btn-m.selected').forEach(function(b) { vals.push(b.dataset.value); });
-    mState.answers['q' + qNum] = vals;
+    mState.answers[groupId] = vals;
   }
   var vm = document.getElementById('mval-' + mState.step);
   if (vm) vm.classList.remove('show');
@@ -5942,7 +6140,28 @@ function mValidate(step) {
     mState.answers.email = em; mState.answers.phone = ph;
     return true;
   }
-  var qKey = 'q' + step;
+  // Health assessment steps (4–9)
+  if (step >= 4 && step <= 9) {
+    var cat = CATEGORIES_M[step-4];
+    var arr = mState.answers.health[cat.id] || [];
+    var answered = arr.filter(function(v){ return v; }).length;
+    if (answered < cat.statements.length) {
+      var vm = document.getElementById('mval-' + step);
+      if (vm) vm.classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  // Sales infrastructure preference (step 10)
+  if (step === 10) {
+    if (!mState.answers.salesInfra || mState.answers.salesInfra.length === 0) {
+      var vm = document.getElementById('mval-10');
+      if (vm) vm.classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  var qKey = MSTEP_MAP[step] || ('q' + step);
   if (!mState.answers[qKey] || mState.answers[qKey].length === 0) {
     var vm = document.getElementById('mval-' + step);
     if (vm) vm.classList.add('show');
@@ -5997,6 +6216,66 @@ function mComputeScore() {
   return { total: Math.min(score, 100), breakdown: breakdown };
 }
 
+// ── Business Health / Growth Prescription Engine ──
+function mComputeHealth() {
+  var categories = {};
+  var totalPct = 0;
+  CATEGORIES_M.forEach(function(cat) {
+    var ratings = mState.answers.health[cat.id] || [];
+    var sum = ratings.reduce(function(a,b){ return a+(b||0); }, 0);
+    var pct = ratings.length ? Math.round((sum / (ratings.length*5)) * 100) : 0;
+    var priority = pct < 50 ? 'critical' : pct < 70 ? 'high' : pct < 85 ? 'medium' : 'healthy';
+    categories[cat.id] = { id:cat.id, label:cat.title, score:pct, priority:priority, systemId:cat.systemId, systemLabel:cat.systemLabel, addons:cat.addons };
+    totalPct += pct;
+  });
+  var healthScore = Math.round(totalPct / CATEGORIES_M.length);
+
+  var strengths = [], challenges = [];
+  CATEGORIES_M.forEach(function(cat) {
+    var c = categories[cat.id];
+    if (c.score >= 70) strengths.push(cat.title + ' is a strong point (' + c.score + '%).');
+    if (c.score < 50) challenges.push(cat.title + ' needs urgent attention (' + c.score + '%).');
+  });
+  if (!challenges.length) {
+    CATEGORIES_M.forEach(function(cat) {
+      var c = categories[cat.id];
+      if (c.score < 70) challenges.push(cat.title + ' has room to grow (' + c.score + '%).');
+    });
+  }
+  if (!strengths.length) strengths.push('You\'re early — every category is an opportunity to build strong foundations.');
+
+  var systems = CATEGORIES_M.map(function(cat){ return categories[cat.id]; }).sort(function(a,b){ return a.score - b.score; });
+
+  var addons = [];
+  systems.forEach(function(s) {
+    if (s.score < 70) s.addons.forEach(function(a){ if (addons.indexOf(a)===-1) addons.push(a); });
+  });
+
+  var budget = mState.answers.q6[0];
+  var contentTier = 'content_basic';
+  if (healthScore < 50 && (budget==='premium_ready' || budget==='can_invest')) contentTier = 'content_team';
+  else if (healthScore < 70 && budget!=='free_only') contentTier = 'content_mgr';
+
+  var roadmap = [
+    { phase:1, title:'Visibility + Brand Authority', systems:['visibility_sys','brand_authority'] },
+    { phase:2, title:'Lead Generation + Sales Conversion', systems:['lead_gen_sys','sales_conv_sys'] },
+    { phase:3, title:'Business Operations + Customer Retention', systems:['biz_ops_sys','retention_sys'] }
+  ];
+
+  return { healthScore:healthScore, categories:categories, strengths:strengths, challenges:challenges, systems:systems, addons:addons, contentTier:contentTier, roadmap:roadmap };
+}
+
+function mComputePlatformRoute() {
+  var q1 = mState.answers.q1[0];
+  var q5 = mState.answers.q5 || [];
+  var salesInfra = mState.answers.salesInfra[0];
+  if (q1 === 'security_firm') return { id:'tek1security', label:'TEK1SECURITY' };
+  if (q1 === 'solar_vendor')  return { id:'pawa', label:'PowerPlus 9ja' };
+  if (q1 === 'salon_biz' || q5.indexOf('salon_booking')>-1) return { id:'saloncore', label:'SalonCore' };
+  if (salesInfra === 'marketplace' || q5.indexOf('marketplace')>-1) return { id:'gata', label:'GATA Business Ecosystem' };
+  return { id:'studio', label:'TEKNNUKU Studio (Growth Systems Client)' };
+}
+
 function mComputeTags(score) {
   var tags = [];
   var q1 = mState.answers.q1[0]; var q6 = mState.answers.q6[0]; var q3 = mState.answers.q3[0];
@@ -6006,6 +6285,7 @@ function mComputeTags(score) {
   if (q1 === 'company_team') tags.push('operator');
   if (q1 === 'security_firm') tags.push('security_firm');
   if (q1 === 'solar_vendor') tags.push('solar_vendor');
+  if (q1 === 'salon_biz') tags.push('salon_biz');
   if (q1 === 'just_starting') tags.push('beginner');
   if (q3 === 'high' || q3 === 'premium') tags.push('revenue_positive');
   if (q6 === 'premium_ready') tags.push('premium_buyer');
@@ -6013,7 +6293,9 @@ function mComputeTags(score) {
   if (mState.answers.q5.indexOf('marketplace') > -1) tags.push('marketplace_interest');
   if (mState.answers.q5.indexOf('guard_system') > -1) tags.push('guard_system_interest');
   if (mState.answers.q5.indexOf('solar_acquisition') > -1) tags.push('solar_interest');
+  if (mState.answers.q5.indexOf('salon_booking') > -1) tags.push('salon_interest');
   if (mState.answers.q7[0] === 'immediately') tags.push('hot_lead');
+  if (mState.answers.salesInfra[0]) tags.push('sales_infra_'+mState.answers.salesInfra[0]);
   return tags.filter(function(v, i, a) { return a.indexOf(v) === i; });
 }
 
@@ -6022,7 +6304,12 @@ function mComputeRoutes(score, tags) {
   var routes = [];
   if (q1 === 'security_firm') routes.push({ icon:'🛡️', name:'TEK1SECURITY', primary:true, desc:'Guard management SaaS built for your exact industry. Schedule a product demo.', url:'https://tek1security.teknnuku.xyz', cta:'Explore TEK1SECURITY' });
   if (q1 === 'solar_vendor') routes.push({ icon:'☀️', name:'PowerPlus 9ja', primary:true, desc:'Solar customer acquisition marketplace designed for vendors like you.', url:'https://pawaplus.vercel.app/', cta:'Join PowerPlus 9ja' });
-  if (q5.indexOf('marketplace') > -1) routes.push({ icon:'🛒', name:'GATA Marketplace Onboarding', primary:q1==='physical_seller', desc:'List your products on a marketplace built for Nigerian sellers.', url:'https://gataprotocol.org/buyandsellproducts', cta:'Onboard to GATA' });
+  if (q1 === 'salon_biz' || q5.indexOf('salon_booking')>-1) routes.push({ icon:'💇', name:'SalonCore', primary:q1==='salon_biz', desc:'Booking &amp; payment system built for salons, barbers, nails, spa and beauty businesses.', url:'https://saloncore.teknnuku.xyz', cta:'Explore SalonCore' });
+  if (q5.indexOf('marketplace') > -1 || mState.answers.salesInfra[0]==='marketplace') {
+    routes.push({ icon:'🛒', name:'GATA Business Ecosystem (Option B)', primary:q1==='physical_seller', desc:'A ready-made storefront with ordering, payment, and logistics through GATAMARKET and GATANow, plus access to the GATA business network.', url:'https://gataprotocol.org/buyandsellproducts', cta:'Onboard to GATA' });
+  } else if (mState.answers.salesInfra[0]==='independent') {
+    routes.push({ icon:'💳', name:'Sales Conversion System — Option A (Independent)', primary:false, desc:'Your own independent website, ordering, booking and payment system, built and owned by you.', url:'https://studio.teknnuku.xyz', cta:'Build My System' });
+  }
   if (score >= 70) {
     routes.push({ icon:'🏗️', name:'TEKNNUKU Studio — Custom Systems', primary:routes.length===0, desc:'You qualify for our premium digital platform builds — custom SaaS, business systems, and revenue infrastructure.', url:'https://studio.teknnuku.xyz', cta:'Start a Project' });
     routes.push({ icon:'📞', name:'Book a Strategy Call', primary:false, desc:'Speak directly with the Studio team. We\'ll map out your system and quote within 48 hours.', url:'https://calendly.com/hello-teknnuku/30min', cta:'Book Now' });
@@ -6077,6 +6364,56 @@ function mRenderResults(scoreObj, tags) {
     return '<a href="'+r.url+'" class="route-card-m'+(r.primary?' primary-m':'')+'" target="_blank">'+(r.primary?'<span class="primary-badge-m">Best Match</span>':'')+
       '<span class="rc-icon-m">'+r.icon+'</span><div class="rc-body-m"><div class="rc-name-m">'+r.name+'</div><div class="rc-desc-m">'+r.desc+'</div></div><span class="rc-arrow-m">→</span></a>';
   }).join('');
+
+  // ═══ Business Growth Prescription ═══
+  var health = mComputeHealth();
+  setTimeout(function() {
+    var circumference = 276.5;
+    var offset = circumference - (health.healthScore/100)*circumference;
+    document.getElementById('mHealthCircle').style.strokeDashoffset = offset;
+    document.getElementById('mHealthNum').innerHTML = health.healthScore+'<small>HEALTH</small>';
+  }, 250);
+
+  var PRIORITY_COLOR_M = { critical:'var(--red)', high:'var(--amber)', medium:'var(--blue)', healthy:'var(--green)' };
+  document.getElementById('mHealthCats').innerHTML = CATEGORIES_M.map(function(cat) {
+    var c = health.categories[cat.id];
+    return '<div class="health-cat-row-m">'+
+      '<span class="health-cat-label-m">'+c.label+'</span>'+
+      '<div class="health-cat-bar-wrap-m"><div class="health-cat-bar-fill-m" data-pct="'+c.score+'" style="background:'+PRIORITY_COLOR_M[c.priority]+';"></div></div>'+
+      '<span class="health-cat-pct-m" style="color:'+PRIORITY_COLOR_M[c.priority]+';">'+c.score+'%</span>'+
+    '</div>';
+  }).join('');
+  setTimeout(function() {
+    document.querySelectorAll('.health-cat-bar-fill-m').forEach(function(b){ b.style.width = b.dataset.pct+'%'; });
+  }, 450);
+
+  document.getElementById('mStrengthsList').innerHTML = health.strengths.map(function(s){ return '<li>'+s+'</li>'; }).join('');
+  document.getElementById('mChallengesList').innerHTML = health.challenges.map(function(s){ return '<li>'+s+'</li>'; }).join('');
+
+  var PRIORITY_ICON_M = { critical:'🔴', high:'🟠', medium:'🟡', healthy:'🟢' };
+  document.getElementById('mSystemsList').innerHTML = health.systems.map(function(s) {
+    return '<div class="system-card-m">'+
+      '<span style="font-size:1.05rem;">'+PRIORITY_ICON_M[s.priority]+'</span>'+
+      '<span class="sc-name-m">'+s.systemLabel+'</span>'+
+      '<span class="tag-chip-m '+(s.priority==='critical'?'crit-m':s.priority==='high'?'high-m':s.priority==='medium'?'med-m':'healthy-m')+'">'+s.priority+' · '+s.score+'%</span>'+
+    '</div>';
+  }).join('') + '<div class="system-card-m"><span style="font-size:1.05rem;">📡</span><span class="sc-name-m">'+(SERVICE_LABELS_M[health.contentTier]||health.contentTier)+'</span><span class="tag-chip-m gold-m">content &amp; support</span></div>';
+
+  document.getElementById('mAddonsRow').innerHTML = health.addons.map(function(a) {
+    return '<span class="tag-chip-m">'+(SERVICE_LABELS_M[a]||a.replace(/_/g,' '))+'</span>';
+  }).join('');
+
+  var ICON_MAP_M = { visibility_sys:'👁️', brand_authority:'🎯', lead_gen_sys:'🧲', sales_conv_sys:'💳', biz_ops_sys:'⚙️', retention_sys:'🔁' };
+  document.getElementById('mRoadmapList').innerHTML = health.roadmap.map(function(p) {
+    var sysNames = p.systems.map(function(sid){ return ICON_MAP_M[sid]+' '+(SERVICE_LABELS_M[sid]||sid); }).join(' &nbsp;+&nbsp; ');
+    return '<div class="roadmap-phase-m">'+
+      '<div class="roadmap-num-m">P'+p.phase+'</div>'+
+      '<div class="roadmap-body-m"><div class="rp-title-m">Phase '+p.phase+' — '+p.title+'</div><div class="rp-desc-m">'+sysNames+'</div></div>'+
+    '</div>';
+  }).join('');
+
+  mState._health = health;
+  mState._platformRoute = mComputePlatformRoute();
 }
 
 // ── Submit ──
@@ -6085,14 +6422,42 @@ async function mSubmitForm() {
   var scoreObj = mComputeScore();
   var tags = mComputeTags(scoreObj.total);
   var routes = mComputeRoutes(scoreObj.total, tags);
+  var health = mComputeHealth();
+  var platform = mComputePlatformRoute();
   var tier = scoreObj.total >= 70 ? 'A' : scoreObj.total >= 40 ? 'B' : 'C';
+
+  var recommendedSystems = health.systems.map(function(s) {
+    return { id:s.systemId, label:s.systemLabel, priority:s.priority, score:s.score };
+  });
+  recommendedSystems.push({ id:health.contentTier, label:SERVICE_LABELS_M[health.contentTier]||health.contentTier, priority:'support', score:null });
+  var recommendedAddons = health.addons.map(function(a) { return { id:a, label:SERVICE_LABELS_M[a]||a.replace(/_/g,' ') }; });
+
   var payload = {
     firstName: mState.answers.firstName, lastName: mState.answers.lastName,
     email: mState.answers.email, phone: mState.answers.phone,
-    responses: { q1_identity:mState.answers.q1, q2_stage:mState.answers.q2, q3_revenue:mState.answers.q3, q4_pain:mState.answers.q4, q5_needs:mState.answers.q5, q6_budget:mState.answers.q6, q7_urgency:mState.answers.q7, q8_channels:mState.answers.q8, q9_infra:mState.answers.q9, q10_goal:mState.answers.q10 },
+    responses: {
+      q1_identity:mState.answers.q1, q2_stage:mState.answers.q2, q3_revenue:mState.answers.q3,
+      q4_pain:mState.answers.q4, q5_needs:mState.answers.q5, q6_budget:mState.answers.q6,
+      q7_urgency:mState.answers.q7, q8_channels:mState.answers.q8, q9_infra:mState.answers.q9,
+      q10_goal:mState.answers.q10, salesInfraPreference:mState.answers.salesInfra
+    },
     score: scoreObj.total, scoreBreakdown: scoreObj.breakdown,
     tier: 'Tier ' + tier, tags: tags,
     primaryRoute: routes[0] ? routes[0].name : 'none',
+
+    platformRoute: platform.id, platformRouteLabel: platform.label,
+
+    businessHealthScore: health.healthScore,
+    categoryScores: {
+      visibility: health.categories.visibility.score, brandAuthority: health.categories.brand.score,
+      leadGeneration: health.categories.leadgen.score, salesConversion: health.categories.sales.score,
+      businessOps: health.categories.ops.score, retention: health.categories.retention.score
+    },
+    strengths: health.strengths, challenges: health.challenges,
+    recommendedSystems: recommendedSystems, recommendedAddons: recommendedAddons,
+    contentSupportTier: health.contentTier, growthRoadmap: health.roadmap,
+    salesInfraPreference: mState.answers.salesInfra[0] || '',
+
     completedAt: new Date().toISOString()
   };
   if (window.__saveToFirebase) await window.__saveToFirebase(payload);
@@ -6106,8 +6471,17 @@ async function mSubmitForm() {
 
 // ── Restart ──
 window.mRestart = function() {
-  mState = { step:0, totalSteps:11, answers:{ firstName:'', lastName:'', email:'', phone:'', q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[] } };
+  mState = {
+    step:0, totalSteps:18,
+    answers:{
+      firstName:'', lastName:'', email:'', phone:'',
+      q1:[], q2:[], q3:[], q4:[], q5:[], q6:[], q7:[], q8:[], q9:[], q10:[],
+      salesInfra:[],
+      health:{ visibility:[], brand:[], leadgen:[], sales:[], ops:[], retention:[] }
+    }
+  };
   document.querySelectorAll('.option-btn-m').forEach(function(b) { b.classList.remove('selected'); });
+  document.querySelectorAll('.rating-circle-m').forEach(function(b) { b.classList.remove('selected'); });
   document.querySelectorAll('.val-msg-m').forEach(function(m) { m.classList.remove('show'); });
   ['m_firstName','m_lastName','m_email','m_phone'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('intake-results-view').classList.remove('active');
