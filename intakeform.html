@@ -746,6 +746,9 @@ body::after {
 .roadmap-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--gold); flex-shrink: 0; width: 30px; }
 .roadmap-body .rp-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .85rem; color: var(--white); margin-bottom: 4px; }
 .roadmap-body .rp-desc { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+
+/* Internal-only sales qualification data — never shown to the visitor */
+.lead-internal-block { display: none !important; }
 </style>
 </head>
 <body>
@@ -1124,21 +1127,23 @@ body::after {
       <div class="results-name" id="resultsName">Welcome back</div>
       <div class="results-tagline" id="resultsTagline"></div>
 
-      <div class="score-display">
-        <div class="score-ring">
-          <svg width="100" height="100" viewBox="0 0 100 100">
-            <circle class="track" cx="50" cy="50" r="44"/>
-            <circle class="fill" id="scoreCircle" cx="50" cy="50" r="44"
-              stroke-dasharray="276.5"
-              stroke-dashoffset="276.5"/>
-          </svg>
-          <div class="num" id="scoreNum">0<small>SQS</small></div>
+      <div class="lead-internal-block" aria-hidden="true">
+        <div class="score-display">
+          <div class="score-ring">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle class="track" cx="50" cy="50" r="44"/>
+              <circle class="fill" id="scoreCircle" cx="50" cy="50" r="44"
+                stroke-dasharray="276.5"
+                stroke-dashoffset="276.5"/>
+            </svg>
+            <div class="num" id="scoreNum">0<small>SQS</small></div>
+          </div>
+
+          <div class="score-breakdown" id="scoreBreakdown"></div>
         </div>
 
-        <div class="score-breakdown" id="scoreBreakdown"></div>
+        <div class="tags-row" id="tagsRow"></div>
       </div>
-
-      <div class="tags-row" id="tagsRow"></div>
     </div>
 
     <!-- ═══ BUSINESS GROWTH PRESCRIPTION ═══ -->
@@ -1159,6 +1164,10 @@ body::after {
       <div class="sw-lists">
         <div class="sw-block strengths"><h5>✓ Strengths</h5><ul id="strengthsList"></ul></div>
         <div class="sw-block challenges"><h5>! Key Challenges</h5><ul id="challengesList"></ul></div>
+      </div>
+
+      <div style="text-align:center;margin-top:22px;">
+        <button class="btn btn-gold" style="display:inline-flex;" onclick="downloadResultsPDF()">📄 Download Your Growth Report (PDF)</button>
       </div>
     </div>
 
@@ -1187,6 +1196,7 @@ body::after {
 </div>
 
 <!-- ═══════════════════ ENGINE ═══════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════
    BUSINESS HEALTH CATEGORIES
@@ -1622,6 +1632,230 @@ function computePlatformRoute(){
   if(salesInfra === 'marketplace' || q5.indexOf('marketplace')>-1)
                                return { id:'gata',         label:'GATA Business Ecosystem' };
   return { id:'studio', label:'TEKNNUKU Studio (Growth Systems Client)' };
+}
+
+/* ═══════════════════════════════════════════
+   PDF REPORT ENGINE — plain-language, branded
+═══════════════════════════════════════════ */
+var CATEGORY_COPY = {
+  visibility: {
+    critical:"Right now, most potential customers can't find you when they search online. You're losing sales to competitors who simply show up first.",
+    high:"You show up online sometimes, but not consistently enough to be anyone's obvious first choice.",
+    medium:"You're visible in some places already — tightening this further will bring in steadier, more predictable traffic.",
+    healthy:"People can find you easily. This is a real strength — protect it and keep sharpening it."
+  },
+  brand: {
+    critical:"Customers hesitate before buying because your brand doesn't yet look fully trustworthy or professional.",
+    high:"Your brand is presentable, but it isn't yet building strong trust entirely on its own.",
+    medium:"Your brand is solid — a few sharp upgrades will make it unmistakable and instantly credible.",
+    healthy:"Your brand builds real trust before you even say a word. Keep it consistent everywhere."
+  },
+  leadgen: {
+    critical:"New customer inquiries aren't coming in reliably. Fixing this is the single biggest lever for growth right now.",
+    high:"You get some leads, but not yet a predictable, steady weekly flow you can count on.",
+    medium:"Leads come in reasonably well — a proper system will make this consistent month after month.",
+    healthy:"You have a steady, dependable stream of new leads coming in. Keep feeding it."
+  },
+  sales: {
+    critical:"Too many people ask about your business and never buy. You're leaving real money on the table.",
+    high:"You convert some inquiries, but slow follow-up is quietly costing you sales every week.",
+    medium:"Conversion is decent — tightening your follow-up will convert even more of the people already interested.",
+    healthy:"Most people who inquire end up buying from you. This is a strong, efficient engine."
+  },
+  ops: {
+    critical:"Your business depends entirely on you being present, every single day, for everything to work.",
+    high:"Some processes are documented, but too much still lives only in your head.",
+    medium:"Operations are fairly organised — a bit more structure will remove the last bottlenecks.",
+    healthy:"Your business could run smoothly for a week even without you. That's real freedom."
+  },
+  retention: {
+    critical:"Customers rarely come back or refer others — you're starting from zero with every new month.",
+    high:"Some customers return, but there's no real system keeping them coming back on purpose.",
+    medium:"Retention is reasonable already — a loyalty/referral system will multiply it further.",
+    healthy:"Customers keep coming back and referring others. This is your cheapest, most reliable growth channel."
+  }
+};
+
+var SYSTEM_EXPLAIN = {
+  visibility_sys:'Gets your business showing up on Google Search, Google Maps and social media, so new customers can actually find you when they look.',
+  brand_authority:'Makes your business look professional and trustworthy the moment someone sees it — logo, reviews and social proof, all working together.',
+  lead_gen_sys:'Puts a steady, predictable stream of new customer inquiries into your business every week — not just when you happen to post.',
+  sales_conv_sys:'Turns the people who inquire into people who actually pay — faster follow-ups, easier payment, far less lost revenue.',
+  biz_ops_sys:'Organises your day-to-day so the business runs smoothly even when you personally are not there.',
+  retention_sys:'Keeps the customers you already have coming back and referring others — the cheapest growth channel there is.',
+  content_basic:'Light-touch content support to keep your pages active and consistent.',
+  content_mgr:'A dedicated growth manager who runs your content and marketing for you, week to week.',
+  content_team:'A full team running your content, marketing and growth day-to-day, so you can focus on the business itself.'
+};
+
+function healthSummaryLine(score){
+  if(score < 40) return 'Your business has real potential, but foundational gaps are holding back growth right now. The good news: every one of these is fixable.';
+  if(score < 60) return 'You already have genuine momentum. Closing a handful of key gaps will unlock your next level of growth.';
+  if(score < 80) return 'Your business is in good shape overall. A few sharp refinements will take it from good to excellent.';
+  return 'Your business is operating at a very high level across the board. The focus now is protecting and compounding what\'s working.';
+}
+
+function downloadResultsPDF(){
+  if(!window.jspdf || !window.jspdf.jsPDF){ alert('The PDF library is still loading — please try again in a moment.'); return; }
+  var health   = state._health || computeHealth();
+  var platform = state._platformRoute || computePlatformRoute();
+  var name     = (state.answers.firstName || '').trim() || 'there';
+
+  var categories = CATEGORIES.map(function(cat){
+    var c = health.categories[cat.id];
+    return { label:c.label, score:c.score, priority:c.priority, insight:(CATEGORY_COPY[cat.id]||{})[c.priority] || '' };
+  });
+  var systems = health.systems.map(function(s){
+    return { label:s.systemLabel, priority:s.priority, score:s.score, explain:SYSTEM_EXPLAIN[s.systemId]||'' };
+  });
+  var roadmap = health.roadmap.map(function(p){
+    var descs = p.systems.map(function(sid){ return SYSTEM_EXPLAIN[sid]; }).filter(Boolean);
+    return { phase:p.phase, title:p.title, desc:descs.join(' ') };
+  });
+
+  buildGrowthPDF({
+    name:name, healthScore:health.healthScore, categories:categories,
+    strengths:health.strengths, challenges:health.challenges,
+    systems:systems, roadmap:roadmap, platformLabel:platform.label
+  });
+}
+
+function buildGrowthPDF(ctx){
+  var jsPDFCtor = window.jspdf.jsPDF;
+  var doc = new jsPDFCtor({ unit:'mm', format:'a4' });
+  var pageW = 210, pageH = 297, margin = 18, y = 0;
+
+  var GOLD=[200,155,20], BLACK=[11,11,11], WHITE=[242,237,228], MUTED=[165,158,145];
+  var RED=[239,68,68], AMBER=[245,158,11], BLUE=[59,130,246], GREEN=[34,197,94], CYAN=[0,188,212];
+
+  function priorityColor(p){ return p==='critical'?RED:p==='high'?AMBER:p==='medium'?BLUE:GREEN; }
+  function setFill(c){ doc.setFillColor(c[0],c[1],c[2]); }
+  function setText(c){ doc.setTextColor(c[0],c[1],c[2]); }
+  function setDraw(c){ doc.setDrawColor(c[0],c[1],c[2]); }
+
+  function drawFooter(){
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); setText([150,150,150]);
+    doc.text('TEKNNUKU STUDIO  ·  studio.teknnuku.xyz', margin, pageH-12);
+    doc.text('Page '+doc.internal.getNumberOfPages(), pageW-margin, pageH-12, { align:'right' });
+  }
+
+  function drawHeader(){
+    setFill(BLACK); doc.rect(0,0,pageW,38,'F');
+    setFill(GOLD); doc.rect(0,38,pageW,0.8,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(20); setText(GOLD);
+    doc.text('TEKNNUKU STUDIO', margin, 18);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); setText(WHITE);
+    doc.text('BUSINESS GROWTH PRESCRIPTION', margin, 26);
+    doc.setFontSize(8); setText([180,180,180]);
+    doc.text('Prepared for '+ctx.name+'  ·  '+new Date().toLocaleDateString(), margin, 33);
+  }
+
+  function ensureSpace(h){
+    if(y + h > pageH - 24){ drawFooter(); doc.addPage(); drawHeader(); y = 50; }
+  }
+
+  drawHeader();
+  y = 50;
+
+  // Health score hero
+  doc.setFont('helvetica','bold'); doc.setFontSize(38); setText(CYAN);
+  doc.text(String(ctx.healthScore), margin, y+12);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); setText(MUTED);
+  doc.text('/ 100   BUSINESS HEALTH SCORE', margin+24, y+7);
+  doc.setFontSize(9.3); setText(WHITE);
+  var introLines = doc.splitTextToSize(healthSummaryLine(ctx.healthScore), pageW-margin*2);
+  doc.text(introLines, margin, y+19);
+  y += 19 + introLines.length*4.6 + 6;
+
+  // Category breakdown
+  ensureSpace(16);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); setText(GOLD);
+  doc.text('HOW YOUR BUSINESS SCORED', margin, y); y+=3;
+  setDraw(GOLD); doc.line(margin,y,pageW-margin,y); y+=8;
+
+  ctx.categories.forEach(function(c){
+    ensureSpace(20);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setText(WHITE);
+    doc.text(c.label, margin, y);
+    setText(priorityColor(c.priority));
+    doc.text(c.score+'%', pageW-margin, y, { align:'right' });
+    y+=3;
+    var barW = pageW-margin*2;
+    setFill([40,40,40]); doc.roundedRect(margin,y,barW,3,1.5,1.5,'F');
+    var fillW = Math.max(2, barW*c.score/100);
+    setFill(priorityColor(c.priority)); doc.roundedRect(margin,y,fillW,3,1.5,1.5,'F');
+    y+=6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.3); setText(MUTED);
+    var lines = doc.splitTextToSize(c.insight, barW);
+    doc.text(lines, margin, y+3);
+    y += lines.length*3.7 + 6;
+  });
+
+  // Strengths / Challenges
+  ensureSpace(30);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); setText(GREEN);
+  doc.text('WHAT\'S WORKING', margin, y);
+  setText(RED);
+  doc.text('WHAT NEEDS ATTENTION FIRST', pageW/2+4, y);
+  y+=6;
+  var colW = (pageW-margin*2)/2 - 4;
+  var leftLines=[], rightLines=[];
+  ctx.strengths.forEach(function(s){ leftLines = leftLines.concat(doc.splitTextToSize('•  '+s, colW)); });
+  ctx.challenges.forEach(function(s){ rightLines = rightLines.concat(doc.splitTextToSize('•  '+s, colW)); });
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.2); setText(WHITE);
+  doc.text(leftLines, margin, y);
+  doc.text(rightLines, pageW/2+4, y);
+  y += Math.max(leftLines.length, rightLines.length)*3.9 + 10;
+
+  // Recommended systems
+  ensureSpace(20);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); setText(GOLD);
+  doc.text('YOUR RECOMMENDED GROWTH SYSTEMS', margin, y); y+=3;
+  setDraw(GOLD); doc.line(margin,y,pageW-margin,y); y+=8;
+
+  ctx.systems.forEach(function(s, i){
+    ensureSpace(18);
+    setFill(priorityColor(s.priority)); doc.circle(margin+1.3, y-1.3, 1.3, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setText(WHITE);
+    doc.text((i+1)+'.  '+s.label, margin+6, y);
+    y+=4.5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.3); setText(MUTED);
+    var lines = doc.splitTextToSize(s.explain, pageW-margin*2-6);
+    doc.text(lines, margin+6, y);
+    y += lines.length*3.7+5;
+  });
+
+  // Roadmap
+  ensureSpace(20);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); setText(GOLD);
+  doc.text('YOUR GROWTH ROADMAP', margin, y); y+=3;
+  setDraw(GOLD); doc.line(margin,y,pageW-margin,y); y+=8;
+  ctx.roadmap.forEach(function(p){
+    ensureSpace(16);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setText(GOLD);
+    doc.text('PHASE '+p.phase, margin, y);
+    setText(WHITE); doc.setFont('helvetica','normal');
+    doc.text(p.title, margin+27, y);
+    y+=5.5;
+    doc.setFontSize(8.3); setText(MUTED);
+    var lines = doc.splitTextToSize(p.desc, pageW-margin*2-4);
+    doc.text(lines, margin+4, y);
+    y += lines.length*3.7+6;
+  });
+
+  // CTA block
+  ensureSpace(30);
+  setFill([20,20,20]); doc.roundedRect(margin, y, pageW-margin*2, 24, 2, 2, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); setText(GOLD);
+  doc.text('Ready to close these gaps?', margin+6, y+9);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.6); setText(WHITE);
+  var ctaLines = doc.splitTextToSize('Book a free strategy call with TEKNNUKU Studio and we\'ll map out exactly how to fix this, system by system.', pageW-margin*2-12);
+  doc.text(ctaLines, margin+6, y+15);
+  setText(CYAN); doc.setFont('helvetica','bold');
+  doc.text('studio.teknnuku.xyz', margin+6, y+21);
+
+  drawFooter();
+  doc.save('TEKNNUKU-Business-Growth-Report-'+(ctx.name||'client').replace(/[^a-z0-9]+/gi,'-')+'.pdf');
 }
 
 /* ═══════════════════════════════════════════
