@@ -920,6 +920,7 @@ var VENTURES_SEED = [
   {id:'studio',name:'TEKNNUKU Studio',focus:'Web, funnels, business systems',stage:'Revenue',color:'linear-gradient(135deg,#C89B14,#daa820)',segment:'type1',url:'https://studio.teknnuku.xyz'},
   {id:'jobletters',name:'Jobletters.xyz',focus:'CV, career tools, job placement',stage:'Revenue',color:'linear-gradient(135deg,#3b82f6,#1a5f9c)',segment:'type2',url:'https://jobletters.xyz'},
   {id:'tek1security',name:'TEK1SECURITY',focus:'Guard tracking, payroll systems',stage:'Building',color:'linear-gradient(135deg,#ef4444,#aa0022)',segment:'type3',url:'https://tek1security.teknnuku.xyz'},
+  {id:'saloncore',name:'SalonCore',focus:'Booking & payment system for salons, barbers, nails, spa',stage:'Building',color:'linear-gradient(135deg,#ec4899,#831843)',segment:'type3',url:'https://saloncore.teknnuku.xyz'},
   {id:'gata',name:'GATA Protocol',focus:'Business ecosystem marketplace',stage:'Building',color:'linear-gradient(135deg,#00BCD4,#006688)',segment:'type1',url:'https://gataprotocol.org'},
   {id:'globalbiz',name:'Global Biz Hub',focus:'Business directory and listings',stage:'Building',color:'linear-gradient(135deg,#a855f7,#3d2080)',segment:'type1',url:'https://globalbizhub.teknnuku.xyz'},
   {id:'p2p',name:'Poverty2Prosperity',focus:'Business masterclass program',stage:'Revenue',color:'linear-gradient(135deg,#f59e0b,#cc8800)',segment:'type1',url:'https://p2p.teknnuku.xyz'},
@@ -2074,6 +2075,9 @@ function _panelLeads() {
         '<select class="tbl-filter" id="lf-route" onchange="applyLeadsFilters()">' +
           '<option value="">All Routes</option>' +
         '</select>' +
+        '<select class="tbl-filter" id="lf-platform" onchange="applyLeadsFilters()">' +
+          '<option value="">All Platforms</option>' +
+        '</select>' +
         '<select class="tbl-filter" id="lf-budget" onchange="applyLeadsFilters()">' +
           '<option value="">All Budgets</option>' +
           '<option value="free_only">Free Only</option>' +
@@ -2098,13 +2102,15 @@ function _panelLeads() {
       '<th>Tier</th>' +
       '<th>Budget</th>' +
       '<th>Stage</th>' +
+      '<th>Platform</th>' +
+      '<th>Growth Package</th>' +
       '<th>Route</th>' +
       '<th>Source</th>' +
       '<th>CRM Status</th>' +
       '<th>Submitted</th>' +
       '<th>Actions</th>' +
     '</tr></thead>' +
-    '<tbody id="leads-tbody"><tr><td colspan="10" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
+    '<tbody id="leads-tbody"><tr><td colspan="12" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
     '</table></div></div>' +
 
   '</div>';
@@ -3619,12 +3625,20 @@ var TEKNNUKU_SERVICES = [
   {id:'trust_page',     label:'Trust & Credibility Page',      venture:'studio',       category:'Growth Add-Ons'},
   {id:'brand_video',    label:'Brand Video / Reel',            venture:'studio',       category:'Growth Add-Ons'},
   {id:'review_sys',     label:'Review & Social Proof System',  venture:'studio',       category:'Growth Add-Ons'},
+  {id:'gbp_setup',      label:'Google Business Profile Setup', venture:'studio',       category:'Growth Add-Ons'},
+  {id:'landing_page',   label:'Landing Page Build',            venture:'studio',       category:'Growth Add-Ons'},
+  {id:'lead_magnet',    label:'Lead Magnet Creation',          venture:'studio',       category:'Growth Add-Ons'},
+  {id:'crm_setup',      label:'CRM Setup',                     venture:'studio',       category:'Growth Add-Ons'},
+  {id:'loyalty_program',label:'Loyalty Program',               venture:'studio',       category:'Growth Add-Ons'},
+  {id:'referral_sys',   label:'Referral System',               venture:'studio',       category:'Growth Add-Ons'},
+  {id:'workflow_auto',  label:'Workflow Automation',           venture:'studio',       category:'Growth Add-Ons'},
   // ── Monthly Growth Memberships ──
   {id:'growth_member',  label:'Growth Membership (Monthly)',   venture:'studio',       category:'Monthly Growth Memberships'},
   {id:'growth_engine',  label:'Growth Engine Retainer',        venture:'studio',       category:'Monthly Growth Memberships'},
   // Ventures
   {id:'jobletters_sub', label:'Jobletters Subscription',       venture:'jobletters',   category:'Jobletters'},
   {id:'tek1_saas',      label:'TEK1SECURITY SaaS License',     venture:'tek1security', category:'TEK1SECURITY'},
+  {id:'saloncore_sub',  label:'SalonCore Subscription',        venture:'saloncore',    category:'SalonCore'},
   {id:'gata_market',    label:'GATAMarket Vendor Fee',          venture:'gata',         category:'GATA'},
   {id:'p2p_master',     label:'P2P Masterclass',               venture:'p2p',          category:'Poverty2Prosperity'},
   {id:'pawa_product',   label:'Pawa+9ja Product Sale',         venture:'pawa',         category:'Pawa+9ja'},
@@ -5383,12 +5397,15 @@ window._saveDoc('fin_budgets',data).then(function(){ toast('Budget saved ✓','s
   var q6  = r.q6_budget    && r.q6_budget[0]    || '';
   var q4  = r.q4_pain      && r.q4_pain[0]      || '';
   var q10 = r.q10_goal     && r.q10_goal[0]     || '';
-  var vId = 'studio';
-  if (q1 === 'security_firm') vId = 'tek1security';
-  else if (q1 === 'solar_vendor') vId = 'pawa';
-  else if ((l.primaryRoute||'').includes('GATA')) vId = 'gata';
-  else if ((l.primaryRoute||'').includes('Poverty')) vId = 'p2p';
-  var seg = (q1 === 'security_firm' || q1 === 'solar_vendor' || q1 === 'company_team') ? 'type3' : 'type1';
+  var vId = l.platformRoute || 'studio';
+  if (!l.platformRoute) {
+    if (q1 === 'security_firm') vId = 'tek1security';
+    else if (q1 === 'solar_vendor') vId = 'pawa';
+    else if (q1 === 'salon_biz') vId = 'saloncore';
+    else if ((l.primaryRoute||'').includes('GATA')) vId = 'gata';
+    else if ((l.primaryRoute||'').includes('Poverty')) vId = 'p2p';
+  }
+  var seg = (q1 === 'security_firm' || q1 === 'solar_vendor' || q1 === 'salon_biz' || q1 === 'company_team') ? 'type3' : 'type1';
   var dv  = q6 === 'premium_ready' ? 1500000 : q6 === 'can_invest' ? 500000 : q6 === 'low_cost' ? 100000 : 0;
   var name = ((l.firstName || '') + ' ' + (l.lastName || '')).trim() || l.email || 'Unknown';
   return {
@@ -5400,6 +5417,10 @@ window._saveDoc('fin_budgets',data).then(function(){ toast('Budget saved ✓','s
     assignedTo:'', assignedName:'Unassigned', assignmentType:'auto',
     notes:'', intakeScore:l.score||0, intakeTier:l.tier||'',
     intakePrimaryRoute:l.primaryRoute||'',
+    platformRoute:l.platformRoute||vId, platformRouteLabel:l.platformRouteLabel||'',
+    businessHealthScore:l.businessHealthScore, categoryScores:l.categoryScores||null,
+    recommendedSystems:l.recommendedSystems||[], recommendedAddons:l.recommendedAddons||[],
+    strengths:l.strengths||[], challenges:l.challenges||[], growthRoadmap:l.growthRoadmap||[],
     budget:q6, painPoint:q4, desiredOutcome:q10, currentStage:r.q2_stage&&r.q2_stage[0]||'',
     addedBy:'system', addedByName:'Auto-Synced',
     createdAt: new Date().toISOString()
@@ -6653,25 +6674,26 @@ function renderTierBreakdown(leads){
 //  INTAKE LEADS — FILTER STATE + HELPERS
 // ═══════════════════════════════════════════════════════════════
 var _leadsFilters = {
-  search:'', tier:'', source:'', route:'', status:'',
+  search:'', tier:'', source:'', route:'', status:'', platform:'',
   budget:'', stage:'', from:'', to:''
 };
 
 function applyLeadsFilters() {
-  _leadsFilters.search = ((document.getElementById('lf-search') ||{}).value||'').toLowerCase().trim();
-  _leadsFilters.tier   = (document.getElementById('lf-tier')   ||{}).value||'';
-  _leadsFilters.source = (document.getElementById('lf-source') ||{}).value||'';
-  _leadsFilters.route  = (document.getElementById('lf-route')  ||{}).value||'';
-  _leadsFilters.status = (document.getElementById('lf-status') ||{}).value||'';
-  _leadsFilters.budget = (document.getElementById('lf-budget') ||{}).value||'';
-  _leadsFilters.stage  = (document.getElementById('lf-stage')  ||{}).value||'';
-  _leadsFilters.from   = (document.getElementById('lf-from')   ||{}).value||'';
-  _leadsFilters.to     = (document.getElementById('lf-to')     ||{}).value||'';
+  _leadsFilters.search   = ((document.getElementById('lf-search') ||{}).value||'').toLowerCase().trim();
+  _leadsFilters.tier     = (document.getElementById('lf-tier')   ||{}).value||'';
+  _leadsFilters.source   = (document.getElementById('lf-source') ||{}).value||'';
+  _leadsFilters.route    = (document.getElementById('lf-route')  ||{}).value||'';
+  _leadsFilters.platform = (document.getElementById('lf-platform')||{}).value||'';
+  _leadsFilters.status   = (document.getElementById('lf-status') ||{}).value||'';
+  _leadsFilters.budget   = (document.getElementById('lf-budget') ||{}).value||'';
+  _leadsFilters.stage    = (document.getElementById('lf-stage')  ||{}).value||'';
+  _leadsFilters.from     = (document.getElementById('lf-from')   ||{}).value||'';
+  _leadsFilters.to       = (document.getElementById('lf-to')     ||{}).value||'';
   renderLeads(window._data ? window._data.leads || [] : []);
 }
 
 function clearLeadsFilters() {
-  ['lf-search','lf-tier','lf-source','lf-route','lf-status',
+  ['lf-search','lf-tier','lf-source','lf-route','lf-platform','lf-status',
    'lf-budget','lf-stage','lf-from','lf-to'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
@@ -6700,9 +6722,10 @@ function getLeadPipelineStatus(leadId, email) {
 
 function buildLeadsFilterOptions(leads) {
   // Collect unique routes
-  var routes = {}, budgets = {}, stages = {}, sources = {};
+  var routes = {}, budgets = {}, stages = {}, sources = {}, platforms = {};
   leads.forEach(function(l) {
     if (l.primaryRoute)                           routes[l.primaryRoute]  = 1;
+    if (l.platformRouteLabel)                     platforms[l.platformRouteLabel] = 1;
     var r = l.responses || {};
     if (r.q6_budget && r.q6_budget[0])            budgets[r.q6_budget[0]] = 1;
     if (r.q2_stage  && r.q2_stage[0])             stages[r.q2_stage[0]]   = 1;
@@ -6719,6 +6742,16 @@ function buildLeadsFilterOptions(leads) {
         return '<option value="' + escHtml(r) + '"' + (cur === r ? ' selected' : '') + '>' + escHtml(r) + '</option>';
       }).join('');
     if (cur) routeEl.value = cur;
+  }
+
+  var platformEl = document.getElementById('lf-platform');
+  if (platformEl) {
+    var curP = platformEl.value;
+    platformEl.innerHTML = '<option value="">All Platforms</option>' +
+      Object.keys(platforms).sort().map(function(p) {
+        return '<option value="' + escHtml(p) + '"' + (curP === p ? ' selected' : '') + '>' + escHtml(p) + '</option>';
+      }).join('');
+    if (curP) platformEl.value = curP;
   }
 
   var budgetEl = document.getElementById('lf-budget');
@@ -6788,6 +6821,7 @@ function renderLeads(leads) {
              : r.q1_referral && r.q1_referral[0] ? r.q1_referral[0]
              : l.source || 'intake_form';
     var route = l.primaryRoute || '';
+    var platform = l.platformRouteLabel || '';
     var dateStr = ((l.completedAt || l.createdAt || '') + '').substring(0, 10);
     if (dateStr.length < 10 && (l.completedAt || l.createdAt)) {
       var d = l.completedAt && l.completedAt.seconds
@@ -6804,6 +6838,7 @@ function renderLeads(leads) {
     if (f.budget  && budg !== f.budget) return false;
     if (f.stage   && stg  !== f.stage)  return false;
     if (f.route   && route !== f.route) return false;
+    if (f.platform && platform !== f.platform) return false;
     if (f.source  && src  !== f.source && !(f.source === 'intake_form' && src === 'intake_form')) return false;
     if (f.from    && dateStr && dateStr < f.from) return false;
     if (f.to      && dateStr && dateStr > f.to)   return false;
@@ -6818,7 +6853,7 @@ function renderLeads(leads) {
   if (!tbody) return;
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state">' +
+    tbody.innerHTML = '<tr><td colspan="12"><div class="empty-state">' +
       '<div class="empty-icon">📥</div>' +
       '<div>No leads match your filters</div>' +
       '<div style="margin-top:8px;"><button class="action-btn" onclick="clearLeadsFilters()">Clear Filters</button></div>' +
@@ -6835,6 +6870,7 @@ function renderLeads(leads) {
                 : r.q1_referral && r.q1_referral[0] ? r.q1_referral[0]
                 : l.source || 'intake_form';
     var route   = l.primaryRoute || '—';
+    var platform = l.platformRouteLabel || '';
     var pipeStatus = getLeadPipelineStatus(l.id, l.email);
     var budgLbl = BUDGET_LBL[budget] || budget || '—';
     var BUDGET_COLORS = {
@@ -6849,6 +6885,27 @@ function renderLeads(leads) {
       : route.includes('Poverty') || route.includes('P2P') ? 'var(--amber)'
       : route.includes('Jobletters') ? 'var(--blue)'
       : 'var(--gold)';
+
+    // Platform badge colour (which TEKNNUKU-built platform this lead was routed to)
+    var PLATFORM_COLORS = {
+      'TEK1SECURITY':'badge-red', 'PowerPlus 9ja':'badge-amber', 'SalonCore':'badge-purple',
+      'GATA Business Ecosystem':'badge-cyan'
+    };
+    var platformBadgeCls = PLATFORM_COLORS[platform] || 'badge-gold';
+    var platformCell = platform
+      ? '<span class="badge ' + platformBadgeCls + '" style="font-size:.54rem;">' + escHtml(platform) + '</span>'
+      : '<span style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">—</span>';
+
+    // Growth package chips (recommended TEKNNUKU Studio growth systems)
+    var systems = Array.isArray(l.recommendedSystems) ? l.recommendedSystems : [];
+    var PRIORITY_BADGE = { critical:'badge-red', high:'badge-amber', medium:'badge-blue', healthy:'badge-green', support:'badge-purple' };
+    var shown = systems.slice(0, 2);
+    var extra = systems.length - shown.length;
+    var growthCell = systems.length
+      ? shown.map(function(s){
+          return '<span class="badge ' + (PRIORITY_BADGE[s.priority] || 'badge-dim') + '" style="font-size:.5rem;margin:1px 3px 1px 0;display:inline-block;">' + escHtml(s.label || s.id) + '</span>';
+        }).join('') + (extra > 0 ? '<span style="font-family:var(--mono);font-size:.55rem;color:var(--dimmer);">+' + extra + ' more</span>' : '')
+      : '<span style="font-family:var(--mono);font-size:.62rem;color:var(--dimmer);">—</span>';
 
     return '<tr>' +
       // Person
@@ -6873,6 +6930,10 @@ function renderLeads(leads) {
           escHtml(stg.replace(/_/g, ' ')) +
         '</span>' +
       '</td>' +
+      // Platform (TEKNNUKU-built platform routed to — incl. SalonCore)
+      '<td>' + platformCell + '</td>' +
+      // Growth Package (recommended TEKNNUKU Studio growth systems)
+      '<td style="max-width:220px;">' + growthCell + '</td>' +
       // Route
       '<td>' +
         '<span style="font-family:var(--mono);font-size:.62rem;color:' + routeColor + ';">' +
@@ -11639,7 +11700,114 @@ function openSubjectAssignmentHistory(idx) {
 function openDrawer(eyebrow,title,html){document.getElementById('drawer-eyebrow').textContent=eyebrow;document.getElementById('drawer-title').textContent=title;document.getElementById('drawer-body').innerHTML=html;document.getElementById('drawer-overlay').classList.add('open');document.getElementById('main-drawer').classList.add('open');}
 function closeDrawer(){document.getElementById('drawer-overlay').classList.remove('open');document.getElementById('main-drawer').classList.remove('open');}
 
-function openLeadDrawer(l){if(!l)return;var name=(l.firstName||'')+' '+(l.lastName||'');var r=l.responses||{};var html='<div class="detail-section"><h4>Contact Info</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(name)+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(l.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(l.phone||'—')+'</div></div><div class="detail-item"><div class="detail-label">Submitted</div><div class="detail-val">'+fmtTime(l.completedAt||l.createdAt)+'</div></div></div></div><div class="detail-section"><h4>📊 Qualification</h4><div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">'+scoreBadge(l.score)+tierBadge(l.tier)+'<span style="font-family:var(--mono);font-size:.7rem;color:var(--dim);">Route: '+escHtml(l.primaryRoute||'—')+'</span></div></div><div class="detail-section"><h4>📋 Responses</h4><div style="display:flex;flex-direction:column;gap:10px;">'+Object.entries(r).map(function(e){var v=Array.isArray(e[1])?e[1].join(', '):e[1];return'<div><div class="detail-label">'+escHtml(e[0].replace(/_/g,' '))+'</div><div class="detail-val" style="margin-top:2px;">'+escHtml(v||'—')+'</div></div>';}).join('')+'</div></div><div class="btn-row"><button class="btn-primary" onclick="quickProposal(\''+l.id+'\',\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">📄 Propose</button><button class="btn-secondary" onclick="openNewPaymentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">💰 Payment</button><button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">🗂️ Assign</button></div>';openDrawer('Intake Lead',name.trim(),html);}
+function openLeadDrawer(l){
+  if(!l) return;
+  var name = ((l.firstName||'')+' '+(l.lastName||'')).trim();
+  var r = l.responses || {};
+
+  var PRIORITY_BADGE = { critical:'badge-red', high:'badge-amber', medium:'badge-blue', healthy:'badge-green', support:'badge-purple' };
+  var PRIORITY_ICON  = { critical:'🔴', high:'🟠', medium:'🟡', healthy:'🟢', support:'📡' };
+
+  var html = '<div class="detail-section"><h4>Contact Info</h4><div class="detail-grid">' +
+    '<div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(name||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(l.email||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(l.phone||'—')+'</div></div>' +
+    '<div class="detail-item"><div class="detail-label">Submitted</div><div class="detail-val">'+fmtTime(l.completedAt||l.createdAt)+'</div></div>' +
+  '</div></div>';
+
+  // ── Qualification (buyer readiness) + Platform Routed ──
+  html += '<div class="detail-section"><h4>📊 Qualification &amp; Platform</h4>' +
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">' +
+      scoreBadge(l.score) + tierBadge(l.tier) +
+      '<span style="font-family:var(--mono);font-size:.7rem;color:var(--dim);">Route: '+escHtml(l.primaryRoute||'—')+'</span>' +
+    '</div>' +
+    '<div class="detail-grid">' +
+      '<div class="detail-item"><div class="detail-label">Platform Routed To</div><div class="detail-val">' +
+        (l.platformRouteLabel ? '<span class="badge badge-purple" style="font-size:.62rem;">'+escHtml(l.platformRouteLabel)+'</span>' : '—') +
+      '</div></div>' +
+      '<div class="detail-item"><div class="detail-label">Sales Infra Preference</div><div class="detail-val">'+escHtml((l.salesInfraPreference||'—').replace(/_/g,' '))+'</div></div>' +
+    '</div>' +
+  '</div>';
+
+  // ── Business Growth Prescription (health score + category breakdown) ──
+  if (typeof l.businessHealthScore !== 'undefined') {
+    var cs = l.categoryScores || {};
+    var CAT_LBL = { visibility:'Visibility', brandAuthority:'Brand Authority', leadGeneration:'Lead Generation',
+      salesConversion:'Sales Conversion', businessOps:'Business Operations', retention:'Customer Retention' };
+    var catRows = Object.keys(CAT_LBL).map(function(k){
+      var v = cs[k] || 0;
+      var color = v < 50 ? 'var(--red)' : v < 70 ? 'var(--amber)' : v < 85 ? 'var(--blue)' : 'var(--green)';
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">' +
+        '<span style="font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);min-width:120px;">'+CAT_LBL[k]+'</span>' +
+        '<div style="flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+v+'%;background:'+color+';border-radius:4px;"></div></div>' +
+        '<span style="font-family:var(--mono);font-size:.65rem;color:'+color+';min-width:32px;text-align:right;">'+v+'%</span>' +
+      '</div>';
+    }).join('');
+
+    html += '<div class="detail-section"><h4>🩺 Business Growth Prescription</h4>' +
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">' +
+        '<div style="font-family:var(--display);font-weight:800;font-size:1.8rem;color:var(--cyan);">'+l.businessHealthScore+'<span style="font-family:var(--mono);font-size:.55rem;color:var(--dimmer);text-transform:uppercase;margin-left:4px;">/100 health</span></div>' +
+      '</div>' +
+      catRows +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">' +
+        '<div><div class="detail-label" style="color:var(--green);margin-bottom:6px;">✓ Strengths</div>' +
+          '<ul style="list-style:none;display:flex;flex-direction:column;gap:4px;">' + (l.strengths||[]).map(function(s){ return '<li style="font-size:.76rem;color:var(--dim);">'+escHtml(s)+'</li>'; }).join('') + '</ul>' +
+        '</div>' +
+        '<div><div class="detail-label" style="color:var(--red);margin-bottom:6px;">! Key Challenges</div>' +
+          '<ul style="list-style:none;display:flex;flex-direction:column;gap:4px;">' + (l.challenges||[]).map(function(s){ return '<li style="font-size:.76rem;color:var(--dim);">'+escHtml(s)+'</li>'; }).join('') + '</ul>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    // ── Recommended Growth Systems ──
+    var systems = Array.isArray(l.recommendedSystems) ? l.recommendedSystems : [];
+    if (systems.length) {
+      html += '<div class="detail-section"><h4>🏗️ Recommended TEKNNUKU Studio Growth Systems</h4>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;">' +
+        systems.map(function(s){
+          return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,255,255,.03);border-radius:6px;">' +
+            '<span>'+(PRIORITY_ICON[s.priority]||'⚪')+'</span>' +
+            '<span style="flex:1;font-size:.8rem;color:var(--white);">'+escHtml(s.label||s.id)+'</span>' +
+            '<span class="badge '+(PRIORITY_BADGE[s.priority]||'badge-dim')+'" style="font-size:.5rem;">'+escHtml(s.priority||'')+(s.score!=null?' · '+s.score+'%':'')+'</span>' +
+          '</div>';
+        }).join('') +
+        '</div>' +
+        (Array.isArray(l.recommendedAddons) && l.recommendedAddons.length ?
+          '<div style="margin-top:12px;"><div class="detail-label" style="margin-bottom:6px;">Recommended Add-Ons</div><div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+            l.recommendedAddons.map(function(a){ return '<span class="badge badge-dim" style="font-size:.56rem;">'+escHtml(a.label||a.id)+'</span>'; }).join('') +
+          '</div></div>' : '') +
+      '</div>';
+    }
+
+    // ── Growth Roadmap ──
+    if (Array.isArray(l.growthRoadmap) && l.growthRoadmap.length) {
+      html += '<div class="detail-section"><h4>🗺️ Growth Roadmap</h4>' +
+        l.growthRoadmap.map(function(p){
+          return '<div style="display:flex;gap:10px;padding:8px 0;">' +
+            '<span style="font-family:var(--display);font-weight:800;color:var(--gold);">P'+p.phase+'</span>' +
+            '<div><div style="font-size:.78rem;font-weight:600;color:var(--white);">'+escHtml(p.title)+'</div></div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }
+  }
+
+  // ── Raw Responses ──
+  html += '<div class="detail-section"><h4>📋 Responses</h4><div style="display:flex;flex-direction:column;gap:10px;">' +
+    Object.entries(r).map(function(e){
+      var v = Array.isArray(e[1]) ? e[1].join(', ') : e[1];
+      return '<div><div class="detail-label">'+escHtml(e[0].replace(/_/g,' '))+'</div><div class="detail-val" style="margin-top:2px;">'+escHtml(v||'—')+'</div></div>';
+    }).join('') +
+  '</div></div>';
+
+  html += '<div class="btn-row">' +
+    '<button class="btn-primary" onclick="quickProposal(\''+l.id+'\',\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">📄 Propose</button>' +
+    '<button class="btn-secondary" onclick="openNewPaymentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">💰 Payment</button>' +
+    '<button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(name)+'\',\''+escHtml(l.email||'')+'\')">🗂️ Assign</button>' +
+  '</div>';
+
+  openDrawer('Intake Lead', name.trim(), html);
+}
 
 function openInquiryDrawer(i){if(!i)return;var sd=i.serviceDetails||{};var html='<div class="detail-section"><h4>Contact</h4><div class="detail-grid"><div class="detail-item"><div class="detail-label">Name</div><div class="detail-val">'+escHtml(i.name||'—')+'</div></div><div class="detail-item"><div class="detail-label">Email</div><div class="detail-val mono">'+escHtml(i.email||'—')+'</div></div><div class="detail-item"><div class="detail-label">Phone</div><div class="detail-val mono">'+escHtml(i.phone||'—')+'</div></div><div class="detail-item"><div class="detail-label">Business</div><div class="detail-val">'+escHtml(i.businessName||'—')+'</div></div></div></div><div class="detail-section"><h4>📋 Service Details</h4><div style="margin-bottom:10px;"><span class="badge badge-cyan">'+serviceLabel(i.service)+'</span></div><div style="display:flex;flex-direction:column;gap:10px;">'+Object.entries(sd).map(function(e){return'<div><div class="detail-label">'+escHtml(e[0].replace(/_/g,' '))+'</div><div class="detail-val" style="margin-top:2px;">'+escHtml(e[1]||'—')+'</div></div>';}).join('')+'</div>'+(i.notes?'<div style="margin-top:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:6px;font-size:.8rem;color:var(--dim);">'+escHtml(i.notes)+'</div>':'')+'</div><div class="btn-row"><button class="btn-primary" onclick="quickProposal(\''+i.id+'\',\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">📄 Propose</button><button class="btn-secondary" onclick="openNewAssignmentFor(\''+escHtml(i.name||'')+'\',\''+escHtml(i.email||'')+'\')">🗂️ Assign</button></div>';openDrawer('Service Inquiry',escHtml(i.name||'—'),html);}
 
@@ -13012,6 +13180,7 @@ if (l.qualification) {
           (dv?'<span class="badge badge-gold">₦'+dv.toLocaleString()+'</span>':'') +
           '<span style="font-family:var(--mono);font-size:.56rem;color:'+tierColor+';background:rgba(255,255,255,.04);padding:2px 7px;border-radius:3px;border:1px solid rgba(255,255,255,.07);">Tier '+tier+' Deal</span>' +
           (l.intakeScore?'<span class="badge badge-cyan">Intake: '+l.intakeScore+'pts</span>':'') +
+          (l.platformRouteLabel?'<span class="badge badge-purple">'+escHtml(l.platformRouteLabel)+'</span>':'') +
         '</div>' +
       '</div>' +
     '</div>' +
@@ -13064,7 +13233,17 @@ qSection +
         '<div class="detail-item"><div class="detail-label">Tier</div><div class="detail-val">'+tierBadge(l.intakeTier)+'</div></div>' +
         '<div class="detail-item"><div class="detail-label">Primary Route</div><div class="detail-val">'+escHtml(l.intakePrimaryRoute||'—')+'</div></div>' +
         '<div class="detail-item"><div class="detail-label">Stage Reported</div><div class="detail-val">'+escHtml(l.currentStage||'—')+'</div></div>' +
-      '</div></div>' : '') +
+        '<div class="detail-item"><div class="detail-label">Platform Routed To</div><div class="detail-val">'+(l.platformRouteLabel?'<span class="badge badge-purple" style="font-size:.62rem;">'+escHtml(l.platformRouteLabel)+'</span>':'—')+'</div></div>' +
+        (typeof l.businessHealthScore!=='undefined' ? '<div class="detail-item"><div class="detail-label">Business Health Score</div><div class="detail-val" style="color:var(--cyan);">'+l.businessHealthScore+'/100</div></div>' : '') +
+      '</div>' +
+      (Array.isArray(l.recommendedSystems) && l.recommendedSystems.length ?
+        '<div style="margin-top:12px;"><div class="detail-label" style="margin-bottom:6px;">Recommended Growth Systems</div><div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+          l.recommendedSystems.map(function(s){
+            var PB = { critical:'badge-red', high:'badge-amber', medium:'badge-blue', healthy:'badge-green', support:'badge-purple' };
+            return '<span class="badge '+(PB[s.priority]||'badge-dim')+'" style="font-size:.56rem;">'+escHtml(s.label||s.id)+'</span>';
+          }).join('') +
+        '</div></div>' : '') +
+    '</div>' : '') +
 
     // Editable fields
     (isEdit ? '<div class="detail-section"><h4>✏️ Edit Lead Details</h4>'+crmLeadEditForm(l)+'</div>' : '') +
