@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Share Your Experience — TEKNNUKU Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyAjovgyVtPJOWwyte8gwdesEHesF9AzJlM",
+    authDomain:        "teknnuku-intake-form.firebaseapp.com",
+    projectId:         "teknnuku-intake-form",
+    storageBucket:     "teknnuku-intake-form.firebasestorage.app",
+    messagingSenderId: "661289555481",
+    appId:             "1:661289555481:web:f15b1f8983d5d460df3c88"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.__saveToFirebase = async function(payload) {
+    try {
+      const docRef = await addDoc(collection(db, "testimonials"), {
+        ...payload,
+        createdAt: serverTimestamp()
+      });
+      console.log("✅ Testimonial saved:", docRef.id);
+      return docRef.id;
+    } catch (err) {
+      console.warn("⚠️ Firebase write failed (check config):", err.message);
+      return null;
+    }
+  };
+</script>
+
+<style>
+/* ═══════════════════════════════════════════
+   ROOT & RESET (shared TEKNNUKU design system)
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:      #0B0B0B;
+  --card:    #181818;
+  --surface: #141414;
+  --gold:    #C89B14;
+  --gold2:   #E4B62E;
+  --cyan:    #00BCD4;
+  --green:   #22c55e;
+  --amber:   #f59e0b;
+  --blue:    #3b82f6;
+  --red:     #ef4444;
+  --purple:  #a855f7;
+  --white:   #F2EDE4;
+  --muted:   rgba(242,237,228,0.55);
+  --dim:     rgba(242,237,228,0.30);
+  --dimmer:  rgba(242,237,228,0.18);
+  --border:  rgba(201,168,76,0.18);
+  --borderS: rgba(242,237,228,0.07);
+  --r:       4px;
+  --r2:      10px;
+}
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  padding: 24px 16px;
+  line-height: 1.5;
+}
+h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+::selection { background: var(--gold); color: #080808; }
+
+.form-shell { max-width: 640px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; }
+
+/* ── Hero ── */
+.hero { padding: 40px 32px 28px; text-align: center; border-bottom: 1px solid var(--borderS); background: radial-gradient(ellipse at top, rgba(200,155,20,.08), transparent 70%); }
+.hero .wordmark { font-family: 'DM Mono', monospace; font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+.hero h1 { font-size: 1.7rem; font-weight: 800; margin-bottom: 10px; }
+.hero p { font-size: .88rem; color: var(--muted); max-width: 440px; margin: 0 auto 6px; }
+.hero .meta { font-family: 'DM Mono', monospace; font-size: .6rem; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); margin-top: 14px; }
+
+/* ── Progress ── */
+.progress-meta { display: flex; justify-content: space-between; align-items: center; padding: 18px 32px 0; }
+.progress-meta .step-counter { font-family: 'DM Mono', monospace; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.progress-track { height: 3px; background: var(--borderS); border-radius: 4px; margin: 10px 32px 0; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 4px; transition: width .4s ease; width: 0%; }
+.step-dots { display: flex; gap: 4px; padding: 10px 32px 0; flex-wrap: wrap; }
+.step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--borderS); transition: all .3s; }
+.step-dot.active { background: var(--gold); width: 16px; border-radius: 3px; }
+.step-dot.done { background: var(--gold); opacity: .5; }
+
+/* ── Form body ── */
+.form-body { padding: 26px 32px 8px; min-height: 320px; }
+.step-panel { display: none; animation: fadeIn .35s ease; }
+.step-panel.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
+
+.section-label { font-family: 'DM Mono', monospace; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.q-title { font-size: 1.15rem; font-weight: 700; font-family: 'Syne', sans-serif; margin-bottom: 6px; }
+.q-hint { font-size: .82rem; color: var(--muted); margin-bottom: 20px; }
+
+.input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.input-full { grid-column: 1 / -1; }
+.input-field label { display: block; font-family: 'DM Mono', monospace; font-size: .58rem; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+.input-field input, .input-field select, .input-field textarea {
+  width: 100%; background: var(--card); border: 1px solid var(--borderS); border-radius: var(--r);
+  padding: 11px 13px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: .88rem; outline: none; transition: border-color .2s;
+}
+.input-field textarea { min-height: 100px; resize: vertical; line-height: 1.5; }
+.input-field input:focus, .input-field select:focus, .input-field textarea:focus { border-color: var(--gold); }
+.input-field input::placeholder, .input-field textarea::placeholder { color: var(--dimmer); }
+
+.options-grid { display: flex; flex-direction: column; gap: 10px; }
+.options-grid.cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.option-btn {
+  display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: var(--card);
+  border: 1.5px solid var(--borderS); border-radius: var(--r); cursor: pointer; transition: all .18s; text-align: left; position: relative;
+}
+.option-btn:hover { border-color: var(--gold); transform: translateX(2px); }
+.option-btn.selected { border-color: var(--gold); background: rgba(200,155,20,.07); }
+.opt-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--borderS); flex-shrink: 0; position: relative; }
+.opt-check.square { border-radius: 4px; }
+.option-btn.selected .opt-check { border-color: var(--gold); background: var(--gold); }
+.option-btn.selected .opt-check.square { background: var(--gold); }
+.opt-check::after { content:''; position:absolute; top:50%; left:50%; width:7px; height:7px; border-radius:50%; background:#080808; transform:translate(-50%,-50%); opacity:0; }
+.opt-check.square::after { content:'✓'; width:auto; height:auto; background:none; color:#080808; font-size:.7rem; font-weight:700; border-radius:0; }
+.option-btn.selected .opt-check::after { opacity:1; }
+.opt-icon { font-size: 1.1rem; }
+.opt-label { font-size: .88rem; color: var(--white); flex: 1; }
+
+.val-msg { display: none; color: var(--red); font-size: .74rem; margin-top: 10px; font-family: 'DM Mono', monospace; }
+.val-msg.show { display: block; }
+
+/* ── Rating widgets (1–10) ── */
+.rating-block { margin-bottom: 22px; }
+.rating-block:last-child { margin-bottom: 0; }
+.rating-stmt { font-size: .86rem; color: var(--white); margin-bottom: 10px; font-weight: 600; }
+.rating-scale-10 { display: flex; flex-wrap: wrap; gap: 6px; }
+.rating-circle-10 {
+  flex: 0 0 calc(20% - 5px); height: 36px; border-radius: var(--r); border: 1.5px solid var(--borderS);
+  background: var(--card); color: var(--dim); font-family: 'DM Mono', monospace; font-size: .72rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .18s;
+}
+.rating-circle-10:hover { border-color: var(--gold); color: var(--muted); }
+.rating-circle-10.selected { background: var(--gold); border-color: var(--gold); color: #080808; }
+.rating-scale-labels { display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: .52rem; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); margin-top: 6px; }
+
+/* ── Permission rows ── */
+.perm-row { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; background: var(--card); border: 1px solid var(--borderS); border-radius: var(--r); margin-bottom: 10px; cursor: pointer; transition: border-color .2s; }
+.perm-row:hover { border-color: var(--gold); }
+.perm-row.checked { border-color: var(--gold); background: rgba(200,155,20,.06); }
+.perm-check { width: 19px; height: 19px; border-radius: 5px; border: 1.5px solid var(--borderS); flex-shrink: 0; margin-top: 1px; position: relative; }
+.perm-row.checked .perm-check { background: var(--gold); border-color: var(--gold); }
+.perm-row.checked .perm-check::after { content:'✓'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#080808; font-size:.7rem; font-weight:700; }
+.perm-label { font-size: .84rem; color: var(--white); }
+
+/* ── Upload zones ── */
+.upload-zone { border: 1.5px dashed var(--borderS); border-radius: var(--r); padding: 16px; margin-bottom: 12px; }
+.upload-zone label { display: block; font-family: 'DM Mono', monospace; font-size: .58rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.upload-zone input[type="file"] { color: var(--dim); font-size: .74rem; width: 100%; }
+.upload-zone .up-hint { font-size: .68rem; color: var(--dimmer); margin-top: 6px; }
+.upload-zone input[type="text"] { width: 100%; background: var(--card); border: 1px solid var(--borderS); border-radius: var(--r); padding: 9px 12px; color: var(--white); font-size: .82rem; }
+
+/* ── Nav ── */
+.form-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 32px 28px; gap: 12px; }
+.btn { padding: 13px 24px; border-radius: var(--r); border: none; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: .86rem; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-gold { background: var(--gold); color: #080808; }
+.btn-gold:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,.3); }
+.btn-ghost { background: transparent; color: var(--dim); border: 1px solid var(--borderS); }
+.btn-ghost:hover { border-color: var(--dim); color: var(--muted); }
+.btn-link { background: none; border: none; color: var(--dim); font-size: .78rem; text-decoration: underline; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.btn-link:hover { color: var(--muted); }
+
+/* ── Thank-you screen ── */
+.thanks-screen { display: none; text-align: center; padding: 60px 36px; }
+.thanks-screen.active { display: block; animation: fadeIn .5s ease; }
+.thanks-icon { font-size: 3rem; margin-bottom: 18px; }
+.thanks-screen h2 { font-size: 1.6rem; margin-bottom: 12px; }
+.thanks-screen p { font-size: .92rem; color: var(--muted); max-width: 420px; margin: 0 auto 8px; }
+.thanks-quote { margin: 26px auto; max-width: 460px; padding: 20px 22px; background: var(--card); border-left: 3px solid var(--gold); border-radius: var(--r); font-style: italic; color: var(--white); font-size: .9rem; text-align: left; }
+
+.loading-overlay { display: none; position: fixed; inset: 0; background: rgba(11,11,11,.88); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+.loading-overlay.show { display: flex; }
+.spinner-ring { width: 40px; height: 40px; border: 3px solid var(--borderS); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay .txt { font-family: 'DM Mono', monospace; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+
+@media (max-width:600px) {
+  body { padding: 12px; }
+  .hero { padding: 32px 20px 22px; }
+  .form-body { padding: 22px 20px 8px; }
+  .form-nav { padding: 18px 20px 24px; }
+  .progress-meta, .progress-track, .step-dots { margin-left: 0; margin-right: 0; padding-left: 20px; padding-right: 20px; }
+  .input-group, .options-grid.cols-2 { grid-template-columns: 1fr; }
+  .input-full { grid-column: 1; }
+  .rating-circle-10 { flex-basis: calc(20% - 5px); }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner-ring"></div>
+  <div class="txt">Saving your story…</div>
+</div>
+
+<div class="form-shell" id="formShell">
+
+  <div class="hero">
+    <div class="wordmark">TEKNNUKU STUDIO</div>
+    <h1>Share Your Experience</h1>
+    <p>Your story could inspire another business owner to grow. Thank you for trusting TEKNNUKU Studio — we're grateful for the opportunity to work with you, and we'd love to hear about your experience and the results you've achieved.</p>
+    <div class="meta">Takes approximately 3–5 minutes</div>
+  </div>
+
+  <div class="progress-meta">
+    <span class="step-counter" id="stepCounter">Step 1 of 9</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="step-dots" id="stepDots"></div>
+
+  <div class="form-body">
+
+    <!-- STEP 0: About You -->
+    <div class="step-panel active" data-step="0">
+      <div class="section-label">Section 1 — About You</div>
+      <div class="q-title">Tell us who you are</div>
+      <div class="q-hint">So we know who to credit (or keep anonymous, if you prefer).</div>
+      <div class="input-group">
+        <div class="input-field"><label>Full Name *</label><input type="text" id="s_fullName" placeholder="Jane Doe"></div>
+        <div class="input-field"><label>Company / Business Name</label><input type="text" id="s_companyName" placeholder="Sweet Crumbs Bakery"></div>
+        <div class="input-field"><label>Position</label><input type="text" id="s_position" placeholder="Founder / Owner"></div>
+        <div class="input-field"><label>Email Address *</label><input type="email" id="s_email" placeholder="you@business.com"></div>
+        <div class="input-field"><label>Phone Number</label><input type="tel" id="s_phone" placeholder="+234…"></div>
+        <div class="input-field"><label>Website</label><input type="text" id="s_website" placeholder="yourbusiness.com"></div>
+        <div class="input-field">
+          <label>Business Industry</label>
+          <select id="s_industry">
+            <option value="">Select…</option>
+            <option>Retail</option><option>Fashion</option><option>Beauty</option><option>Food</option>
+            <option>Restaurant</option><option>Professional Services</option><option>Real Estate</option>
+            <option>Education</option><option>Healthcare</option><option>Manufacturing</option>
+            <option>Technology</option><option>Agriculture</option><option>Logistics</option>
+            <option>Hospitality</option><option>Security</option><option>Other</option>
+          </select>
+        </div>
+        <div class="input-field"><label>City / Country</label><input type="text" id="s_location" placeholder="Lagos, Nigeria"></div>
+      </div>
+      <div class="val-msg" id="val-0">Please fill in your name and email to continue.</div>
+    </div>
+
+    <!-- STEP 1: What We Built -->
+    <div class="step-panel" data-step="1">
+      <div class="section-label">Section 2 — What We Built For You</div>
+      <div class="q-title">What did TEKNNUKU Studio build for you?</div>
+      <div class="q-hint">Select all that apply.</div>
+      <div class="options-grid cols-2" id="s_built">
+        <button class="option-btn" data-value="website" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Website</span></button>
+        <button class="option-btn" data-value="landing_page" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Landing Page</span></button>
+        <button class="option-btn" data-value="growth_system" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Business Growth System</span></button>
+        <button class="option-btn" data-value="sales_funnel" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Sales Funnel</span></button>
+        <button class="option-btn" data-value="lead_gen" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Lead Generation System</span></button>
+        <button class="option-btn" data-value="brand_identity" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Brand Identity</span></button>
+        <button class="option-btn" data-value="seo" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">SEO</span></button>
+        <button class="option-btn" data-value="automation" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Automation</span></button>
+        <button class="option-btn" data-value="dashboard" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Dashboard</span></button>
+        <button class="option-btn" data-value="crm" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">CRM</span></button>
+        <button class="option-btn" data-value="ai_solution" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">AI Solution</span></button>
+        <button class="option-btn" data-value="custom_dev" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Custom Development</span></button>
+        <button class="option-btn" data-value="other" onclick="select(this,'s_built','multi')"><div class="opt-check square"></div><span class="opt-label">Other</span></button>
+      </div>
+      <div class="val-msg" id="val-1">Please select at least one option.</div>
+    </div>
+
+    <!-- STEP 2: Before TEKNNUKU -->
+    <div class="step-panel" data-step="2">
+      <div class="section-label">Section 3 — Before Working With TEKNNUKU</div>
+      <div class="q-title">What was life like before us?</div>
+      <div class="input-field input-full" style="margin-bottom:16px;">
+        <label>What challenge were you facing? *</label>
+        <textarea id="s_challenge" placeholder="Describe the problem in your own words…"></textarea>
+      </div>
+      <div class="input-field input-full">
+        <label>How was it affecting your business?</label>
+        <textarea id="s_impact" placeholder="Lost sales, wasted time, frustration…"></textarea>
+      </div>
+      <div class="val-msg" id="val-2">Please tell us what challenge you were facing.</div>
+    </div>
+
+    <!-- STEP 3: Your Experience (ratings 1-10) -->
+    <div class="step-panel" data-step="3">
+      <div class="section-label">Section 4 — Your Experience</div>
+      <div class="q-title">Rate your experience with us</div>
+      <div class="q-hint">1 = Poor, 10 = Outstanding.</div>
+      <div id="ratingsContainer"></div>
+      <div class="val-msg" id="val-3">Please rate every item to continue.</div>
+    </div>
+
+    <!-- STEP 4: The Results -->
+    <div class="step-panel" data-step="4">
+      <div class="section-label">Section 5 — The Results</div>
+      <div class="q-title">What changed after working with us?</div>
+      <div class="input-field input-full" style="margin-bottom:18px;">
+        <textarea id="s_whatChanged" placeholder="Tell us what's different now…"></textarea>
+      </div>
+      <div class="q-hint" style="margin-bottom:10px;">Any measurable results? Select all that apply.</div>
+      <div class="options-grid cols-2" id="s_results" style="margin-bottom:20px;">
+        <button class="option-btn" data-value="more_sales" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">More sales</span></button>
+        <button class="option-btn" data-value="more_enquiries" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">More enquiries</span></button>
+        <button class="option-btn" data-value="more_leads" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">More leads</span></button>
+        <button class="option-btn" data-value="better_branding" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">Better branding</span></button>
+        <button class="option-btn" data-value="more_visitors" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">More website visitors</span></button>
+        <button class="option-btn" data-value="faster_ops" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">Faster operations</span></button>
+        <button class="option-btn" data-value="more_customers" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">More customers</span></button>
+        <button class="option-btn" data-value="increased_revenue" onclick="select(this,'s_results','multi')"><div class="opt-check square"></div><span class="opt-label">Increased revenue</span></button>
+      </div>
+      <div class="q-hint" style="margin-bottom:10px;">Can you estimate the improvement?</div>
+      <div class="options-grid" id="s_improvement">
+        <button class="option-btn" data-value="lt10" onclick="select(this,'s_improvement','single')"><div class="opt-check"></div><span class="opt-label">Less than 10%</span></button>
+        <button class="option-btn" data-value="10to25" onclick="select(this,'s_improvement','single')"><div class="opt-check"></div><span class="opt-label">10–25%</span></button>
+        <button class="option-btn" data-value="25to50" onclick="select(this,'s_improvement','single')"><div class="opt-check"></div><span class="opt-label">25–50%</span></button>
+        <button class="option-btn" data-value="50to100" onclick="select(this,'s_improvement','single')"><div class="opt-check"></div><span class="opt-label">50–100%</span></button>
+        <button class="option-btn" data-value="gt100" onclick="select(this,'s_improvement','single')"><div class="opt-check"></div><span class="opt-label">More than 100%</span></button>
+        <button class="option-btn" data-value="not_sure" onclick="select(this,'s_improvement','single')"><div class="opt-check"></div><span class="opt-label">Not sure</span></button>
+      </div>
+      <div class="val-msg" id="val-4">Please tell us what changed for your business.</div>
+    </div>
+
+    <!-- STEP 5: Your Testimonial -->
+    <div class="step-panel" data-step="5">
+      <div class="section-label">Section 6 — Your Testimonial</div>
+      <div class="q-title">If someone asked why they should work with TEKNNUKU Studio, what would you tell them?</div>
+      <div class="input-field input-full">
+        <textarea id="s_testimonial" style="min-height:160px;" placeholder="Write freely — this is the part future clients will read…"></textarea>
+      </div>
+      <div class="val-msg" id="val-5">Please share a few words for your testimonial.</div>
+    </div>
+
+    <!-- STEP 6: Media Uploads (optional) -->
+    <div class="step-panel" data-step="6">
+      <div class="section-label">Section 7 — Media (Optional)</div>
+      <div class="q-title">Got any visuals to share?</div>
+      <div class="q-hint">Totally optional, but photos and screenshots make your story much more powerful. Images under ~250KB each.</div>
+      <div class="upload-zone"><label>Business Logo</label><input type="file" id="up_logo" accept="image/*"></div>
+      <div class="upload-zone"><label>Your Photo</label><input type="file" id="up_photo" accept="image/*"></div>
+      <div class="upload-zone"><label>Screenshot / Before-After Image</label><input type="file" id="up_screenshot" accept="image/*"></div>
+      <div class="upload-zone">
+        <label>Video or Audio Testimonial (optional)</label>
+        <input type="text" id="s_videoLink" placeholder="Paste a Google Drive, YouTube, or WhatsApp link…">
+        <div class="up-hint">Recorded something? Just drop the link here — no need to upload the file directly.</div>
+      </div>
+    </div>
+
+    <!-- STEP 7: Permission -->
+    <div class="step-panel" data-step="7">
+      <div class="section-label">Section 8 — Permission</div>
+      <div class="q-title">May we share your story?</div>
+      <div class="q-hint">Check any that apply — entirely your choice.</div>
+      <div id="permContainer"></div>
+    </div>
+
+    <!-- STEP 8: Bonus Questions -->
+    <div class="step-panel" data-step="8">
+      <div class="section-label">Section 9 — A Few More Questions</div>
+      <div class="q-title">The details that help other business owners decide</div>
+      <div class="input-field input-full" style="margin-bottom:14px;"><label>What nearly stopped you from hiring us?</label><textarea id="s_nearlyStopped" style="min-height:70px;"></textarea></div>
+      <div class="input-field input-full" style="margin-bottom:14px;"><label>Why did you finally choose TEKNNUKU Studio?</label><textarea id="s_whyChose" style="min-height:70px;"></textarea></div>
+      <div class="input-field input-full" style="margin-bottom:14px;"><label>What surprised you the most?</label><textarea id="s_surprised" style="min-height:70px;"></textarea></div>
+      <div class="input-field input-full" style="margin-bottom:18px;"><label>Which feature/service did you love most?</label><input type="text" id="s_favoriteFeature" placeholder="…"></div>
+
+      <div class="q-hint" style="margin-bottom:10px;">Would you recommend us?</div>
+      <div class="options-grid cols-2" id="s_wouldRecommend" style="margin-bottom:20px;">
+        <button class="option-btn" data-value="yes" onclick="select(this,'s_wouldRecommend','single')"><div class="opt-check"></div><span class="opt-label">Yes, absolutely</span></button>
+        <button class="option-btn" data-value="maybe" onclick="select(this,'s_wouldRecommend','single')"><div class="opt-check"></div><span class="opt-label">Maybe</span></button>
+        <button class="option-btn" data-value="no" onclick="select(this,'s_wouldRecommend','single')"><div class="opt-check"></div><span class="opt-label">No</span></button>
+      </div>
+
+      <div class="q-hint" style="margin-bottom:10px;">How likely are you to work with us again? (1–10)</div>
+      <div id="likelyAgainContainer"></div>
+    </div>
+
+  </div>
+
+  <div class="form-nav">
+    <button class="btn btn-ghost" id="btnBack" onclick="goBack()">← Back</button>
+    <div style="display:flex;gap:14px;align-items:center;">
+      <button class="btn-link" id="btnSkip" onclick="goNext(true)" style="display:none;">Skip this step</button>
+      <button class="btn btn-gold" id="btnNext" onclick="goNext(false)">Continue →</button>
+    </div>
+  </div>
+
+  <div class="thanks-screen" id="thanksScreen">
+    <div class="thanks-icon">🙏</div>
+    <h2>Thank you, <span id="thanksName">friend</span>.</h2>
+    <p>Your story genuinely means a lot to us — and it might be exactly what another business owner needs to see before taking their own leap of growth.</p>
+    <div class="thanks-quote" id="thanksQuote"></div>
+    <p style="margin-top:24px;font-size:.8rem;">— The TEKNNUKU Studio Team</p>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+var RATING_ITEMS = ['Communication','Professionalism','Speed','Quality','Creativity','Value for Money','Overall Experience'];
+var OPTIONAL_STEPS = [6,7,8]; // media, permission, bonus — skippable
+
+var state = {
+  step: 0,
+  totalSteps: 9,
+  answers: {
+    fullName:'', companyName:'', position:'', email:'', phone:'', website:'', industry:'', location:'',
+    s_built:[], s_challenge:'', s_impact:'',
+    ratings:{}, // {Communication: 8, ...}
+    s_whatChanged:'', s_results:[], s_improvement:[],
+    s_testimonial:'',
+    s_videoLink:'', media:{ logo:null, photo:null, screenshot:null },
+    permissions:{ publish:false, ads:false, social:false, editGrammar:false, followUpCaseStudy:false },
+    s_nearlyStopped:'', s_whyChose:'', s_surprised:'', s_favoriteFeature:'',
+    s_wouldRecommend:[], likelyAgain:null
+  }
+};
+
+/* ── Build 1–10 rating rows ── */
+(function buildRatings(){
+  var html = RATING_ITEMS.map(function(label){
+    var id = label.replace(/[^a-zA-Z]/g,'');
+    return '<div class="rating-block">' +
+      '<div class="rating-stmt">'+label+'</div>' +
+      '<div class="rating-scale-10" id="rate-'+id+'">' +
+        Array.from({length:10},function(_,i){ return i+1; }).map(function(v){
+          return '<div class="rating-circle-10" onclick="setRating(\''+id+'\',\''+label+'\','+v+',this)">'+v+'</div>';
+        }).join('') +
+      '</div>' +
+      '<div class="rating-scale-labels"><span>Poor</span><span>Outstanding</span></div>' +
+    '</div>';
+  }).join('');
+  document.getElementById('ratingsContainer').innerHTML = html;
+})();
+
+function setRating(id, label, value, btnEl) {
+  state.answers.ratings[label] = value;
+  var row = document.getElementById('rate-'+id);
+  if (row) row.querySelectorAll('.rating-circle-10').forEach(function(c,i){ c.classList.toggle('selected', i===(value-1)); });
+  var vm = document.getElementById('val-'+state.step); if (vm) vm.classList.remove('show');
+}
+
+/* ── Likely-again single 1–10 row (step 8) ── */
+(function buildLikelyAgain(){
+  var html = '<div class="rating-scale-10" id="rate-likelyAgain">' +
+    Array.from({length:10},function(_,i){ return i+1; }).map(function(v){
+      return '<div class="rating-circle-10" onclick="setLikelyAgain('+v+',this)">'+v+'</div>';
+    }).join('') +
+  '</div><div class="rating-scale-labels"><span>Unlikely</span><span>Certainly</span></div>';
+  document.getElementById('likelyAgainContainer').innerHTML = html;
+})();
+function setLikelyAgain(value, btnEl) {
+  state.answers.likelyAgain = value;
+  var row = document.getElementById('rate-likelyAgain');
+  if (row) row.querySelectorAll('.rating-circle-10').forEach(function(c,i){ c.classList.toggle('selected', i===(value-1)); });
+}
+
+/* ── Permission checkboxes (step 7) ── */
+var PERM_ITEMS = [
+  {key:'publish', label:'You may publish my testimonial.'},
+  {key:'ads', label:'You may use it in advertisements.'},
+  {key:'social', label:'You may use it on social media.'},
+  {key:'editGrammar', label:'You may edit for grammar without changing meaning.'},
+  {key:'followUpCaseStudy', label:'Contact me for a detailed case study.'}
+];
+(function buildPerms(){
+  document.getElementById('permContainer').innerHTML = PERM_ITEMS.map(function(p){
+    return '<div class="perm-row" id="perm-'+p.key+'" onclick="togglePerm(\''+p.key+'\')">' +
+      '<div class="perm-check"></div><div class="perm-label">'+p.label+'</div>' +
+    '</div>';
+  }).join('');
+})();
+function togglePerm(key) {
+  state.answers.permissions[key] = !state.answers.permissions[key];
+  var row = document.getElementById('perm-'+key);
+  if (row) row.classList.toggle('checked', state.answers.permissions[key]);
+}
+
+/* ── Dots ── */
+(function initDots(){
+  var c = document.getElementById('stepDots');
+  for (var i=0;i<state.totalSteps;i++){
+    var d = document.createElement('div'); d.className='step-dot'; d.id='dot-'+i; c.appendChild(d);
+  }
+})();
+function updateDots(){
+  for (var i=0;i<state.totalSteps;i++){
+    var d = document.getElementById('dot-'+i); if(!d) continue;
+    d.className = 'step-dot' + (i<state.step?' done':i===state.step?' active':'');
+  }
+}
+function updateProgress(){
+  var pct = (state.step/(state.totalSteps-1))*100;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('stepCounter').textContent = 'Step '+(state.step+1)+' of '+state.totalSteps;
+  updateDots();
+}
+
+/* ── Selection ── */
+function select(btn, groupId, mode) {
+  if (mode==='single') {
+    document.querySelectorAll('#'+groupId+' .option-btn').forEach(function(b){ b.classList.remove('selected'); });
+    btn.classList.add('selected');
+    state.answers[groupId] = [btn.dataset.value];
+  } else {
+    btn.classList.toggle('selected');
+    var vals = [];
+    document.querySelectorAll('#'+groupId+' .option-btn.selected').forEach(function(b){ vals.push(b.dataset.value); });
+    state.answers[groupId] = vals;
+  }
+  var vm = document.getElementById('val-'+state.step); if (vm) vm.classList.remove('show');
+}
+
+/* ── Validation ── */
+function validate(step) {
+  if (step===0) {
+    var fn = document.getElementById('s_fullName').value.trim();
+    var em = document.getElementById('s_email').value.trim();
+    if (!fn || !em) { document.getElementById('val-0').classList.add('show'); return false; }
+    return true;
+  }
+  if (step===1) {
+    if (!state.answers.s_built.length) { document.getElementById('val-1').classList.add('show'); return false; }
+    return true;
+  }
+  if (step===2) {
+    if (!document.getElementById('s_challenge').value.trim()) { document.getElementById('val-2').classList.add('show'); return false; }
+    return true;
+  }
+  if (step===3) {
+    if (Object.keys(state.answers.ratings).length < RATING_ITEMS.length) { document.getElementById('val-3').classList.add('show'); return false; }
+    return true;
+  }
+  if (step===4) {
+    if (!document.getElementById('s_whatChanged').value.trim()) { document.getElementById('val-4').classList.add('show'); return false; }
+    return true;
+  }
+  if (step===5) {
+    if (!document.getElementById('s_testimonial').value.trim()) { document.getElementById('val-5').classList.add('show'); return false; }
+    return true;
+  }
+  return true; // steps 6,7,8 optional
+}
+
+function collectStepFields(step) {
+  if (step===0) {
+    state.answers.fullName = document.getElementById('s_fullName').value.trim();
+    state.answers.companyName = document.getElementById('s_companyName').value.trim();
+    state.answers.position = document.getElementById('s_position').value.trim();
+    state.answers.email = document.getElementById('s_email').value.trim();
+    state.answers.phone = document.getElementById('s_phone').value.trim();
+    state.answers.website = document.getElementById('s_website').value.trim();
+    state.answers.industry = document.getElementById('s_industry').value;
+    state.answers.location = document.getElementById('s_location').value.trim();
+  }
+  if (step===2) {
+    state.answers.s_challenge = document.getElementById('s_challenge').value.trim();
+    state.answers.s_impact = document.getElementById('s_impact').value.trim();
+  }
+  if (step===4) {
+    state.answers.s_whatChanged = document.getElementById('s_whatChanged').value.trim();
+  }
+  if (step===5) {
+    state.answers.s_testimonial = document.getElementById('s_testimonial').value.trim();
+  }
+  if (step===6) {
+    state.answers.s_videoLink = document.getElementById('s_videoLink').value.trim();
+  }
+  if (step===8) {
+    state.answers.s_nearlyStopped = document.getElementById('s_nearlyStopped').value.trim();
+    state.answers.s_whyChose = document.getElementById('s_whyChose').value.trim();
+    state.answers.s_surprised = document.getElementById('s_surprised').value.trim();
+    state.answers.s_favoriteFeature = document.getElementById('s_favoriteFeature').value.trim();
+  }
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step-panel').forEach(function(p){ p.classList.remove('active'); });
+  var panel = document.querySelector('.step-panel[data-step="'+n+'"]');
+  if (panel) panel.classList.add('active');
+  state.step = n;
+  updateProgress();
+  document.getElementById('btnBack').style.visibility = n===0 ? 'hidden' : 'visible';
+  document.getElementById('btnSkip').style.display = OPTIONAL_STEPS.indexOf(n)>-1 ? 'inline-flex' : 'none';
+  document.getElementById('btnNext').textContent = n===state.totalSteps-1 ? 'Submit ✓' : 'Continue →';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goNext(skip) {
+  collectStepFields(state.step);
+  if (!skip && !validate(state.step)) return;
+  if (state.step === state.totalSteps-1) { submitForm(); return; }
+  showStep(state.step+1);
+}
+function goBack() {
+  collectStepFields(state.step);
+  if (state.step===0) return;
+  showStep(state.step-1);
+}
+
+/* ── File handling (base64, capped) ── */
+async function readFileCapped(fileInputId, capBytes) {
+  var el = document.getElementById(fileInputId);
+  if (!el || !el.files || !el.files[0]) return null;
+  var file = el.files[0];
+  if (file.size > capBytes) { alert(file.name+' is too large — please choose an image under '+Math.round(capBytes/1024)+'KB.'); return null; }
+  return new Promise(function(resolve, reject) {
+    var r = new FileReader();
+    r.onload = function(){ resolve({ name:file.name, data:r.result }); };
+    r.onerror = function(){ resolve(null); };
+    r.readAsDataURL(file);
+  });
+}
+
+/* ── Submit ── */
+async function submitForm() {
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  var logo = await readFileCapped('up_logo', 260000).catch(function(){return null;});
+  var photo = await readFileCapped('up_photo', 260000).catch(function(){return null;});
+  var screenshot = await readFileCapped('up_screenshot', 260000).catch(function(){return null;});
+
+  var ratingVals = Object.values(state.answers.ratings);
+  var avgRating = ratingVals.length ? Math.round((ratingVals.reduce(function(a,b){return a+b;},0)/ratingVals.length)*10)/10 : null;
+
+  var payload = {
+    fullName: state.answers.fullName, companyName: state.answers.companyName, position: state.answers.position,
+    email: state.answers.email, phone: state.answers.phone, website: state.answers.website,
+    industry: state.answers.industry, location: state.answers.location,
+
+    builtFor: state.answers.s_built,
+    challenge: state.answers.s_challenge, impact: state.answers.s_impact,
+
+    ratings: state.answers.ratings, avgRating: avgRating,
+
+    whatChanged: state.answers.s_whatChanged,
+    measurableResults: state.answers.s_results,
+    improvementEstimate: (state.answers.s_improvement[0] || ''),
+
+    testimonial: state.answers.s_testimonial,
+
+    videoAudioLink: state.answers.s_videoLink,
+    media: { logo: logo, photo: photo, screenshot: screenshot },
+
+    permissions: state.answers.permissions,
+
+    nearlyStopped: state.answers.s_nearlyStopped, whyChose: state.answers.s_whyChose,
+    surprised: state.answers.s_surprised, favoriteFeature: state.answers.s_favoriteFeature,
+    wouldRecommend: (state.answers.s_wouldRecommend[0] || ''), likelyAgain: state.answers.likelyAgain,
+
+    // ── Internal admin fields (never shown back to the client) ──
+    approved: false, featured: false, homepage: false, usedInAds: false, usedInBrochure: false,
+    category: '', tags: [], rating: avgRating, followUpNeeded: !!state.answers.permissions.followUpCaseStudy,
+    dateSubmitted: new Date().toISOString(),
+    clientId: null
+  };
+
+  var newId = null;
+  if (window.__saveToFirebase) newId = await window.__saveToFirebase(payload);
+  await new Promise(function(r){ setTimeout(r, 1000); });
+
+  document.getElementById('loadingOverlay').classList.remove('show');
+  document.getElementById('formShell').querySelectorAll('.progress-meta,.progress-track,.step-dots,.form-body,.form-nav,.hero').forEach(function(el){ el.style.display='none'; });
+  document.getElementById('thanksName').textContent = (state.answers.fullName||'friend').split(' ')[0];
+  if (state.answers.s_testimonial) {
+    document.getElementById('thanksQuote').textContent = '"' + state.answers.s_testimonial.substring(0,220) + (state.answers.s_testimonial.length>220?'…':'') + '"';
+  } else {
+    document.getElementById('thanksQuote').style.display='none';
+  }
+  document.getElementById('thanksScreen').classList.add('active');
+}
+
+/* ── Init ── */
+showStep(0);
+</script>
+
+</body>
+</html>
