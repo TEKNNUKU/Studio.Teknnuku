@@ -1,0 +1,255 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════
+//  TEKNNUKU — FIRESTORE SECURITY RULES (project: teknnuku-intake-form)
+//
+//  v2 — now with real, database-level role enforcement.
+//
+//  ⚠️ ROLLOUT REQUIREMENT — READ BEFORE DEPLOYING ⚠️
+//  ──────────────────────────────────────────────────
+//  This version looks up each signed-in person's role by reading
+//  team_members/{request.auth.uid} — i.e. it only works for team
+//  members whose profile document ID equals their Firebase Auth UID.
+//
+//  admin.html now supports this: new team members can be created with
+//  their UID directly (Team Members → Add → "Firebase Auth UID" field),
+//  and existing team members can be retroactively linked from their
+//  profile drawer ("🔗 Link Account"), which migrates their document
+//  and repoints every assignment/task/SDS engagement/calendar event/
+//  client they own to the new ID automatically.
+//
+//  BEFORE deploying these rules to production: go through every team
+//  member who currently has login access and link their UID. Anyone
+//  NOT linked yet will be treated as having no role for the collections
+//  gated below (myRole() returns '') and will lose access to
+//  role-restricted panels until they're linked — they will NOT be
+//  silently granted broad access, because that would defeat the point
+//  of this migration. The Founder account is the one exception: it is
+//  always resolved by e-mail (matching admin.html's own logic), so the
+//  Founder can never accidentally lock themselves out.
+// ═══════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Core helpers ───────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isMap(v) {
+      return v is map;
+    }
+
+    // Founder is resolved by e-mail, exactly like admin.html's _initRBAC —
+    // this keeps the Founder account from ever being locked out even if
+    // their team_members doc isn't linked yet.
+    function isFounder() {
+      return isSignedIn()
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == 'nazzaraymond@gmail.com';
+    }
+
+    // Resolves the caller's role from their UID-keyed team_members doc.
+    // Returns '' if unauthenticated, or if their doc isn't linked yet.
+    function myRole() {
+      return isSignedIn() && exists(/databases/$(database)/documents/team_members/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/team_members/$(request.auth.uid)).data.role
+        : '';
+    }
+
+    function hasRole(role) {
+      return isFounder() || myRole() == role;
+    }
+
+    function hasAnyRole(roles) {
+      return isFounder() || (myRole() in roles);
+    }
+
+    // Any signed-in team member with a resolvable role, OR the founder.
+    // Used for collections every role in ROLE_PERMISSIONS can reach
+    // (e.g. the team directory, daily reports, the calendar).
+    function isAnyTeamMember() {
+      return isFounder() || myRole() != '';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PUBLIC INTAKE — write-only from the outside
+    // ═══════════════════════════════════════════════════════════
+
+    // Business Growth Assessment submissions (intakeform.html + index.html modal)
+    match /intake_leads/{docId} {
+      allow create: if isMap(request.resource.data);
+      allow read, update, delete: if hasAnyRole(['ops_lead','sales_manager']);
+    }
+
+    // General "request a service" inquiries (index.html)
+    match /service_inquiries/{docId} {
+      allow create: if isMap(request.resource.data);
+      allow read, update, delete: if hasAnyRole(['ops_lead','sales_manager']);
+    }
+
+    // Contact form messages (index.html)
+    match /contact_messages/{docId} {
+      allow create: if isMap(request.resource.data);
+      allow read, update, delete: if hasAnyRole(['ops_lead']);
+    }
+
+    // Job applications (careers page apply flow)
+    match /applicants/{docId} {
+      allow create: if isMap(request.resource.data);
+      allow read, update, delete: if hasAnyRole(['ops_lead']);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  CALENDAR — everyone on the team can view; only "team heads"
+    //  can add/edit/delete manual events. The public may log a
+    //  confirmed Calendly booking only (index.html tracker).
+    // ═══════════════════════════════════════════════════════════
+    match /calendar_events/{docId} {
+      allow create: if isAnyTeamMember()
+                    || (
+                         isMap(request.resource.data)
+                         && request.resource.data.type == 'calendly_booking'
+                       );
+      allow read: if isAnyTeamMember();
+      allow update, delete: if hasAnyRole(['ops_lead','sales_manager','tech_product_lead','customer_success_manager','content_lead']);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  CLIENT SUCCESS REPOSITORY (share.html + admin.html)
+    // ═══════════════════════════════════════════════════════════
+
+    // Testimonials: public may submit, but may never submit themselves as
+    // already-approved/featured/homepage/used-in-ads/used-in-brochure —
+    // those can only be flipped true by the team. Public read is opened
+    // only to already-approved testimonials.
+    match /testimonials/{docId} {
+      allow create: if hasAnyRole(['ops_lead','sales_manager','content_lead','content_creator','customer_success_manager'])
+                    || (
+                         isMap(request.resource.data)
+                         && request.resource.data.approved == false
+                         && request.resource.data.featured == false
+                         && request.resource.data.homepage == false
+                         && request.resource.data.usedInAds == false
+                         && request.resource.data.usedInBrochure == false
+                       );
+      allow read: if hasAnyRole(['ops_lead','sales_manager','content_lead','content_creator','customer_success_manager'])
+                  || (resource.data.approved == true);
+      allow update, delete: if hasAnyRole(['ops_lead','sales_manager','content_lead','content_creator','customer_success_manager']);
+    }
+
+    // Case studies & portfolio projects: authored by the team. Public
+    // read is opened only to published entries.
+    match /case_studies/{docId} {
+      allow read: if hasAnyRole(['ops_lead','sales_manager','content_lead','content_creator','customer_success_manager'])
+                  || (resource.data.status == 'published');
+      allow create, update, delete: if hasAnyRole(['ops_lead','sales_manager','content_lead','content_creator','customer_success_manager']);
+    }
+    match /portfolio_projects/{docId} {
+      allow read: if hasAnyRole(['ops_lead','sales_manager','content_lead','content_creator','customer_success_manager'])
+                  || (resource.data.status == 'published');
+      allow create, update, delete: if hasAnyRole(['ops_lead','sales_manager','content_lead','content_creator','customer_success_manager']);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PUBLIC READ, TEAM-ONLY WRITE
+    // ═══════════════════════════════════════════════════════════
+
+    // Careers page reads open job postings directly from Firestore.
+    // Only Ops Lead (and Founder) manage vacancies, per ROLE_PERMISSIONS.
+    match /careers_config/{docId} {
+      allow read: if true;
+      allow create, update, delete: if hasAnyRole(['ops_lead']);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  SALES & CRM
+    // ═══════════════════════════════════════════════════════════
+    match /crm_leads/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','inbound_closer','outbound_closer','content_lead','outreach_lead_gen']);
+    }
+    match /proposals/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','admin_finance_officer']);
+    }
+    match /payments/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','admin_finance_officer']);
+    }
+    match /assignments/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','inbound_closer','outbound_closer','content_lead','outreach_lead_gen','tech_product_lead','developer','onboarding_specialist','customer_success_manager']);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  DELIVERY
+    // ═══════════════════════════════════════════════════════════
+    match /ventures/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','content_lead','tech_product_lead']);
+    }
+    match /tasks/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','inbound_closer','outbound_closer','content_lead','content_creator','outreach_lead_gen','tech_product_lead','developer','onboarding_specialist']);
+    }
+    match /clients/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','tech_product_lead','onboarding_specialist','customer_success_manager']);
+    }
+    match /sds_records/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','tech_product_lead','developer','onboarding_specialist','customer_success_manager']);
+    }
+    // Contains client credentials (Section 24 of the asset checklist) —
+    // same access tier as sds_records, no public exceptions ever.
+    match /client_assets/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','tech_product_lead','developer','onboarding_specialist','customer_success_manager']);
+    }
+    match /comm_log/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','tech_product_lead','developer','onboarding_specialist','customer_success_manager']);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  TEAM & OPERATIONS
+    // ═══════════════════════════════════════════════════════════
+
+    // Every role can see the team directory (everyone has 'team' in
+    // ROLE_PERMISSIONS). Full write is Founder/Ops Lead only — but a
+    // signed-in person may always update their OWN profile document,
+    // as long as they aren't the one changing their own role (that
+    // would be self-promotion) — this preserves self-service flows
+    // like submitting edit requests or signing onboarding documents.
+    match /team_members/{uid} {
+      allow read: if isAnyTeamMember();
+      allow create: if hasAnyRole(['ops_lead']);
+      allow update: if hasAnyRole(['ops_lead'])
+                    || (isSignedIn() && request.auth.uid == uid && request.resource.data.role == resource.data.role);
+      allow delete: if hasAnyRole(['ops_lead']);
+    }
+
+    match /daily_reports/{docId} {
+      allow read, write: if isAnyTeamMember();
+    }
+    match /weekly_reports/{docId} {
+      allow read, write: if isAnyTeamMember();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  FINANCE  (Founder, Ops Lead, Finance Officer only)
+    // ═══════════════════════════════════════════════════════════
+    match /financials/{docId}      { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /invoices/{docId}        { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /receipts/{docId}        { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_accounts/{docId}    { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_transfers/{docId}   { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_assets/{docId}      { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_liabilities/{docId} { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_equity/{docId}      { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_receivables/{docId} { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_payables/{docId}    { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_investments/{docId} { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_ledger/{docId}      { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+    match /fin_budgets/{docId}     { allow read, write: if hasAnyRole(['ops_lead','admin_finance_officer']); }
+
+    // ═══════════════════════════════════════════════════════════
+    //  DEFAULT DENY — anything not explicitly listed above
+    // ═══════════════════════════════════════════════════════════
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
