@@ -353,7 +353,7 @@ label.f{ display:block; font-family:var(--mono); font-size:.6rem; letter-spacing
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
 // ══════════════════════════════════════════════════════════════════
 // DATA / CONTENT
 // ══════════════════════════════════════════════════════════════════
@@ -962,6 +962,15 @@ function copyAgreement(id){
   navigator.clipboard.writeText(agreementText(p));
   toast('Agreement text copied');
 }
+
+// Module scripts don't auto-attach top-level declarations to `window` the
+// way classic scripts do — expose everything referenced by inline onclick="".
+Object.assign(window, {
+  switchTab, setAppFilter, openApplication, shortlistApplication, rejectApplication,
+  openAcceptFlow, confirmAccept, openParticipant, previewWeek, showCheckinForm, saveCheckin,
+  advanceWeek, graduateParticipant, withdrawParticipant, openAgreement, setAgreementStatus,
+  copyAgreement, closeModal
+});
 </script>
 
 </body>
