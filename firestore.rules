@@ -3,11 +3,9 @@ rules_version = '2';
 // ═══════════════════════════════════════════════════════════════
 //  TEKNNUKU — FIRESTORE SECURITY RULES (project: teknnuku-intake-form)
 //
-//  v4 — adds the two collections introduced in admin.html's Knowledge
-//  Library / branding upgrade: `resources` and `platform_config`.
-//  Verified against admin.html's window._loadAll() collection list and
-//  ROLE_PERMISSIONS / RESOURCE_MANAGER_ROLES — no other collection or
-//  role changed since v3.
+//  v5 — adds the `calls` collection for the new browser-based Call
+//  Center (Twilio Voice), gated to the same roles that have
+//  'callcenter' in admin.html's ROLE_PERMISSIONS.
 //
 //  ⚠️ ROLLOUT REQUIREMENT — READ BEFORE DEPLOYING ⚠️
 //  ──────────────────────────────────────────────────
@@ -234,6 +232,16 @@ service cloud.firestore {
     }
     match /assignments/{docId} {
       allow read, write: if hasAnyRole(['ops_lead','sales_manager','inbound_closer','outbound_closer','content_lead','outreach_lead_gen','tech_product_lead','developer','onboarding_specialist','customer_success_manager']);
+    }
+
+    // Call Center (admin.html "Call Center" panel + /api/voice-* serverless
+    // functions). Client reads/writes are gated to the same roles that have
+    // 'callcenter' in admin.html's ROLE_PERMISSIONS. The /api/voice-status
+    // webhook writes here too, but it uses the Firebase Admin SDK with a
+    // service account, which always bypasses these rules entirely — this
+    // only governs access from the browser.
+    match /calls/{docId} {
+      allow read, write: if hasAnyRole(['ops_lead','sales_manager','inbound_closer','outbound_closer','outreach_lead_gen']);
     }
 
     // ═══════════════════════════════════════════════════════════
