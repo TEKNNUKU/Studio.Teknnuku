@@ -103,6 +103,12 @@ input,select,textarea{font-family:inherit;}
 .eyebrow::before{content:'';width:14px;height:1px;background:var(--gold);display:inline-block;}
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
 .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s;}
+.cc-dialer-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+.cc-field-row{display:flex;gap:10px;}
+.cc-field-row .form-input{flex:1;}
+.cc-status-dot{width:9px;height:9px;border-radius:50%;background:var(--dimmer);display:inline-block;box-shadow:0 0 0 3px transparent;transition:all .2s;}
+.cc-status-dot.cc-online{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.2);}
+@media(max-width:600px){.cc-field-row{flex-direction:column;} .cc-field-row .btn-primary{width:100%;}}
 .kpi-card:hover{border-color:var(--borderB);}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .kpi-card.gold::before{background:linear-gradient(90deg,var(--gold),transparent);}
@@ -775,6 +781,7 @@ body.is-mobile .search-box{display:none;}
 
 <!-- FIREBASE MODULE -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://sdk.twilio.com/js/voice/releases/2.11.0/twilio.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -836,8 +843,8 @@ window._deleteDoc = async (col, id) => { await deleteDoc(doc(db,col,id)); };
 //  breaks — but they won't actually be on IPFS until you add the key.
 // ═══════════════════════════════════════════════════════════════
 window.IPFS_CONFIG = {
-  pinataJWT: (typeof localStorage !== 'undefined' && localStorage.getItem('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxOWViNTUxMS04Yjc5LTRjNGItYTJjYi05NTI0YzQ4YjEwZTMiLCJlbWFpbCI6InRla25udWt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiJhNGI0ZjFiZmJjMzFmYzhiODVhZCIsInNjb3BlZEtleVNlY3JldCI6ImM5MTU0OTY0YWRkOTg3MWUwODYwOTljYWJjMjVkYjI3NjE2MWNkNTA3OTdmNGIwNjU0ODU3ZTFkZDYwNTY4NjYiLCJleHAiOjE4MTgwMTk5MDB9.ocICLaZrOLnNNHqk1ozFIoWGafKfXWqdF5UFuIW6HXM')) || '',
-  gateway: 'https://beige-chemical-horse-969.mypinata.cloud',     // swap for your own dedicated gateway if you have one
+  pinataJWT: (typeof localStorage !== 'undefined' && localStorage.getItem('tek_ipfs_jwt')) || '',
+  gateway: 'https://gateway.pinata.cloud/ipfs/',     // swap for your own dedicated gateway if you have one
   fallbackGateway: 'https://ipfs.io/ipfs/'
 };
 
@@ -888,7 +895,7 @@ try {
 const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,receipts,comm_log,
 fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
-fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources] = await Promise.all([
+fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources,calls] = await Promise.all([
 getCol('intake_leads'), getCol('service_inquiries'), getCol('contact_messages'),
 getCol('proposals'), getCol('payments'), getCol('assignments'),
 getCol('applicants'), getCol('team_members'), getCol('careers_config'),
@@ -899,12 +906,12 @@ getCol('fin_accounts'), getCol('fin_transfers'), getCol('fin_assets'), getCol('f
 getCol('fin_equity'), getCol('fin_receivables'), getCol('fin_payables'),
 getCol('fin_investments'), getCol('fin_ledger'), getCol('fin_budgets'),
 getCol('sds_records'), getCol('client_assets'), getCol('testimonials'), getCol('case_studies'), getCol('portfolio_projects'),
-getCol('calendar_events'), getCol('growth_dashboards'), getCol('resources')
+getCol('calendar_events'), getCol('growth_dashboards'), getCol('resources'), getCol('calls')
 ]);
 window._data = { leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,receipts,comm_log,
 fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
-fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources };
+fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources,calls };
 
   try {
     const pcSnap = await getDoc(doc(db, 'platform_config', 'main'));
@@ -1631,14 +1638,14 @@ function isResourceVisibleToMember(res, member) {
 // RBAC
 // ═══════════════════════════════════════
 var ROLE_PERMISSIONS = {
-  founder:                  ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','sds','success','finance','team','vacancies','reports','sops','settings'],
-  ops_lead:                 ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','ventures','tasks','clients','sds','success','team','reports','sops'],
-  sales_manager:            ['overview','calendar','resources','leads','inquiries','crm','people','proposals','payments','assignments','tasks','sds','success','team','reports','sops'],
-  inbound_closer:           ['overview','calendar','resources','crm','assignments','tasks','team','reports'],
-  outbound_closer:          ['overview','calendar','resources','crm','assignments','tasks','team','reports'],
+  founder:                  ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','callcenter','ventures','tasks','clients','sds','success','finance','team','vacancies','reports','sops','settings'],
+  ops_lead:                 ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','callcenter','ventures','tasks','clients','sds','success','team','reports','sops'],
+  sales_manager:            ['overview','calendar','resources','leads','inquiries','crm','people','proposals','payments','assignments','callcenter','tasks','sds','success','team','reports','sops'],
+  inbound_closer:           ['overview','calendar','resources','crm','assignments','callcenter','tasks','team','reports'],
+  outbound_closer:          ['overview','calendar','resources','crm','assignments','callcenter','tasks','team','reports'],
   content_lead:             ['overview','calendar','resources','crm','assignments','ventures','tasks','success','team','reports','sops'],
   content_creator:          ['overview','calendar','resources','assignments','tasks','success','team','reports'],
-  outreach_lead_gen:        ['overview','calendar','resources','crm','assignments','tasks','team','reports'],
+  outreach_lead_gen:        ['overview','calendar','resources','crm','assignments','callcenter','tasks','team','reports'],
   tech_product_lead:        ['overview','calendar','resources','ventures','tasks','assignments','clients','sds','team','reports','sops'],
   developer:                ['overview','calendar','resources','tasks','assignments','sds','team','reports'],
   onboarding_specialist:    ['overview','calendar','resources','tasks','assignments','clients','sds','team','reports'],
@@ -1658,6 +1665,7 @@ var NAV_ITEMS = [
   {id:'proposals',  icon:'📄', label:'Proposals',                             section:'Sales & CRM'},
   {id:'payments',   icon:'💰', label:'Payments',                              section:'Sales & CRM'},
   {id:'assignments',icon:'🗂️', label:'Assignments',                           section:'Sales & CRM'},
+  {id:'callcenter', icon:'☎️', label:'Call Center',    badge:'nb-callcenter', section:'Sales & CRM'},
   {id:'ventures',   icon:'🏢', label:'Ventures',                              section:'Delivery'},
   {id:'tasks',      icon:'✅', label:'Task Board',     badge:'nb-tasks',      section:'Delivery'},
   {id:'clients',    icon:'🤝', label:'Clients',                               section:'Delivery'},
@@ -1763,6 +1771,7 @@ function _buildPanels() {
   add('proposals',   _panelProposals);
   add('payments',    _panelPayments);
   add('assignments', _panelAssignments);
+  add('callcenter',  _panelCallCenter);
   add('ventures',    _panelVentures);
   add('tasks',       _panelTasks);
   add('clients',     _panelClients);
@@ -4464,6 +4473,353 @@ function _panelAssignments() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  CALL CENTER — BROWSER DIALER (Twilio Voice JS SDK)
+//
+//  Requires two things outside this file, both included in the same
+//  delivery: the Vercel serverless functions in /api (voice-token,
+//  voice-webhook, voice-status) and the Twilio SDK <script> tag added
+//  near the top of <head>. See README.md for setup.
+// ═══════════════════════════════════════════════════════════════
+
+var CALL_OUTCOMES = {
+  interested:     {label:'☑ Interested',      color:'var(--green)'},
+  not_interested: {label:'☐ Not Interested',  color:'var(--dimmer)'},
+  no_answer:      {label:'☐ No Answer',       color:'var(--amber)'},
+  call_back:      {label:'☐ Call Back',       color:'var(--cyan)'},
+  wrong_number:   {label:'☐ Wrong Number',    color:'var(--red)'}
+};
+
+function _panelCallCenter() {
+  return '<div class="panel" id="panel-callcenter">' +
+    '<div class="eyebrow">Sales & CRM</div>' +
+    '<div class="panel-header"><div class="panel-title">Call Center</div>' +
+      '<div id="cc-agent-status" style="display:flex;align-items:center;gap:10px;">' +
+        '<span class="cc-status-dot" id="cc-status-dot"></span>' +
+        '<span id="cc-status-text" style="font-family:var(--mono);font-size:.68rem;color:var(--dimmer);">Offline</span>' +
+        '<button class="btn-primary" id="cc-toggle-btn" style="padding:8px 16px;font-size:.7rem;" onclick="toggleCallCenterOnline()">Go Online</button>' +
+      '</div>' +
+    '</div>' +
+
+    // ── Dialer + active call card ─────────────────────────────
+    '<div class="cc-dialer-card" id="cc-dialer-card">' +
+      '<div id="cc-idle-state">' +
+        '<div class="cc-field-row">' +
+          '<input type="text" id="cc-dial-input" class="form-input" placeholder="Enter phone number (e.g. 0803 123 4567)" style="font-family:var(--mono);font-size:1rem;letter-spacing:.03em;">' +
+          '<button class="btn-primary" id="cc-call-btn" style="padding:12px 24px;" onclick="dialNumber(document.getElementById(\'cc-dial-input\').value)">📞 Call</button>' +
+        '</div>' +
+        '<div id="cc-contact-hint" style="font-family:var(--mono);font-size:.66rem;color:var(--dimmer);margin-top:6px;"></div>' +
+      '</div>' +
+      '<div id="cc-active-state" style="display:none;">' +
+        '<div style="text-align:center;padding:20px 0;">' +
+          '<div id="cc-call-status-label" style="font-family:var(--mono);font-size:.68rem;color:var(--cyan);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Calling…</div>' +
+          '<div id="cc-call-contact-name" style="font-family:var(--display);font-weight:700;font-size:1.3rem;margin-bottom:2px;"></div>' +
+          '<div id="cc-call-number" style="font-family:var(--mono);font-size:.82rem;color:var(--dimmer);margin-bottom:14px;"></div>' +
+          '<div id="cc-call-timer" style="font-family:var(--mono);font-size:1.6rem;color:var(--gold);margin-bottom:20px;">00:00</div>' +
+          '<div style="display:flex;gap:12px;justify-content:center;">' +
+            '<button class="btn-secondary" id="cc-mute-btn" style="padding:12px 20px;" onclick="toggleMuteCall()">🎙️ Mute</button>' +
+            '<button class="btn-secondary" style="padding:12px 20px;border-color:rgba(239,68,68,.4);color:var(--red);" onclick="hangupCall()">☎️ End Call</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="cc-incoming-state" style="display:none;">' +
+        '<div style="text-align:center;padding:20px 0;">' +
+          '<div style="font-family:var(--mono);font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">📲 Incoming Call</div>' +
+          '<div id="cc-incoming-number" style="font-family:var(--display);font-weight:700;font-size:1.3rem;margin-bottom:20px;"></div>' +
+          '<div style="display:flex;gap:12px;justify-content:center;">' +
+            '<button class="btn-primary" style="padding:12px 24px;background:var(--green);" onclick="answerIncomingCall()">✓ Answer</button>' +
+            '<button class="btn-secondary" style="padding:12px 24px;border-color:rgba(239,68,68,.4);color:var(--red);" onclick="rejectIncomingCall()">✕ Decline</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="cc-outcome-state" style="display:none;">' +
+        '<div style="padding:16px 0;">' +
+          '<div style="font-family:var(--mono);font-size:.68rem;color:var(--dimmer);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Call ended — how did it go?</div>' +
+          '<div id="cc-outcome-buttons" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>' +
+          '<textarea class="form-textarea" id="cc-outcome-notes" placeholder="Notes (optional)" style="min-height:60px;margin-bottom:10px;"></textarea>' +
+          '<button class="btn-primary" style="padding:9px 18px;font-size:.75rem;" onclick="saveCallOutcome()">💾 Save & Close</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    // ── Reports (managers only) ────────────────────────────────
+    (['founder','ops_lead','sales_manager'].indexOf(window._userRole) !== -1 ?
+      '<div class="eyebrow" style="margin-top:24px;">Agent Performance</div>' +
+      '<div class="kpi-grid" id="cc-stats-grid" style="margin-bottom:20px;"></div>'
+    : '') +
+
+    // ── Call history ─────────────────────────────────────────
+    '<div class="table-wrap" style="margin-top:20px;">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">Call History</div>' +
+        '<input class="tbl-search" id="cc-history-search" placeholder="Search calls…" oninput="applyCallHistoryFilter()" style="width:180px;">' +
+      '</div>' +
+      '<div class="table-scroll"><table>' +
+        '<thead><tr><th>Time</th><th>Contact</th><th>Number</th><th>Direction</th><th>Agent</th><th>Duration</th><th>Outcome</th><th>Status</th></tr></thead>' +
+        '<tbody id="cc-history-tbody"><tr><td colspan="8" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
+      '</table></div>' +
+    '</div>' +
+  '</div>';
+}
+
+// ── Twilio Device state ─────────────────────────────────────────
+window._ccDevice = null;
+window._ccActiveCall = null;
+window._ccIncomingCall = null;
+window._ccCallDocId = null;
+window._ccCallStart = null;
+window._ccTimerInt = null;
+window._ccPendingContact = null; // {name, id, type} for the number currently being dialed
+window._ccOnline = false;
+
+function normalizePhone(raw) {
+  var s = (raw||'').replace(/[^\d+]/g,'');
+  if (!s) return '';
+  if (s.charAt(0)==='+') return s;
+  if (s.charAt(0)==='0') return '+234'+s.substring(1); // Nigerian local → E.164
+  if (s.indexOf('234')===0) return '+'+s;
+  return '+'+s;
+}
+
+async function toggleCallCenterOnline() {
+  if (window._ccOnline) { ccGoOffline(); } else { await ccGoOnline(); }
+}
+
+async function ccGoOnline() {
+  var btn = document.getElementById('cc-toggle-btn');
+  btn.disabled = true; btn.textContent = 'Connecting…';
+  try {
+    if (!window.Twilio || !window.Twilio.Device) throw new Error('Twilio SDK failed to load — check your connection and refresh.');
+    var idToken = await window._currentUser.getIdToken();
+    var res = await fetch('/api/voice-token', { headers: { 'Authorization': 'Bearer '+idToken } });
+    if (!res.ok) throw new Error('Token request failed ('+res.status+') — check /api/voice-token is deployed and env vars are set.');
+    var data = await res.json();
+    window._ccDevice = new Twilio.Device(data.token, { logLevel: 1, codecPreferences: ['opus','pcmu'] });
+    window._ccDevice.on('registered', function(){
+      window._ccOnline = true;
+      document.getElementById('cc-status-dot').classList.add('cc-online');
+      document.getElementById('cc-status-text').textContent = 'Online';
+      btn.disabled = false; btn.textContent = 'Go Offline';
+    });
+    window._ccDevice.on('error', function(err){ console.error('Twilio Device error:', err); toast('Call system error: '+err.message, 'error'); });
+    window._ccDevice.on('incoming', function(call){
+      window._ccIncomingCall = call;
+      document.getElementById('cc-incoming-number').textContent = call.parameters.From || 'Unknown';
+      showCallCenterState('incoming');
+      call.on('cancel', function(){ showCallCenterState('idle'); window._ccIncomingCall=null; });
+    });
+    await window._ccDevice.register();
+  } catch(e) {
+    console.error(e);
+    toast(e.message, 'error');
+    btn.disabled = false; btn.textContent = 'Go Online';
+  }
+}
+
+function ccGoOffline() {
+  if (window._ccDevice) { window._ccDevice.unregister(); window._ccDevice.destroy(); window._ccDevice = null; }
+  window._ccOnline = false;
+  var dot = document.getElementById('cc-status-dot'); if (dot) dot.classList.remove('cc-online');
+  var txt = document.getElementById('cc-status-text'); if (txt) txt.textContent = 'Offline';
+  var btn = document.getElementById('cc-toggle-btn'); if (btn) { btn.disabled=false; btn.textContent='Go Online'; }
+}
+
+function showCallCenterState(state) {
+  ['idle','active','incoming','outcome'].forEach(function(s){
+    var el = document.getElementById('cc-'+s+'-state');
+    if (el) el.style.display = (s===state ? 'block' : 'none');
+  });
+}
+
+// Called from anywhere in the app (e.g. the "☎️ Call" button on a CRM
+// lead) to jump to the Call Center panel and place a call.
+window.dialCall = function(phone, contactName, contactId, contactType) {
+  window._ccPendingContact = { name: contactName||'', id: contactId||'', type: contactType||'' };
+  showPanel('callcenter');
+  var input = document.getElementById('cc-dial-input');
+  if (input) input.value = phone||'';
+  var hint = document.getElementById('cc-contact-hint');
+  if (hint) hint.textContent = contactName ? 'Calling '+contactName : '';
+  if (!window._ccOnline) { toast('Go online first to place a call', 'error'); return; }
+  dialNumber(phone);
+};
+
+async function dialNumber(raw) {
+  var number = normalizePhone(raw);
+  if (!number || number.length < 8) { toast('Enter a valid phone number', 'error'); return; }
+  if (!window._ccOnline || !window._ccDevice) { toast('Go online first to place a call', 'error'); return; }
+  if (window._ccActiveCall) { toast('You are already on a call', 'error'); return; }
+
+  var contact = window._ccPendingContact || {};
+  document.getElementById('cc-call-contact-name').textContent = contact.name || '';
+  document.getElementById('cc-call-number').textContent = number;
+  document.getElementById('cc-call-status-label').textContent = 'Calling…';
+  showCallCenterState('active');
+
+  // Log the attempt immediately so it shows up even if it's never answered.
+  try {
+    window._ccCallDocId = await window._saveDoc('calls', {
+      agentId: window._currentUser.uid, agentEmail: window._currentUser.email,
+      agentName: (getCurrentMember()||{}).name || window._currentUser.email,
+      contactId: contact.id||'', contactName: contact.name||'', contactType: contact.type||'',
+      phoneNumber: number, direction: 'outbound', status: 'initiated'
+    });
+  } catch(e) { console.error('Could not log call:', e); window._ccCallDocId = null; }
+
+  var call = await window._ccDevice.connect({ params: { To: number } });
+  window._ccActiveCall = call;
+
+  call.on('accept', function(){
+    window._ccCallStart = Date.now();
+    document.getElementById('cc-call-status-label').textContent = 'In Progress';
+    startCallTimer();
+    ccUpdateCallDoc({ status:'in-progress', startTime: new Date().toISOString(), twilioCallSid: call.parameters.CallSid||'' });
+  });
+  call.on('disconnect', function(){ ccHandleCallEnd('completed'); });
+  call.on('cancel',     function(){ ccHandleCallEnd('failed'); });
+  call.on('reject',     function(){ ccHandleCallEnd('no-answer'); });
+  call.on('error', function(err){ console.error('Call error:', err); ccHandleCallEnd('failed'); });
+}
+
+function hangupCall() { if (window._ccActiveCall) window._ccActiveCall.disconnect(); }
+function toggleMuteCall() {
+  if (!window._ccActiveCall) return;
+  var muted = !window._ccActiveCall.isMuted();
+  window._ccActiveCall.mute(muted);
+  document.getElementById('cc-mute-btn').textContent = muted ? '🔇 Unmute' : '🎙️ Mute';
+}
+function answerIncomingCall() {
+  if (!window._ccIncomingCall) return;
+  var call = window._ccIncomingCall;
+  window._ccActiveCall = call; window._ccIncomingCall = null;
+  document.getElementById('cc-call-contact-name').textContent = '';
+  document.getElementById('cc-call-number').textContent = call.parameters.From || 'Unknown';
+  document.getElementById('cc-call-status-label').textContent = 'In Progress';
+  showCallCenterState('active');
+  call.accept();
+  window._ccCallStart = Date.now();
+  startCallTimer();
+  window._saveDoc('calls', {
+    agentId: window._currentUser.uid, agentEmail: window._currentUser.email,
+    agentName: (getCurrentMember()||{}).name || window._currentUser.email,
+    contactId:'', contactName:'', phoneNumber: call.parameters.From||'', direction:'inbound',
+    status:'in-progress', startTime: new Date().toISOString()
+  }).then(function(id){ window._ccCallDocId = id; }).catch(function(e){ console.error(e); });
+  call.on('disconnect', function(){ ccHandleCallEnd('completed'); });
+  call.on('error', function(){ ccHandleCallEnd('failed'); });
+}
+function rejectIncomingCall() {
+  if (window._ccIncomingCall) window._ccIncomingCall.reject();
+  window._ccIncomingCall = null;
+  showCallCenterState('idle');
+}
+
+function startCallTimer() {
+  clearInterval(window._ccTimerInt);
+  window._ccTimerInt = setInterval(function(){
+    var secs = Math.floor((Date.now()-window._ccCallStart)/1000);
+    var m = Math.floor(secs/60), s = secs%60;
+    var el = document.getElementById('cc-call-timer');
+    if (el) el.textContent = (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+  }, 1000);
+}
+
+function ccUpdateCallDoc(fields) {
+  if (!window._ccCallDocId) return;
+  window._updateDoc('calls', window._ccCallDocId, fields).catch(function(e){ console.error('Call log update failed:', e); });
+}
+
+function ccHandleCallEnd(status) {
+  clearInterval(window._ccTimerInt);
+  var duration = window._ccCallStart ? Math.floor((Date.now()-window._ccCallStart)/1000) : 0;
+  ccUpdateCallDoc({ status: status, endTime: new Date().toISOString(), duration: duration });
+  window._ccActiveCall = null; window._ccCallStart = null;
+  if (status === 'completed' && duration > 0) {
+    // Only prompt for an outcome if the call actually connected.
+    var box = document.getElementById('cc-outcome-buttons');
+    box.innerHTML = Object.keys(CALL_OUTCOMES).map(function(k){
+      var o = CALL_OUTCOMES[k];
+      return '<button class="btn-secondary" style="padding:8px 14px;font-size:.72rem;color:'+o.color+';border-color:'+o.color+'44;" onclick="selectCallOutcome(\''+k+'\',this)">'+o.label+'</button>';
+    }).join('');
+    document.getElementById('cc-outcome-notes').value = '';
+    window._ccSelectedOutcome = '';
+    showCallCenterState('outcome');
+  } else {
+    window._ccCallDocId = null;
+    showCallCenterState('idle');
+  }
+  window._ccPendingContact = null;
+}
+function selectCallOutcome(key, el) {
+  window._ccSelectedOutcome = key;
+  el.parentElement.querySelectorAll('button').forEach(function(b){ b.style.opacity='.5'; });
+  el.style.opacity = '1';
+}
+function saveCallOutcome() {
+  var notes = document.getElementById('cc-outcome-notes').value.trim();
+  ccUpdateCallDoc({ outcome: window._ccSelectedOutcome||'', notes: notes });
+  toast('Call logged ✓', 'success');
+  window._ccCallDocId = null;
+  document.getElementById('cc-dial-input').value = '';
+  document.getElementById('cc-contact-hint').textContent = '';
+  showCallCenterState('idle');
+  setTimeout(function(){ window._loadAll(); }, 600);
+}
+
+function renderCallCenter(calls) {
+  window._ccAllCalls = calls || [];
+  applyCallHistoryFilter();
+  var statsGrid = document.getElementById('cc-stats-grid');
+  if (statsGrid) {
+    var byAgent = {};
+    (calls||[]).forEach(function(c){
+      var k = c.agentName || c.agentEmail || 'Unknown';
+      if (!byAgent[k]) byAgent[k] = { calls:0, talk:0, connected:0 };
+      byAgent[k].calls++;
+      byAgent[k].talk += (c.duration||0);
+      if (c.status==='completed' && (c.duration||0)>0) byAgent[k].connected++;
+    });
+    var rows = Object.keys(byAgent).sort(function(a,b){return byAgent[b].calls-byAgent[a].calls;});
+    statsGrid.innerHTML = rows.length ? rows.map(function(name){
+      var a = byAgent[name]; var mins = Math.round(a.talk/60);
+      var rate = a.calls ? Math.round(a.connected/a.calls*100) : 0;
+      return '<div class="kpi-card"><div class="kpi-label">'+escHtml(name)+'</div>' +
+        '<div class="kpi-value">'+a.calls+' calls</div>' +
+        '<div style="font-family:var(--mono);font-size:.66rem;color:var(--dimmer);margin-top:4px;">'+mins+'m talk · '+rate+'% connect rate</div></div>';
+    }).join('') : '<div style="font-family:var(--mono);font-size:.72rem;color:var(--dimmer);padding:12px;">No calls logged yet.</div>';
+  }
+}
+
+function applyCallHistoryFilter() {
+  var q = (document.getElementById('cc-history-search')||{}).value || '';
+  q = q.toLowerCase();
+  var calls = (window._ccAllCalls||[]).filter(function(c){
+    if (!q) return true;
+    return (c.contactName||'').toLowerCase().indexOf(q)!==-1 ||
+           (c.phoneNumber||'').toLowerCase().indexOf(q)!==-1 ||
+           (c.agentName||'').toLowerCase().indexOf(q)!==-1;
+  });
+  var tbody = document.getElementById('cc-history-tbody');
+  if (!tbody) return;
+  if (!calls.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--dimmer);font-family:var(--mono);font-size:.72rem;">No calls yet.</td></tr>'; return; }
+  tbody.innerHTML = calls.slice(0,200).map(function(c){
+    var when = c.createdAt && c.createdAt.seconds ? new Date(c.createdAt.seconds*1000).toLocaleString() : '—';
+    var mins = Math.floor((c.duration||0)/60), secs=(c.duration||0)%60;
+    var dur = c.duration ? mins+':'+(secs<10?'0':'')+secs : '—';
+    var outcome = CALL_OUTCOMES[c.outcome] ? CALL_OUTCOMES[c.outcome].label : (c.outcome||'—');
+    var statusColor = c.status==='completed' ? 'var(--green)' : (c.status==='in-progress' ? 'var(--cyan)' : (c.status==='initiated' ? 'var(--dimmer)' : 'var(--red)'));
+    return '<tr>' +
+      '<td style="font-family:var(--mono);font-size:.7rem;color:var(--dimmer);">'+when+'</td>' +
+      '<td>'+(escHtml(c.contactName)||'—')+'</td>' +
+      '<td style="font-family:var(--mono);">'+escHtml(c.phoneNumber)+'</td>' +
+      '<td>'+(c.direction==='inbound'?'⬇ In':'⬆ Out')+'</td>' +
+      '<td>'+escHtml(c.agentName||c.agentEmail||'—')+'</td>' +
+      '<td style="font-family:var(--mono);">'+dur+'</td>' +
+      '<td style="font-size:.72rem;">'+outcome+'</td>' +
+      '<td><span style="color:'+statusColor+';font-family:var(--mono);font-size:.68rem;text-transform:uppercase;">'+escHtml(c.status)+'</span></td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  TEAM MEMBERS — EMPLOYMENT PHASES + VENTURE ACCESS
 // ═══════════════════════════════════════════════════════════════
 var TEKNNUKU_EMPLOYMENT_PHASES = [
@@ -7129,7 +7485,7 @@ updateMobileClass();
 function closeSidebar(){document.getElementById('main-sidebar').classList.remove('open');document.getElementById('mob-overlay').classList.remove('open');}
 function showPanelMob(name,el){showPanel(name,document.querySelector('.nav-item[data-panel="'+name+'"]'));document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');}
 
-var PANEL_TITLES={overview:'Overview → Dashboard',leads:'Intake Leads → Diagnostic Results',inquiries:'Inquiries → Service Forms',messages:'Messages → Contact Inbox',applicants:'Applicants → Careers Portal',crm:'CRM Pipeline → Lead Kanban',people:'People → Unified Profiles',proposals:'Proposals → Quotes & Offers',payments:'Payments → Revenue Tracking',assignments:'Assignments → Routing',ventures:'Ventures → Portfolio',tasks:'Task Board → Kanban',clients:'Clients → Onboarding',finance:'Finance → P&L Intelligence',team:'Team Members → Active Staff',vacancies:'Vacancies → Role Management',reports:'Daily Reports → Accountability',sops:'SOPs → Procedures & Reference',settings:'Settings → Configuration'};
+var PANEL_TITLES={overview:'Overview → Dashboard',leads:'Intake Leads → Diagnostic Results',inquiries:'Inquiries → Service Forms',messages:'Messages → Contact Inbox',applicants:'Applicants → Careers Portal',crm:'CRM Pipeline → Lead Kanban',people:'People → Unified Profiles',proposals:'Proposals → Quotes & Offers',payments:'Payments → Revenue Tracking',assignments:'Assignments → Routing',callcenter:'Call Center → Dialer & Call Log',ventures:'Ventures → Portfolio',tasks:'Task Board → Kanban',clients:'Clients → Onboarding',finance:'Finance → P&L Intelligence',team:'Team Members → Active Staff',vacancies:'Vacancies → Role Management',reports:'Daily Reports → Accountability',sops:'SOPs → Procedures & Reference',settings:'Settings → Configuration'};
 
 function showPanel(name, el) {
   // Guard — only switch if panel exists
@@ -7265,7 +7621,9 @@ if (ovVen) {
   var ovCl=document.getElementById('kpi-clients');if(ovCl)ovCl.textContent=(d.clients||[]).filter(function(c){return c.status!=='churned';}).length;
   var nbCRM=document.getElementById('nb-crm');if(nbCRM)nbCRM.textContent=(d.crm_leads||[]).filter(function(l){return l.status==='new_lead';}).length;
   var nbTsk=document.getElementById('nb-tasks');if(nbTsk)nbTsk.textContent=(d.tasks||[]).filter(function(t){return t.status!=='done'&&t.deadline&&new Date(t.deadline)<new Date();}).length;
+  var nbCC=document.getElementById('nb-callcenter');if(nbCC){var _today=new Date().toDateString();nbCC.textContent=(d.calls||[]).filter(function(c){return['no-answer','busy','failed'].indexOf(c.status)!==-1 && c.createdAt && c.createdAt.seconds && new Date(c.createdAt.seconds*1000).toDateString()===_today;}).length;}
   if(canAccess('crm'))renderCRM(d.crm_leads||[]);
+  if(canAccess('callcenter'))renderCallCenter(d.calls||[]);
   if(!_crmSynced){_crmSynced=true;syncLeadsToCRM();}
   if(canAccess('ventures'))renderVentures(d.ventures||[],d.tasks||[],d.crm_leads||[],d.clients||[],d.financials||[]);
   if(canAccess('tasks'))renderTasks(d.tasks||[],d.team_members||[]);
@@ -13730,6 +14088,9 @@ function openCRMLeadDrawer(id) {
 
   // ── Pipeline action buttons ──────────────────────────────────
   var flow = '';
+  if (l.phone && canAccess('callcenter')) {
+    flow += '<button class="btn-secondary" style="font-size:.72rem;padding:7px 14px;color:var(--cyan);border-color:rgba(0,188,212,.35);" onclick="dialCall(\''+escHtml(l.phone)+'\',\''+escHtml(l.name||l.businessName||'')+'\',\''+id+'\',\'crm_lead\')">📞 Call</button>';
+  }
   if (l.status==='new_lead') {
     flow += '<button class="btn-primary" style="font-size:.72rem;padding:7px 14px;" onclick="moveCRMStatus(\''+id+'\',\'contacted\')">→ Mark Contacted</button>';
   }

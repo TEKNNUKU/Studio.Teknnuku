@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/voice-token.js": { "runtime": "nodejs20.x" },
+    "api/voice-webhook.js": { "runtime": "nodejs20.x" },
+    "api/voice-status.js": { "runtime": "nodejs20.x" }
+  }
+}
