@@ -1,7 +1,7 @@
 {
   "functions": {
-    "api/voice-token.js": { "runtime": "nodejs20.x" },
-    "api/voice-webhook.js": { "runtime": "nodejs20.x" },
-    "api/voice-status.js": { "runtime": "nodejs20.x" }
+    "api/*.js": {
+      "runtime": "@vercel/node@3.0.0"
+    }
   }
 }
