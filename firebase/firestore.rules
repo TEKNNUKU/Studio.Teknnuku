@@ -3,9 +3,10 @@ rules_version = '2';
 // ═══════════════════════════════════════════════════════════════
 //  TEKNNUKU — FIRESTORE SECURITY RULES (project: teknnuku-intake-form)
 //
-//  v5 — adds the `calls` collection for the new browser-based Call
-//  Center (Twilio Voice), gated to the same roles that have
-//  'callcenter' in admin.html's ROLE_PERMISSIONS.
+//  v6 — adds `automations` and `emailLogs` collections for the new email
+//  automation engine (Zoho SMTP + Vercel Cron). Both are engine-owned:
+//  the browser gets read access (plus pause/resume on automations) but
+//  never creates or deletes records directly.
 //
 //  ⚠️ ROLLOUT REQUIREMENT — READ BEFORE DEPLOYING ⚠️
 //  ──────────────────────────────────────────────────
@@ -242,6 +243,22 @@ service cloud.firestore {
     // only governs access from the browser.
     match /calls/{docId} {
       allow read, write: if hasAnyRole(['ops_lead','sales_manager','inbound_closer','outbound_closer','outreach_lead_gen']);
+    }
+
+    // Email Automation (admin.html "Communications" panel + /api/process-automation
+    // cron function). The cron function writes here exclusively via the Firebase
+    // Admin SDK, which bypasses these rules entirely — this only governs what the
+    // browser can see/do, which should be read-only visibility plus the ability
+    // to pause/resume a sequence, never direct creation (only the engine creates
+    // automation records) or deletion of the audit trail.
+    match /automations/{docId} {
+      allow read: if hasAnyRole(['ops_lead','sales_manager','content_lead']);
+      allow update: if hasAnyRole(['ops_lead','sales_manager']); // pause/resume only
+      allow create, delete: if false;
+    }
+    match /emailLogs/{docId} {
+      allow read: if hasAnyRole(['ops_lead','sales_manager','content_lead']);
+      allow create, update, delete: if false;
     }
 
     // ═══════════════════════════════════════════════════════════
