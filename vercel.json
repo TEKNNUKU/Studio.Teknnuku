@@ -1,3 +1,14 @@
 {
-  "cleanUrls": true
+  "functions": {
+    "api/voice-token.js": { "runtime": "nodejs20.x" },
+    "api/voice-webhook.js": { "runtime": "nodejs20.x" },
+    "api/voice-status.js": { "runtime": "nodejs20.x" },
+    "api/process-automation.js": { "runtime": "nodejs20.x", "maxDuration": 60 }
+  },
+  "crons": [
+    {
+      "path": "/api/process-automation",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }

@@ -851,8 +851,8 @@ window._deleteDoc = async (col, id) => { await deleteDoc(doc(db,col,id)); };
 //  breaks — but they won't actually be on IPFS until you add the key.
 // ═══════════════════════════════════════════════════════════════
 window.IPFS_CONFIG = {
-  pinataJWT: (typeof localStorage !== 'undefined' && localStorage.getItem('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxOWViNTUxMS04Yjc5LTRjNGItYTJjYi05NTI0YzQ4YjEwZTMiLCJlbWFpbCI6InRla25udWt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaW5fcG9saWN5Ijp7InJlZ2lvbnMiOlt7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6IkZSQTEifSx7ImRlc2lyZWRSZXBsaWNhdGlvbkNvdW50IjoxLCJpZCI6Ik5ZQzEifV0sInZlcnNpb24iOjF9LCJtZmFfZW5hYmxlZCI6ZmFsc2UsInN0YXR1cyI6IkFDVElWRSJ9LCJhdXRoZW50aWNhdGlvblR5cGUiOiJzY29wZWRLZXkiLCJzY29wZWRLZXlLZXkiOiI2N2E2NzQxZjZjOWM1NzY4MjhjMiIsInNjb3BlZEtleVNlY3JldCI6IjZiODg3MzUzOTZhYWQ3MDg1Y2FjYzY2MWFmNmM4Y2Y4ZTE4ZjkxNmQ4OTRiMWMzM2U2YmJlYjM1MmJlYmU1YjIiLCJleHAiOjE4MTgxMDIwMDl9.0nm-AiF1-Wiqtb565QJK0WVblzrpHR2-5wYE1I6tb5I')) || '',
-  gateway: 'https://beige-chemical-horse-969.mypinata.cloud/ipfs/',     // swap for your own dedicated gateway if you have one
+  pinataJWT: (typeof localStorage !== 'undefined' && localStorage.getItem('tek_ipfs_jwt')) || '',
+  gateway: 'https://gateway.pinata.cloud/ipfs/',     // swap for your own dedicated gateway if you have one
   fallbackGateway: 'https://ipfs.io/ipfs/'
 };
 
@@ -903,7 +903,7 @@ try {
 const [leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,receipts,comm_log,
 fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
-fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources,calls] = await Promise.all([
+fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources,calls,automations,emailLogs] = await Promise.all([
 getCol('intake_leads'), getCol('service_inquiries'), getCol('contact_messages'),
 getCol('proposals'), getCol('payments'), getCol('assignments'),
 getCol('applicants'), getCol('team_members'), getCol('careers_config'),
@@ -914,12 +914,13 @@ getCol('fin_accounts'), getCol('fin_transfers'), getCol('fin_assets'), getCol('f
 getCol('fin_equity'), getCol('fin_receivables'), getCol('fin_payables'),
 getCol('fin_investments'), getCol('fin_ledger'), getCol('fin_budgets'),
 getCol('sds_records'), getCol('client_assets'), getCol('testimonials'), getCol('case_studies'), getCol('portfolio_projects'),
-getCol('calendar_events'), getCol('growth_dashboards'), getCol('resources'), getCol('calls')
+getCol('calendar_events'), getCol('growth_dashboards'), getCol('resources'), getCol('calls'),
+getCol('automations'), getCol('emailLogs')
 ]);
 window._data = { leads,inquiries,messages,proposals,payments,assignments,applicants,team_members,careers_config,
 ventures,tasks,crm_leads,clients,financials,daily_reports,weekly_reports,receipts,comm_log,
 fin_accounts,fin_transfers,fin_assets,fin_liabilities,fin_equity,fin_receivables,fin_payables,
-fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources,calls };
+fin_investments,fin_ledger,fin_budgets,sds_records,client_assets,testimonials,case_studies,portfolio_projects,calendar_events,growth_dashboards,resources,calls,automations,emailLogs };
 
   try {
     const pcSnap = await getDoc(doc(db, 'platform_config', 'main'));
@@ -1646,12 +1647,12 @@ function isResourceVisibleToMember(res, member) {
 // RBAC
 // ═══════════════════════════════════════
 var ROLE_PERMISSIONS = {
-  founder:                  ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','callcenter','ventures','tasks','clients','sds','success','finance','team','vacancies','reports','sops','settings'],
-  ops_lead:                 ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','callcenter','ventures','tasks','clients','sds','success','team','reports','sops'],
-  sales_manager:            ['overview','calendar','resources','leads','inquiries','crm','people','proposals','payments','assignments','callcenter','tasks','sds','success','team','reports','sops'],
+  founder:                  ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','callcenter','communications','ventures','tasks','clients','sds','success','finance','team','vacancies','reports','sops','settings'],
+  ops_lead:                 ['overview','calendar','resources','leads','inquiries','messages','applicants','crm','people','proposals','payments','assignments','callcenter','communications','ventures','tasks','clients','sds','success','team','reports','sops'],
+  sales_manager:            ['overview','calendar','resources','leads','inquiries','crm','people','proposals','payments','assignments','callcenter','communications','tasks','sds','success','team','reports','sops'],
   inbound_closer:           ['overview','calendar','resources','crm','assignments','callcenter','tasks','team','reports'],
   outbound_closer:          ['overview','calendar','resources','crm','assignments','callcenter','tasks','team','reports'],
-  content_lead:             ['overview','calendar','resources','crm','assignments','ventures','tasks','success','team','reports','sops'],
+  content_lead:             ['overview','calendar','resources','crm','assignments','communications','ventures','tasks','success','team','reports','sops'],
   content_creator:          ['overview','calendar','resources','assignments','tasks','success','team','reports'],
   outreach_lead_gen:        ['overview','calendar','resources','crm','assignments','callcenter','tasks','team','reports'],
   tech_product_lead:        ['overview','calendar','resources','ventures','tasks','assignments','clients','sds','team','reports','sops'],
@@ -1674,6 +1675,7 @@ var NAV_ITEMS = [
   {id:'payments',   icon:'💰', label:'Payments',                              section:'Sales & CRM'},
   {id:'assignments',icon:'🗂️', label:'Assignments',                           section:'Sales & CRM'},
   {id:'callcenter', icon:'☎️', label:'Call Center',    badge:'nb-callcenter', section:'Sales & CRM'},
+  {id:'communications', icon:'✉️', label:'Communications', badge:'nb-comms', section:'Sales & CRM'},
   {id:'ventures',   icon:'🏢', label:'Ventures',                              section:'Delivery'},
   {id:'tasks',      icon:'✅', label:'Task Board',     badge:'nb-tasks',      section:'Delivery'},
   {id:'clients',    icon:'🤝', label:'Clients',                               section:'Delivery'},
@@ -1780,6 +1782,7 @@ function _buildPanels() {
   add('payments',    _panelPayments);
   add('assignments', _panelAssignments);
   add('callcenter',  _panelCallCenter);
+  add('communications', _panelCommunications);
   add('ventures',    _panelVentures);
   add('tasks',       _panelTasks);
   add('clients',     _panelClients);
@@ -4828,6 +4831,138 @@ function applyCallHistoryFilter() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  COMMUNICATIONS — EMAIL AUTOMATION VISIBILITY
+//
+//  This panel is read-mostly by design: automation records and email
+//  logs are created and updated exclusively by the /api/process-automation
+//  Vercel Cron function via the Firebase Admin SDK (see the email
+//  automation delivery's README). The only write this panel performs
+//  is pausing/resuming a sequence — everything else is visibility into
+//  what the engine is doing.
+// ═══════════════════════════════════════════════════════════════
+
+var SEQUENCE_LABELS = {
+  assessment: 'Business Growth Assessment',
+  fgp: 'Founding Growth Partners',
+  inquiry: 'Service Inquiry',
+  contact: 'Contact Message',
+  applicant: 'Job Application'
+};
+
+function _panelCommunications() {
+  return '<div class="panel" id="panel-communications">' +
+    '<div class="eyebrow">Sales & CRM</div>' +
+    '<div class="panel-header"><div class="panel-title">Communications</div></div>' +
+
+    '<div class="kpi-grid" id="comms-stats-grid" style="margin-bottom:20px;"></div>' +
+
+    '<div class="table-wrap" style="margin-bottom:20px;">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">Active & Recent Sequences</div>' +
+        '<input class="tbl-search" id="comms-auto-search" placeholder="Search by name or email…" oninput="applyCommsAutomationFilter()" style="width:200px;">' +
+      '</div>' +
+      '<div class="table-scroll"><table>' +
+        '<thead><tr><th>Contact</th><th>Source</th><th>Sequence</th><th>Step</th><th>Next Send</th><th>Status</th><th></th></tr></thead>' +
+        '<tbody id="comms-auto-tbody"><tr><td colspan="7" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
+      '</table></div>' +
+    '</div>' +
+
+    '<div class="table-wrap">' +
+      '<div class="table-toolbar"><div class="table-toolbar-title">Email Log</div>' +
+        '<input class="tbl-search" id="comms-log-search" placeholder="Search recipient or subject…" oninput="applyCommsLogFilter()" style="width:200px;">' +
+      '</div>' +
+      '<div class="table-scroll"><table>' +
+        '<thead><tr><th>Sent</th><th>Recipient</th><th>Subject</th><th>Sequence</th><th>Step</th><th>Status</th></tr></thead>' +
+        '<tbody id="comms-log-tbody"><tr><td colspan="6" class="loading-row"><div class="spinner"></div></td></tr></tbody>' +
+      '</table></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderCommunications(automations, emailLogs) {
+  window._commsAllAutomations = automations || [];
+  window._commsAllLogs = emailLogs || [];
+  applyCommsAutomationFilter();
+  applyCommsLogFilter();
+
+  var failedCount = (emailLogs||[]).filter(function(l){return l.status==='failed';}).length;
+  var statsGrid = document.getElementById('comms-stats-grid');
+  if (statsGrid) {
+    var active = (automations||[]).filter(function(a){return a.status==='active';}).length;
+    var completed = (automations||[]).filter(function(a){return a.status==='completed';}).length;
+    var today = new Date().toDateString();
+    var sentToday = (emailLogs||[]).filter(function(l){
+      return l.status==='sent' && l.sentAt && new Date(l.sentAt).toDateString()===today;
+    }).length;
+    statsGrid.innerHTML =
+      '<div class="kpi-card"><div class="kpi-label">Active Sequences</div><div class="kpi-value">'+active+'</div></div>' +
+      '<div class="kpi-card"><div class="kpi-label">Completed</div><div class="kpi-value">'+completed+'</div></div>' +
+      '<div class="kpi-card"><div class="kpi-label">Sent Today</div><div class="kpi-value">'+sentToday+'</div></div>' +
+      '<div class="kpi-card"><div class="kpi-label" style="'+(failedCount>0?'color:var(--red);':'')+'">Failed Sends</div><div class="kpi-value" style="'+(failedCount>0?'color:var(--red);':'')+'">'+failedCount+'</div></div>';
+  }
+  var nb = document.getElementById('nb-comms');
+  if (nb) nb.textContent = failedCount;
+}
+
+function applyCommsAutomationFilter() {
+  var q = ((document.getElementById('comms-auto-search')||{}).value || '').toLowerCase();
+  var list = (window._commsAllAutomations||[]).filter(function(a){
+    if (!q) return true;
+    return (a.contactName||'').toLowerCase().indexOf(q)!==-1 || (a.contactEmail||'').toLowerCase().indexOf(q)!==-1;
+  });
+  var tbody = document.getElementById('comms-auto-tbody');
+  if (!tbody) return;
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--dimmer);font-family:var(--mono);font-size:.72rem;">No automations yet.</td></tr>'; return; }
+  list.sort(function(a,b){ return new Date(b.createdAt||0) - new Date(a.createdAt||0); });
+  tbody.innerHTML = list.slice(0,200).map(function(a){
+    var seqLabel = SEQUENCE_LABELS[a.formType] || a.formType || '—';
+    var nextSend = a.status==='active' && a.nextRunAt ? new Date(a.nextRunAt).toLocaleString() : '—';
+    var statusColor = a.status==='active' ? 'var(--cyan)' : (a.status==='completed' ? 'var(--green)' : 'var(--dimmer)');
+    var toggleBtn = a.status==='active'
+      ? '<button class="btn-secondary" style="padding:5px 10px;font-size:.62rem;" onclick="toggleCommsAutomation(\''+a.id+'\',\'paused\')">Pause</button>'
+      : (a.status==='paused' ? '<button class="btn-secondary" style="padding:5px 10px;font-size:.62rem;" onclick="toggleCommsAutomation(\''+a.id+'\',\'active\')">Resume</button>' : '');
+    return '<tr>' +
+      '<td>'+escHtml(a.contactName)+'<div style="font-family:var(--mono);font-size:.66rem;color:var(--dimmer);">'+escHtml(a.contactEmail)+'</div></td>' +
+      '<td style="font-family:var(--mono);font-size:.72rem;color:var(--dimmer);">'+escHtml(a.sourceCollection)+'</td>' +
+      '<td>'+escHtml(seqLabel)+'</td>' +
+      '<td style="font-family:var(--mono);">'+(a.currentStep||0)+' / 6</td>' +
+      '<td style="font-family:var(--mono);font-size:.72rem;">'+nextSend+'</td>' +
+      '<td><span style="color:'+statusColor+';font-family:var(--mono);font-size:.68rem;text-transform:uppercase;">'+escHtml(a.status)+'</span></td>' +
+      '<td>'+toggleBtn+'</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function applyCommsLogFilter() {
+  var q = ((document.getElementById('comms-log-search')||{}).value || '').toLowerCase();
+  var list = (window._commsAllLogs||[]).filter(function(l){
+    if (!q) return true;
+    return (l.recipient||'').toLowerCase().indexOf(q)!==-1 || (l.subject||'').toLowerCase().indexOf(q)!==-1;
+  });
+  var tbody = document.getElementById('comms-log-tbody');
+  if (!tbody) return;
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--dimmer);font-family:var(--mono);font-size:.72rem;">No emails logged yet.</td></tr>'; return; }
+  list.sort(function(a,b){ return new Date(b.sentAt||0) - new Date(a.sentAt||0); });
+  tbody.innerHTML = list.slice(0,200).map(function(l){
+    var statusColor = l.status==='sent' ? 'var(--green)' : 'var(--red)';
+    return '<tr>' +
+      '<td style="font-family:var(--mono);font-size:.7rem;color:var(--dimmer);">'+(l.sentAt?new Date(l.sentAt).toLocaleString():'—')+'</td>' +
+      '<td>'+escHtml(l.recipient)+'</td>' +
+      '<td style="font-size:.8rem;">'+escHtml(l.subject||'—')+'</td>' +
+      '<td style="font-family:var(--mono);font-size:.72rem;color:var(--dimmer);">'+escHtml(l.template||'—')+'</td>' +
+      '<td style="font-family:var(--mono);">'+(l.sequenceStep||'—')+'</td>' +
+      '<td><span style="color:'+statusColor+';font-family:var(--mono);font-size:.68rem;text-transform:uppercase;">'+escHtml(l.status)+(l.status==='failed'&&l.error?' ⓘ':'')+'</span></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function toggleCommsAutomation(id, newStatus) {
+  window._updateDoc('automations', id, { status: newStatus }).then(function(){
+    toast(newStatus==='paused' ? 'Sequence paused' : 'Sequence resumed', 'success');
+    window._loadAll();
+  }).catch(function(e){ toast('Could not update: '+e.message, 'error'); });
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  TEAM MEMBERS — EMPLOYMENT PHASES + VENTURE ACCESS
 // ═══════════════════════════════════════════════════════════════
 var TEKNNUKU_EMPLOYMENT_PHASES = [
@@ -7493,7 +7628,7 @@ updateMobileClass();
 function closeSidebar(){document.getElementById('main-sidebar').classList.remove('open');document.getElementById('mob-overlay').classList.remove('open');}
 function showPanelMob(name,el){showPanel(name,document.querySelector('.nav-item[data-panel="'+name+'"]'));document.querySelectorAll('.bnav-item').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');}
 
-var PANEL_TITLES={overview:'Overview → Dashboard',leads:'Intake Leads → Diagnostic Results',inquiries:'Inquiries → Service Forms',messages:'Messages → Contact Inbox',applicants:'Applicants → Careers Portal',crm:'CRM Pipeline → Lead Kanban',people:'People → Unified Profiles',proposals:'Proposals → Quotes & Offers',payments:'Payments → Revenue Tracking',assignments:'Assignments → Routing',callcenter:'Call Center → Dialer & Call Log',ventures:'Ventures → Portfolio',tasks:'Task Board → Kanban',clients:'Clients → Onboarding',finance:'Finance → P&L Intelligence',team:'Team Members → Active Staff',vacancies:'Vacancies → Role Management',reports:'Daily Reports → Accountability',sops:'SOPs → Procedures & Reference',settings:'Settings → Configuration'};
+var PANEL_TITLES={overview:'Overview → Dashboard',leads:'Intake Leads → Diagnostic Results',inquiries:'Inquiries → Service Forms',messages:'Messages → Contact Inbox',applicants:'Applicants → Careers Portal',crm:'CRM Pipeline → Lead Kanban',people:'People → Unified Profiles',proposals:'Proposals → Quotes & Offers',payments:'Payments → Revenue Tracking',assignments:'Assignments → Routing',callcenter:'Call Center → Dialer & Call Log',communications:'Communications → Email Automation',ventures:'Ventures → Portfolio',tasks:'Task Board → Kanban',clients:'Clients → Onboarding',finance:'Finance → P&L Intelligence',team:'Team Members → Active Staff',vacancies:'Vacancies → Role Management',reports:'Daily Reports → Accountability',sops:'SOPs → Procedures & Reference',settings:'Settings → Configuration'};
 
 function showPanel(name, el) {
   // Guard — only switch if panel exists
@@ -7632,6 +7767,7 @@ if (ovVen) {
   var nbCC=document.getElementById('nb-callcenter');if(nbCC){var _today=new Date().toDateString();nbCC.textContent=(d.calls||[]).filter(function(c){return['no-answer','busy','failed'].indexOf(c.status)!==-1 && c.createdAt && c.createdAt.seconds && new Date(c.createdAt.seconds*1000).toDateString()===_today;}).length;}
   if(canAccess('crm'))renderCRM(d.crm_leads||[]);
   if(canAccess('callcenter'))renderCallCenter(d.calls||[]);
+  if(canAccess('communications'))renderCommunications(d.automations||[], d.emailLogs||[]);
   if(!_crmSynced){_crmSynced=true;syncLeadsToCRM();}
   if(canAccess('ventures'))renderVentures(d.ventures||[],d.tasks||[],d.crm_leads||[],d.clients||[],d.financials||[]);
   if(canAccess('tasks'))renderTasks(d.tasks||[],d.team_members||[]);

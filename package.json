@@ -1,10 +1,10 @@
 {
-  "name": "teknnuku-call-center-api",
+  "name": "teknnuku-email-automation",
   "version": "1.0.0",
   "private": true,
-  "description": "Vercel serverless functions powering the TEKNNUKU Studio Call Center (Twilio Voice token generation, TwiML webhook, and status callback).",
+  "description": "Cron-driven email automation engine for TEKNNUKU Studio — watches all 5 public form collections and runs each submission through a 6-step nurture sequence via Zoho SMTP.",
   "dependencies": {
-    "twilio": "^5.3.0",
+    "nodemailer": "^7.0.0",
     "firebase-admin": "^12.6.0"
   }
 }

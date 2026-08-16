@@ -1,170 +1,190 @@
-# TEKNNUKU Call Center — Setup Guide
+# TEKNNUKU Email Automation — Setup Guide
 
-This adds a browser-based phone (Twilio Voice) to your existing TEKNNUKU
-Studio admin panel: agents can dial out, receive inbound calls, and every
-call gets logged automatically with duration, outcome, and notes.
+Watches all 5 of your public form collections (`intake_leads`, `fgp_applications`,
+`service_inquiries`, `contact_messages`, `applicants`) and runs every submission
+through a tailored 6-step email sequence — confirmation + internal alert
+immediately, then follow-ups at day 1, 3, 5, and 7 — sent via your existing
+Zoho mailboxes. **None of your existing forms need to change.** The engine
+finds new submissions itself by polling, rather than requiring your forms to
+call it directly.
 
-**What's in this zip:**
+## What's in this zip
 
 ```
-admin.html                  ← drop-in replacement for your current admin.html
+admin.html                  ← your admin panel, updated with a new
+                               Communications panel (visibility into
+                               automation status + email logs, plus
+                               pause/resume per sequence)
 api/
-  voice-token.js            ← mints a Twilio Voice token for a signed-in agent
-  voice-webhook.js          ← tells Twilio what to do on outbound + inbound calls
-  voice-status.js           ← keeps call records accurate server-side
-  _firebaseAdmin.js         ← shared Firebase Admin SDK init (used by the above)
-package.json                ← dependencies for the /api functions
-vercel.json                 ← runtime config for the /api functions
-firebase/firestore.rules    ← updated rules (adds the `calls` collection)
-README.md                   ← this file
+  process-automation.js     ← the engine (cron-triggered)
+  _firebaseAdminEmail.js    ← shared Firebase Admin init (renamed to avoid
+                               colliding with the Call Center's own admin
+                               init file, if you're merging into that project)
+email/
+  mailer.js                 ← Zoho SMTP transport (Nodemailer)
+  layouts/default.js        ← shared visual shell every email uses
+  components/               ← header, footer, button, signature
+  templates/
+    adminNotification.js    ← shared internal-alert template
+    assessment/  fgp/  inquiry/  contact/  applicant/
+                             ← 5 template files each, one per sequence step
+automation/
+  sequences.js               ← defines all 5 sequences as data
+firebase/
+  firestore.rules            ← updated rules (adds automations + emailLogs)
+package.json
+vercel.json
+README.md
 ```
 
-Nothing here touches your FGP system or any other files — it's all
-additive to your existing `teknnuku-intake-form` Firebase project.
+## Part 1 — Merging with your Call Center deployment
 
----
+If you already deployed the Call Center system into the same Vercel project,
+**your existing `vercel.json` needs to be replaced with the one in this zip**
+— it's not a diff, it's the full merged config covering both the Call
+Center's 3 functions and this system's `process-automation` function plus its
+cron schedule. Don't just drop this `vercel.json` in blindly without checking
+you haven't since added anything else to your old one that needs preserving.
 
-## Part 1 — Twilio account setup
+The `api/_firebaseAdminEmail.js` file is deliberately named differently from
+the Call Center's `api/_firebaseAdmin.js` so dropping both into the same
+`/api` folder won't overwrite either one.
 
-You'll need a Twilio account. This has real running costs: roughly
-$1–2/month for the phone number, plus per-minute call charges (Nigeria
-termination rates vary — check Twilio's pricing page before going live).
+If you're **not** merging with the Call Center project, ignore the above —
+just drop everything in as-is.
 
-1. **Sign up** at twilio.com and verify your account.
-2. **Buy a phone number** — Console → Phone Numbers → Buy a Number. Any
-   number with Voice capability works; a number with local presence in
-   Nigeria is worth considering if you'll take a lot of inbound calls,
-   but a US/UK number works fine to start.
-3. **Create an API Key** — Console → Account → API keys & tokens →
-   Create API Key. Save the **SID** and **Secret** immediately — the
-   secret is only shown once.
-4. **Create a TwiML App** — Console → Voice → TwiML Apps → Create new
-   TwiML App.
-   - Name it "TEKNNUKU Call Center"
-   - Voice → "A call comes in" → Webhook → paste your deployed
-     `https://your-domain.vercel.app/api/voice-webhook` (you'll get this
-     URL after Part 2 — come back and fill this in once you've deployed)
-   - Save, then copy the **TwiML App SID**
-5. **Point your phone number at the same webhook** — Console → Phone
-   Numbers → your number → Voice Configuration → "A call comes in" →
-   Webhook → same `/api/voice-webhook` URL.
-6. Note down your **Account SID** and **Auth Token** from the Console
-   dashboard homepage.
+## Part 2 — Zoho SMTP setup
 
-You should now have five values: Account SID, Auth Token, API Key SID,
-API Key Secret, TwiML App SID — plus the phone number you bought.
+1. Log into Zoho Mail admin and go to **Settings → Mail Accounts** to confirm
+   whether `hello@teknnuku.xyz` is on a free or paid organization plan — this
+   determines your actual SMTP host. **Don't assume** `smtp.zoho.com`; check
+   your account's own SMTP configuration page for the exact hostname (it may
+   be `smtppro.zoho.com` if you're on a paid plan).
+2. If your account has two-factor authentication on, generate an
+   **app-specific password** for SMTP (Zoho Account → Security → App
+   Passwords) — don't use your normal login password.
+3. Confirm whether `studio@teknnuku.xyz` is an **alias** on the same mailbox
+   as `hello@teknnuku.xyz`, or a fully separate mailbox. If separate, the
+   account you authenticate SMTP with must actually be authorized to send as
+   whichever address you use in `from:`.
 
----
+## Part 3 — Firebase service account
 
-## Part 2 — Firebase Admin service account
+Same as the Call Center setup, if you haven't already got one:
 
-The serverless functions need to verify agent sign-ins and write call
-records server-side, which requires a Firebase service account (separate
-from the public API key already in admin.html).
+1. Firebase Console → Project Settings → Service Accounts → **Generate new
+   private key**.
+2. Base64-encode the whole file: `base64 -i your-key.json | tr -d '\n'`
+   (Mac/Linux) or the PowerShell equivalent on Windows.
+3. Save that string — it's your `FIREBASE_SERVICE_ACCOUNT_KEY` env var. If
+   you already set this for the Call Center deployment in the same Vercel
+   project, you can reuse the exact same value.
 
-1. Firebase Console → Project Settings → Service Accounts →
-   **Generate new private key**. This downloads a JSON file — keep it
-   secret, never commit it anywhere public.
-2. Base64-encode the whole file onto one line:
-   - Mac/Linux: `base64 -i your-service-account.json | tr -d '\n'`
-   - Windows (PowerShell): `[Convert]::ToBase64String([IO.File]::ReadAllBytes("your-service-account.json"))`
-3. Save that output — it's your `FIREBASE_SERVICE_ACCOUNT_KEY` env var.
+## Part 4 — Vercel environment variables
 
----
+| Variable | Value |
+|---|---|
+| `ZOHO_SMTP_HOST` | Whatever Part 2 told you (`smtp.zoho.com` or `smtppro.zoho.com`) |
+| `ZOHO_SMTP_PORT` | `465` (SSL) or `587` (TLS) |
+| `ZOHO_SMTP_USER` | `hello@teknnuku.xyz` |
+| `ZOHO_SMTP_PASSWORD` | Your app-specific password from Part 2 |
+| `ADMIN_NOTIFY_EMAIL` | Where internal "new submission" alerts should land, e.g. `hello@teknnuku.xyz` |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | Base64 string from Part 3 |
+| `SITE_URL` | `https://studio.teknnuku.xyz` (or your actual domain — used to build links in emails) |
+| `ADMIN_URL` | Same domain, used for the "View in Admin Panel" link in internal alerts |
+| `AUTOMATION_TRIGGER_SECRET` | Any random string — lets you manually trigger a run for testing without waiting for the cron schedule (see Part 6) |
 
-## Part 3 — Deploy to Vercel
+## Part 5 — About the cron schedule, honestly
 
-If your existing TEKNNUKU site (`studio.teknnuku.xyz`) is already a
-Vercel project, add these files to that **same** project — the `/api`
-folder is auto-detected by Vercel as serverless functions, no extra
-config needed beyond what's in `vercel.json`.
+**Your Vercel account is on the Hobby plan**, which currently limits Cron
+Jobs to a maximum of once per day — not the every-few-minutes schedule that
+would make emails feel truly instant. I've set `vercel.json` to run daily at
+09:00 UTC as a safe default that will actually deploy and run on your plan.
 
-1. Copy `admin.html`, the `api/` folder, `package.json`, and `vercel.json`
-   into your existing project repo/folder (replacing your current
-   `admin.html`).
-2. In the **Vercel dashboard** → your project → Settings →
-   Environment Variables, add:
+What this means practically: someone who submits a form today gets their
+confirmation email the *next* time the cron fires — up to ~24 hours later,
+not near-instant. If that delay isn't acceptable, you have two options:
+upgrade to a Vercel Pro plan (which supports much more frequent cron
+schedules — change the `schedule` value in `vercel.json` to `"*/5 * * * *"`
+for every 5 minutes once you've upgraded), or trigger the engine another way
+(e.g. an external free cron-ping service hitting your endpoint every few
+minutes, using the `AUTOMATION_TRIGGER_SECRET` header — see Part 6).
 
-   | Variable | Value |
-   |---|---|
-   | `TWILIO_ACCOUNT_SID` | from Part 1 |
-   | `TWILIO_AUTH_TOKEN` | from Part 1 |
-   | `TWILIO_API_KEY_SID` | from Part 1 |
-   | `TWILIO_API_KEY_SECRET` | from Part 1 |
-   | `TWILIO_TWIML_APP_SID` | from Part 1 |
-   | `TWILIO_CALLER_ID` | your Twilio phone number, e.g. `+15551234567` |
-   | `AGENT_IDENTITIES` | comma-separated Firebase UIDs of agents who should receive inbound calls, e.g. `abc123,def456` (find UIDs in Firebase Console → Authentication) |
-   | `FIREBASE_SERVICE_ACCOUNT_KEY` | the base64 string from Part 2 |
-   | `TWILIO_RECORD_CALLS` | `true` or `false` (optional — off by default; see note below) |
-   | `TWILIO_VALIDATE_SIGNATURE` | leave unset for now — see note below |
+## Part 6 — Testing before it's live
 
-3. Deploy (push to your connected git branch, or `vercel --prod` if you
-   deploy via CLI).
-4. Copy your deployed URL and go back to Part 1, step 4–5, to paste the
-   real `/api/voice-webhook` URL into Twilio's console.
+**Verify your SMTP credentials work, without sending anything:**
+```js
+// Run this once locally with your env vars set, or temporarily add a
+// console.log(await verifyConnection()) call inside process-automation.js
+const { verifyConnection } = require('./email/mailer.js');
+await verifyConnection(); // throws if host/port/auth are wrong
+```
 
-### About call recording
-`TWILIO_RECORD_CALLS` is off by default on purpose. Recording calls has
-legal and consent implications that vary by state/country — confirm
-what's required where your team and customers are before turning this
-on. If you enable it, recording URLs get saved to each call's Firestore
-record automatically.
+**Manually trigger a full run** (bypasses the cron schedule, useful for
+testing without waiting a day):
+```bash
+curl -X POST https://your-domain.vercel.app/api/process-automation \
+  -H "x-automation-secret: YOUR_AUTOMATION_TRIGGER_SECRET"
+```
+This finds any new submissions across all 5 collections and sends whatever
+steps are due. Submit a real test entry through one of your forms first,
+then run this — you should get the immediate confirmation + internal alert.
 
-### About signature validation
-`voice-webhook.js` can verify that requests genuinely came from Twilio
-(not someone spoofing calls). It's off by default so a URL/proxy quirk
-during your first deploy can't silently break every call before you've
-had a chance to test. Once you've confirmed calls work end-to-end, set
-`TWILIO_VALIDATE_SIGNATURE=true` for production.
+## Part 7 — Deploy the updated Firestore rules
 
----
+`firebase/firestore.rules` in this zip is your **complete, current** rules
+file — includes everything from before plus the two new collections this
+system uses (`automations`, `emailLogs`). Deploy it the same way as your last
+rules update.
 
-## Part 4 — Deploy the updated Firestore rules
+## What each of the 5 sequences actually says
 
-`firebase/firestore.rules` in this zip is your **complete, current**
-rules file (not a diff) — it includes every collection your system
-already uses, plus the new `calls` collection. Deploy it the same way
-you deployed the last rules update (Firebase Console → Firestore
-Database → Rules → paste and publish, or `firebase deploy --only
-firestore:rules` if you use the CLI).
+All five follow the same 6-step cadence (immediate confirmation + immediate
+internal alert, then day 1/3/5/7 follow-ups) but the tone and content are
+deliberately different per source:
 
----
+- **Assessment** (`intake_leads`) — sales nurture: growth problems, common
+  mistakes, strategy session invite.
+- **FGP** (`fgp_applications`) — application status: program recap, traction
+  stats, slots reminder.
+- **Inquiry** (`service_inquiries`) — lighter sales touch: how you work, proof,
+  a discovery call invite.
+- **Contact** (`contact_messages`) — deliberately the softest sequence, since
+  these are the least qualified/most generic entry point — mostly check-ins,
+  not a sales push.
+- **Applicant** (`applicants`) — recruiting tone throughout, not sales: hiring
+  process, culture, status updates.
 
-## Part 5 — Test it
+Edit any individual email's copy in `email/templates/<sequence>/`, or change
+timing/ordering in `automation/sequences.js`.
 
-1. Open the admin panel, sign in, go to the new **Call Center** panel
-   in the sidebar (you'll need one of these roles: founder, ops_lead,
-   sales_manager, inbound_closer, outbound_closer, or
-   outreach_lead_gen).
-2. Click **Go Online**. If this fails, open the browser console — the
-   error message will tell you exactly which env var or setup step is
-   missing.
-3. Enter your own phone number and click **Call**. You should see your
-   phone ring with the Twilio number as caller ID.
-4. Answer, talk, hang up — you'll be prompted for a call outcome, and
-   the call should appear in the Call History table below.
-5. Test inbound: call your Twilio number from your phone. It should
-   ring in the browser (any agent listed in `AGENT_IDENTITIES` who is
-   currently online).
+## The Communications panel
 
----
+Open `admin.html` → sidebar → **Communications** (visible to Founder, Ops
+Lead, Sales Manager, and Content Lead by default — change this in
+`ROLE_PERMISSIONS` if you want other roles to see it). You'll find:
+
+- **Stats** — active sequences, completed, sent today, and failed sends (this
+  last one turns red if anything's actually broken — check the Zoho
+  credentials first if you see failures).
+- **Active & Recent Sequences** — every automation, who it's for, which
+  sequence, what step it's on, when the next email goes out, and a
+  Pause/Resume button per row.
+- **Email Log** — every email actually sent or attempted, searchable by
+  recipient or subject.
+
+Nothing in this panel writes automation records directly — those are
+engine-owned (see Part 7's rules comment). The one write it does perform is
+flipping `status` to `paused`/`active` on an automation, which the engine
+respects on its next run.
 
 ## Extending this later
 
-- **Click-to-call is already wired into CRM leads** — a "📞 Call"
-  button appears on any lead with a phone number if you have
-  `callcenter` access. Adding it to Clients or Proposals is the same
-  pattern: call `dialCall(phone, name, contactId, contactType)`.
-- **Real-time agent presence for inbound routing** — right now
-  `AGENT_IDENTITIES` is a static list. To only ring agents who are
-  actually online, have `voice-webhook.js` query a Firestore
-  `agent_presence` collection (written by the browser on
-  `Device.on('registered')` / on tab close) instead of reading the env
-  var.
-- **WhatsApp follow-up automation** — the outcome buttons already
-  capture "Interested" / "Call Back" / etc. per call; hooking a WhatsApp
-  Business API send into `saveCallOutcome()` is the natural next step,
-  as the original design doc describes.
-- **AI call summaries** — `recordingUrl` is already saved on each call
-  doc when recording is on; a Cloud Function or scheduled job that
-  transcribes and summarizes new recordings is a clean V3 addition.
+- **Stopping a sequence when someone converts** (e.g. an assessment lead
+  books a consultation) — the same `status` field the Pause button uses can
+  be set programmatically from elsewhere in your codebase too.
+- **Real-time agent presence for inbound routing** — not applicable here,
+  that's a Call Center note.
+- **AI-summarized weekly digest** of automation performance — the data's
+  already structured for it in `emailLogs`; a scheduled job that aggregates
+  and emails a summary to the team is a natural next step.
