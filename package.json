@@ -4,7 +4,7 @@
   "private": true,
   "description": "Cron-driven email automation engine for TEKNNUKU Studio — watches all 5 public form collections and runs each submission through a 6-step nurture sequence via Zoho SMTP.",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "dependencies": {
     "nodemailer": "^7.0.0",
