@@ -37,6 +37,18 @@ vercel.json
 README.md
 ```
 
+## Troubleshooting
+
+**"Function Runtimes must have a valid version, for example `now-php@1.0.0`"**
+— this means `vercel.json` has an invalid `runtime` value somewhere (like
+`"nodejs20.x"`). That field is only for specifying a third-party community
+runtime package version, not for pinning the Node.js version — Vercel
+auto-detects Node functions on its own. To control the Node version, use
+`"engines": {"node": "20.x"}` in `package.json` instead (already set in this
+delivery). If you still hit this error, check whether your repo has an
+older `vercel.json` with `runtime` entries left over from a previous deploy
+and make sure it's been fully replaced by the one in this zip.
+
 ## Part 1 — Merging with your Call Center deployment
 
 If you already deployed the Call Center system into the same Vercel project,
