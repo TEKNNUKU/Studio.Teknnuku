@@ -1,11 +1,14 @@
 {
+  "cleanUrls": true,
   "functions": {
-    "api/process-automation.js": { "maxDuration": 60 }
+    "api/process-automation.js": {
+      "maxDuration": 60
+    }
   },
   "crons": [
     {
       "path": "/api/process-automation",
-      "schedule": "0 5 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
