@@ -2,24 +2,41 @@
 
 Watches all 5 of your public form collections (`intake_leads`, `fgp_applications`,
 `service_inquiries`, `contact_messages`, `applicants`) and runs every submission
-through a tailored 6-step email sequence — confirmation + internal alert
-immediately, then follow-ups at day 1, 3, 5, and 7 — sent via your existing
-Zoho mailboxes. **None of your existing forms need to change.** The engine
-finds new submissions itself by polling, rather than requiring your forms to
-call it directly.
+through a tailored 6-step email sequence.
+
+**Update: the first confirmation email is now genuinely instant**, not
+delayed until the next cron run. Steps 1-2 (the "we got it" confirmation +
+internal team alert) fire the moment someone submits a form. Steps 3-6 (the
+day 1/3/5/7 follow-ups, where a day's precision doesn't matter) still run on
+the daily cron. This needed three small, safe additions to your existing
+forms — see "How instant delivery actually works" below for exactly what
+changed and why it can't break your forms even if the email service is
+having a bad day.
 
 ## What's in this zip
 
 ```
-admin.html                  ← your admin panel, updated with a new
-                               Communications panel (visibility into
-                               automation status + email logs, plus
-                               pause/resume per sequence)
+admin.html                  ← your admin panel, with a Communications panel
+                               (automation status, email logs, pause/resume,
+                               and — new — Verify SMTP / Run Now buttons for
+                               testing without a terminal)
+frontend/
+  index.html                 ← updated: fires instant confirmations for
+                               Assessment, Contact, and Service Inquiry forms
+  intakeform.html             ← updated: same, for the standalone assessment page
+  fgp-application.html        ← updated: same, for Founding Growth Partners
 api/
-  process-automation.js     ← the engine (cron-triggered)
+  process-automation.js     ← daily cron sweep (now a thin wrapper — see below)
+  send-confirmation.js      ← NEW: instant step 1-2 trigger, called by the forms
+  verify-smtp.js            ← NEW: browser-friendly SMTP credential check
   _firebaseAdminEmail.js    ← shared Firebase Admin init (renamed to avoid
                                colliding with the Call Center's own admin
                                init file, if you're merging into that project)
+automation/
+  engine.js                  ← NEW: the actual send/log/advance logic, shared
+                               by both process-automation.js and
+                               send-confirmation.js so they can't drift apart
+  sequences.js                ← defines all 5 sequences as data
 email/
   mailer.js                 ← Zoho SMTP transport (Nodemailer)
   layouts/default.js        ← shared visual shell every email uses
@@ -28,8 +45,6 @@ email/
     adminNotification.js    ← shared internal-alert template
     assessment/  fgp/  inquiry/  contact/  applicant/
                              ← 5 template files each, one per sequence step
-automation/
-  sequences.js               ← defines all 5 sequences as data
 firebase/
   firestore.rules            ← updated rules (adds automations + emailLogs)
 package.json
@@ -109,38 +124,78 @@ Same as the Call Center setup, if you haven't already got one:
 ## Part 5 — About the cron schedule, honestly
 
 **Your Vercel account is on the Hobby plan**, which currently limits Cron
-Jobs to a maximum of once per day — not the every-few-minutes schedule that
-would make emails feel truly instant. I've set `vercel.json` to run daily at
+Jobs to a maximum of once per day. I've set `vercel.json` to run daily at
 09:00 UTC as a safe default that will actually deploy and run on your plan.
 
-What this means practically: someone who submits a form today gets their
-confirmation email the *next* time the cron fires — up to ~24 hours later,
-not near-instant. If that delay isn't acceptable, you have two options:
-upgrade to a Vercel Pro plan (which supports much more frequent cron
-schedules — change the `schedule` value in `vercel.json` to `"*/5 * * * *"`
-for every 5 minutes once you've upgraded), or trigger the engine another way
-(e.g. an external free cron-ping service hitting your endpoint every few
-minutes, using the `AUTOMATION_TRIGGER_SECRET` header — see Part 6).
+This used to mean confirmation emails could be delayed up to a day — that's
+fixed now (see "How instant delivery actually works" below). What's still on
+the daily schedule is just steps 3-6, the day 1/3/5/7 nurture follow-ups,
+where a day's precision genuinely doesn't matter. If you ever want those
+tighter too, upgrading to Vercel Pro lets you change the `schedule` value in
+`vercel.json` to something like `"*/15 * * * *"` for every 15 minutes.
+
+## How instant delivery actually works
+
+Each of the three form files now does this, right after its existing
+Firestore save succeeds:
+
+```js
+fetch('/api/send-confirmation', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ collection: 'intake_leads', docId: docRef.id })
+}).catch(() => {});
+```
+
+Three things make this safe to add without any risk to your forms:
+
+1. **It's fire-and-forget.** The form doesn't `await` this call or check its
+   result — the person sees their normal success message exactly as before,
+   instantly, whether or not the email side works.
+2. **Failure is silently swallowed** (`.catch(() => {})`). If Zoho is down,
+   your Vercel deployment has an issue, or anything else goes wrong, the form
+   submission itself is completely unaffected.
+3. **The daily cron is still the safety net.** If the instant call never
+   fires or fails outright, `process-automation.js`'s daily sweep will still
+   find that submission and send its confirmation — just up to a day later
+   instead of instantly. Nobody's confirmation email silently vanishes
+   forever; worst case, it's just not instant.
+
+The endpoint itself (`send-confirmation.js`) never trusts anything the form
+sends except *which* collection and *which* document — it always re-reads
+the actual submitted data from Firestore before building the email, so
+there's no way to spoof email content or send to an arbitrary address
+through this endpoint.
 
 ## Part 6 — Testing before it's live
 
-**Verify your SMTP credentials work, without sending anything:**
-```js
-// Run this once locally with your env vars set, or temporarily add a
-// console.log(await verifyConnection()) call inside process-automation.js
-const { verifyConnection } = require('./email/mailer.js');
-await verifyConnection(); // throws if host/port/auth are wrong
-```
+You don't need a terminal or curl for any of this — it's all built into the
+admin panel now.
 
-**Manually trigger a full run** (bypasses the cron schedule, useful for
-testing without waiting a day):
-```bash
-curl -X POST https://your-domain.vercel.app/api/process-automation \
-  -H "x-automation-secret: YOUR_AUTOMATION_TRIGGER_SECRET"
+1. Open `admin.html` → **Communications** in the sidebar.
+2. At the top, paste your `AUTOMATION_TRIGGER_SECRET` (the same value you
+   set in Vercel's environment variables) into the password field. It's
+   saved in your browser so you won't need to re-enter it every visit.
+3. Click **✓ Verify SMTP** first. This checks your Zoho host, port, and
+   login are all correct — without sending a single email. If it fails,
+   the error message tells you exactly what's wrong (usually a wrong host,
+   port, or password).
+4. Once that passes, submit a real test entry through one of your actual
+   forms (the assessment, a contact message, whatever's easiest to test).
+   You should get the confirmation email within seconds now — that's the
+   instant path working.
+5. Click **▶ Run Automation Now** to manually trigger the daily sweep
+   without waiting for its schedule — useful for testing the day 3/5/7
+   follow-ups without actually waiting days (temporarily back-date an
+   automation's `nextRunAt` in Firestore if you want to test a later step
+   without waiting).
+
+If you'd rather use curl or a browser URL directly (e.g. for scripting or
+automated monitoring), both endpoints also accept the secret as a query
+parameter, so this works too — paste it straight into a browser address bar:
 ```
-This finds any new submissions across all 5 collections and sends whatever
-steps are due. Submit a real test entry through one of your forms first,
-then run this — you should get the immediate confirmation + internal alert.
+https://your-domain.vercel.app/api/verify-smtp?secret=YOUR_AUTOMATION_TRIGGER_SECRET
+```
 
 ## Part 7 — Deploy the updated Firestore rules
 
@@ -176,6 +231,8 @@ Open `admin.html` → sidebar → **Communications** (visible to Founder, Ops
 Lead, Sales Manager, and Content Lead by default — change this in
 `ROLE_PERMISSIONS` if you want other roles to see it). You'll find:
 
+- **Testing & Manual Trigger** — the secret field, Verify SMTP, and Run Now
+  buttons described in Part 6 above.
 - **Stats** — active sequences, completed, sent today, and failed sends (this
   last one turns red if anything's actually broken — check the Zoho
   credentials first if you see failures).
@@ -186,9 +243,9 @@ Lead, Sales Manager, and Content Lead by default — change this in
   recipient or subject.
 
 Nothing in this panel writes automation records directly — those are
-engine-owned (see Part 7's rules comment). The one write it does perform is
-flipping `status` to `paused`/`active` on an automation, which the engine
-respects on its next run.
+engine-owned (see Part 7's rules comment). The only writes it performs are
+flipping `status` to `paused`/`active` on an automation, and triggering the
+two test endpoints — everything else is read-only visibility.
 
 ## Extending this later
 

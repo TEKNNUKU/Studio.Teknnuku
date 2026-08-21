@@ -4854,6 +4854,18 @@ function _panelCommunications() {
     '<div class="eyebrow">Sales & CRM</div>' +
     '<div class="panel-header"><div class="panel-title">Communications</div></div>' +
 
+    '<div class="cc-dialer-card" style="margin-bottom:20px;">' +
+      '<div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dimmer);margin-bottom:12px;">Testing & Manual Trigger</div>' +
+      '<div class="cc-field-row" style="margin-bottom:10px;">' +
+        '<input type="password" id="comms-secret-input" class="form-input" placeholder="Automation Trigger Secret (from your Vercel env vars)" value="'+escHtml(localStorage.getItem('tek_automation_secret')||'')+'" oninput="localStorage.setItem(\'tek_automation_secret\', this.value)">' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="commsVerifySmtp()">✓ Verify SMTP</button>' +
+        '<button class="btn-primary" style="padding:9px 16px;font-size:.75rem;" onclick="commsRunNow()">▶ Run Automation Now</button>' +
+      '</div>' +
+      '<div id="comms-trigger-result" style="margin-top:12px;font-family:var(--mono);font-size:.76rem;display:none;"></div>' +
+    '</div>' +
+
     '<div class="kpi-grid" id="comms-stats-grid" style="margin-bottom:20px;"></div>' +
 
     '<div class="table-wrap" style="margin-bottom:20px;">' +
@@ -4960,6 +4972,43 @@ function toggleCommsAutomation(id, newStatus) {
     toast(newStatus==='paused' ? 'Sequence paused' : 'Sequence resumed', 'success');
     window._loadAll();
   }).catch(function(e){ toast('Could not update: '+e.message, 'error'); });
+}
+
+function commsShowTriggerResult(html, isError) {
+  var el = document.getElementById('comms-trigger-result');
+  if (!el) return;
+  el.style.display = 'block';
+  el.style.color = isError ? 'var(--red)' : 'var(--green)';
+  el.innerHTML = html;
+}
+async function commsVerifySmtp() {
+  var secret = document.getElementById('comms-secret-input').value.trim();
+  if (!secret) { toast('Enter your Automation Trigger Secret first', 'error'); return; }
+  commsShowTriggerResult('Checking SMTP connection…', false);
+  try {
+    var res = await fetch('/api/verify-smtp', { headers: { 'x-automation-secret': secret } });
+    var data = await res.json();
+    commsShowTriggerResult(data.ok ? '✓ ' + data.message : '✕ ' + data.error, !data.ok);
+  } catch (e) {
+    commsShowTriggerResult('✕ Request failed: ' + e.message, true);
+  }
+}
+async function commsRunNow() {
+  var secret = document.getElementById('comms-secret-input').value.trim();
+  if (!secret) { toast('Enter your Automation Trigger Secret first', 'error'); return; }
+  commsShowTriggerResult('Running automation sweep…', false);
+  try {
+    var res = await fetch('/api/process-automation', { method: 'POST', headers: { 'x-automation-secret': secret } });
+    var data = await res.json();
+    if (data.ok) {
+      commsShowTriggerResult('✓ Run complete — ' + data.newAutomations + ' new automation(s) found, ' + data.emailsSent + ' email(s) sent' + (data.emailsFailed ? ', ' + data.emailsFailed + ' failed' : '') + '.', data.emailsFailed > 0);
+      setTimeout(function(){ window._loadAll(); }, 800);
+    } else {
+      commsShowTriggerResult('✕ ' + (data.error || 'Run failed'), true);
+    }
+  } catch (e) {
+    commsShowTriggerResult('✕ Request failed: ' + e.message, true);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
