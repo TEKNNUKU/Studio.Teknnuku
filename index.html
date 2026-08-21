@@ -3,37 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Designs & SEO for African, Global Businesses | Get Found, Get Customers — TEKNNUKU Studio</title>
-<meta name="description" content="Get your business found on Google, trusted by customers, and set up to sell online — websites, Google Business Profile setup, WhatsApp automation, sales systems & digitization for Nigerian, African, American, Global businesses. Free business listing included. Book a free 2-minute diagnostic.">
-<link rel="canonical" href="https://studio.teknnuku.xyz/">
-<meta name="robots" content="index, follow">
-<meta name="keywords" content="website design Nigeria, Africa, America, Global, Google Business Profile setup Nigeria, Africa, America, Global, local SEO Nigeria, Africa, America, Global, WhatsApp automation Nigeria, Africa, America, Global, business systemization Nigeria, Africa, America, Global, MVP development Nigeria, Africa, America, Global, startup studio Nigeria, Africa, America, Global">
-
-<!-- Open Graph -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="System Designs & SEO for African, Global Businesses | TEKNNUKU Studio">
-<meta property="og:description" content="Get found on Online. Get trusted by customers. Get paid — automatically. Business systems built for Nigerian, African, American, Global founders and operators, starting free.">
-<meta property="og:url" content="https://studio.teknnuku.xyz/">
-<meta property="og:image" content="https://studio.teknnuku.xyz/og-image.jpg">
-<meta property="og:locale" content="en_NG">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="TEKNNUKU Studio — Get Found. Get Trusted. Get Customers.">
-<meta name="twitter:description" content="Websites, local SEO, WhatsApp automation & sales systems for Nigerian, African, Global businesses. Free listing included.">
-<meta name="twitter:image" content="https://teknnuku.xyz/og-image.jpg">
-
-<!-- Favicons & Icons -->
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#080808">
-
+<title>TEKNNUKU Studio — We Design, Build & Validate Digital Businesses</title>
+<meta name="description" content="TEKNNUKU Studio is a venture factory that designs, builds, and validates revenue-ready digital businesses. Not just websites. For serious founders and operators only.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
@@ -70,6 +41,10 @@
         createdAt: serverTimestamp()
       });
       console.log("✅ Lead saved:", docRef.id);
+      fetch('/api/send-confirmation', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collection: 'intake_leads', docId: docRef.id })
+      }).catch(() => {});
       return docRef.id;
     } catch (err) {
       console.warn("⚠️ Firebase write failed:", err.message);
@@ -84,6 +59,10 @@
         createdAt: serverTimestamp()
       });
       console.log("✅ Contact message saved:", docRef.id);
+      fetch('/api/send-confirmation', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collection: 'contact_messages', docId: docRef.id })
+      }).catch(() => {});
       return docRef.id;
     } catch (err) {
       console.warn("⚠️ Firebase contact write failed:", err.message);
@@ -98,6 +77,10 @@
         createdAt: serverTimestamp()
       });
       console.log("✅ Service inquiry saved:", docRef.id);
+      fetch('/api/send-confirmation', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collection: 'service_inquiries', docId: docRef.id })
+      }).catch(() => {});
       return docRef.id;
     } catch (err) {
       console.warn("⚠️ Firebase service inquiry write failed:", err.message);
@@ -151,7 +134,7 @@ window.__lastCalendlyContext = '';
 
 function openCalendlyPopup(evt, context) {
   if (evt && evt.preventDefault) evt.preventDefault();
-  var url = (evt && evt.currentTarget && evt.currentTarget.href) || 'https://calendly.com/teknnuku/30min';
+  var url = (evt && evt.currentTarget && evt.currentTarget.href) || 'https://calendly.com/hello-teknnuku/30min';
   window.__lastCalendlyContext = context || 'unknown';
 
   if (typeof Calendly === 'undefined') {
@@ -3682,138 +3665,6 @@ body { overflow-x: clip; }
   .hero-img-bg img { object-position: center 20%; }
 }
 </style>
-
-<!-- ═══ SEO: STRUCTURED DATA (JSON-LD) ═══ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  "name": "TEKNNUKU Studio",
-  "description": "TEKNNUKU Studio designs, builds, and validates revenue-ready digital businesses — websites, branding, local SEO, sales systems, business automation, and custom software for Nigerian, African, American, Global founders and operators.",
-  "url": "https://teknnuku.xyz/",
-  "priceRange": "\u20a6\u20a6-\u20a6\u20a4\u20a4\u20a4",
-  "areaServed": [
-    { "@type": "Country", "name": "Nigeria, Africa, America, Global" },
-    { "@type": "Place", "name": "Nigerian, African, American, Global diaspora" }
-  ],
-  "address": {
-    "@type": "PostalAddress",
-    "addressCountry": "NG"
-  },
-  "sameAs": [
-    "https://globalbizhub.teknnuku.xyz"
-  ]
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  "name": "TEKNNUKU Studio Services",
-  "itemListElement": [
-    {
-      "@type": "Service",
-      "position": 1,
-      "name": "Visibility System — Website, Google Business Profile & Local SEO",
-      "description": "Get your business found on Google Search and Maps with a professional website, Google Business Profile setup, and local SEO.",
-      "offers": { "@type": "Offer", "priceCurrency": "NGN", "priceSpecification": { "@type": "PriceSpecification", "minPrice": "120000", "maxPrice": "700000", "priceCurrency": "NGN" } }
-    },
-    {
-      "@type": "Service",
-      "position": 2,
-      "name": "Brand Authority System",
-      "description": "Logo, brand strategy, and trust-building assets that make customers trust your business within seconds.",
-      "offers": { "@type": "Offer", "priceCurrency": "NGN", "priceSpecification": { "@type": "PriceSpecification", "minPrice": "150000", "maxPrice": "800000", "priceCurrency": "NGN" } }
-    },
-    {
-      "@type": "Service",
-      "position": 3,
-      "name": "Lead Generation System",
-      "description": "A predictable system for attracting qualified leads — landing pages, lead magnets, CRM, WhatsApp entry points, and paid advertising setup.",
-      "offers": { "@type": "Offer", "priceCurrency": "NGN", "priceSpecification": { "@type": "PriceSpecification", "minPrice": "200000", "maxPrice": "1200000", "priceCurrency": "NGN" } }
-    },
-    {
-      "@type": "Service",
-      "position": 4,
-      "name": "Sales Conversion System — WhatsApp Automation & Payments",
-      "description": "Sales funnels, payment integration (Paystack/Flutterwave), WhatsApp automation, AI chatbot, and CRM pipeline that convert inquiries into paying customers.",
-      "offers": { "@type": "Offer", "priceCurrency": "NGN", "priceSpecification": { "@type": "PriceSpecification", "minPrice": "50000", "maxPrice": "2500000", "priceCurrency": "NGN" } }
-    },
-    {
-      "@type": "Service",
-      "position": 5,
-      "name": "Business Systemization — Workflow Automation & CRM Setup",
-      "description": "Business process mapping, workflow automation, CRM setup, and internal software so your business runs without depending on you for everything.",
-      "offers": { "@type": "Offer", "priceCurrency": "NGN", "priceSpecification": { "@type": "PriceSpecification", "minPrice": "300000", "maxPrice": "4000000", "priceCurrency": "NGN" } }
-    },
-    {
-      "@type": "Service",
-      "position": 6,
-      "name": "Venture Build — MVP Development for Equity or Fixed Fee",
-      "description": "Idea validation, MVP build, brand identity, and go-to-market strategy for founders turning an idea into a revenue-generating business. Available for a fixed fee or equity partnership.",
-      "offers": { "@type": "Offer", "priceCurrency": "NGN", "priceSpecification": { "@type": "PriceSpecification", "minPrice": "750000", "maxPrice": "3000000", "priceCurrency": "NGN" } }
-    }
-  ]
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "How much does a website cost in Nigeria?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "At TEKNNUKU Studio, a professional business website starts at \u20a6120,000 for a starter visibility package (up to 5\u201315 pages, Google Business Profile setup, and SEO included) and scales to \u20a6700,000 for a full growth build. Unlike a standalone website, every package includes the systems needed to turn visitors into customers \u2014 not just a page that sits there."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I get my business to show up on Google Maps and local search in Nigeria?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "We set up and fully optimise your Google Business Profile \u2014 accurate categories, service areas, photos, and a review system \u2014 plus local SEO so you rank for searches in your city. This is included in our Visibility System starting at \u20a6120,000, or available standalone from \u20a630,000."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can I automate WhatsApp for my business in Nigeria?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. We build WhatsApp automation with auto-replies, lead qualification flows, 7-day follow-up sequences, and team handoff \u2014 so you never miss a customer message. This starts at \u20a680,000, or as an AI-powered chatbot with lead qualification from \u20a6150,000."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can I build my startup MVP for equity instead of paying upfront in Nigeria?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. Our Venture Build program takes ideas from validation through MVP build, branding, and launch for \u20a6750,000\u2013\u20a63,000,000, or as an equity partnership (10\u201330%) for founders who need a real co-builder, not just a developer for hire."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Can I hire a Nigerian digital agency from abroad as a diaspora business owner?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. All pricing is shown in NGN with automatic conversion for international visitors, and we work with diaspora founders building or managing a Nigeria-based business remotely \u2014 from initial consultation through to launch, without needing to be physically present."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What's the difference between a website and a business system?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "A website gets you found. A business system gets you found, trusted, and paid \u2014 automatically. TEKNNUKU Studio builds the full path: visibility, brand trust, lead generation, sales conversion, retention, and operations, not just a static page."
-      }
-    }
-  ]
-}
-</script>
 </head>
 <body>
 
@@ -3927,7 +3778,7 @@ body { overflow-x: clip; }
       </button>
       <p style="text-align:center;font-family:'DM Mono',monospace;font-size:.58rem;
         color:var(--dim);margin-top:12px;letter-spacing:.06em;">
-        We'll respond within 24hrs · Or <a href="https://calendly.com/teknnuku/30min" onclick="return openCalendlyPopup(event,'service_inquiry_modal_footer')" target="_blank"
+        We'll respond within 24hrs · Or <a href="https://calendly.com/hello-teknnuku/30min" onclick="return openCalendlyPopup(event,'service_inquiry_modal_footer')" target="_blank"
         style="color:#C89B14;text-decoration:none;">book a call directly</a>
       </p>
     </div>
@@ -3939,7 +3790,7 @@ body { overflow-x: clip; }
         color:var(--white);margin-bottom:10px;">Enquiry Received.</h3>
       <p id="si-success-msg" style="font-size:.88rem;color:var(--muted);
         max-width:360px;margin:0 auto 24px;line-height:1.7;"></p>
-      <a href="https://calendly.com/teknnuku/30min" onclick="return openCalendlyPopup(event,'service_inquiry_success')" target="_blank"
+      <a href="https://calendly.com/hello-teknnuku/30min" onclick="return openCalendlyPopup(event,'service_inquiry_success')" target="_blank"
         style="display:inline-flex;align-items:center;gap:8px;background:#C89B14;
         color:#080808;font-weight:700;font-size:.82rem;letter-spacing:.06em;
         text-transform:uppercase;padding:12px 24px;border-radius:4px;text-decoration:none;"
@@ -4030,7 +3881,7 @@ body { overflow-x: clip; }
         <span style="font-size:.72rem;color:var(--muted);">Join Our Server</span>
       </a>
 
-      <a href="https://calendly.com/teknnuku/30min" onclick="return openCalendlyPopup(event,'careers_modal')" target="_blank" rel="noopener"
+      <a href="https://calendly.com/hello-teknnuku/30min" onclick="return openCalendlyPopup(event,'careers_modal')" target="_blank" rel="noopener"
         style="background:rgba(14,14,14,.8);padding:18px 14px;text-align:center;
         text-decoration:none;transition:background .2s;display:flex;flex-direction:column;
         align-items:center;gap:6px;"
@@ -4132,7 +3983,7 @@ body { overflow-x: clip; }
           We'll get back to you within 24 hours. In the meantime, feel free to
           explore our work or book a call directly.
         </p>
-        <a href="https://calendly.com/teknnuku/30min" onclick="return openCalendlyPopup(event,'contact_modal_success')" target="_blank"
+        <a href="https://calendly.com/hello-teknnuku/30min" onclick="return openCalendlyPopup(event,'contact_modal_success')" target="_blank"
           style="display:inline-flex;align-items:center;gap:8px;background:#C89B14;
           color:#080808;font-weight:700;font-size:.82rem;letter-spacing:.06em;
           text-transform:uppercase;padding:12px 24px;border-radius:4px;text-decoration:none;
@@ -4736,7 +4587,7 @@ body { overflow-x: clip; }
     <div style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:14px;">
       Book a free 30-minute strategy call. We'll look at where your business is, what you need,
       and recommend exactly which system or membership makes the most sense right now.</div>
-    <a href="https://calendly.com/teknnuku/30min" onclick="return openCalendlyPopup(event,'strategy_call_widget')" target="_blank" rel="noopener"
+    <a href="https://calendly.com/hello-teknnuku/30min" onclick="return openCalendlyPopup(event,'strategy_call_widget')" target="_blank" rel="noopener"
        class="svm-btn gold" style="display:inline-block;text-decoration:none;">Book Free Strategy Call →</a>
   </div>
 </div>
@@ -5084,6 +4935,7 @@ body { overflow-x: clip; }
       <a href="#" onclick="openServicesModal();return false;">What we Offer</a>
       <a href="#ventures">Ventures</a>
       <a href="#process">Process</a>
+      <a href="#apply" onclick="openIntakeModal(); return false;">Get Qualified</a>
       <a href="https://globalbizhub.teknnuku.xyz" target="_blank" style="color:var(--gold);">List Free 🌐</a>
       <a href="#careers" onclick="openCareersModal();return false;" style="color:var(--gold);">Careers</a>
       <a href="fgp-application.html" style="color:var(--gold);">Founders Program ✦</a>
@@ -5103,6 +4955,7 @@ body { overflow-x: clip; }
   <a href="#" class="mob-link" onclick="closeMenu();openServicesModal();return false;">What we Offer</a>
   <a href="#ventures" class="mob-link">Active Ventures</a>
   <a href="#process"  class="mob-link">Our Process</a>
+  <a href="#apply" class="mob-link" onclick="closeMenu();openIntakeModal();return false;">Get Qualified</a>
   <a href="https://globalbizhub.teknnuku.xyz" target="_blank" class="mob-link" style="color:var(--gold);" onclick="closeMenu();">List Free 🌐</a>
   <a href="#careers" class="mob-link" onclick="closeMenu();openCareersModal();return false;" style="color:var(--gold);">Careers 🟢</a>
   <a href="fgp-application.html" class="mob-link" style="color:var(--gold);" onclick="closeMenu();">Founders Program ✦</a>
@@ -5143,9 +4996,9 @@ body { overflow-x: clip; }
         </a>
 
          <h1>
-          <span class="hero-line-1">Get Found on Online, Get Trusted, <span class="hero-gold-sweep">Get Customers.</span></span><br>
-          <span class="hero-line-2">System Designs, SEO & <span class="hero-cyan-sweep"> Automations</span></span>
-          <span class="hero-line-3"> for Businesses.</span>
+          <span class="hero-line-1">Add Your Business. <span class="hero-gold-sweep">Get Customers.</span></span><br>
+          <span class="hero-line-2">Build a <span class="hero-cyan-sweep">Real Online Business</span></span>
+          <span class="hero-line-3"> System.</span>
         </h1>
 
         <p class="hero-lead">
@@ -5601,8 +5454,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;border-left:4px solid var(--gold);">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 01 · Visibility System</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"People Can't Find My Business"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">Website Design & Local SEO for Nigerian Businesses</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"People Can't Find My Business"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">You're invisible online. No Google presence. Customers can't find you even when they search. We establish your full digital presence so your ideal customers discover you wherever they look.</p>
           <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5631,8 +5483,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 02 · Brand Authority System</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"People See Me But Don't Trust Me"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">Brand Authority & Trust Systems for Nigerian Businesses</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"People See Me But Don't Trust Me"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">You exist online — but you don't look credible. Customers ask questions then disappear. Low engagement. Poor brand recognition. We build the identity that makes customers trust you immediately.</p>
           <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5661,8 +5512,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 03 · Lead Generation System</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"I'm Not Getting Enough Qualified Leads"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">Lead Generation Systems for Nigerian Businesses</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I'm Not Getting Enough Qualified Leads"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">Sales are inconsistent. Some months are great, others terrible. You don't know where customers come from. We build a predictable system that continuously attracts qualified leads to your business.</p>
           <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5691,8 +5541,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 04 · Sales Conversion System</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"I Get Messages But Nobody Buys"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">WhatsApp Automation & Sales Conversion Systems Nigeria</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I Get Messages But Nobody Buys"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">People ask for prices then go quiet. Lots of inquiries, very few sales. No structured sales process. We build the system that turns leads into paying customers — even while you sleep.</p>
           <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5725,8 +5574,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 05 · Business Operations System</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"My Business Is Chaotic &amp; Unscalable"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">Business Process Automation & CRM Setup Nigeria</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"My Business Is Chaotic &amp; Unscalable"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">Everything depends on you. Tasks fall through the cracks. Customer information gets lost. Your business is stressful and can't grow without you being there for everything. We digitize and systemize your operations.</p>
           <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5755,8 +5603,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 06 · Customer Retention System</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"Customers Buy Once and Disappear"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">Customer Retention & Loyalty Systems for Nigerian Businesses</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"Customers Buy Once and Disappear"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">Few referrals. Low repeat purchases. No loyalty. Customers buy from you once and you never hear from them again. We build the system that keeps customers coming back and sending you new ones.</p>
           <div style="background:rgba(201,168,76,.07);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5785,8 +5632,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;border-left:4px solid var(--cyan);">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--cyan);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 07 · Bigger Projects</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"I Need a Full Platform or Enterprise System Built"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">Enterprise Software Development Company Nigeria</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I Need a Full Platform or Enterprise System Built"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">You know what you need to build. You just need it executed properly — architecture, frontend, backend, payment systems, admin dashboard, deployment. Or your organisation needs enterprise-grade custom software.</p>
           <div style="background:rgba(0,188,212,.07);border:1px solid rgba(0,188,212,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5818,8 +5664,7 @@ body { overflow-x: clip; }
       <div style="background:var(--panel);padding:clamp(22px,3.5vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,48px);align-items:start;border-left:4px solid #f59e0b;">
         <div>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:#f59e0b;letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;">Situation 08 · Venture Build</div>
-          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:6px;">"I Want to Build a Business from an Idea"</h3>
-          <h2 style="font-size:.72rem;font-family:'DM Mono',monospace;color:var(--dimmer);text-transform:none;font-weight:500;margin-bottom:14px;">MVP Development for Equity or Fixed Fee — Startup Studio Nigeria</h2>
+          <h3 style="font-size:clamp(1.1rem,2.2vw,1.5rem);color:var(--white);margin-bottom:10px;">"I Want to Build a Business from an Idea"</h3>
           <p style="font-size:.88rem;margin-bottom:14px;">You're not just building software — you're starting a business. You need validation, branding, technology, and a real launch strategy. We co-build the business with you from idea to revenue.</p>
           <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.18);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
             <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:#f59e0b;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;">Expected Outcome</div>
@@ -5980,7 +5825,7 @@ body { overflow-x: clip; }
     <div class="venture-grid">
 
       <div class="vc">
-        <span class="vstatus s-cash">⭐ Cash Engine</span>
+        <span class="vstatus s-cash">⭐ Primary Cash Engine</span>
         <h3>Jobletters.xyz</h3>
         <p class="vrole">A live AI platform helping users create CVs, cover letters, and professional documents. Proof that we build and monetize real software.</p>
         <ul class="vdetails">
@@ -6078,7 +5923,7 @@ body { overflow-x: clip; }
       </div>
       <div class="fc"><h5>Services</h5><a href="#services">Get Listed</a><a href="#services">Brand Authority</a><a href="#services">Sales Systems</a><a href="#services">Platform Builds</a><a href="#services">Enterprise Custom</a></div>
       <div class="fc"><h5>Ventures</h5><a href="#ventures">Jobletters.xyz</a><a href="#ventures">Poverty2Prosperity</a><a href="#ventures">GATA Ecosystem</a><a href="#ventures">Pawa+9ja</a><a href="#ventures">TEK1SECURITY</a></div>
-      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="https://globalbizhub.teknnuku.xyz" target="_blank" style="color:var(--gold);">Global Biz Hub — List Free</a><a href="#" onclick="openCareersModal();return false;" style="color:var(--gold);">Careers — Join the Team</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/teknnuku/30min" onclick="return openCalendlyPopup(event,'footer_link')">Book a Consultation</a><a href="#contact" onclick="openContactModal();return false;">Contact Studio</a></div>
+      <div class="fc"><h5>Ecosystem</h5><a href="https://teknnuku.xyz">TEKNNUKU Ecosystem</a><a href="https://globalbizhub.teknnuku.xyz" target="_blank" style="color:var(--gold);">Global Biz Hub — List Free</a><a href="#" onclick="openCareersModal();return false;" style="color:var(--gold);">Careers — Join the Team</a><a href="#" onclick="openIntakeModal(); return false;">Business Diagnostic</a><a href="https://calendly.com/hello-teknnuku/30min" onclick="return openCalendlyPopup(event,'footer_link')">Book a Consultation</a><a href="#contact" onclick="openContactModal();return false;">Contact Studio</a></div>
     </div>
     <div class="footer-bottom">
       <p>© 2026 TEKNNUKU Studio Ltd. All rights reserved.</p>
@@ -8661,7 +8506,13 @@ function submitCareersApplication() {
 
   // Write to Firestore
   if (window._saveDoc) {
-    window._saveDoc('applicants', data).then(function() {
+    window._saveDoc('applicants', data).then(function(newId) {
+      if (newId) {
+        fetch('/api/send-confirmation', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ collection: 'applicants', docId: newId })
+        }).catch(function() {});
+      }
       showCarConfirmation(result.total, tier);
     }).catch(function(err2) {
       btn.textContent = 'Submit Application →';
@@ -8677,6 +8528,18 @@ function submitCareersApplication() {
       body: JSON.stringify({ fields: carToFirestoreFields(data) })
     }).then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function(created) {
+      // Extract the doc ID from the REST response's resource name
+      // (".../documents/applicants/AbC123") to trigger the instant
+      // confirmation email — fire-and-forget, never blocks the UI.
+      try {
+        var docId = created.name.split('/').pop();
+        fetch('/api/send-confirmation', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ collection: 'applicants', docId: docId })
+        }).catch(function() {});
+      } catch (e) {}
       showCarConfirmation(result.total, tier);
     }).catch(function(e2) {
       btn.textContent = 'Submit Application →';
