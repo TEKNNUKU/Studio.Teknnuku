@@ -33,6 +33,11 @@
         createdAt: serverTimestamp()
       });
       console.log("✅ FGP application saved:", docRef.id);
+      fetch('/api/send-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collection: 'fgp_applications', docId: docRef.id })
+      }).catch(() => {});
       return docRef.id;
     } catch (err) {
       console.error("⚠️ FGP application write failed:", err.code, err.message);
