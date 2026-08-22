@@ -1,5 +1,4 @@
 {
-  "cleanUrls": true,
   "functions": {
     "api/process-automation.js": { "maxDuration": 60 }
   },
