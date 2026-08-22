@@ -64,6 +64,19 @@ delivery). If you still hit this error, check whether your repo has an
 older `vercel.json` with `runtime` entries left over from a previous deploy
 and make sure it's been fully replaced by the one in this zip.
 
+**"Request failed: Unexpected token 'A', "A server e"... is not valid
+JSON"** on "Run Automation Now" — this was a real bug, now fixed, in an
+earlier version of this delivery. `findOrCreateAutomations` was checking
+each candidate submission against Firestore individually (up to 250
+sequential queries on a busy run), slow enough on a cold serverless start to
+exceed Vercel's function timeout — when Vercel kills a function for running
+too long, it returns its own plain-text error page instead of JSON, which
+is exactly what that parse error was seeing. Fixed by fetching all
+already-tracked automations once up front and checking membership in
+memory instead of querying per-document. If you're on a version of this
+zip from before this fix, replace `automation/engine.js` with the one
+here.
+
 ## Part 1 — Merging with your Call Center deployment
 
 If you already deployed the Call Center system into the same Vercel project,
@@ -133,6 +146,31 @@ the daily schedule is just steps 3-6, the day 1/3/5/7 nurture follow-ups,
 where a day's precision genuinely doesn't matter. If you ever want those
 tighter too, upgrading to Vercel Pro lets you change the `schedule` value in
 `vercel.json` to something like `"*/15 * * * *"` for every 15 minutes.
+
+**Or, for free:** Vercel's own Cron Jobs feature is what's capped at daily
+on Hobby — but nothing stops a completely separate service from calling
+your `/api/process-automation` URL like any other visitor would, as often
+as you like. That's what cron-job.org (or similar free services) gives you.
+
+### Setting up cron-job.org
+
+1. At [console.cron-job.org](https://console.cron-job.org), click
+   **CREATE CRONJOB**.
+2. **Title:** anything, e.g. "TEKNNUKU Email Automation".
+3. **URL:** `https://studio.teknnuku.xyz/api/process-automation`
+4. **Schedule:** pick how often — every 15-30 minutes is plenty, since the
+   urgent part (the first confirmation) is already instant; this schedule
+   only affects how promptly the day 1/3/5/7 follow-ups fire once they
+   become due, and a day's precision doesn't need minute-level accuracy.
+5. Find the section for custom **HTTP headers** (it's under the job's
+   request/method settings — look for "Headers" or "Advanced") and add one:
+   - Name: `x-automation-secret`
+   - Value: your `AUTOMATION_TRIGGER_SECRET` from Part 4
+6. Save and enable it.
+
+This doesn't replace your Vercel cron — both can run side by side safely,
+since re-running the sweep never sends a duplicate email (each automation
+only advances past a step once).
 
 ## How instant delivery actually works
 
