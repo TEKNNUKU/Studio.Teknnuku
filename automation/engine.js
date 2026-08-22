@@ -54,13 +54,47 @@ async function ensureAutomationForDoc(db, collectionName, docId) {
 // record yet, and creates one for each. Used by the daily cron sweep to
 // catch anything the instant trigger missed (e.g. a submission during a
 // brief outage, or a browser that closed before the instant call fired).
+//
+// Deliberately avoids querying Firestore once per candidate document (up to
+// 5 collections x 50 docs = 250 sequential round-trips) — that was slow
+// enough on a cold start to risk exceeding the function's timeout. Instead
+// this fetches every already-tracked (collection, docId) pair ONCE up
+// front and checks membership in memory, which is what actually needs to
+// run fast here since it happens on every single sweep, not just when
+// there's something new to do.
 async function findOrCreateAutomations(db, lookbackLimit = 50) {
+  const existingSnap = await db.collection('automations').select('sourceCollection', 'sourceDocId').get();
+  const existingKeys = new Set(existingSnap.docs.map(d => {
+    const data = d.data();
+    return data.sourceCollection + ':' + data.sourceDocId;
+  }));
+
   let created = 0;
-  for (const collectionName of Object.keys(SEQUENCES)) {
+  for (const [collectionName, seq] of Object.entries(SEQUENCES)) {
     const snap = await db.collection(collectionName).orderBy('createdAt', 'desc').limit(lookbackLimit).get();
     for (const doc of snap.docs) {
-      const { isNew } = await ensureAutomationForDoc(db, collectionName, doc.id);
-      if (isNew) created++;
+      const key = collectionName + ':' + doc.id;
+      if (existingKeys.has(key)) continue;
+
+      const data = doc.data();
+      const email = data[seq.emailField];
+      if (!email) continue; // can't email someone with no email on file
+
+      const createdAt = toDate(data.createdAt) || new Date();
+      await db.collection('automations').add({
+        sourceCollection: collectionName,
+        sourceDocId: doc.id,
+        formType: seq.formType,
+        contactName: data[seq.nameField] || 'there',
+        contactEmail: email,
+        currentStep: 0,
+        status: 'active',
+        anchorAt: createdAt.toISOString(),
+        nextRunAt: createdAt.toISOString(), // due immediately — step 1 has delayMinutes:0
+        createdAt: new Date().toISOString()
+      });
+      existingKeys.add(key); // avoid double-creating within this same pass
+      created++;
     }
   }
   return created;
@@ -163,15 +197,21 @@ async function processOneAutomation(db, autoDocSnap) {
 }
 
 // Processes every automation that's currently due — the daily cron's main job.
+// Processes every automation that's currently due — the daily cron's main
+// job. Deliberately filters `nextRunAt` in JS after a single-field equality
+// query rather than combining it with `status` in one Firestore query —
+// that combination needs a manually-created composite index, which is an
+// easy thing to forget to set up and a confusing failure mode when missed.
 async function processDueAutomations(db) {
-  const now = new Date();
-  const snap = await db.collection('automations')
-    .where('status', '==', 'active')
-    .where('nextRunAt', '<=', now.toISOString())
-    .get();
+  const now = new Date().toISOString();
+  const snap = await db.collection('automations').where('status', '==', 'active').get();
+  const due = snap.docs.filter(doc => {
+    const nextRunAt = doc.data().nextRunAt;
+    return nextRunAt && nextRunAt <= now;
+  });
 
   let sent = 0, failed = 0;
-  for (const autoDoc of snap.docs) {
+  for (const autoDoc of due) {
     const result = await processOneAutomation(db, autoDoc);
     sent += result.sent;
     failed += result.failed;
